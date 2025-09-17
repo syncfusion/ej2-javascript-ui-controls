@@ -826,12 +826,15 @@ export function setFormatter(serviceLocator?: ServiceLocator, column?: Column): 
  */
 export function addRemoveActiveClasses(cells: Element[], add: boolean, ...args: string[]): void {
     for (let i: number = 0, len: number = cells.length; i < len; i++) {
+        const cell: Element = cells[parseInt(i.toString(), 10)];
         if (add) {
-            classList(cells[parseInt(i.toString(), 10)], [...args], []);
-            cells[parseInt(i.toString(), 10)].setAttribute('aria-selected', 'true');
+            classList(cell, [...args], []);
+            if (!(cell.classList.contains('e-detailrowcollapse') || cell.classList.contains('e-detailrowexpand'))) {
+                cell.setAttribute('aria-selected', 'true');
+            }
         } else {
-            classList(cells[parseInt(i.toString(), 10)], [], [...args]);
-            cells[parseInt(i.toString(), 10)].removeAttribute('aria-selected');
+            classList(cell, [], [...args]);
+            cell.removeAttribute('aria-selected');
         }
     }
 }
@@ -876,11 +879,20 @@ export function getFilterMenuPostion(target: Element, dialogObj: Dialog, parent?
         } else {
             dialogObj.element.style.left = (dlgWidth + leftPosition) - 16 + 'px';
         }
+        if (parseInt(dialogObj.element.style.left, 10) < 0) {
+            dialogObj.element.style.left = '0px';
+        }
     } else {
         if (leftPosition < 1) {
             dialogObj.element.style.left = (dlgWidth + leftPosition) - 16 + 'px'; // right calculation
         } else {
             dialogObj.element.style.left = leftPosition - 4 + 'px';
+        }
+        if (parent && parent.element) {
+            const actualWidthAllocated: number = parent.element.offsetWidth - parseInt(dialogObj.element.style.left, 10);
+            if (parent.element.offsetWidth >= dlgWidth && actualWidthAllocated < dlgWidth) {
+                dialogObj.element.style.left = parent.element.offsetWidth - dlgWidth + 'px';
+            }
         }
     }
 }

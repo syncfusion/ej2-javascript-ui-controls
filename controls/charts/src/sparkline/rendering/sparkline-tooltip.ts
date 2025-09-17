@@ -207,6 +207,7 @@ export class SparklineTooltip {
             fill: backgroundColor,
             textStyle: tootipArgs.textStyle,
             enableAnimation: false,
+            enableRTL: spark.enableRtl,
             location: { x: location.x, y: location.y },
             shared: false,
             availableSize: this.sparkline.availableSize,

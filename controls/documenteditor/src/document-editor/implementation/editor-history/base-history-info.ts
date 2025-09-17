@@ -4446,7 +4446,7 @@ export interface Operation {
     /**
      * Reserved for internal use only.
      */
-    action?: 'Insert' | 'Delete' | 'Format' | 'Update',
+    action?: 'Insert' | 'Delete' | 'Format' | 'Update' | 'RevisionDate',
     /**
      * Reserved for internal use only.
      */

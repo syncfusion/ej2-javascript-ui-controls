@@ -434,6 +434,11 @@ export class Resize implements IAction {
     }
 
     private resizeStart(e: PointerEvent | TouchEvent): void {
+        const contentWidth: string = (this.parent.getContentTable() as HTMLElement).style.width;
+        let isWidthOver100: boolean = false;
+        if (contentWidth.indexOf('%') !== -1 && parseFloat(contentWidth) > 100) {
+            isWidthOver100 = true;
+        }
         if ((e.target as HTMLElement).classList.contains('e-rhandler')) {
             this.isCancelAutoFit = false;
             const args: ResizeArgs = { e : e, column: this.getTargetColumn(e) };
@@ -446,7 +451,7 @@ export class Resize implements IAction {
             });
             if (!this.isCancelAutoFit) {
                 if (!this.helper) {
-                    if (this.getScrollBarWidth() === 0) {
+                    if (this.getScrollBarWidth() === 0 || isWidthOver100) {
                         this.resizeProcess = true;
                         for (const col of this.refreshColumnWidth()) {
                             this.widthService.setColumnWidth(col);

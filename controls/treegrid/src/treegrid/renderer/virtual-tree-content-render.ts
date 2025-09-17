@@ -790,12 +790,6 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             (this.parent.pageSettings.pageSize / 2) && (this.endIndex - nextSetResIndex) < (this.parent.pageSettings.pageSize / 2)) {
                 this.startIndex = lastIndex - (this.parent.pageSettings.pageSize / 2);
             }
-            if (currentViewData.length && this.startIndex > currentViewData[0][`${indexValue}`] &&
-                ((this.startIndex - currentViewData[0][`${indexValue}`]) < (this.parent.pageSettings.pageSize / 2)) &&
-                this.parent.selectionModule && this.parent.selectionModule.isRowSelected) {
-                this.startIndex = currentViewData[0][`${indexValue}`] + (this.parent.pageSettings.pageSize / 2);
-            }
-
             if (scrollArgs.offset.top > (rowHeight * this.totalRecords)) {
                 this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
             } else {
@@ -844,9 +838,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
             const page: number = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
             this.parent.setProperties({ pageSettings: { currentPage: page } }, true);
-            if (downScroll && this.endIndex === this.totalRecords && viewInfo.loadNext) {
-                viewInfo.loadNext = false;
-            }
+            // if (downScroll && this.endIndex === this.totalRecords && viewInfo.loadNext) {
+            //     viewInfo.loadNext = false;
+            // }
             this.requestType = 'virtualscroll';
             if (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left' && !isRemoteData(this.parent.root)) {
                 viewInfo.event = viewInfo.event === 'refresh-virtual-block' ? 'model-changed' : viewInfo.event;

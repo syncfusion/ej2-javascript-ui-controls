@@ -17,13 +17,13 @@ $event-marker-label-font-color: $warning-dark !default;
 $connector-line-color: $primary !default;
 $connector-line-hover-color: $primary !default;
 $connector-false-line-color: $primary !default;
-$connector-point-hover-color: $icon-color !default;
-$connector-point-border-color: $content-bg-color !default;
-$connector-point-hover-bg-color: $icon-color-hover !default;
+$connector-node-hover-color: $icon-color !default;
+$connector-node-border-color: $content-bg-color !default;
+$connector-node-hover-bg-color: $icon-color-hover !default;
 $critical-connector-line-color: $danger !default;
 $critical-connector-line-hover-color: $danger-light !default;
-$connector-point-hover-outerline-color: $connector-point-border-color !default;
-$connector-point-hover-border-color: $content-bg-color !default;
+$connector-node-hover-outerline-color: $connector-node-border-color !default;
+$connector-node-hover-border-color: $content-bg-color !default;
 $gantt-line-container-cell-border-color: $border-light !default;
 /* stylelint-disable */
 $gantt-unscheduled-taskbar-background: linear-gradient(to right, $primary-light, $primary 30%, $primary 70%, $primary 70%, $primary-light 100%) !default;
@@ -91,6 +91,9 @@ $error-elem-color: $danger;
 $gantt-active-container-border: $border !default;
 $rangecontainer-border-color: $border-warning;
 $gantt-chartrow-hover-bg-color: $table-bg-color-hover !default;
+$gantt-timelinecell-hover-bg-color: $table-bg-color-hover !default;
+$gantt-headercell-hover-bg-color: $table-bg-color-hover !default;
+$gantt-weekendcell-hover-bg-color: $table-bg-color-hover !default;
 
 // Layout
 $holiday-label-font-size: 13px !default;

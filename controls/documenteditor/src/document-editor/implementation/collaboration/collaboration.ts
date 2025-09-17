@@ -322,6 +322,13 @@ export class CollaborativeEditingHandler {
                 }
                 continue;
             }
+            if (action.operations[i].action === 'RevisionDate') {
+                let endOffset: any = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset, false, false, false);
+                let endPosition: TextPosition = this.documentEditor.selection.getTextPosBasedOnLogicalIndex(endOffset);
+                this.documentEditor.selection.selectContent(endPosition, true);
+                let revision: Revision[] = this.documentEditor.selection.getCurrentRevision();
+                revision[0].setDate(action.operations[i].text);
+            }
             let startOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset, false, false, false);
             // Code for Comparing the offset calculated using old approach and optimized approach
             // this.documentEditor.selection.isNewApproach = true;

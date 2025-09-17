@@ -46,6 +46,7 @@ export class PdfTimeline {
     private topTierValueLeftPadding: number = 8;
     public pageIndex: number;
     public timelineHeight: number = 0;
+    public gridPageWidth: number = 0;
 
     constructor(gantt?: PdfGantt) {
         this.width = 0;
@@ -274,6 +275,31 @@ export class PdfTimeline {
         // rectangle for chart side timeline
         graphics.drawRectangle(gridLineColor, cellBackgroundColor, x, y + pixelToPoint(height), adjustedWidth,
                                this.gantt.layouter.pageHeightCollection[this.pageIndex].totalHeight - this.timelineHeight);
+        if (this.parent.highlightWeekends && !(this.parent.timelineModule.bottomTier === 'Day' || this.parent.timelineModule.bottomTier === 'None' && this.parent.timelineModule.topTier === 'Day')) {
+            const startDate: Date = this.detailsTimeline.startDate;
+            const endDate: Date = this.detailsTimeline.endDate;
+            const currentDateNow: Date = new Date(startDate);
+            if ( x > 0 && this.gridPageWidth === 0 ) {
+                this.gridPageWidth = x;
+            }
+            while (currentDateNow <= endDate) {
+                if (nonWorkingDays.indexOf(new Date(currentDateNow).getDay()) !== -1) {
+                    const left: number = this.parent.dataOperation.getTaskLeft(
+                        this.parent.dateValidationModule.getDateFromFormat(currentDateNow, true), false, true);
+                    const isAutoFit: boolean = this.parent.pdfExportModule.gantt.taskbar.isAutoFit();
+                    const adjustedLeft: number = (isAutoFit ? left : pixelToPoint(left)) + this.gridPageWidth;
+                    graphics.drawRectangle(
+                        gridLineColor,
+                        holidayContainerColor,
+                        adjustedLeft,
+                        y + pixelToPoint(height),
+                        this.parent.perDayWidth,
+                        this.gantt.layouter.pageHeightCollection[this.pageIndex].totalHeight - this.timelineHeight
+                    );
+                }
+                currentDateNow.setDate(currentDateNow.getDate() + 1);
+            }
+        }
         let font1: PdfTrueTypeFont | PdfFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
         if (ganttStyle.font) {
             font1 = ganttStyle.font;

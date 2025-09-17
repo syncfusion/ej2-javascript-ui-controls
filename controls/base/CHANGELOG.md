@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.1.19 (2025-09-11)
+## 31.1.20 (2025-09-10)
+
+### Common
+
+#### Bug Fixes
+
+- `#I973865` - The number and percentage formatting issue has been resolved.
+
+## 31.1.17 (2025-09-05)
 
 ### Common
 

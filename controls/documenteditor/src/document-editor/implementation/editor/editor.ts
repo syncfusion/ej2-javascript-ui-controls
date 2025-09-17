@@ -3829,7 +3829,7 @@ export class Editor {
                     || (insertPosition.paragraph.paragraphFormat.textAlignment === 'Justify' 
                     && insertPosition.paragraph.paragraphFormat.bidi)) 
                     && insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
-                    insertPosition.paragraph.x = insertPosition.paragraph.clientX;
+                    insertPosition.paragraph.x = insertPosition.paragraph.clientX ? insertPosition.paragraph.clientX : this.owner.viewer.clientActiveArea.x;
                     insertPosition.paragraph.clientX = undefined;
                     if (insertPosition.paragraph.hasOwnProperty('absoluteXPosition')) {
                         delete insertPosition.paragraph['absoluteXPosition'];
@@ -9229,7 +9229,8 @@ export class Editor {
             rows.push(newRow);
         }
         let newRows: TableRowWidget[] =  [...rows];
-        table.insertTableRowsInternal(rows, index, isInsertRow);
+        let isOnlyRow = isInsertRow;
+        table.insertTableRowsInternal(rows, index, isInsertRow, undefined, isOnlyRow);
         if (this.owner.enableTrackChanges) {
             for (let i: number = 0; i < newRows.length; i++) {
                 this.insertRevision(newRows[i].rowFormat, 'Insertion');
@@ -13691,6 +13692,24 @@ export class Editor {
             }
             format.applyStyle(value as WStyle);
         } else if (property === 'listFormat') {
+            if (format.ownerBase instanceof ParagraphWidget && !(format.ownerBase as ParagraphWidget).isInsideTable
+                && !this.documentHelper.layout.hasValidElement(format.ownerBase as ParagraphWidget)) {
+                const paragraph: ParagraphWidget = format.ownerBase as ParagraphWidget;
+                let containValidElement: boolean = false;
+                for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
+                    const lineWidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
+                    for (let j: number = 0; j < lineWidget.children.length; j++) {
+                        const elementBox: ElementBox = lineWidget.children[j] as ElementBox;
+                        if (elementBox instanceof ListTextElementBox ||
+                            (elementBox instanceof ShapeBase && (elementBox as ShapeBase).textWrappingStyle === 'Inline')) {
+                            containValidElement = true;
+                        }
+                    }
+                }
+                if (!(paragraph === this.selection.start.paragraph && paragraph === this.selection.end.paragraph) && !containValidElement) {
+                    return;
+                }
+            }
             if (value instanceof WParagraphFormat) {
                 value = value.listFormat;
             }
@@ -15896,6 +15915,9 @@ export class Editor {
         if (this.viewer instanceof PageLayoutViewer) {
             nextSection.page.headerWidget = (this.viewer as PageLayoutViewer).getCurrentPageHeaderFooter(nextSection, true);
             nextSection.page.footerWidget = (this.viewer as PageLayoutViewer).getCurrentPageHeaderFooter(nextSection, false);
+            if (nextSection.page.headerWidget.height === 0) {
+                this.documentHelper.layout.layoutHeaderFooter(nextSection.page.bodyWidgets[0], this.viewer as PageLayoutViewer, nextSection.page);
+            }
         }
         let containerWidget: BodyWidget = nextSection;
         containerWidget.y = previousY;
@@ -22436,6 +22458,9 @@ export class Editor {
             }
             if (settings.type === 'InsideVerticalBorder' || settings.type === 'AllBorders' || settings.type === 'InsideBorders') {
                 table.tableFormat.borders.vertical.copyFormat(border);
+            }
+             if (settings.type === 'NoBorder') {
+                this.clearAllBorderValues(table.tableFormat.borders);
             }
         } else {
             if (this.selection.isEmpty) {

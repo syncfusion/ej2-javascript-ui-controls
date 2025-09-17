@@ -28,7 +28,7 @@ import { deleteChart, finiteAlert, formulaBarOperation } from '../../spreadsheet
 import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation, clearCFRule, CFArgs, setCFRule } from '../index';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { AutoFillSettingsModel } from '../..';
-import { CheckCellValidArgs, setVisibleMergeIndex, calculateFormula, dataSourceChanged } from '../common/index';
+import { CheckCellValidArgs, setVisibleMergeIndex, calculateFormula, dataSourceChanged, ExtendedChartModel } from '../common/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 
 /**
@@ -537,7 +537,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * @hidden
      */
-    public chartColl: ChartModel[] = [];
+    public chartColl: ExtendedChartModel[] = [];
     /**
      * @hidden
      */

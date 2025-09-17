@@ -1489,7 +1489,7 @@ export class PdfGanttTaskbarCollection {
                 if (result.actualSize.width > 0) {
                     const fontColor: PdfPen = null;
                     const ganttStyle : IGanttStyle = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle;
-                    let fontBrush: PdfBrush = new PdfSolidBrush((ganttStyle && ganttStyle.label && ganttStyle.label.fontBrush) ?
+                    const fontBrush: PdfBrush = new PdfSolidBrush((ganttStyle && ganttStyle.label && ganttStyle.label.fontBrush) ?
                         ganttStyle.label.fontBrush : this.labelColor);
                     /* eslint-disable-next-line */
                     let labelBrush :PdfBrush = null;
@@ -1501,23 +1501,6 @@ export class PdfGanttTaskbarCollection {
                     if (!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label) &&
                                                                             !isNullOrUndefined(ganttStyle.label.borderColor)) {
                         lablePen = new PdfPen(ganttStyle.label.borderColor);
-                    }
-                    if (this.labelSettings.rightLabel && (this.labelSettings.rightLabel.fontStyle.fontSize ||
-                            this.labelSettings.rightLabel.fontStyle.fontStyle
-                            || this.labelSettings.rightLabel.fontStyle.fontFamily)) {
-                        const rightLabelSettings: ITemplateDetails = this.labelSettings.rightLabel;
-                        const fontFamily: PdfFontFamily = (rightLabelSettings.fontStyle && rightLabelSettings.fontStyle.fontFamily) ?
-                            rightLabelSettings.fontStyle.fontFamily : (this.fontFamily || PdfFontFamily.Helvetica);
-                        const fontSize: number = (rightLabelSettings.fontStyle && rightLabelSettings.fontStyle.fontSize) ? rightLabelSettings.fontStyle.fontSize : (font['fontSize'] || this.defaultFontSize);
-                        const fontStyle: PdfFontStyle = (rightLabelSettings.fontStyle &&
-                            typeof rightLabelSettings.fontStyle.fontStyle === 'string')
-                            ? this.parent.pdfExportModule.helper['getFontStyle'](rightLabelSettings.fontStyle.fontStyle)
-                            : (rightLabelSettings.fontStyle && rightLabelSettings.fontStyle.fontStyle)
-                                ? rightLabelSettings.fontStyle.fontStyle
-                                : PdfFontStyle.Regular;
-                        font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
-                        fontBrush = rightLabelSettings.fontStyle.fontColor ?
-                            new PdfSolidBrush(rightLabelSettings.fontStyle.fontColor) : fontBrush;
                     }
                     const strSize: SizeF = font.measureString(result.lines[0].text);
                     graphics.drawRectangle(lablePen, labelBrush, labelBounds.x - 3, labelBounds.y, strSize.width + 6, strSize.height);
@@ -1821,7 +1804,7 @@ export class PdfGanttTaskbarCollection {
                 if (result.actualSize.width > 0) {
                     const fontColor: PdfPen = null;
                     /* eslint-disable-next-line */
-                    let fontBrush: PdfBrush = new PdfSolidBrush((ganttStyle && ganttStyle.label && ganttStyle.label.fontBrush) ?
+                    const fontBrush: PdfBrush = new PdfSolidBrush((ganttStyle && ganttStyle.label && ganttStyle.label.fontBrush) ?
                         ganttStyle.label.fontBrush : this.labelColor);
                     /* eslint-disable-next-line */
                     let labelBrush :PdfBrush = null;
@@ -1833,23 +1816,6 @@ export class PdfGanttTaskbarCollection {
                     if (!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label) &&
                                                                             !isNullOrUndefined(ganttStyle.label.borderColor)) {
                         lablePen = new PdfPen(ganttStyle.label.borderColor);
-                    }
-                    if (this.labelSettings.leftLabel && (this.labelSettings.leftLabel.fontStyle.fontSize ||
-                            this.labelSettings.leftLabel.fontStyle.fontStyle
-                            || this.labelSettings.leftLabel.fontStyle.fontFamily)) {
-                        const leftLabelSettings: ITemplateDetails = this.labelSettings.leftLabel;
-                        const fontFamily: PdfFontFamily = (leftLabelSettings.fontStyle && leftLabelSettings.fontStyle.fontFamily) ?
-                            leftLabelSettings.fontStyle.fontFamily : (this.fontFamily || PdfFontFamily.Helvetica);
-                        const fontSize: number = (leftLabelSettings.fontStyle && leftLabelSettings.fontStyle.fontSize) ? leftLabelSettings.fontStyle.fontSize : (font['fontSize'] || this.defaultFontSize);
-                        const fontStyle: PdfFontStyle = (leftLabelSettings.fontStyle &&
-                            typeof leftLabelSettings.fontStyle.fontStyle === 'string')
-                            ? this.parent.pdfExportModule.helper['getFontStyle'](leftLabelSettings.fontStyle.fontStyle)
-                            : (leftLabelSettings.fontStyle && leftLabelSettings.fontStyle.fontStyle)
-                                ? leftLabelSettings.fontStyle.fontStyle
-                                : PdfFontStyle.Regular;
-                        font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
-                        fontBrush = leftLabelSettings.fontStyle.fontColor ?
-                            new PdfSolidBrush(leftLabelSettings.fontStyle.fontColor) : fontBrush;
                     }
                     const strSize: SizeF = font.measureString(result.lines[0].text);
                     graphics.drawRectangle(lablePen, labelBrush, rightLabelBounds.x - 3,
@@ -2091,36 +2057,6 @@ export class PdfGanttTaskbarCollection {
         if (!isNullOrUndefined(ganttStyle) && ganttStyle.font) {
             font = ganttStyle.font;
             height = font.height;
-        }
-        const leftLabelSettings: ITemplateDetails = this.labelSettings.leftLabel;
-        if (leftLabelSettings && (leftLabelSettings.fontStyle.fontSize || leftLabelSettings.fontStyle.fontFamily ||
-            leftLabelSettings.fontStyle.fontStyle)) {
-            const fontFamily: PdfFontFamily = (leftLabelSettings.fontStyle && leftLabelSettings.fontStyle.fontFamily) ?
-                leftLabelSettings.fontStyle.fontFamily : (this.fontFamily || PdfFontFamily.Helvetica);
-            const fontSize: number = (leftLabelSettings.fontStyle && leftLabelSettings.fontStyle.fontSize) ?
-                leftLabelSettings.fontStyle.fontSize : this.defaultFontSize;
-            const fontStyle: PdfFontStyle = (leftLabelSettings.fontStyle &&
-                typeof leftLabelSettings.fontStyle.fontStyle === 'string')
-                ? this.parent.pdfExportModule.helper['getFontStyle'](leftLabelSettings.fontStyle.fontStyle)
-                : (leftLabelSettings.fontStyle && leftLabelSettings.fontStyle.fontStyle)
-                    ? leftLabelSettings.fontStyle.fontStyle
-                    : PdfFontStyle.Regular;
-            font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
-        }
-        const rightLabelSettings: ITemplateDetails = this.labelSettings.rightLabel;
-        if (rightLabelSettings && (rightLabelSettings.fontStyle.fontSize || rightLabelSettings.fontStyle.fontFamily ||
-            rightLabelSettings.fontStyle.fontStyle)) {
-            const fontFamily: PdfFontFamily = (rightLabelSettings.fontStyle && rightLabelSettings.fontStyle.fontFamily) ?
-                rightLabelSettings.fontStyle.fontFamily : (this.fontFamily || PdfFontFamily.Helvetica);
-            const fontSize: number = (rightLabelSettings.fontStyle && rightLabelSettings.fontStyle.fontSize) ?
-                rightLabelSettings.fontStyle.fontSize : this.defaultFontSize;
-            const fontStyle: PdfFontStyle = (rightLabelSettings.fontStyle &&
-                typeof rightLabelSettings.fontStyle.fontStyle === 'string')
-                ? this.parent.pdfExportModule.helper['getFontStyle'](rightLabelSettings.fontStyle.fontStyle)
-                : (rightLabelSettings.fontStyle && rightLabelSettings.fontStyle.fontStyle)
-                    ? rightLabelSettings.fontStyle.fontStyle
-                    : PdfFontStyle.Regular;
-            font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
         }
         const layouter: PdfStringLayouter = new PdfStringLayouter();
         const progressFormat: PdfStringFormat = new PdfStringFormat();

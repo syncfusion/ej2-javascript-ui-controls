@@ -919,6 +919,9 @@ export class DatePicker extends Calendar implements IInput {
         {
             this.updateInputValue('');
         }
+        if (isNullOrUndefined(this.value)) {
+            this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
+        }
         const clearedArgs: ClearedEventArgs = {
             event: event
         };
@@ -1097,7 +1100,11 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private inputBlurHandler(e: MouseEvent): void {
-        if (!this.enabled) {
+        const inputSame: boolean = this.inputElement.value === this.previousElementValue;
+        const dateSame: boolean = this.value && this.previousDate
+            ? this.value.getTime() === this.previousDate.getTime()
+            : this.value === this.previousDate;
+        if (!this.enabled || (inputSame && dateSame)) {
             return;
         }
         this.strictModeUpdate();
@@ -1190,11 +1197,19 @@ export class DatePicker extends Calendar implements IInput {
             this.hide(e);
             break;
         case 'enter':
-            this.strictModeUpdate();
-            this.updateInput();
-            this.popupUpdate();
-            this.changeTrigger(e);
-            this.errorClass();
+        {
+            const inputUnchanged: boolean = this.inputElement.value === this.previousElementValue;
+            const valueUnchanged: boolean = this.value instanceof Date && this.previousDate instanceof Date
+                ? this.value.getTime() === this.previousDate.getTime()
+                : this.value === this.previousDate;
+
+            if (!(inputUnchanged && valueUnchanged)) {
+                this.strictModeUpdate();
+                this.updateInput();
+                this.popupUpdate();
+                this.changeTrigger(e);
+                this.errorClass();
+            }
             if (!this.isCalendar() && document.activeElement === this.inputElement) {
                 this.hide(e);
             }
@@ -1203,6 +1218,7 @@ export class DatePicker extends Calendar implements IInput {
                 e.stopPropagation();
             }
             break;
+        }
         case 'tab':
         case 'shiftTab':
         {

@@ -56,6 +56,9 @@
         .e-chat-send {
           font-size: $chat-send-icon-size-bigger;
         }
+        .e-chat-attachment-icon {
+          font-size: $chat-send-icon-size-bigger;
+        }
       }
       .e-footer-icons-wrapper {
         gap: $chat-footer-icons-gap-bigger;
@@ -127,5 +130,102 @@
         }
       }
     }
+
+    /* ======== Attachment Styles ======== */
+    .e-message-content {
+      .e-attached-file{
+        .e-image-wrapper,
+        .e-video-wrapper {
+          .e-play-icon-wrapper {
+            @include chat-wrapper-icon-alignment(44px, 44px);
+          }
+        }
+        .e-file-wrapper {
+          .e-chat-file-format-icon {
+            font-size: 24px;
+          }
+          .e-file-data-wrapper {
+            .e-file-name {
+              font-size: 13px;
+            }
+            .e-file-size {
+              font-size: 11px;
+            }
+          }
+          .e-chat-download {
+            font-size: 16px;
+          }
+        }
+        .e-video-wrapper,
+        .e-image-wrapper {
+          .e-progress-wrapper {
+            @include chat-wrapper-icon-alignment(44px, 44px);
+            .e-chat-progress-ring {
+              width: 44px;
+              height: 44px;
+              .e-progress-bg,
+              .e-progress-fill {
+                @include chat-progress-bar-display(20, 22, 22);
+              }
+              .e-progress-fill {
+                stroke-dasharray: 125.66;
+                stroke-dashoffset: 125.66;
+              }
+            }
+          }
+        }
+      }
+    }
+    .e-pinned-message {
+      .e-pinned-message-text{
+        .e-pinned-img-thumb {
+          height: 32px;
+          width: 32px;
+        }
+        .e-pinned-file-name {
+          font-size: 16px;
+        }
+        .e-chat-file-format-icon {
+          font-size: 18px;
+        }
+      }
+    }
+    .e-reply-wrapper {
+      .e-reply-media-preview {
+        .e-reply-media-thumb {
+          height: 30px;
+          width: 30px;
+        }
+        .e-reply-file-name {
+          font-size: 14px;
+        }
+        .e-chat-file-format-icon {
+          font-size: 18px;
+        }
+      }
+    }
+  }
+
+  // Mention popup related styles for @mention support in chat ui
+  .e-bigger.e-chat-mention .e-chat-mention-user-name,
+  .e-bigger .e-chat-mention .e-chat-mention-user-name {
+    font-size: 16px;
+    line-height: 24px;
+    margin: 10px 8px;
+  }
+
+  .e-bigger.e-chat-mention .e-chat-mention-user-icon,
+  .e-bigger.e-chat-mention .e-chat-mention-user-icon img,
+  .e-bigger .e-chat-mention .e-chat-mention-user-icon,
+  .e-bigger .e-chat-mention .e-chat-mention-user-icon img {
+    height: 44px;
+    width: 44px;
+    font-size: 16px;
+  }
+
+  .e-bigger.e-chat-mention .e-list-item,
+  .e-bigger .e-chat-mention .e-list-item {
+    text-indent: 0;
+    height: 62px;
   }
 }

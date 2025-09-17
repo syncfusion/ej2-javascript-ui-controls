@@ -943,7 +943,7 @@ export class _PdfParser {
         }
         return stream;
     }
-    makeFilter(stream: any, name: string, maybeLength: number, params: any) : any { // eslint-disable-line
+    makeFilter(stream: any, name: string, maybeLength: number, params: any): any { // eslint-disable-line
         if (maybeLength === 0) {
             return new _PdfNullStream();
         }

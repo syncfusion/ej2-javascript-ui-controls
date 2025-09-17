@@ -13,10 +13,10 @@ export class ClearFormat {
     private static BLOCK_TAGS: string[] = ['address', 'article', 'aside', 'blockquote',
         'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
         'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'li', 'main', 'nav',
-        'noscript', 'ol', 'p', 'pre', 'section', 'ul' ];
-    private static NONVALID_PARENT_TAGS: string[] = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
+        'noscript', 'ol', 'p', 'pre', 'section', 'ul', 'table', 'td', 'th'];
+    private static NONVALID_PARENT_TAGS: string[] = ['thead', 'tbody', 'ul', 'ol', 'tfoot', 'tr'];
     private static IGNORE_PARENT_TAGS: string[] = ['ul', 'ol', 'table'];
-    private static NONVALID_TAGS: string[] = ['thead', 'tbody', 'figcaption', 'td', 'tr', 'th',   'tfoot', 'figcaption', 'li'  ];
+    private static NONVALID_TAGS: string[] = ['thead', 'figcaption', 'tr', 'tfoot', 'figcaption', 'li'  ];
     private static defaultTag: string = 'p';
     private static domNode: DOMNode;
     /**
@@ -227,9 +227,33 @@ export class ClearFormat {
                         && this.IGNORE_PARENT_TAGS.indexOf(parentNodes[index1 as number].childNodes[0].nodeName.toLocaleLowerCase()) > -1)
                     && !(parentNodes[index1 as number].childNodes.length === 1
                         && parentNodes[index1 as number].childNodes[0].nodeName.toLocaleLowerCase() === 'p')) {
-                    InsertMethods.Wrap(parentNodes[index1 as number] as HTMLElement, docElement.createElement(this.defaultTag));
+                    const target: HTMLElement = parentNodes[index1 as number] as HTMLElement;
+                    if (['TABLE', 'TD', 'TH'].indexOf(target.nodeName) !== -1) {
+                        if (target.hasAttribute('style')) {
+                            target.removeAttribute('style'); // Remove style if present
+                        }
+                        if (target.hasAttribute('class')) {
+                            const allowedClasses: Set<string> = new Set(['e-rte-table', 'e-rte-paste-table', 'e-rte-custom-table']);
+                            const filteredClasses: string[] = target.className
+                                .split(/\s+/)
+                                .filter((cls: string) => allowedClasses.has(cls));
+                            if (filteredClasses.length > 0) {
+                                target.className = filteredClasses.join(' ');
+                            } else {
+                                target.removeAttribute('class');
+                            }
+                        }
+                    }
+                    else {
+                        InsertMethods.Wrap(parentNodes[index1 as number] as HTMLElement, docElement.createElement(this.defaultTag));
+                    }
                 }
-                const childNodes: Node[] = InsertMethods.unwrap(parentNodes[index1 as number]);
+                let childNodes: Node[] = [];
+                if (parentNodes[index1 as number].nodeName === 'TABLE' || parentNodes[index1 as number].nodeName === 'TD' || parentNodes[index1 as number].nodeName === 'TH') {
+                    childNodes = Array.from(parentNodes[index1 as number].childNodes);
+                } else {
+                    childNodes = InsertMethods.unwrap(parentNodes[index1 as number]);
+                }
                 if ( childNodes.length === 1
                     && childNodes[0].parentNode.nodeName.toLocaleLowerCase() === 'p') {
                     InsertMethods.Wrap(parentNodes[index1 as number] as HTMLElement, docElement.createElement(this.defaultTag));

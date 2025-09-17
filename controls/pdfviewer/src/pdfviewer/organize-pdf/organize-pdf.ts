@@ -2685,6 +2685,7 @@ export class PageOrganizer {
         if ((JSON.stringify(this.tempOrganizePagesCollection) !== JSON.stringify(this.organizePagesCollection)) ||
         this.isDocumentModified) {
             this.updateOrganizePageCollection();
+            this.totalCheckedCount = 0;
             this.isDocumentModified = true;
             let pdfBlob: Blob;
             this.pdfViewer.saveAsBlob().then((blob: Blob) => {
@@ -3905,6 +3906,7 @@ export class PageOrganizer {
     private onSaveasClicked(): void {
         if (JSON.stringify(this.tempOrganizePagesCollection) !== JSON.stringify(this.organizePagesCollection)) {
             this.updateOrganizePageCollection();
+            this.totalCheckedCount = 0;
             this.isDocumentModified = true;
             this.pdfViewerBase.updateDocumentEditedProperty(true);
         }

@@ -522,9 +522,10 @@ export class PdfBookmark extends PdfBookmarkBase {
     get destination(): PdfDestination {
         if (!this._destination) {
             const namedDestination: PdfNamedDestination = this._obtainNamedDestination();
-            if (namedDestination === null || typeof namedDestination === 'undefined') {
-                const destinationHelper: _PdfDestinationHelper = new _PdfDestinationHelper(this._dictionary, 'Dest');
-                this._destination = destinationHelper._obtainDestination();
+            const destinationHelper: _PdfDestinationHelper = new _PdfDestinationHelper(this._dictionary, 'Dest');
+            this._destination = destinationHelper._obtainDestination();
+            if (!this._destination && namedDestination && namedDestination.destination) {
+                return namedDestination.destination;
             }
         }
         return this._destination;
@@ -1071,7 +1072,6 @@ export class _PdfNamedDestinationCollection {
     _addCollection(destination: _PdfDictionary): void {
         let elements: any = destination.getRaw('Names'); // eslint-disable-line
         let ref: any[]; // eslint-disable-line
-        let dictionary: _PdfDictionary;
         if (elements && elements instanceof _PdfReference) {
             ref = this._crossReference._fetch(elements);
         }
@@ -1080,6 +1080,7 @@ export class _PdfNamedDestinationCollection {
         }
         if (elements && Array.isArray(elements) && elements.length > 0) {
             for (let i: number = 1; i < elements.length; i = i + 2) {
+                let dictionary: _PdfDictionary;
                 let reference: any = elements[i];// eslint-disable-line
                 if (reference && reference instanceof _PdfReference) {
                     const destinationArray: any[] = this._crossReference._fetch(reference); // eslint-disable-line

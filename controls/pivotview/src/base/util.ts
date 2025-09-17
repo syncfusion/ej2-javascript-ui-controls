@@ -1010,8 +1010,8 @@ export class PivotUtil {
         } else if (type === 'string') {
             const sortElements: (a: IAxisSet, b: IAxisSet) => number = (a: IAxisSet, b: IAxisSet): number =>
                 sortOrder === 'Ascending'
-                    ? (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText as string).localeCompare((b.actualText as string), undefined, { sensitivity: 'base' })
-                    : (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (b.actualText as string).localeCompare((a.actualText as string), undefined, { sensitivity: 'base' });
+                    ? (String(a.actualText) === 'Grand Total' || String(b.actualText) === 'Grand Total') ? 0 : (String(a.actualText)).localeCompare(String(b.actualText), undefined, { sensitivity: 'base' })
+                    : (String(a.actualText) === 'Grand Total' || String(b.actualText) === 'Grand Total') ? 0 : (String(b.actualText)).localeCompare(String(a.actualText), undefined, { sensitivity: 'base' });
             sortMembersOrder.sort(sortElements);
         } else {
             sortMembersOrder = sortOrder === 'Ascending' ?

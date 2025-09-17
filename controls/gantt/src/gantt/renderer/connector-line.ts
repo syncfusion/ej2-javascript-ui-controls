@@ -828,11 +828,12 @@ export class ConnectorLine {
                 this.x4 = data.milestoneChild ? 4 : 8;
                 this.y1 = rowPositionHeight;
                 this.y2 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke + 1;
+                const arrowX: number = this.parent.renderBaseline ? 0 : adjustedX;
                 this.connectorLinePath = 'M ' + this.x2 + ' ' + (this.y1) + ' L ' + (this.x2 + this.x3) + ' ' + (this.y1) + ' L ' + (this.x2 + this.x3) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1'] - adjustedValue) +
                     ' L ' + (this.x1 + this.x4) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1'] - adjustedValue);
-                this.arrowPath = 'M ' + ((this.x1) + adjustedX) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1'] - adjustedValue) +
-                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + ((this.y1 + this.y2 - (4 + this.lineStroke)) + adjustments['adjustY1'] - adjustedValue) +
-                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + ((this.y1 + this.y2 + 4 + this.lineStroke) + adjustments['adjustY1'] - adjustedValue) + ' Z';
+                this.arrowPath = 'M ' + ((this.x1) + arrowX) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1'] - adjustedValue) +
+                    ' L ' + ((this.x1 + 8) + arrowX) + ' ' + ((this.y1 + this.y2 - (4 + this.lineStroke)) + adjustments['adjustY1'] - adjustedValue) +
+                    ' L ' + ((this.x1 + 8) + arrowX) + ' ' + ((this.y1 + this.y2 + 4 + this.lineStroke) + adjustments['adjustY1'] - adjustedValue) + ' Z';
             }
 
             if (predType === 'FFType2') {
@@ -860,11 +861,12 @@ export class ConnectorLine {
                 this.x4 = data.parentEndPoint + (data.milestoneParent ? - 1 : 0);
                 this.y1 = rowPositionHeight;
                 this.y2 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke + 1;
+                const arrowX: number = this.parent.renderBaseline ? 0 : adjustedX;
                 this.connectorLinePath = 'M ' + this.x2 + ' ' + (this.y1) + ' L ' + (this.x2 + this.x3) + ' ' + (this.y1) + ' L ' + (this.x2 + this.x3) + ' ' + (this.y1 + this.y2 - adjustedValue) +
                     ' L ' + this.x4 + ' ' + (this.y1 + this.y2 - adjustedValue);
-                this.arrowPath = 'M ' + (this.x1 + adjustedX) + ' ' + (this.y1) +
-                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + (this.y1 - (4 + this.lineStroke)) +
-                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
+                this.arrowPath = 'M ' + (this.x1 + arrowX) + ' ' + (this.y1) +
+                    ' L ' + ((this.x1 + 8) + arrowX) + ' ' + (this.y1 - (4 + this.lineStroke)) +
+                    ' L ' + ((this.x1 + 8) + arrowX) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
             }
             if (predType === 'FFType4') {
                 const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 11 : adjustments['adjustX'];
@@ -910,11 +912,12 @@ export class ConnectorLine {
                 this.x3 = this.x2 + (data.milestoneChild ? 17 : 11);
                 this.y1 = this.point2;
                 this.y2 = this.y1 + heightValue + borderTopWidth - (this.lineStroke - 1) + this.taskLineValue;
+                const arrowX: number = this.parent.renderBaseline ? 0 : adjustedX;
                 this.connectorLinePath = 'M ' + this.x2 + ' ' + (this.y1) + ' L ' + this.x3 + ' ' + (this.y1) +
                     ' L ' + this.x3 + ' ' + (this.y2 - adjustedValue) + ' L ' + (this.x3 + this.point1) + ' ' + (this.y2 - adjustedValue);
-                this.arrowPath = 'M ' + ((this.x2 - 8) + adjustedX) + ' ' + (this.y1) +
-                    ' L ' + (this.x2 + adjustedX) + ' ' + (this.y1 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x2 + adjustedX) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
+                this.arrowPath = 'M ' + ((this.x2 - 8) + arrowX) + ' ' + (this.y1) +
+                    ' L ' + (this.x2 + arrowX) + ' ' + (this.y1 - (4 + this.lineStroke)) +
+                    ' L ' + (this.x2 + arrowX) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
             }
             if (predType === 'SFType1') {
                 const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 11 : adjustments['adjustX'];
@@ -941,11 +944,12 @@ export class ConnectorLine {
                 this.y1 = rowPositionHeight;
                 this.x2 = (data.parentLeft - data.childEndPoint);
                 this.y2 = this.y1 + heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
+                const arrowX: number = this.parent.renderBaseline ? 0 : adjustedX;
                 this.connectorLinePath = 'M ' + (this.x1 + this.x2 + 1) + ' ' + (this.y1) + ' L ' + (this.x1 + this.x2 - 10) + ' ' + (this.y1) +
                     ' L ' + (this.x1 + this.x2 - 10) + ' ' + (this.y2 + adjustments['adjustY1'] - adjustedValue) + ' L ' + (this.x1 + 8) + ' ' + (this.y2 + adjustments['adjustY1'] - adjustedValue);
-                this.arrowPath = 'M ' + (this.x1 + adjustedX) + ' ' + ((this.y2) + adjustments['adjustY1'] - adjustedValue) +
-                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + ((this.y2 - (4 + this.lineStroke)) + adjustments['adjustY1'] - adjustedValue) +
-                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + ((this.y2 + 4 + this.lineStroke) + adjustments['adjustY1'] - adjustedValue) + ' Z';
+                this.arrowPath = 'M ' + (this.x1 + arrowX) + ' ' + ((this.y2) + adjustments['adjustY1'] - adjustedValue) +
+                    ' L ' + ((this.x1 + 8) + arrowX) + ' ' + ((this.y2 - (4 + this.lineStroke)) + adjustments['adjustY1'] - adjustedValue) +
+                    ' L ' + ((this.x1 + 8) + arrowX) + ' ' + ((this.y2 + 4 + this.lineStroke) + adjustments['adjustY1'] - adjustedValue) + ' Z';
             }
             this.connectorPath.setAttribute('d', this.connectorLinePath);
             this.arrowlinePath.setAttribute('d', this.arrowPath);
@@ -1097,28 +1101,18 @@ export class ConnectorLine {
      * @private
      */
     public removePreviousConnectorLines(records: IGanttData[] | object): void {
-        let isObjectType: boolean;
-        if (isObject(records) === true) {
-            isObjectType = true;
-        } else {
-            isObjectType = false;
-        }
-        const length: number = isObjectType ? Object.keys(records).length : (records as IGanttData[]).length;
+        const isObjectType: boolean = isObject(records);
         const keys: string[] = Object.keys(records);
-        for (let i: number = 0; i < length; i++) {
-            let data: IGanttData;
-            if (isObjectType) {
-                const uniqueId: string = keys[i as number];
-                data = records[uniqueId as string] as IGanttData;
-            } else {
-                data = records[i as number];
-            }
-
-            const predecessors: IPredecessor[] = data.ganttProperties && data.ganttProperties.predecessor;
+        for (let i: number = 0; i < keys.length; i++) {
+            const data: IGanttData = isObjectType
+                ? (records as { [key: string]: IGanttData })[keys[i as number]]
+                : (records as IGanttData[])[i as number];
+            const ganttProps: ITaskData = data.ganttProperties;
+            const predecessors: IPredecessor[] = ganttProps && ganttProps.predecessor;
             if (predecessors && predecessors.length > 0) {
-                for (let pre: number = 0; pre < predecessors.length; pre++) {
-                    const lineId: string = 'parent' + predecessors[pre as number].from + 'child' + predecessors[pre as number].to;
-                    this.removeConnectorLineById(lineId as string);
+                for (const predecessor of predecessors) {
+                    const lineId: string = 'parent' + predecessor.from + 'child' + predecessor.to;
+                    this.removeConnectorLineById(lineId);
                 }
             }
         }

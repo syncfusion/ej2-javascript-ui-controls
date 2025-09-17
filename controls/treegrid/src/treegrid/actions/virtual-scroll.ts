@@ -158,8 +158,12 @@ export class VirtualScroll {
                 if (this.setEndIndexToGantt) {
                     this.ganttEndIndex = counts.endIndex;
                 }
-                if ((counts.endIndex + this.parent.pageSettings.pageSize >= counts.count && (this.parent.root && counts.count - this.ganttEndIndex === this.visualData.length - this.parent.root['previousFlatData'].length))
-                    || !(this.parent['isGantt'] && this.parent['isAddedFromGantt'])) {
+                if (
+                    (
+                        (counts.endIndex + this.parent.pageSettings.pageSize >= counts.count) &&
+                        (this.parent.root && counts.count !== this.ganttEndIndex) && this.parent['isAddedFromGantt']
+                    ) || !(this.parent['isGantt'] && this.parent['isAddedFromGantt'])
+                ) {
                     startIndex = counts.startIndex + (counts.count - counts.endIndex);
                     endIndex = counts.count;
                     this.setEndIndexToGantt = false;

@@ -2,7 +2,7 @@
   * Gantt base spec
   */
 import { Gantt, DayMarkers , Selection, Edit} from '../../src/index';
-import { constraintsData } from '../base/data-source.spec';
+import { constraintsData, dialogEditDataSB } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
@@ -2900,6 +2900,355 @@ describe('CR-974396', () => {
         let element1: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element1, 'click');
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/dd/yyyy')).toBe('4/02/2024')
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Dialog editing constraint pop-up', () => {
+    Gantt.Inject(DayMarkers, Selection, Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: dialogEditDataSB,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                progress: 'Progress',
+                segments: 'Segments',
+                constraintType: 'ConstraintType',
+                constraintDate: 'ConstraintDate',
+                resourceInfo: 'Resources',
+                manual: 'isManual',
+                work: 'Work',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+                mode: 'Dialog'
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+            },
+            resources: [
+                { resourceId: 1, resourceName: 'Martin Tamer', role: 'UI Designer' },
+                { resourceId: 2, resourceName: 'Rose Fuller', role: 'Business Analyst' },
+                { resourceId: 3, resourceName: 'Margaret Buchanan', role: 'Tech Lead' },
+                { resourceId: 4, resourceName: 'Fuller King', role: 'Frontend Dev' },
+                { resourceId: 5, resourceName: 'Davolio Fuller', role: 'Full-Stack Dev' },
+                { resourceId: 6, resourceName: 'Van Jack', role: 'Backend Dev' },
+                { resourceId: 7, resourceName: 'Jack Davolio', role: 'QA Engineer' },
+                { resourceId: 8, resourceName: 'Construction Supervisor', role: 'DB Engineer' }
+            ],
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID', width: 130 },
+                { field: 'TaskName', headerText: 'Task Name', width: 200 },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'Duration', headerText: 'Duration' },
+                { field: 'ConstraintType', width: 173 },
+                { field: 'ConstraintDate', width: 176 },
+                { field: 'isManual', width: 150 },
+                { field: 'Work' },
+            ],
+            treeColumnIndex: 1,
+            showColumnMenu: true,
+            toolbar: ['Add', 'Edit', 'Delete', 'ExpandAll', 'CollapseAll'],
+            taskMode: 'Custom',
+            allowSelection: true,
+            splitterSettings: {
+                position: "50%"
+            },
+            gridLines: "Both",
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            eventMarkers: [
+                {
+                    day: new Date('07/11/2025'),
+                    label: 'Project approval and kick-off'
+                }
+            ],
+            labelSettings: {
+                rightLabel: 'TaskName'
+            },
+            allowResizing: true,
+            taskbarHeight: 25,
+            rowHeight: 46,
+            height: '650px',
+            projectStartDate: new Date('03/30/2025'),
+            projectEndDate: new Date('08/07/2025')
+        }, done);
+    });
+    beforeEach((done) => {
+        setTimeout(done, 300);
+        ganttObj.openEditDialog(2);
+    });
+    it('Opening dialog for coverage', () => {
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+        let okButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialogValidationRule > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(okButton, 'click');
+        expect(ganttObj.flatData[2].ganttProperties.constraintType).toBe(4);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Spinner loading issue cr-976884', () => {
+    Gantt.Inject(DayMarkers, Selection, Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            height: "450px",
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: "Planning and Permits",
+                    StartDate: new Date("04/02/2025"),
+                    EndDate: new Date("04/10/2025"),
+                    Duration: 7,
+                    Progress: 100,
+                    ConstraintType: 0
+                },
+                {
+                    TaskID: 2,
+                    TaskName: "Site Evaluation",
+                    StartDate: new Date("04/02/2025"),
+                    EndDate: new Date("04/04/2025"),
+                    Duration: 2,
+                    Progress: 100,
+                    ParentID: 1,
+                    ConstraintType: 4,
+                    ConstraintDate: new Date("04/02/2025")
+                },
+                {
+                    TaskID: 3,
+                    TaskName: "Obtain Permits",
+                    StartDate: new Date("04/07/2025"),
+                    EndDate: new Date("04/09/2025"),
+                    Duration: 3,
+                    Progress: 100,
+                    ParentID: 1,
+                    Predecessor: "2FS+2days",
+                    ConstraintType: 2,
+                    ConstraintDate: new Date("04/07/2025")
+                },
+                {
+                    TaskID: 4,
+                    TaskName: "Finalize Planning",
+                    StartDate: new Date("04/10/2025"),
+                    EndDate: new Date("04/11/2025"),
+                    Duration: 2,
+                    Progress: 100,
+                    ParentID: 1,
+                    Predecessor: "3FS",
+                    ConstraintType: 6,
+                    ConstraintDate: new Date("04/11/2025")
+                },
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                constraintType: 'ConstraintType',
+                constraintDate: 'ConstraintDate',
+                dependency: 'Predecessor',
+                parentID: 'parentID',
+                notes: 'info',
+                resourceInfo: 'resources'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Job Name', width: '200', clipMode: 'EllipsisWithTooltip' },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'ConstraintType' },
+                { field: 'ConstraintDate' },
+                { field: 'Predecessor' },
+                { field: 'Progress' }
+            ],
+            treeColumnIndex: 1,
+            timelineSettings: {
+                topTier: { unit: 'Week', format: 'MMM dd, y' },
+                bottomTier: { unit: 'Day' }
+            },
+            projectStartDate: new Date('03/25/2025'),
+            projectEndDate: new Date('09/01/2025')
+        }, done);
+    });
+    beforeEach((done) => {
+        setTimeout(done, 300);
+    });
+    it('Changing Duration', () => {
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = '4 days';
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.flatData[2].ganttProperties.duration).toBe(4);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Coverage for connectorline-edit', () => {
+    Gantt.Inject(DayMarkers, Selection, Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Planning and Permits',
+                    StartDate: new Date('04/02/2025'),
+                    EndDate: new Date('04/10/2025'),
+                    Duration: 7,
+                    Progress: 100,
+                    ConstraintType: 0,
+                },
+                {
+                    TaskID: 2,
+                    TaskName: 'Site Evaluation',
+                    StartDate: new Date('04/02/2025'),
+                    EndDate: new Date('04/04/2025'),
+                    Duration: 2,
+                    Progress: 100,
+                    ParentID: 1,
+                    ConstraintType: 4,
+                    ConstraintDate: new Date('04/02/2025'),
+                },
+                {
+                    TaskID: 3,
+                    TaskName: 'Obtain Permits',
+                    StartDate: new Date('04/07/2025'),
+                    EndDate: new Date('04/09/2025'),
+                    Duration: 3,
+                    Progress: 100,
+                    ParentID: 1,
+                    Predecessor: '2FS+2days',
+                    ConstraintType: 5,
+                    ConstraintDate: new Date('04/14/2025'),
+                },
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                constraintType: 'ConstraintType',
+                constraintDate: 'ConstraintDate',
+                dependency: 'Predecessor',
+                parentID: 'parentID',
+                notes: 'info',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+            allowSelection: true,
+            gridLines: 'Both',
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'MMM dd, y',
+                },
+                bottomTier: {
+                    unit: 'Day',
+                }
+            },
+            eventMarkers: [
+                {
+                    day: new Date('03/25/2025'),
+                    label: 'Project StartDate'
+                }, {
+                    day: new Date('08/31/2025'),
+                    label: 'Project EndDate'
+                }
+            ],
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Job Name', width: '200', clipMode: 'EllipsisWithTooltip' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'ConstraintType', width: '180' },
+                { field: 'ConstraintDate' },
+                { field: 'EndDate' },
+                { field: 'Predecessor' },
+                { field: 'Progress' },
+            ],
+            labelSettings: {
+                leftLabel: 'TaskName',
+                rightLabel: '#rightLabel',
+            },
+            splitterSettings: {
+                columnIndex: 4
+            },
+            projectStartDate: new Date('03/25/2025'),
+            projectEndDate: new Date('09/01/2025')
+        }, done);
+    });
+    beforeEach((done) => {
+        setTimeout(done, 300);
+    });
+    it('Covering constraint violation method', () => {
+        let constraintDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(constraintDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolConstraintDate') as any).ej2_instances[0];
+        input.value = new Date('04/01/2025');
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        let okButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialogValidationRule > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(okButton, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/8/2025');
     });
     afterAll(() => {
         if (ganttObj) {

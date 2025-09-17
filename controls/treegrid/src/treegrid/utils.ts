@@ -12,13 +12,27 @@ import { ITreeData } from './base/interface';
  * @returns {boolean} - Specifies whether remote data binding
  */
 export function isRemoteData(parent: TreeGrid) : boolean {
-    if (parent.dataSource instanceof DataManager) {
-        const adaptor: AdaptorOptions = parent.dataSource.adaptor;
-        return (adaptor instanceof ODataAdaptor ||
-      (adaptor instanceof WebApiAdaptor) || (adaptor instanceof WebMethodAdaptor) ||
-      (adaptor instanceof CacheAdaptor) || adaptor instanceof UrlAdaptor);
+    if (parent['treeGrid'] && parent['treeGrid']['isGantt']) {
+        if (parent['taskFields'].hasChildMapping) {
+            if (parent.dataSource instanceof DataManager) {
+                const adaptor: AdaptorOptions = parent.dataSource.adaptor;
+                return (adaptor instanceof ODataAdaptor ||
+                    (adaptor instanceof WebApiAdaptor) || (adaptor instanceof WebMethodAdaptor) ||
+                    (adaptor instanceof CacheAdaptor) || adaptor instanceof UrlAdaptor);
+            }
+            return false;
+        } else {
+            return false;
+        }
+    } else {
+        if (parent.dataSource instanceof DataManager) {
+            const adaptor: AdaptorOptions = parent.dataSource.adaptor;
+            return (adaptor instanceof ODataAdaptor ||
+                (adaptor instanceof WebApiAdaptor) || (adaptor instanceof WebMethodAdaptor) ||
+                (adaptor instanceof CacheAdaptor) || adaptor instanceof UrlAdaptor);
+        }
+        return false;
     }
-    return false;
 }
 
 /**

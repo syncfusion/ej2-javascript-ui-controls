@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 31.1.19 (2025-09-11)
+## 31.1.17 (2025-09-05)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I754033` - Fixed a problem where column resizing didn't work properly if the total column width was more than 100%.
+- `#I762851` - Resolved an issue where clearing the filter caused the pagination dropdown to incorrectly show `All`.
+- `#I750250` - Resolved a memory leak issue in the Grid component that occurred during the column reordering process.
+- `#I762476` - Removed the `aria-selected` attribute from the detail row's expand and collapse icon cell to resolve an issue with screen reader compatibility.
+- `#I761478` - Added clear type definitions to the `IFilterMUI` interface in the Grid component to improve type safety.
 
 ### Grid
 

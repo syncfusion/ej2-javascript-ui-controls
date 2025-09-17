@@ -396,7 +396,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * @private
      */
+    public documentCharacterFormat: CharacterFormatProperties;
+    /**
+     * @private
+     */
     public sectionFormat: SectionFormatProperties;
+    /**
+     * @private
+     */
+    public documentParagraphFormat: ParagraphFormatProperties;
     /**
      * @private
      */
@@ -792,6 +800,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.sectionFormat && this.documentEditor) {
             this.documentEditor.setDefaultSectionFormat(this.sectionFormat);
         }
+        if (this.documentParagraphFormat && this.documentEditor) {
+            this.documentEditor.setDocumentParagraphFormat(this.documentParagraphFormat);
+        }
+        if (this.documentCharacterFormat && this.documentEditor) {
+            this.documentEditor.setDocumentCharacterFormat(this.documentCharacterFormat);
+        }
     }
 
     private setserverActionSettings(): void {
@@ -899,8 +913,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentEditorSettings.enableScreenReader)) {
             this.documentEditor.documentEditorSettings.enableScreenReader = this.documentEditorSettings.enableScreenReader;
         }
+        if (!isNullOrUndefined(this.documentEditorSettings.enableSpellCheckOnScroll)) {
+            this.documentEditor.documentEditorSettings.enableSpellCheckOnScroll = this.documentEditorSettings.enableSpellCheckOnScroll;
+        }
         if (!isNullOrUndefined(this.documentEditorSettings.revisionSettings)) {
             this.documentEditor.documentEditorSettings.revisionSettings = this.documentEditorSettings.revisionSettings;
+        }
+        if (!isNullOrUndefined(this.documentEditorSettings.allowHyphensInBookmarkNames)) {
+            this.documentEditor.documentEditorSettings.allowHyphensInBookmarkNames = this.documentEditorSettings.allowHyphensInBookmarkNames;
         }
     }
     /**
@@ -1430,6 +1450,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
 
     /**
+     * Get the default character format for document editor container
+     * @returns Returns the default character format for document editor container.
+     */
+    public getDefaultCharacterFormat(): CharacterFormatProperties {
+        return this.characterFormat
+    }
+
+    /**
      * Set the default paragraph format for document editor container
      * @param paragraphFormat Specify the paragraph format properties to be applied for document editor.
      */
@@ -1439,12 +1467,69 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
 
     /**
+     * get the document paragraph format for document editor container
+     * @returns Returns the default paragraph format for document editor container.
+     */
+    public getDefaultParagraphFormat(): ParagraphFormatProperties {
+        return this.paragraphFormat;
+    }
+
+    /**
      * Set the default section format for document editor container
      * @param sectionFormat Specify the section format properties to be applied for document editor.
      */
     public setDefaultSectionFormat(sectionFormat: SectionFormatProperties): void {
         this.sectionFormat = sectionFormat;
         this.setFormat();
+    }
+
+    /**
+     * get the document section format for document editor container
+     * @returns Returns the default section format for document editor container.
+     */
+    public getDefaultSectionFormat(): SectionFormatProperties {
+        return this.sectionFormat;
+    }
+
+    
+    /**
+     * Sets the document default paragraph format for document editor
+     *
+     * @param paragraphFormat - Specifies the paragraph format.
+     * @returns {void}
+     */
+    public setDocumentParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
+        this.documentParagraphFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(paragraphFormat)));
+        this.setFormat();
+    }
+
+    /**
+     * Gets the document default paragraph format for document editor
+     * @returns Returns the default paragraph format for document editor.
+     */
+    public getDocumentParagraphFormat(): ParagraphFormatProperties {
+        let format: ParagraphFormatProperties = {};
+        HelperMethods.writeParagraphFormatProperties(this.documentEditor.documentHelper.paragraphFormat, format);
+        return format;
+    }
+
+    /**
+     * Set the document character format for document editor container
+     * @param characterFormat Specify the character format properties to be applied for document editor container.
+     */
+    public setDocumentCharacterFormat(characterFormat: CharacterFormatProperties): void {
+        this.documentCharacterFormat = characterFormat;
+        this.setFormat();
+    }
+
+    /**
+     * get the document character format for document editor container
+     * @returns Returns the document character format for document editor container.
+     */
+    public getDocumentCharacterFormat(): CharacterFormatProperties {
+        let format: CharacterFormatProperties = {};
+        HelperMethods.writeCharacterFormatProperties(this.documentEditor.documentHelper.characterFormat, format);
+        return format;
     }
 
     /**

@@ -22,7 +22,7 @@ describe('The Column template with child Aggreagate is not working properly- EJ2
                     { headerText: 'Tax per annum', textAlign: 'Center', template: '<span>test</span>', width: 90 }
                 ],
                 width: 'auto',
-                height: 359,
+                height: 360,
                 aggregates: [
                     {
                         showChildSummary: true,

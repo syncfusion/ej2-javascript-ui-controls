@@ -6,7 +6,7 @@ import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, Ta
 import { WCharacterFormat } from '../format/character-format';
 import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
-import { ParagraphInfo, SelectedCommentInfo } from '../editor/editor-helper';
+import { HelperMethods, ParagraphInfo, SelectedCommentInfo } from '../editor/editor-helper';
 import { BaseHistoryInfo, EditorHistory } from '../editor-history';
 import { Dictionary, RevisionActionEventArgs, revisionActionEvent } from '../../base/index';
 import { ChangesSingleView } from '../track-changes/track-changes-pane';
@@ -96,7 +96,29 @@ export class Revision {
         }
         return content;
     }
-
+    /**
+      * Updates the date of the revisions shown in the track changes pane.
+      * @param {string} value - The date to be set for the revision.
+      * @returns {void}
+      * Note: Revision dates are system-generated to preserve the audit trail and is strongly discouraged to modify it. 
+      * Calling this API permanently overwrites the original timestamp and cannot be recovered from the document history. This can undermine audit and compliance requirements. 
+      * Only use in controlled scenarios (e.g., data migration with approvals). For additional or custom timestamps, use the 'customData' property instead.
+      */
+    public setDate(value: string): void {
+        if (!isNullOrUndefined(value) && value != '') {
+            const date: Date = new Date(value);
+            if (date.toString() !== 'Invalid Date') {
+                // if the input is already in Utc format no need to convert to Utc.
+                if (value.indexOf('Z') < 0) {
+                    this.date = HelperMethods.getUtcDate(date);
+                }
+                else {
+                    this.date = value;
+                }
+                this.owner.trackChangesPane.setDateInternal(this);
+            }
+        }
+    }
     /**
      * @private
      */

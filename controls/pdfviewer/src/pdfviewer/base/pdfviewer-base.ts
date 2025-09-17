@@ -3405,6 +3405,12 @@ export class PdfViewerBase {
         if (!isNullOrUndefined(this.pdfViewer.annotationModule) && this.pdfViewer.annotationModule.measureAnnotationModule) {
             this.pdfViewer.annotationModule.measureAnnotationModule.destroy();
         }
+        if (this.pdfViewer.pdfRendererModule) {
+            this.pdfViewer.pdfRendererModule.destroy();
+        }
+        if (this.pdfViewer.textSearchModule) {
+            this.pdfViewer.textSearchModule.destroy();
+        }
     }
 
     /**

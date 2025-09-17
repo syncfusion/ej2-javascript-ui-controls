@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 31.1.20 (2025-09-10)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I757497` - Fixed an issue where the position of the freetext annotation was incorrect when the document was downloaded and opened in other viewers in server mode.
+- `#I764644` - Fixed an issue where the field name was undefined in the `formFieldFocusOut` event after signing the Signature field.
+
 ## 31.1.18 (2025-09-10)
 
 ### PDF Viewer

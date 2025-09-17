@@ -6,6 +6,7 @@ import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, 
 import { IGanttData } from '../base/interface';
 import { Deferred } from '@syncfusion/ej2-data';
 import { TaskbarEdit } from './taskbar-edit';
+import { UndoRedo } from './undo-redo';
 
 /**
  * The Selection module is used to handle cell and row selection.
@@ -148,6 +149,10 @@ export class Selection {
     private rowDeselecting(args: RowDeselectEventArgs): void {
         args.target = this.actualTarget as Element;
         args.isInteracted = this.isInteracted;
+        const undoRedo: UndoRedo = this.parent.undoRedoModule;
+        if (undoRedo && undoRedo['isPreventRowDeselectOnUndoRedo']) {
+            (args as any).cancel = true;
+        }
         this.parent.trigger('rowDeselecting', args);
     }
     private rowDeselected(args: RowDeselectEventArgs): void {

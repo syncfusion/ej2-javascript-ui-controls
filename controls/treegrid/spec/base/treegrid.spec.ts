@@ -4834,3 +4834,70 @@ describe('keyBoard Interaction for expand/collapse child row - self reference da
         destroy(gridObj);
     });
 });
+
+describe('Bug 960729: Assigning improper tree column index throws exception', () => {
+    let gridObj: TreeGrid;
+    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                height: '400',
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: false },
+                ],
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+    it('actionFailure testing', () => {
+        expect(actionFailedFunction).toHaveBeenCalled();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Task 969587: Testing TreeGrid Empty Record Template', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        // Create a template element in the DOM for testing
+        const template = document.createElement('script');
+        template.id = 'emptytemplate';
+        template.type = 'text/x-template';
+        template.innerHTML = "<div class='emptyRecordTemplate'>There is no data available to display at the moment in the TreeGrid.</div>";
+        document.body.appendChild(template);
+
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                emptyRecordTemplate: '#emptytemplate',
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', width: 110 },
+                    { field: 'taskName', headerText: 'Task Name', width: 150 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('should render the empty record template when dataSource is empty', () => {
+        const emptyRow = gridObj.getContentTable().querySelector('.e-emptyrow');
+        expect(emptyRow).not.toBeNull();
+        expect(emptyRow.querySelector('.emptyRecordTemplate')).not.toBeNull();
+        expect(emptyRow.querySelector('.emptyRecordTemplate').textContent).toContain('There is no data available to display at the moment in the TreeGrid.');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        const template = document.getElementById('emptytemplate');
+        if (template) {
+            template.parentNode.removeChild(template);
+        }
+    });
+});

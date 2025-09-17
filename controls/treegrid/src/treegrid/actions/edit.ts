@@ -821,7 +821,7 @@ export class Edit {
             this.addRowRecord = this.parent.flatData[args.index];
             this.addRowIndex = args.index;
         }
-        if (this.parent.editSettings.newRowPosition === 'Child' && this.isIndexUndefined &&
+        if (this.parent.editSettings.newRowPosition === 'Child' && ( this.isIndexUndefined || this.isAddedRowByMethod) &&
             !isNullOrUndefined(this.parent.getSelectedRecords()[0])) {
             this.addRowRecord = this.parent.getSelectedRecords()[0];
             this.isIndexUndefined = false;

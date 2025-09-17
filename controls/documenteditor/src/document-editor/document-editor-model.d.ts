@@ -127,6 +127,14 @@ export interface DocumentEditorSettingsModel {
     optimizeSfdt?: boolean;
 
     /**
+     * Enables or disables Allow Hyphens(-) in bookmark names in a document.
+     *
+     * @default false
+     * @aspType bool
+     */
+    allowHyphensInBookmarkNames?: boolean;
+
+    /**
      *  Gets or sets a value indicating whether to display ruler in Document Editor.
      *
      * @default false
@@ -169,6 +177,14 @@ export interface DocumentEditorSettingsModel {
      * @aspType bool
      */
     enableScreenReader?: boolean;
+
+    /**
+     * Gets or sets a value indicating whether to show Spell check marks while scrolling.
+     *
+     * @default false
+     * @aspType bool
+     */
+    enableSpellCheckOnScroll?: boolean;
 
 }
 

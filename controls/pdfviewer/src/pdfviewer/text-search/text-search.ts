@@ -2951,7 +2951,46 @@ export class TextSearch {
      * @returns {void}
      */
     public destroy(): void {
-        this.searchMatches = undefined;
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
+        if (this.searchAutocompleteObj) {
+            this.searchAutocompleteObj.destroy();
+            this.searchAutocompleteObj = null;
+        }
+        if (this.matchAnyWordCheckBox) {
+            this.matchAnyWordCheckBox.destroy();
+            this.matchAnyWordCheckBox = null;
+        }
+        if (this.searchRequestHandler) {
+            this.searchRequestHandler.clear();
+            this.searchRequestHandler = null;
+        }
+        if (this.textSearchHandleRequest) {
+            this.textSearchHandleRequest.clear();
+            this.textSearchHandleRequest = null;
+        }
+        if (this.searchBox && this.searchBox.parentElement) {
+            this.searchBox.parentElement.removeChild(this.searchBox);
+        }
+        this.searchBtn = null;
+        this.searchInput = null;
+        this.searchCountEle = null;
+        this.searchInputContainer = null;
+        this.searchBox = null;
+        this.nextSearchBtn = null;
+        this.prevSearchBtn = null;
+        this.findTextDocumentCollection = null;
+        this.textContents = null;
+        this.multiSearchCounts = null;
+        this.getSearchTextDetails = null;
+        this.searchedPages = null;
+        this.autompleteDataSource = null;
+        this.searchedOccurrences = null;
+        this.tempElementStorage = null;
+        this.documentTextCollection = null;
+        this.searchMatches = null;
     }
 
     /**

@@ -361,8 +361,7 @@ export class ExportHelper {
         }
         else if (column.field === taskFields.baselineDuration) {
             cell.value = this.parent.getDurationString(ganttProps.baselineDuration, ganttProps.durationUnit);
-        }
-        else if (column.field === taskFields.resourceInfo) {
+        } else if (column.field === taskFields.resourceInfo) {
             cell.value = ganttProps.resourceNames;
         } else if (column.field === taskFields.work) {
             cell.value = this.parent.getWorkString(ganttProps.work, ganttProps.workUnit);

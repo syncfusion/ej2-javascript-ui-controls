@@ -4654,6 +4654,14 @@ export class DateRangePicker extends CalendarBase {
                             this.popupObj.element,
                             this.modal,
                             this.isMobile || Browser.isDevice);
+                        if (!isNullOrUndefined(this.mobileRangePopupWrap) && !isNullOrUndefined(this.popupObj)
+                            && !isNullOrUndefined(this.popupObj.element) && isNullOrUndefined(this.modal) &&
+                            !isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset
+                            && (this.isMobile || Browser.isDevice) && !this.isCustomWindow) {
+                            const index: number = parseInt(this.popupObj.element.style.zIndex, 10) ?
+                                parseInt(this.popupObj.element.style.zIndex, 10) : 1000;
+                            this.mobileRangePopupWrap.style.zIndex = index.toString();
+                        }
                         if (Browser.isDevice) {
                             const dlgOverlay: HTMLElement = this.createElement('div', { className: 'e-dlg-overlay' });
                             dlgOverlay.style.zIndex = (this.zIndex - 1).toString();

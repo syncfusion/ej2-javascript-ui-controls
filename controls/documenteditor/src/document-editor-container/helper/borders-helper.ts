@@ -55,6 +55,8 @@ export class BordersHelper {
         switch (text) {
         case localObj.getConstant('All Borders'):
             return 'AllBorders';
+        case localObj.getConstant('No Border'):
+            return 'NoBorder';
         case localObj.getConstant('Outside Borders'):
             return 'OutsideBorders';
         case localObj.getConstant('Inside Borders'):
@@ -140,7 +142,7 @@ export class BordersHelper {
      */
     public static getBorderDropdownItems(localObj: L10n, commonId: string): Array<{ text: string, id: string, iconCss: string }> {
         return [
-            // { text: localObj.getConstant('No Border'), id: commonId + '_no_border', iconCss: 'e-icons e-de-ctnr-border-none' },
+            { text: localObj.getConstant('No Border'), id: commonId + '_no_border', iconCss: 'e-icons e-de-ctnr-border-none' },
             { text: localObj.getConstant('All Borders'), id: commonId + '_all_borders', iconCss: 'e-icons e-de-ctnr-allborders' },
             { text: localObj.getConstant('Outside Borders'), id: commonId + '_outside_borders', iconCss: 'e-icons e-de-ctnr-outsideborder' },
             { text: localObj.getConstant('Inside Borders'), id: commonId + '_inside_borders', iconCss: 'e-icons e-de-ctnr-insideborders' },

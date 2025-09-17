@@ -77,7 +77,7 @@ $chat-send-icon-disabled-color: $chat-send-icon-color !default;
 $chat-border-color: $gray-300 !default;
 $chat-text-color: $msg-color !default;
 $chat-right-text-color: $msg-color !default;
-$chat-right-bg-color: $primary !default;
+$chat-right-bg-color: rgba($primary, .1) !default;
 $sender-icon-bg-color: $gray-200 !default;
 $sender-icon-color: $gray-900 !default;
 $chat-suggestion-li-color: $primary !default;
@@ -99,3 +99,29 @@ $pinned-background-color: unset !default;
 $reply-wrapper-bg-color: unset !default;
 $reply-wrapper-border-bg-color: rgba(156, 163, 175, 1) !default;
 $message-toolbar-border-color: $gray-400 !default;
+
+//Mention support related variables
+$mentioned-user-color: $primary !default;
+$mentioned-left-user-color: $danger !default;
+$mention-popup-border-color: $gray-300 !default;
+$mentioned-user-font-weight: 400 !default;
+$mentioned-left-user-font-weight: 500 !default;
+
+//Attachment support related variables
+$attachment-icon-color: $gray-600 !default;
+$image-preview-overlay-bg: $gray-400 !default;
+$image-preview-header-bg-color: $gray-100 !default;
+$image-preview-header-text-color: $gray-800 !default;
+$video-play-icon-color: $gray-800 !default;
+$video-play-background-color: rgba($primary, .6) !default;
+$video-overlay-bg-color: $black !default;
+$progress-wrapper-bg: $content-bg !default;
+$file-wrapper-bg: $white !default;
+$progress-fill-color: $primary !default;
+$progress-track-color: $gray-400 !default;
+$file-size-text-color: $gray-600 !default;
+$file-name-text-color: $gray-800 !default;
+$file-download-icon-color: $gray-700 !default;
+$file-wrapper-border: $gray-300 !default;
+$stop-icon-color: $gray-600 !default;
+$retry-icon-color: $gray-700 !default;

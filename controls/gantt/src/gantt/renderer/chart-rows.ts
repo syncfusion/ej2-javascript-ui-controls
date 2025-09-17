@@ -1,5 +1,5 @@
 import { createElement, isNullOrUndefined, extend, compile, getValue, setValue, SanitizeHtmlHelper, append } from '@syncfusion/ej2-base';
-import { formatUnit, addClass } from '@syncfusion/ej2-base';
+import { formatUnit, addClass, Browser } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask, getTaskData } from '../base/utils';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -88,8 +88,13 @@ export class ChartRows extends DateProcessor {
      */
     private createChartTable(): void {
         this.taskTable = createElement('table', {
-            className: cls.taskTable + ' ' + cls.zeroSpacing, id: 'GanttTaskTable' + this.parent.element.id,
-            styles: 'position: absolute;width:' + (this.parent.enableTimelineVirtualization ? this.parent.timelineModule.wholeTimelineWidth : this.parent.timelineModule.totalTimelineWidth) + 'px;',
+            className: cls.taskTable + ' ' + (Browser.info.name === 'safari' ? null : cls.zeroSpacing),
+            id: 'GanttTaskTable' + this.parent.element.id, styles: 'position: absolute; width: ' +
+            (this.parent.enableTimelineVirtualization
+                ? this.parent.timelineModule.wholeTimelineWidth
+                : this.parent.timelineModule.totalTimelineWidth) +
+            'px;' +
+            (Browser.info.name === 'safari' ? 'border-spacing: 0.25px;' : ''),
             attrs: { cellspacing: '0.25px' }
         });
         const colgroup: Element = createElement('colgroup');
@@ -1013,11 +1018,11 @@ export class ChartRows extends DateProcessor {
                         'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>');
         const childEle: string = innerDiv + ((data.ganttProperties.startDate && data.ganttProperties.endDate &&
                             (data.ganttProperties.duration || data.hasChildRecords)) || data.ganttProperties.duration ? '<div class="e-gantt-manualparenttaskbar-left" style=' +
-                            (this.parent.enableRtl ? 'margin-right:0px;' : '') + '"height:' + ((taskbarHeight / 5) + 8) + 'px;border-left-width:' + taskbarHeight / 5 +
+                            (this.parent.enableRtl ? 'margin-right:0px;' : '') + '"height:' + (taskbarHeight) + 'px;border-left-width:' + taskbarHeight / 5 +
                             'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>' +
                             '<div class="e-gantt-manualparenttaskbar-right" style="' + (this.parent.enableRtl ? 'margin-right:-8px;' : '') +
                             (this.parent.enableRtl ? 'right:' : 'left:') + (data.ganttProperties.width - Math.floor(((taskbarHeight / 5) + 8) / 5)) + 'px;height:' +
-                            ((taskbarHeight / 5) + 8) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
+                            (taskbarHeight) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
                             taskbarHeight / 5 + 'px solid transparent;">' + '</div></div>' : '');
         const template: string = '<div class="' + cls.manualParentMainContainer + '"' +
                             'style=' + (this.parent.enableRtl ? 'right:' : 'left:') + (data.ganttProperties.left - data.ganttProperties.autoLeft) + 'px;' +
@@ -1146,10 +1151,16 @@ export class ChartRows extends DateProcessor {
      * To get taskbar row('TR') node
      *
      * @param {number} i .
+     * @param {IGanttData} tempTemplateData .
+     * @param {Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement>} gridRowData .
      * @returns {NodeList} .
      * @private
      */
-    private getTableTrNode(i?: number): NodeList {
+    private getTableTrNode(
+        i?: number,
+        tempTemplateData?: IGanttData,
+        gridRowData?: Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement>
+    ): NodeList {
         const table: Element = createElement('table');
         const className: string = (this.parent.gridLines === 'Horizontal' || this.parent.gridLines === 'Both') ?
             'e-chart-row-border' : '';
@@ -1171,13 +1182,20 @@ export class ChartRows extends DateProcessor {
             }, 0);
         }
         else {
-            rows = this.parent.treeGrid.grid.contentModule.getRows()[i as number];
-            if (rows && rows.isSelected) {
-                activecls = 'e-active';
+            let targetTaskId: string | number = tempTemplateData.ganttProperties.taskId;
+            let isSelected: boolean = false;
+            if (gridRowData && targetTaskId) {
+                targetTaskId = targetTaskId.toString();
+                rows = gridRowData;
+                const matchedRow: any = rows.find((row: any): boolean => {
+                    return (row.data[this.parent.taskFields.id] && row.data[this.parent.taskFields.id].toString() === targetTaskId);
+                });
+                isSelected = matchedRow && matchedRow.isSelected ? true : false;
+            } else {
+                rows = this.parent.treeGrid.grid.contentModule.getRows()[i as number];
+                isSelected = rows && rows.isSelected ? true : false;
             }
-            else {
-                activecls = '';
-            }
+            activecls = isSelected ? 'e-active' : '';
         }
         let tbody: HTMLTableSectionElement = table.querySelector('tbody');
         if (!tbody) {
@@ -1716,6 +1734,7 @@ export class ChartRows extends DateProcessor {
                 this.ganttChartTableBody.querySelectorAll('tr')[index as number].setAttribute('aria-rowindex', (index + 1).toString());
             }
         }  else {
+            const gridRowData: Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement> = this.parent.treeGrid.grid.contentModule.getRows();
             const dupChartBody: Element = createElement('tbody', {
                 id: this.parent.element.id + 'GanttTaskTableBody'
             });
@@ -1724,7 +1743,7 @@ export class ChartRows extends DateProcessor {
                 if (!tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
                     collapsedResourceRecord.push(tempTemplateData);
                 }
-                const tRow: Node = this.getGanttChartRow(i, tempTemplateData);
+                const tRow: Node = this.getGanttChartRow(i, tempTemplateData, gridRowData);
                 if (tempTemplateData.hasChildRecords && (!tempTemplateData.expanded) && this.parent.enableMultiTaskbar
                     && !this.parent.allowTaskbarOverlap) {
                     this.updateDragDropRecords(tempTemplateData, tRow);
@@ -1781,12 +1800,17 @@ export class ChartRows extends DateProcessor {
      *
      * @param {number} i .
      * @param {IGanttData} tempTemplateData .
+     * @param {Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement>} gridRowData .
      * @returns {Node} .
      * @private
      */
-    public getGanttChartRow(i: number, tempTemplateData: IGanttData): Node {
+    public getGanttChartRow(
+        i: number,
+        tempTemplateData: IGanttData,
+        gridRowData?: Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement>
+    ): Node {
         this.templateData = tempTemplateData;
-        const parentTrNode: NodeList = this.getTableTrNode(i);
+        const parentTrNode: NodeList = this.getTableTrNode(i, tempTemplateData, gridRowData);
         const leftLabelNode: NodeList = this.getLeftLabelNode(i);
         let taskbarContainerNode: NodeList | NodeList[] = this.taskbarContainer();
         (<HTMLElement>taskbarContainerNode[0]).setAttribute('aria-label', this.generateAriaLabel(this.templateData));
@@ -2433,11 +2457,14 @@ export class ChartRows extends DateProcessor {
                                 (tr as HTMLElement).children[0]['style'].verticalAlign = 'baseline';
                                 (tr as HTMLElement).getElementsByClassName('e-taskbar-main-container')[k as number]['style'].marginTop =
                                 ((rowCounts as number) * this.parent.rowHeight) + this.taskBarMarginTop + 'px';
+                                const rowHeight: number = typeof this.parent.rowHeight === 'string' ? parseInt(this.parent.rowHeight, 10) : this.parent.rowHeight;
+                                const currentHeight: number = parseInt(tr['style'].height, 10);
+                                const newHeight: number = currentHeight + rowHeight;
                                 if (this.parent.ganttChartModule.isExpandAll || this.parent.ganttChartModule.isCollapseAll) {
-                                    tr['style'].height = this.parent.treeGrid.getRowByIndex(rowIndex as number)['style'].height = parseInt(tr['style'].height, 10) + this.parent.rowHeight + 'px';
+                                    tr['style'].height = this.parent.treeGrid.getRowByIndex(rowIndex as number)['style'].height = newHeight + 'px';
                                 }
                                 else {
-                                    tr['style'].height = this.parent.treeGrid.getRows()[rowIndex as number]['style'].height = parseInt(tr['style'].height, 10) + this.parent.rowHeight + 'px';
+                                    tr['style'].height = this.parent.treeGrid.getRows()[rowIndex as number]['style'].height = newHeight + 'px';
                                 }
                             }
                         }

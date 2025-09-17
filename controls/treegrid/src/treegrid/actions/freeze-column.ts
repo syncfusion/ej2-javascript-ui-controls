@@ -65,7 +65,7 @@ export class Freeze {
         }
         for (let i: number = 0; i < rows.length; i++) {
             const row: HTMLTableRowElement = rows[parseInt(i.toString(), 10)];
-            const rData: ITreeData = this.parent.grid.getRowObjectFromUID(row.getAttribute('data-Uid')).data;
+            const rData: ITreeData = this.parent.grid.getRowObjectFromUID(row.getAttribute('data-uid')).data;
             if (!isNullOrUndefined(movableRows) && row.parentElement.firstElementChild.clientHeight > 0) {
                 row.style.height = row.parentElement.firstElementChild.clientHeight + 'px';
             }

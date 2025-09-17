@@ -3032,8 +3032,8 @@ export class DropDownList extends DropDownBase implements IInput {
             this.removeFocus();
             if (this.allowFiltering && this.actionCompleteData && this.actionCompleteData.ulElement &&
                 this.dataSource instanceof DataManager) {
-                const focus: any  = this.actionCompleteData.ulElement.querySelector('.e-item-focus');
-                if (focus) {
+                const focus: any  = this.actionCompleteData.ulElement.querySelectorAll('.' + dropDownListClasses.focus);
+                if (focus && focus.length) {
                     removeClass(focus, dropDownListClasses.focus);
                 }
             }

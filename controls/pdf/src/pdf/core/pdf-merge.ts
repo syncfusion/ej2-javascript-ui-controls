@@ -104,7 +104,7 @@ export class _PdfMergeHelper {
             if (typeof this._options !== 'undefined' && this._options.groupFormFields && this._sourceDocument._catalog._catalogDictionary.has('AcroForm')) {
                 this._formFieldsGroupingSupport(this._sourceDocument.form, page, newPage);
             } else if (this._sourceDocument._catalog._catalogDictionary.has('AcroForm')) {
-                this._importFormField(page, this._sourceDocument.form, newPage, this._sourceDocument._crossReference);
+                this._importFormField(page, this._sourceDocument.form, newPage);
             }
         }
         if (!isCopiedPage) {
@@ -222,7 +222,7 @@ export class _PdfMergeHelper {
                     }
                 }
             } else {
-                array = this._insertFormFields(i, form._crossReference, field, form, newPage._ref, array, kidsArray);
+                array = this._insertFormFields(i, field, form, newPage._ref, array, kidsArray);
             }
         }
         if (array.length > 0) {
@@ -502,7 +502,7 @@ export class _PdfMergeHelper {
         }
         return style;
     }
-    _importFormField(page: PdfPage, pdfForm: PdfForm, newPage: PdfPage, crossReference: _PdfCrossReference): void {
+    _importFormField(page: PdfPage, pdfForm: PdfForm, newPage: PdfPage): void {
         const form: PdfForm = this._destinationDocument.form;
         let array: _PdfReference[] = [];
         if (newPage && newPage._pageDictionary && newPage._pageDictionary.has('Annots')) {
@@ -530,18 +530,18 @@ export class _PdfMergeHelper {
                     for (let j: number = 0; j < kidsArray.length; j++) {
                         let fieldItem: any = pdfField.itemAt(j); // eslint-disable-line
                         if (fieldItem.page === page) {
-                            array = this._insertFormFields(i, crossReference, pdfField, form, newPage._ref, array, widgetArray);
+                            array = this._insertFormFields(i, pdfField, form, newPage._ref, array, widgetArray);
                             break;
                         }
                     }
                 } else if (kidsArray.length === 1) {
                     if (pdfField.page === page) {
-                        array = this._insertFormFields(i, crossReference, pdfField, form, newPage._ref, array, widgetArray);
+                        array = this._insertFormFields(i, pdfField, form, newPage._ref, array, widgetArray);
                     }
                 }
             } else {
                 if (pdfField.page === page) {
-                    array = this._insertFormFields(i, crossReference, pdfField, form, newPage._ref, array, widgetArray);
+                    array = this._insertFormFields(i, pdfField, form, newPage._ref, array, widgetArray);
                 }
             }
         }
@@ -571,7 +571,7 @@ export class _PdfMergeHelper {
             newPage._pageDictionary.update('Annots', array);
         }
     }
-    _insertFormFields(index: number, crossReference: _PdfCrossReference, pdfField: PdfField, form: PdfForm, ref: _PdfReference,
+    _insertFormFields(index: number, pdfField: PdfField, form: PdfForm, ref: _PdfReference,
                       array: _PdfReference[], kidsArray: _PdfReference[]): _PdfReference[] {
         let dictionary: _PdfDictionary = new _PdfDictionary();
         if (pdfField._dictionary.has('Kids')) {

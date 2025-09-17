@@ -8481,8 +8481,10 @@ export class Selection {
         }
         return false;
     }
-
-    private getCurrentRevision(): Revision[] {
+    /**
+     * @private
+     */
+    public getCurrentRevision(): Revision[] {
         let start: TextPosition = this.start;
         let end: TextPosition = this.end;
         if (!this.isForward) {
@@ -8950,7 +8952,11 @@ export class Selection {
      * @private
      */
     public getParagraphFormatInParagraph(paragraph: ParagraphWidget): void {
-        if (this.start.paragraph === paragraph) {
+        let start: TextPosition = this.start;
+        if (!this.isForward) {
+            start = this.end;
+        }
+        if (start.paragraph === paragraph) {
             this.paragraphFormat.copyFormat(paragraph.paragraphFormat);
         } else {
             this.paragraphFormat.combineFormat(paragraph.paragraphFormat);
@@ -9013,8 +9019,8 @@ export class Selection {
         if (startCellIn > this.upDownSelectionLength) {
             startCellIn = this.upDownSelectionLength;
         }
-        if (startCellIn < this.upDownSelectionLength) {
-            startCellIn = this.upDownSelectionLength;
+        if (endCellIn < this.upDownSelectionLength) {
+            endCellIn = this.upDownSelectionLength;
         }
         let count: number = table.childWidgets.indexOf(endCell.ownerRow);
         for (let i: number = table.childWidgets.indexOf(startCell.ownerRow); i <= count; i++) {

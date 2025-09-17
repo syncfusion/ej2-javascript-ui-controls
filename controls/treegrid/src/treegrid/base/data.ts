@@ -341,7 +341,7 @@ export class DataManipulation {
                     const targetEle: Element = rowDetails.rows[parseInt(i.toString(), 10)].getElementsByClassName('e-treegridcollapse')[0];
                     childRecord = this.parent.rowTemplate ?
                         this.parent.grid.getCurrentViewRecords()[rowDetails.rows[parseInt(i.toString(), 10)].rowIndex] :
-                        this.parent.grid.getRowObjectFromUID(rowDetails.rows[parseInt(i.toString(), 10)].getAttribute('data-Uid')).data;
+                        this.parent.grid.getRowObjectFromUID(rowDetails.rows[parseInt(i.toString(), 10)].getAttribute('data-uid')).data;
                     if (!isNullOrUndefined(targetEle) && childRecord.expanded) {
                         addClass([targetEle], 'e-treegridexpand');
                         removeClass([targetEle], 'e-treegridcollapse');

@@ -1,7 +1,7 @@
 import { TreeGrid } from '../base/treegrid';
 import { ITreeData, TreeGridExcelExportProperties } from '../base/interface';
 import { getObject, Grid, ExcelExport as GridExcel, ExcelExportProperties, BeforeDataBoundArgs, ExportHelper } from '@syncfusion/ej2-grids';
-import { ExcelStyle, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { ExcelStyle, ExcelQueryCellInfoEventArgs, AggregateQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelRow, Row, Column, Data } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline, getParentData, getExpandStatus } from '../utils';
 import { isNullOrUndefined, setValue, Fetch, extend } from '@syncfusion/ej2-base';
@@ -44,6 +44,7 @@ export class ExcelExport {
         this.parent.on('updateResults', this.updateExcelResultModel, this);
         this.parent.on('excelCellInfo', this.excelQueryCellInfo, this);
         this.parent.grid.on('export-RowDataBound', this.exportRowDataBound, this);
+        this.parent.on('excelAggregateCellInfo', this.excelAggregateCellInfo, this);
         this.parent.grid.on('finalPageSetup', this.finalPageSetup, this);
     }
     /**
@@ -64,6 +65,7 @@ export class ExcelExport {
         this.parent.off('updateResults', this.updateExcelResultModel);
         this.parent.off('excelCellInfo', this.excelQueryCellInfo);
         this.parent.grid.off('export-RowDataBound', this.exportRowDataBound);
+        this.parent.off('excelAggregateCellInfo', this.excelAggregateCellInfo);
         this.parent.grid.off('finalPageSetup', this.finalPageSetup);
     }
     private updateExcelResultModel(returnResult: { result: ITreeData[], count: number }): void {
@@ -192,6 +194,16 @@ export class ExcelExport {
         }
         this.parent.notify('updateResults', args);
         this.parent.trigger('excelQueryCellInfo', args);
+    }
+    /**
+     * TreeGrid Excel Export Aggregate cell modifier
+     *
+     * @param {AggregateQueryCellInfoEventArgs} args - current cell details
+     * @hidden
+     * @returns {void}
+     */
+    private excelAggregateCellInfo(args?: AggregateQueryCellInfoEventArgs) : void {
+        this.parent.trigger('excelAggregateQueryCellInfo', args);
     }
     private exportRowDataBound(excelRow: {excelRows: ExcelRow[], rowObj: Row<Column>, type: string}) : void {
         if (excelRow.type === 'excel') {

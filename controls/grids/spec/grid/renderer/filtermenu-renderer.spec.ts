@@ -30,6 +30,7 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import * as events from '../../../src/grid/base/constant';
 import { NumberFilterUI } from '../../../src/grid/renderer/number-filter-ui';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { IFilterCreate, IFilterRead, IFilterWrite } from '../../../src/grid/base/interface';
 
 Grid.Inject(Filter, Page, Selection, Group, Sort, Reorder, ColumnMenu, VirtualScroll);
 
@@ -586,7 +587,7 @@ describe('filter menu module =>', () => {
                     {
                         field: 'CustomerID', type: 'string', filter: {
                             ui: {
-                                create: (args: { target: Element, column: Object }) => {
+                                create: (args: IFilterCreate) => {
                                     let db: Object = new DataManager(filterData);
                                     let flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
                                     args.target.appendChild(flValInput);
@@ -598,13 +599,10 @@ describe('filter menu module =>', () => {
                                     });
                                     dropInstance.appendTo(flValInput);
                                 },
-                                write: (args: {
-                                    column: Object, target: Element, parent: any,
-                                    filteredValue: number | string
-                                }) => {
+                                write: (args: IFilterWrite) => {
                                     dropInstance.value = args.filteredValue;
                                 },
-                                read: (args: { target: Element, column: any, operator: string, fltrObj: Filter }) => {
+                                read: (args: IFilterRead) => {
                                     args.fltrObj.filterByColumn(args.column.field, args.operator, dropInstance.value);
 
                                 },
@@ -1122,7 +1120,7 @@ describe('filter menu module =>', () => {
                         { field: 'OrderID', type: 'number', visible: true },
                         { field: 'CustomerID', headerText: 'Customer Name', width: 120, filter: {
                             ui: {
-                                create: (args: { target: Element, column: Object }) => {
+                                create: (args: IFilterCreate) => {
                                     let flValInput: HTMLElement = gridObj.createElement('input', { className: 'flm-input' });
                                     args.target.appendChild(flValInput);
                                     dropInstance = new DropDownList({
@@ -1133,13 +1131,10 @@ describe('filter menu module =>', () => {
                                     });
                                     dropInstance.appendTo(flValInput);
                                 },
-                                write: (args: {
-                                    column: Object, target: Element, parent: any,
-                                    filteredValue: number | string
-                                }) => {
+                                write: (args: IFilterWrite) => {
                                     dropInstance.value = args.filteredValue;
                                 },
-                                read: (args: { target: Element, column: any, operator: string, fltrObj: Filter }) => {
+                                read: (args: IFilterRead) => {
                                     args.fltrObj.filterByColumn(args.column.field, args.operator, (dropInstance as any).value);
                                 }
                             }
@@ -1596,6 +1591,41 @@ describe('filter menu module =>', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = actionComplete = null;
+        });
+    });
+
+    describe('EJ2: 972656 => Filter popup overflows outside Grid => ', () => {
+        let gridObj: Grid;    
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    width: 260,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, headerText: "Customer ID" },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd' },
+                        { field: 'Freight', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                }, done);
+        });
+
+        it('Open the filter popup', (done: Function) => {
+            let actionComplete = (args: any) => {
+                if(args.requestType == 'filterAfterOpen') {     
+                    expect((gridObj as any).filterModule.filterModule.dlgDiv.style.left).toBe('12px');
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll('.e-filtermenudiv')[0] as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
         });
     });
 });

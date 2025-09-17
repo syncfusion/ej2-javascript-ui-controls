@@ -5065,3 +5065,69 @@ describe('testcase to increase code coverage', () => {
         }
     });
 });
+describe('960606 - zoom out action with single tier', () => {
+    let ganttObj: Gantt;
+    const data: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        }
+        ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: data,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+            topTier: {
+                format: 'MMM dd, yyyy',
+                unit: 'Week',
+                },
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')   
+        }, done);
+    });
+    it('zoom out action with single tier', () => {
+        expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe('None')
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

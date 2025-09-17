@@ -800,7 +800,7 @@ describe('Collaborative Editing ->', () => {
             helper.invoke('selectRange', ['D6:D8']);
             helper.getInstance().spreadsheetChartModule.insertChartHandler({ action: 'column_chart', id: 'clusteredColumn', isChart: true });
             setTimeout(() => {
-                expect(JSON.stringify(getCell(5, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","markerSettings":{"visible":false,"isFilled":true},"isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480}');
+                expect(JSON.stringify(getCell(5, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","markerSettings":{"visible":false,"isFilled":true},"isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480,"address":[5,3]}');
                 expect(getCell(5, 3, sheets2[1]).chart).toBeUndefined();
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
@@ -817,7 +817,7 @@ describe('Collaborative Editing ->', () => {
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 helper.click('#spreadsheet_redo');
                 setTimeout(() => {
-                    expect(JSON.stringify(getCell(5, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","markerSettings":{"visible":false,"isFilled":true},"isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480}');
+                    expect(JSON.stringify(getCell(5, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","markerSettings":{"visible":false,"isFilled":true},"isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480,"address":[5,3]}');
                     expect(getCell(5, 3, sheets2[1]).chart).toBeUndefined();
                     EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
                     done();
@@ -839,7 +839,7 @@ describe('Collaborative Editing ->', () => {
             helper.switchRibbonTab(1);
             helper.click('#spreadsheet_undo');
             setTimeout(() => {
-                expect(JSON.stringify(getCell(5, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","markerSettings":{"visible":false,"isFilled":true},"isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480,"top":148,"left":192}');
+                expect(JSON.stringify(getCell(5, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","markerSettings":{"visible":false,"isFilled":true},"isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480,"top":148,"left":192,"address":[5,3]}');
                 expect(getCell(5, 3, sheets2[1]).chart).toBeUndefined();
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
@@ -1535,7 +1535,6 @@ describe('Collaborative Editing ->', () => {
                 });
             });
         });
-
 
         it('Insert sheet', (done: Function) => {
             helper.click('.e-add-sheet-tab');

@@ -193,6 +193,15 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     public optimizeSfdt: boolean;
 
     /**
+     * Enables or disables Allow Hyphens(-) in bookmark names in a document.
+     *
+     * @default false
+     * @aspType bool
+     */
+    @Property(false)
+    public allowHyphensInBookmarkNames: boolean;
+
+    /**
      *  Gets or sets a value indicating whether to display ruler in Document Editor.
      *
      * @default false
@@ -241,6 +250,15 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property(false)
     public enableScreenReader: boolean;
+
+    /**
+     * Gets or sets a value indicating whether to show Spell check marks while scrolling.
+     *
+     * @default false
+     * @aspType bool
+     */
+    @Property(false)
+    public enableSpellCheckOnScroll: boolean;
 
 }
 
@@ -1243,6 +1261,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
+    public documentParagraphFormat: ParagraphFormatProperties;
+    /**
+     * @private
+     */
     public commentReviewPane: CommentReviewPane;
     /**
      * @private
@@ -1897,6 +1919,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if (!isNullOrUndefined(model.documentEditorSettings.enableScreenReader)) {
                         this.documentEditorSettings.enableScreenReader = model.documentEditorSettings.enableScreenReader;
                     }
+                    if (!isNullOrUndefined(model.documentEditorSettings.enableSpellCheckOnScroll)) {
+                        this.documentEditorSettings.enableSpellCheckOnScroll = model.documentEditorSettings.enableSpellCheckOnScroll;
+                    }
                     if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings)) {
                         if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.customData)) {
                             this.documentEditorSettings.revisionSettings.customData = model.documentEditorSettings.revisionSettings.customData;
@@ -2107,6 +2132,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * Gets the default paragraph format for document editor
+     * @returns Returns the default paragraph format for document editor.
+     */
+    public getDefaultParagraphFormat(): ParagraphFormatProperties {
+        return this.paragraphFormat;
+    }
+
+    /**
      * Sets the default section format for document editor
      *
      * @param {SectionFormatProperties} sectionFormat Specifies the section format.
@@ -2120,19 +2153,49 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
 
+   /**
+     * Gets the default section format for document editor
+     * @returns Returns the default section format for document editor.
+     */
+    public getDefaultSectionFormat(): SectionFormatProperties {
+        return this.sectionFormat;
+    }
+
     /**
-     * Sets the default character format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
+     * Sets the default paragraph format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
+     * @returns {void}
+     */
+    public setDocumentParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
+        this.documentParagraphFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(paragraphFormat)));
+        this.documentHelper.setDefaultDocumentFormat();
+        if (!isNullOrUndefined(this.selectionModule)) {
+            this.selectionModule.retrieveCurrentFormatProperties();
+        }
+    }
+
+    /**
+     * Gets the default paragraph format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
+     * @returns Returns the default paragraph format of the document loaded in Document editor.
+     */
+    public getDocumentParagraphFormat(): ParagraphFormatProperties {
+        let format: ParagraphFormatProperties = {};
+        HelperMethods.writeParagraphFormatProperties(this.documentHelper.paragraphFormat, format);
+        return format;
+    }
+
+    /**
+     * Sets the document character format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
      * @returns {void}
      */
     public setDocumentCharacterFormat(characterFormat: CharacterFormatProperties): void {
         this.documentCharacterFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(characterFormat)));
-        this.parser.parseCharacterFormat(0, this.documentCharacterFormat, this.documentHelper.characterFormat);
+        this.documentHelper.setDefaultDocumentFormat();
         if (!isNullOrUndefined(this.selectionModule)) {
             this.selectionModule.retrieveCurrentFormatProperties();
         }
     }
     /**
-     * Gets the default character format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
+     * Gets the document character format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
      * @returns Returns the default character format of the document loaded in Document editor.
      */
     public getDocumentCharacterFormat(): CharacterFormatProperties {
@@ -2140,7 +2203,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         HelperMethods.writeCharacterFormatProperties(this.documentHelper.characterFormat, format);
         return format;
     }
-
 
     /**
      * Gets the properties to be maintained in the persisted state.
@@ -4448,6 +4510,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.documentHelper.onDocumentChanged(sections);
         }
     }
+
+
     /**
      * Gets the style names based on given style type.
      *
@@ -4858,6 +4922,29 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 enableTrackChanges: value
             };
         }
+        if (!this.skipSettingsOps) {
+            this.documentSettingOps.push(operation);
+            this.fireContentChange();
+        }
+        this.skipSettingsOps = false;
+        this.isSettingOp = false;
+    }
+    /**
+     * @private
+     * @param {number}endIndex - Specifies the index
+     * @param {string} value - Specifies the date value.
+     * @returns {void} - Returns void
+     */
+    public getRevisionData(endIndex: number, value: string): void {
+        if (!this.enableCollaborativeEditing || this.editorModule.isRemoteAction) {
+            return;
+        }
+        this.isSettingOp = true;
+        const operation: Operation = {
+            action: 'RevisionDate',
+            text: value,
+            offset: endIndex
+        };
         if (!this.skipSettingsOps) {
             this.documentSettingOps.push(operation);
             this.fireContentChange();

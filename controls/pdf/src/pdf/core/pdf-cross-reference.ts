@@ -1017,7 +1017,7 @@ export class _PdfCrossReference {
         this._writeString(`<<${spaceChar}`, buffer);
         dictionary.forEach((key: string, value: any) => { // eslint-disable-line
             this._writeString(`/${_escapePdfName(key)} `, buffer);
-            this._writeValue(value, buffer, transform, isCrossReference);
+            this._writeValue(value, key, buffer, transform, isCrossReference);
             this._writeString(spaceChar, buffer);
         });
         this._writeString(`>>${this._newLine}`, buffer);
@@ -1068,12 +1068,13 @@ export class _PdfCrossReference {
         this._writeBytes(streamBuffer, buffer);
         this._writeString(`${this._newLine}endstream${this._newLine}`, buffer);
     }
-    _writeValue(value: any, buffer: Array<number>, transform?: _CipherTransform, isCrossReference?: boolean): void { // eslint-disable-line
+    _writeValue(value: any, key: any, buffer: Array<number>, transform?: _CipherTransform, isCrossReference?: boolean): void { // eslint-disable-line
         if (value instanceof _PdfName) {
             if (value.name.indexOf(' ') !== -1) {
                 value.name = value.name.replace(/ /g,'#20'); // eslint-disable-line
             }
-            this._writeString(`/${value.name}`, buffer);
+            const escapedName: string = (key === 'V' || key === 'AS') ? _escapePdfName(value.name) : value.name;
+            this._writeString(`/${escapedName}`, buffer);
         } else if (value instanceof _PdfReference) {
             this._writeString(`${value.toString()} R`, buffer);
         } else if (Array.isArray(value)) {
@@ -1085,7 +1086,7 @@ export class _PdfCrossReference {
                 } else {
                     first = false;
                 }
-                this._writeValue(val, buffer, transform, isCrossReference);
+                this._writeValue(val, key, buffer, transform, isCrossReference);
             }
             this._writeString(']', buffer);
         } else if (typeof value === 'string') {

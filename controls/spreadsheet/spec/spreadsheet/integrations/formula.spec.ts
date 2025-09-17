@@ -18556,7 +18556,7 @@ describe('Spreadsheet formula module ->', () => {
         });
     });
 
-    describe('EJ2-66087,EJ2-66341,EJ2-66984 -> ', () => {
+    describe('EJ2-66087,EJ2-66341,EJ2-66984, EJ2-976935 -> ', () => {
         beforeEach((done: Function) => {
             const addSum = (sourceValue: any, destinationValue: any) => {
                 let data = sourceValue + destinationValue;
@@ -18566,6 +18566,14 @@ describe('Spreadsheet formula module ->', () => {
                 let data = sourceValue + destinationValue;
                 return data;
             };
+            const customFunction = (firstCell: string, secondCell: string) => {
+                let meanValue = (Number(firstCell) + Number(secondCell)) / 2;
+                return meanValue;
+            };
+            const customFunction1 = (firstCell: string, secondCell: string) => {
+                let meanValue = (Number(firstCell) + Number(secondCell)) / 2;
+                return meanValue;
+            };
             helper.initializeSpreadsheet({
                 sheets: [
                     {
@@ -18574,7 +18582,10 @@ describe('Spreadsheet formula module ->', () => {
                         { cells: [{ value: '2' }, { value: '3' }, { value: '', formula: '=ADDSUM(A2,B2)' }, { value: '', formula: '=CUSFUNC(B2,A2)' }] },
                         { cells: [{ value: '4' }, { value: '5' }, { value: '', formula: '=ADDSUM(A3,B3)' }, { value: '', formula: '=CUSFUNC(B3,A3)' }] },
                         { cells: [{ value: '5' }, { value: '5' }, { value: '', formula: '=ADDSUM(A4,B4)' }, { value: '', formula: '=CUSFUNC(B4,A4)' }] },
-                        { cells: [{ value: '5' }, { value: '6' }, { value: '', formula: '=ADDSUM(A5,B5)' }, { value: '', formula: '=CUSFUNC(B5,A5)' }] }
+                        { cells: [{ value: '5' }, { value: '6' }, { value: '', formula: '=ADDSUM(A5,B5)' }, { value: '', formula: '=CUSFUNC(B5,A5)' }] },
+                        { cells: [{ value: '10' }, { value: '20' }, { value: '', formula: '=STDEV.S(A6,B6)' }] },
+                        { cells: [{ value: '10' }, { value: '20' }, { value: '', formula: '=STDEV.C(A7,B7)' }] },
+                        { cells: [{ value: '10' }, { value: '20' }, { value: '', formula: '=STDEV.A(A8,B8)' }, {value: '', formula: '=SUM(STDEV.S(A6,B6),STDEV.S(A5,B5))'}] }
                         ],
                         columns: [
                             { width: 110 }, { width: 115 }, { width: 110 }, { width: 100 }
@@ -18585,6 +18596,8 @@ describe('Spreadsheet formula module ->', () => {
                     const spreadsheet: Spreadsheet = helper.getInstance();
                     spreadsheet.addCustomFunction(addSum, 'ADDSUM');
                     spreadsheet.addCustomFunction(cusFunc, 'CUSFUNC');
+                    spreadsheet.addCustomFunction(customFunction, 'STDEV.S');
+                    spreadsheet.addCustomFunction(customFunction1, 'STDEV.C');
                 }
             },
                 done);
@@ -18654,6 +18667,19 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.getInstance().sheets[0].rows[4].cells[2].value).toEqual("56");
                 expect(helper.getInstance().sheets[0].rows[4].cells[3].formula).toEqual('=CUSFUNC(B5,A5)');
                 expect(helper.getInstance().sheets[0].rows[4].cells[3].value).toEqual("65");
+                done();
+            });
+        });
+        it('should correctly calculate the custom STDEV.S formula', (done: Function) => {
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[5].cells[2].formula).toEqual('=STDEV.S(A6,B6)');
+                expect(helper.getInstance().sheets[0].rows[5].cells[2].value).toEqual(15);
+                expect(helper.getInstance().sheets[0].rows[6].cells[2].formula).toEqual('=STDEV.C(A7,B7)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[2].value).toEqual("#NAME?");
+                expect(helper.getInstance().sheets[0].rows[7].cells[2].formula).toEqual('=STDEV.A(A8,B8)');
+                expect(helper.getInstance().sheets[0].rows[7].cells[2].value).toEqual("#NAME?");
+                expect(helper.getInstance().sheets[0].rows[7].cells[3].formula).toEqual('=SUM(STDEV.S(A6,B6),STDEV.S(A5,B5))');
+                expect(helper.getInstance().sheets[0].rows[7].cells[3].value).toEqual('20.5');
                 done();
             });
         });
@@ -25448,6 +25474,51 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('I4', '=IF!B5');
             expect(helper.invoke('getCell', [3, 8]).textContent).toBe('50');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"50","formula":"=IF!B5"}');
+            done();
+        });
+    });
+
+    describe('EJ2-975034 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('INDEX formula with multiple ranges as first argument', (done: Function) => {
+            helper.edit('I1', '=INDEX((A2:B8,C2:E8,F2:H8),3,1)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('Formal Shoes');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"Formal Shoes","formula":"=INDEX((A2:B8,C2:E8,F2:H8),3,1)"}');
+            helper.edit('I2', '=INDEX((A2:B8,C2:E8,F2:H8),1,1)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('Casual Shoes');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"Casual Shoes","formula":"=INDEX((A2:B8,C2:E8,F2:H8),1,1)"}');
+            done();
+        });
+        it('INDEX formula with and without fourth argument', (done: Function) => {
+            helper.edit('I3', '=INDEX((A2:B8,C2:E8,F2:H8),1,1,3)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('200');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"200","formula":"=INDEX((A2:B8,C2:E8,F2:H8),1,1,3)"}');
+            helper.edit('I4', '=INDEX((A2:B8,C2:E8,F2:H8),3,3,2)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('15');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"15","formula":"=INDEX((A2:B8,C2:E8,F2:H8),3,3,2)"}');
+            done();
+        });
+        it('INDEX formula with multiple sheet references as first argument', (done: Function) => {
+            helper.edit('I5', '=INDEX((Sheet1!A2:C8,Sheet1!D2:F8,Sheet1!G2:H8),2,1,1)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('Sports Shoes');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":"Sports Shoes","formula":"=INDEX((Sheet1!A2:C8,Sheet1!D2:F8,Sheet1!G2:H8),2,1,1)"}');
+            helper.edit('I6', '=INDEX((Sheet1!A2:C8,Sheet1!D2:F8,Sheet1!G2:H8),2,Sheet1!G8,2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('600');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"600","formula":"=INDEX((Sheet1!A2:C8,Sheet1!D2:F8,Sheet1!G2:H8),2,Sheet1!G8,2)"}');
+            done();
+        });
+        it('INDEX formula with multiple references as first argument (invalid case)', (done: Function) => {
+            helper.edit('I7', '=INDEX((A2:B8,C2:E8,F2:H8),1,1,4)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"#REF!","formula":"=INDEX((A2:B8,C2:E8,F2:H8),1,1,4)"}');
+            helper.edit('I8', '=INDEX((A2:B8,C2:E8,F2:H8),3,3,0)');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":"#VALUE!","formula":"=INDEX((A2:B8,C2:E8,F2:H8),3,3,0)"}');
             done();
         });
     });

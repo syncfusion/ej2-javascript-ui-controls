@@ -1007,14 +1007,43 @@ export interface IFilterUI {
     write?: void | Function | string;
     destroy?: Function | string;
 }
+
+/**
+ * @hidden
+ */
+export interface IFilterBase {
+    /** Defines the column. */
+    column?: Column;
+    /** Defines the target. */
+    target?: HTMLElement | Element;
+}
+
+/**
+ * @hidden
+ */
+export interface IFilterRead extends IFilterBase {
+    /** Defines the operator for the filter action. */
+    operator?: string;
+    /** Defines the filter Module. */
+    fltrObj?: Filter;
+}
+
+/**
+ * @hidden
+ */
+export interface IFilterWrite extends IFilterBase {
+    /** Defines the filter value. */
+    filteredValue?: string | number | boolean | Date | (string | number | boolean | Date)[];
+}
+
 /**
  * @hidden
  */
 export interface IFilterMUI {
-    create?: void | Function | string;
-    read?: Object | Function | string;
-    write?: void | Function | string;
-    destroy?: void | Function | string;
+    create?: void | ((args: IFilterCreate) => void) | string;
+    read?: Object | ((args: IFilterRead) => void) | string;
+    write?: void | ((args: IFilterWrite) => void) | string;
+    destroy?: void | (() => void) | string;
 }
 
 /**
@@ -2403,11 +2432,21 @@ export interface CommandClickEventArgs {
     rowData?: Object;
 }
 
-export interface IFilterCreate {
-    column?: Column;
-    target?: HTMLElement;
+/**
+ * @hidden
+ */
+export interface IFilterCreate extends IFilterBase {
+    /**
+     * Specifies the instance of filter operator.
+     * @hidden
+     */
     getOptrInstance?: FlMenuOptrUI;
+    /**
+     * Defines the localized text for different cultures.
+     * @hidden
+     */
     localizeText?: L10n;
+    /** Defines the instance of filter dialog. */
     dialogObj?: Dialog;
 }
 

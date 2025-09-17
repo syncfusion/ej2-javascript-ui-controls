@@ -394,3 +394,4 @@ export const offsetXValue: string[] = ['offsetXValue', 'oxv'];
 export const offsetYValue: string[] = ['offsetYValue', 'oyv'];
 export const extentXValue: string[] = ['extentXValue', 'exv'];
 export const extentYValue: string[] = ['extentYValue', 'eyv'];
+export const allowHyphensInBookmarkNamesProperty: string[] = ['allowHyphensInBookmarkNames', 'ahb'];

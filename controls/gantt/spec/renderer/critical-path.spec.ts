@@ -3,7 +3,7 @@
  */
 import { Gantt, Edit, CriticalPath, ContextMenu, ContextMenuClickEventArgs, RowDD, Selection, Toolbar, DayMarkers, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ExcelExport, PdfExport, ITaskbarEditedEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection, criticalPathData, taskModeData1, taskModeData2, criticalPathData1, criticalPathData2, bwData1, bwData2, bwData3, bwData4, criticalData2, unscheduleCriticalTask,cr918186, CR933826 } from '../base/data-source.spec';
+import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection, criticalPathData, taskModeData1, taskModeData2, criticalPathData1, criticalPathData2, bwData1, bwData2, bwData3, bwData4, criticalData2, unscheduleCriticalTask,cr918186, CR933826, CR977218 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 Gantt.Inject(Edit, CriticalPath, ContextMenu, RowDD, Selection, Toolbar, DayMarkers, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ExcelExport, PdfExport);
@@ -39,7 +39,7 @@ describe('Gantt spec for critical path', () => {
                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
                     { text: 'update', id: 'update' }],
                 projectStartDate: new Date('02/01/2017'),
-                projectEndDate: new Date('12/30/2017'),
+                // projectEndDate: new Date('12/30/2017'),
                 rowHeight: 40,
             }, done);
         });
@@ -93,7 +93,7 @@ describe('Gantt spec for critical path', () => {
                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
                     { text: 'update', id: 'update' }],
                 projectStartDate: new Date('02/01/2017'),
-                projectEndDate: new Date('12/30/2017'),
+                // projectEndDate: new Date('12/30/2017'),
                 rowHeight: 40,
             }, done);
         });
@@ -199,7 +199,7 @@ describe('Gantt spec for critical path', () => {
                 height: '550px',
                 allowUnscheduledTasks: true,
                 projectStartDate: new Date('01/25/2017'),
-                projectEndDate: new Date('03/30/2017')
+                // projectEndDate: new Date('03/30/2017')
             }, done);
         });
         it('Initial rendering critical path for SF ang FF', () => {
@@ -295,7 +295,7 @@ describe('Gantt spec for critical path', () => {
                 height: '550px',
                 allowUnscheduledTasks: true,
                 projectStartDate: new Date('01/25/2017'),
-                projectEndDate: new Date('03/30/2017')
+                // projectEndDate: new Date('03/30/2017')
             }, done);
         });
         it('Initial rendering critical path for SF ang FF', () => {
@@ -356,7 +356,7 @@ describe('Gantt spec for critical path', () => {
                 height: '550px',
                 allowUnscheduledTasks: true,
                 projectStartDate: new Date('01/25/2017'),
-                projectEndDate: new Date('03/30/2017')
+                // projectEndDate: new Date('03/30/2017')
             }, done);
         });
         it('Duration units with hour and minute', () => {
@@ -436,7 +436,7 @@ describe('Gantt spec for critical path', () => {
                     taskLabel: '${Progress}%'
                 },
                 projectStartDate: new Date('02/20/2017'),
-                projectEndDate: new Date('03/30/2017'),
+                // projectEndDate: new Date('03/30/2017'),
 
             }, done);
         });
@@ -854,7 +854,7 @@ describe('Gantt spec for critical path', () => {
                 height: '550px',
                 allowUnscheduledTasks: true,
                 projectStartDate: new Date('01/25/2017'),
-                projectEndDate: new Date('03/30/2017')
+                // projectEndDate: new Date('03/30/2017')
             }, done);
         });
         it('Initial rendering critical path for SF ang FF', () => {
@@ -913,7 +913,7 @@ describe('Gantt spec for critical path', () => {
                 height: '550px',
                 allowUnscheduledTasks: true,
                 projectStartDate: new Date('01/25/2017'),
-                projectEndDate: new Date('03/30/2017')
+                // projectEndDate: new Date('03/30/2017')
             }, done);
         });
         it('Initial rendering critical path for SF ang FF', () => {
@@ -1270,7 +1270,7 @@ describe('Gantt spec for critical path', () => {
                 treeColumnIndex: 1,
                 height: '450px',
                 projectStartDate: new Date('03/28/2019'),
-                projectEndDate: new Date('05/18/2019')
+                // projectEndDate: new Date('05/18/2019')
             }, done);
         });
         it('Multitaskbar Resource view', () => {
@@ -1353,7 +1353,7 @@ describe('Gantt spec for critical path', () => {
                 treeColumnIndex: 1,
                 height: '450px',
                 projectStartDate: new Date('03/28/2019'),
-                projectEndDate: new Date('05/18/2019')
+                // projectEndDate: new Date('05/18/2019')
             }, done);
         });
         it('Multitaskbar Resource view', () => {
@@ -1397,7 +1397,7 @@ describe('clone taskbar Right resizing taskbar', () => {
             toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
                 { text: 'update', id: 'update' }],
             projectStartDate: new Date('02/01/2017'),
-            projectEndDate: new Date('12/30/2017'),
+            // projectEndDate: new Date('12/30/2017'),
             rowHeight: 40,
         }, done);
     });
@@ -1945,7 +1945,7 @@ describe('Invalid critical task', () => {
             leftLabel: 'TaskName'
         },
         projectStartDate: new Date('03/24/2019'),
-        projectEndDate: new Date('07/06/2019')
+        // projectEndDate: new Date('07/06/2019')
         }, done);
     });
     it('Verifying the critical path task', () => {
@@ -2008,7 +2008,7 @@ describe('Rendering unschedule critical task', () => {
                 leftLabel: 'TaskName'
             },
             projectStartDate: new Date('03/24/2019'),
-            projectEndDate: new Date('07/06/2019')
+            // projectEndDate: new Date('07/06/2019')
         }, done);
     });
     it('Checking for unscheduled critical task', (done:Function) => {
@@ -2130,7 +2130,7 @@ describe('Rendering critical task for different modes', () => {
         height: '550px',
         allowUnscheduledTasks: true,
         projectStartDate: new Date('03/25/2019'),
-        projectEndDate: new Date('05/30/2019'),
+        // projectEndDate: new Date('05/30/2019'),
         }, done);
     });
     it('Checking for critical task', () => {
@@ -2227,7 +2227,7 @@ describe('Rendering critical task for SS connection', () => {
         height: '550px',
         allowUnscheduledTasks: true,
         projectStartDate: new Date('03/25/2019'),
-        projectEndDate: new Date('05/30/2019'),
+        // projectEndDate: new Date('05/30/2019'),
         }, done);
     });
     it('Checking for critical task SS', () => {
@@ -2322,7 +2322,7 @@ describe('Rendering critical task for SF connection', () => {
         height: '550px',
         allowUnscheduledTasks: true,
         projectStartDate: new Date('03/25/2019'),
-        projectEndDate: new Date('05/30/2019'),
+        // projectEndDate: new Date('05/30/2019'),
         }, done);
     });
     it('Checking for critical task SF', () => {
@@ -2471,7 +2471,7 @@ describe('update critical property', () => {
             height: '550px',
             allowUnscheduledTasks: true,
             projectStartDate: new Date('03/25/2019'),
-            projectEndDate: new Date('05/30/2019'),
+            // projectEndDate: new Date('05/30/2019'),
         }, done);
     });
     it('Checking for critical task in querytaskbar event', () => {
@@ -2559,7 +2559,7 @@ describe('Invalid critical tasks', () => {
             leftLabel: 'TaskName'
         },
         projectStartDate: new Date('03/24/2024'),
-        projectEndDate: new Date('07/06/2024')
+        // projectEndDate: new Date('07/06/2024')
         }, done);
     });
     it('Checking for critical task which is not in critical', () => {
@@ -2946,7 +2946,7 @@ describe('Critical path rendering 1', () => {
             taskLabel: "${Progress}%",
           },
           projectStartDate: new Date("02/20/2017"),
-          projectEndDate: new Date("03/30/2017"),
+        //   projectEndDate: new Date("03/30/2017"),
         },
         done
       );
@@ -2960,3 +2960,127 @@ describe('Critical path rendering 1', () => {
         }
     });
 });
+describe('CR:977218-ProjectEndDate not considered in critical task calculation', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+            dataSource: [ { TaskID: 1, TaskName: 'Defining the product and its usage', StartDate: new Date('04/01/2024'), Duration: 3, Progress: 30 },
+                { TaskID: 2, TaskName: 'Defining target audience', StartDate: new Date('05/03/2024'), Duration: 3 },
+            ],
+            height: '450px',
+        enableCriticalPath: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        treeColumnIndex: 1,
+        toolbar: ['Add','Edit','Delete','CriticalPath'],
+        columns: [
+            { field: 'TaskID', width: 80 },
+            { field: 'TaskName',headerText: 'Name', width: 250 },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Predecessor' },
+            { field: 'Progress' },
+        ],
+        eventMarkers: [
+            { day: '4/01/2024', label: 'Project start' },
+            { day: '5/8/2024', label: 'Project end' },
+        ],
+        projectStartDate: new Date('03/25/2024'),
+        projectEndDate: new Date('07/30/2024')
+     }, done);
+    });
+    it('Consider projectEndDate in the critical path calculation', () => {
+        expect(ganttObj.flatData[0].isCritical).toBe(false);
+        expect(ganttObj.flatData[1].isCritical).toBe(false);
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('resource view with predecessor', () => {
+        Gantt.Inject(CriticalPath);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: CR977218,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    dependency: 'Predecessor',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    expandState: 'isExpand',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                enableCriticalPath: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                labelSettings: {
+                    taskLabel: 'TaskName'
+                },
+                splitterSettings: {
+                    columnIndex: 2
+                },
+                allowResizing: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '450px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        it('code coveraage for critical path', () => {
+            expect(ganttObj.flatData[0].isCritical).toBe(true);
+            expect(ganttObj.flatData[1].isCritical).toBe(true);
+            expect(ganttObj.flatData[7].isCritical).toBe(true);
+            expect(ganttObj.flatData[4].isCritical).toBe(true);
+        });
+    });

@@ -166,7 +166,13 @@ export class Page implements IAction {
     public updateModel(e?: NotifyArgs): void {
         this.parent.pageSettings.totalRecordsCount = e.count;
         const isAddAction: boolean = (e.action === 'add' && e.requestType === 'save') || (e.requestType === 'batchsave');
-        if (this.pagerObj.isAllPage && !isAddAction) {
+        const isFilterCleared: boolean = this.parent.filterModule && this.parent.filterModule.isFilterCleared;
+        const isClearAction: boolean = (e.searchString === '' && e.requestType === 'searching') ||
+            (e.requestType === 'filtering' && (e.action === 'clearFilter' || e.action === 'clear-filter')) || isFilterCleared;
+        if (isFilterCleared) {
+            this.parent.filterModule.isFilterCleared = false;
+        }
+        if (this.pagerObj.isAllPage && !isAddAction && (!isClearAction || (isClearAction && this.pagerObj.checkAll))) {
             this.parent.pageSettings.pageSize = this.parent.pageSettings.totalRecordsCount;
         }
         if (isAddAction) {

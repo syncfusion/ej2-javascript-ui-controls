@@ -1196,7 +1196,7 @@ export class FormFields {
                             const editableBounds: any = Object.isFrozen(newBounds) ? { ...newBounds } : newBounds;
                             proxy.imageOnLoad(editableBounds, image, currentValue, currentPage, rotateAngle,
                                               currentField, signatureField, signString, signatureFontFamily,
-                                              signatureFontSize, currentTarget);
+                                              signatureFontSize, currentTarget, fieldName);
                         };
                     }
                     else {
@@ -1277,7 +1277,8 @@ export class FormFields {
                             this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType,
                                                             annot.bounds, annot.opacity, null, null, signString);
                         }
-                        this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
+                        this.pdfViewer.fireFocusOutFormField(!isNullOrUndefined(currentField.name) ? currentField.name : fieldName,
+                                                             currentValue);
                         if (this.pdfViewer.annotation) {
                             this.pdfViewer.annotation.isUndoActionImageLoad = false;
                         }
@@ -1297,7 +1298,7 @@ export class FormFields {
     private imageOnLoad(bounds: any, image: HTMLImageElement, currentValue: string, currentPage: number,
                         rotateAngle: number, currentField: any, signatureField: PdfAnnotationBase,
                         signString: string, signatureFontFamily: string,
-                        signatureFontSize: number, target: any): void {
+                        signatureFontSize: number, target: any, fieldName: string): void {
         if (target && target.offsetParent && signatureField) {
             this.pdfViewerBase.drawSignatureWithTool = true;
             if (target.nextSibling && target.nextSibling.id.indexOf('initial') !== -1) {
@@ -1360,7 +1361,8 @@ export class FormFields {
             this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds,
                                             annot.opacity, null, null, signString);
         }
-        this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
+        this.pdfViewer.fireFocusOutFormField(!isNullOrUndefined(currentField.name) ? currentField.name : fieldName,
+                                             currentValue);
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
         this.pdfViewerBase.drawSignatureWithTool = false;
         this.pdfViewer.isInitialFieldToolbarSelection = false;

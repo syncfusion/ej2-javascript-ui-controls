@@ -227,10 +227,10 @@ export class Timeline {
      * @private
      */
     private changeTimelineSettings(newTimeline: ZoomTimelineSettings): void {
-        if (this.isZoomToFit) {
+        if (this.isZoomToFit || this.isZooming) {
             this.isSingleTier = this.customTimelineSettings.topTier.unit === 'None' || this.customTimelineSettings.bottomTier.unit === 'None' ? true : false;
         }
-        else if (!this.isZoomIn) {
+        else {
             this.isSingleTier = newTimeline.topTier.unit === 'None' || newTimeline.bottomTier.unit === 'None' ? true : false;
         }
         const skipProperty: string = this.isSingleTier ?
@@ -851,6 +851,9 @@ export class Timeline {
                 thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
                 const trTemplate: HTMLElement = this.createTimelineTemplate(tier);
                 tr = createElement('tr');
+                if (this.parent.enableHover) {
+                    tr.classList.add('e-timeline-cell-hover');
+                }
                 Array.from(trTemplate.childNodes).forEach((child: HTMLElement) => {
                     tr.appendChild(child);
                 });
@@ -878,6 +881,9 @@ export class Timeline {
                 thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
                 const trTemplate: HTMLElement = this.createTimelineTemplate(tier);
                 tr = createElement('tr');
+                if (this.parent.enableHover) {
+                    tr.classList.add('e-timeline-cell-hover');
+                }
                 Array.from(trTemplate.childNodes).forEach((child: HTMLElement) => {
                     tr.appendChild(child);
                 });
@@ -1434,7 +1440,7 @@ export class Timeline {
                     newTime = currentDay.getTime();
                 }
                 startDate.setTime(newTime);
-                if (hasDST && (mode === 'Day' || mode === 'Month' || mode === 'Week')) {
+                if ((mode === 'Day' || mode === 'Month' || mode === 'Week') && hasDST) {
                     startDate.setHours(0, 0, 0, 0);
                 }
                 if (startDate >= endDate) {
@@ -1474,7 +1480,7 @@ export class Timeline {
         let totWidth: number;
         let contentWidth: number;
         const contentElement: HTMLElement = document.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
-        if (!isNullOrUndefined(contentElement)) {
+        if (!isNullOrUndefined(contentElement) && !(this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport)) {
             if (!this.parent.isLoad && this.parent.splitterModule && this.parent.splitterModule.splitterObject &&
                 this.parent.splitterSettings.view === 'Chart') {
                 contentWidth = contentElement['offsetWidth'] + this.parent.splitterModule.splitterObject['allPanes'][0].offsetWidth;
@@ -1923,6 +1929,9 @@ export class Timeline {
             className: `${className}${weekendClass}`,
             styles: `width:${thWidth}px;${isWeekendCell && this.customTimelineSettings.weekendBackground ? 'background-color:' + this.customTimelineSettings.weekendBackground + ';' : ''}`
         });
+        if (isWeekendCell && this.parent.enableHover) {
+            th.classList.add('e-weekend-cell-hover');
+        }
         th.tabIndex = -1;
         th.setAttribute('aria-label', `${this.parent.localeObj.getConstant('timelineCell')} ${date}`);
         const div: HTMLElement = createElement('div', {

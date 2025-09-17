@@ -1114,7 +1114,7 @@ describe('Gantt Edit support', () => {
                 },
                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
                 projectStartDate: new Date('03/25/2019'),
-                projectEndDate: new Date('05/30/2019'),
+                // projectEndDate: new Date('05/30/2019'),
                 rowHeight: 40,
             }, done);
         });
@@ -1369,7 +1369,7 @@ describe('Gantt Edit support', () => {
                 treeColumnIndex: 1,
                 height: '450px',
                 projectStartDate: new Date('03/28/2019'),
-                projectEndDate: new Date('05/18/2019')
+                // projectEndDate: new Date('05/18/2019')
             }, done);
         });
         afterAll(() => {

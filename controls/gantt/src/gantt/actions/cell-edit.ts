@@ -723,7 +723,6 @@ export class CellEdit {
         }
         this.updateEditedRecord(args);
     }
-
     /**
      * To update task's resource cell with new value
      *

@@ -2487,7 +2487,7 @@ export class Layout {
                             }
                         }
                     } else{
-                        if (!isNullOrUndefined(element.paragraph.associatedCell)) {
+                        if (!isNullOrUndefined(element.paragraph.associatedCell) && !isNullOrUndefined(this.documentHelper.selection)) {
                             let lastPara: ParagraphWidget = this.documentHelper.selection.getLastParagraph(element.paragraph.associatedCell);
                             let lastLine: LineWidget = lastPara.lastChild as LineWidget;
                             if (!isNullOrUndefined(lastLine)) {

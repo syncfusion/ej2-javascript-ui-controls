@@ -99,3 +99,29 @@ $pinned-background-color: unset !default;
 $reply-wrapper-bg-color: unset !default;
 $reply-wrapper-border-bg-color: rgba(156, 163, 175, 1) !default;
 $message-toolbar-border-color: $border-default !default;
+
+//Mention support related variables
+$mentioned-user-color: $selection-bg !default;
+$mentioned-left-user-color: $msg-danger-color !default;
+$mention-popup-border-color: $bg-base-0 !default;
+$mentioned-user-font-weight: 600 !default;
+$mentioned-left-user-font-weight: 600 !default;
+
+//Attachment support related variables
+$attachment-icon-color: $content-font !default;
+$image-preview-overlay-bg: $bg-base-0 !default;
+$image-preview-header-bg-color: $bg-base-20 !default;
+$image-preview-header-text-color: $content-font !default;
+$video-play-icon-color: $content-font !default;
+$video-play-background-color: $selection-font !default;
+$video-overlay-bg-color: rgba(0, 0, 0, .4) !default;
+$progress-wrapper-bg: $bg-base-100 !default;
+$file-wrapper-bg: $bg-base-0 !default;
+$progress-fill-color: $selection-bg !default;
+$progress-track-color: $border-default !default;
+$file-size-text-color: $content-font !default;
+$file-name-text-color: $content-font !default;
+$file-download-icon-color: $content-font !default;
+$file-wrapper-border: $border-default !default;
+$stop-icon-color: $bg-base-0 !default;
+$retry-icon-color: $bg-base-0 !default;

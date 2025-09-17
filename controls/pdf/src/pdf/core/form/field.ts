@@ -71,6 +71,7 @@ export abstract class PdfField {
     _textAlignment: PdfTextAlignment;
     _isUpdating: boolean = false;
     _isImport: boolean = false;
+    _exportValue: string = 'Yes';
     /**
      * Gets the count of the loaded field items (Read only).
      *
@@ -2269,6 +2270,7 @@ export class PdfTextBoxField extends PdfField {
                 if (widget && !(widget._dictionary.has('V') && widget._dictionary.get('V') === value)) {
                     widget._dictionary.update('V', value);
                 }
+                this._text = value;
             }
         } else if (this._text !== value) {
             this._dictionary.update('V', value);
@@ -3011,12 +3013,8 @@ export class PdfTextBoxField extends PdfField {
         }
         if (enableGrouping && widget.font !== null && typeof widget.font !== 'undefined') {
             pdfFont = widget.font;
-            if (pdfFont.size === 0) {
-                pdfFont._size = 8;
-                pdfFont._fontMetrics._size = 0;
-            }
         } else if (typeof this._font === 'undefined' || this._font === null) {
-            this._font = this._defaultFont;
+            this._font = this.font ? this.font : this._defaultFont;
         }
         if (enableGrouping && widget.textAlignment !== null && typeof widget.textAlignment !== 'undefined') {
             stringFormat = stringFormat = new PdfStringFormat(widget.textAlignment, PdfVerticalAlignment.middle);
@@ -3029,6 +3027,13 @@ export class PdfTextBoxField extends PdfField {
         }
         if (_isRightToLeftCharacters(text)) {
             this._stringFormat.textDirection = PdfTextDirection.rightToLeft;
+        }
+        if (this._isLoaded && !this.multiLine) {
+            if (this._stringFormat) {
+                this._stringFormat.lineLimit = false;
+            } else if (stringFormat) {
+                stringFormat.lineLimit = false;
+            }
         }
         if (enableGrouping) {
             this._drawTextBox(graphics, parameter, text, pdfFont, stringFormat, this.multiLine, this.scrollable, this.maxLength);
@@ -3369,6 +3374,7 @@ export class PdfButtonField extends PdfField {
             } else {
                 this._assignText(this._dictionary, value);
             }
+            this._text = value;
         }
         if (!this._isLoaded && this._text !== value) {
             const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
@@ -4179,7 +4185,12 @@ export class PdfCheckBoxField extends PdfField {
     set checked(value: boolean) {
         if (this.checked !== value) {
             if (this._kidsCount > 0) {
-                this.itemAt(this._defaultIndex).checked = value;
+                for (let i: number = 0; i < this._kidsCount; i++) {
+                    const kidItem: PdfStateItem = this.itemAt(i) as PdfStateItem;
+                    if (kidItem.checked !== value) {
+                        kidItem.checked = value;
+                    }
+                }
             }
             if (value) {
                 if (this._isLoaded) {
@@ -4188,8 +4199,8 @@ export class PdfCheckBoxField extends PdfField {
                     this._dictionary.update('V', _PdfName.get(entry));
                     this._dictionary.update('AS', _PdfName.get(entry));
                 } else {
-                    this._dictionary.update('V', _PdfName.get('Yes'));
-                    this._dictionary.update('AS', _PdfName.get('Yes'));
+                    this._dictionary.update('V', _PdfName.get(this.exportValue));
+                    this._dictionary.update('AS', _PdfName.get(this.exportValue));
                 }
             } else {
                 if (this._dictionary.has('V')) {
@@ -4200,6 +4211,61 @@ export class PdfCheckBoxField extends PdfField {
                 }
             }
             this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Gets the export value of the check box field.
+     *
+     * @returns {boolean} Checked.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Gets the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Access the PDF form
+     * let form: PdfForm = document.form;
+     * // Access the check box field
+     * let field: PdfCheckBoxField = form.fieldAt(0) as PdfCheckBoxField;
+     * // Gets the export value of the checkbox field.
+     * let value: string = field.exportValue;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get exportValue(): string {
+        return this._isLoaded ? _getItemValue(this._dictionary) : this._exportValue;
+    }
+    /**
+     * Sets the export value of the check box field.
+     *
+     * @param {boolean} value Checked.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Gets the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Access the PDF form
+     * let form: PdfForm = document.form;
+     * // Access the check box field
+     * let field: PdfCheckBoxField = form.fieldAt(0) as PdfCheckBoxField;
+     * // Sets the export value.
+     * field.exportValue = 'Value';
+     * // Set the chexk box field as checked
+     * field.checked = true;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set exportValue(value: string) {
+        if (this.itemAt(this._defaultIndex)) {
+            this.itemAt(this._defaultIndex).exportValue = value;
+        }
+        if (!(this._dictionary.has('V'))) {
+            this._exportValue = value;
         }
     }
     /**
@@ -4365,12 +4431,12 @@ export class PdfCheckBoxField extends PdfField {
                 const item: PdfStateItem = this.itemAt(i);
                 if (item) {
                     const state: _PdfCheckFieldState = item.checked ? _PdfCheckFieldState.checked : _PdfCheckFieldState.unchecked;
-                    item._postProcess(item.checked ? 'Yes' : 'Off');
+                    item._postProcess(item.checked ? item.exportValue : 'Off');
                     if (isFlatten) {
                         const template: PdfTemplate = this._createAppearance(item, state);
                         this._drawTemplate(template, item._getPage(), item.bounds);
                     } else {
-                        this._drawAppearance(item);
+                        this._drawAppearance(item, item.exportValue);
                     }
                     item._dictionary._updated = !isFlatten;
                 }
@@ -4393,8 +4459,8 @@ export class PdfCheckBoxField extends PdfField {
                                 }
                                 this._drawTemplate(template, item._getPage(), item.bounds);
                             } else if (this._setAppearance || this._form._setAppearance || !item._isLoaded) {
-                                item._postProcess(item.checked ? 'Yes' : 'Off');
-                                this._drawAppearance(item);
+                                item._postProcess(item.checked ? item.exportValue : 'Off');
+                                this._drawAppearance(item, item.exportValue);
                             }
                         }
                         item._dictionary._updated = !isFlatten;
@@ -4525,6 +4591,8 @@ export class PdfCheckBoxField extends PdfField {
 export class PdfRadioButtonListField extends PdfField {
     _parsedItems: Map<number, PdfRadioButtonListItem>;
     _selectedIndex: number = -1;
+    _allowUnisonSelection: boolean = false;
+    _hasDuplicates: boolean = false;
     /**
      * Represents a radio button list field of the PDF document.
      *
@@ -4683,18 +4751,93 @@ export class PdfRadioButtonListField extends PdfField {
     set selectedIndex(value: number) {
         if (this.selectedIndex !== value) {
             this._selectedIndex = value;
+            const selectedItem: PdfRadioButtonListItem = this.itemAt(value);
+            this._hasDuplicates = this._hasDuplicateItems();
             for (let i: number = 0; i < this._kidsCount; i++) {
                 const item: PdfRadioButtonListItem = this.itemAt(i);
-                if (i === value) {
-                    item._dictionary.update('AS', _PdfName.get(item.value));
-                    const name: _PdfName = _PdfName.get(item.value);
-                    this._dictionary.update('V', name);
-                    this._dictionary.update('DV', name);
+                if (this.allowUnisonSelection) {
+                    if (item.value === selectedItem.value) {
+                        item._dictionary.update('AS', _PdfName.get(item.value));
+                        this._dictionary.update('V', _PdfName.get(item.value));
+                        this._dictionary.update('DV', _PdfName.get(item.value));
+                    } else {
+                        item._dictionary.update('AS', _PdfName.get('Off'));
+                    }
                 } else {
-                    item._dictionary.update('AS', _PdfName.get('Off'));
+                    if (i === value) {
+                        if (!this._hasDuplicates) {
+                            item._dictionary.update('AS', _PdfName.get(item.value));
+                            this._dictionary.update('V', _PdfName.get(item.value));
+                            this._dictionary.update('DV', _PdfName.get(item.value));
+                        } else {
+                            item._dictionary.update('AS', _PdfName.get(i.toString()));
+                            this._dictionary.update('V', _PdfName.get(i.toString()));
+                            this._dictionary.update('DV', _PdfName.get(i.toString()));
+                        }
+                    } else {
+                        item._dictionary.update('AS', _PdfName.get('Off'));
+                    }
                 }
             }
         }
+    }
+    _hasDuplicateItems(): boolean {
+        if (this._kidsCount > 2 || this.itemsCount > 2) {
+            const seenValues: Set<string> = new Set();
+            const duplicateValues: Set<string> = new Set();
+            for (let j: number = 0; j < this._kidsCount; j++) {
+                const items: PdfRadioButtonListItem = this.itemAt(j);
+                if (seenValues.has(items.value)) {
+                    if (!duplicateValues.has(items.value)) {
+                        duplicateValues.add(items.value);
+                    }
+                } else {
+                    seenValues.add(items.value);
+                }
+            }
+            return duplicateValues.size > 0;
+        }
+        return false;
+    }
+    /**
+     * Gets a value that specifies whether multiple radio buttons in the same group can be selected simultaneously within the form.
+     *
+     * @returns {boolean} Indicates if unison selection is enabled.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access the form
+     * let form: PdfForm = document.form;
+     * // Gets the value indicating if unison selection is enabled
+     * let isUnisonSelectionEnabled: boolean = form.allowUnisonSelection;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get allowUnisonSelection(): boolean {
+        return this._allowUnisonSelection;
+    }
+    /**
+     * Sets a value that specifies whether multiple radio buttons in the same group can be selected simultaneously within the form.
+     *
+     * @param {boolean} value Enable or disable unison selection. The default value is false.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access the form
+     * let form: PdfForm = document.form;
+     * // Disable the unison selection.
+     * form.allowUnisonSelection = false;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set allowUnisonSelection(value: boolean) {
+        this._allowUnisonSelection = value;
     }
     /**
      * Gets the border color of the field.
@@ -4988,6 +5131,7 @@ export class PdfRadioButtonListField extends PdfField {
         return index;
     }
     _doPostProcess(isFlatten: boolean = false): void {
+        this._hasDuplicates = this._hasDuplicateItems();
         const count: number = this._kidsCount;
         if (this._isLoaded) {
             if (count > 0) {
@@ -5006,7 +5150,8 @@ export class PdfRadioButtonListField extends PdfField {
                             }
                             this._drawTemplate(template, item._getPage(), item.bounds);
                         } else if (this._setAppearance || this._form._setAppearance || !item._isLoaded) {
-                            item._postProcess(this.selectedIndex === i ? item.value : 'Off');
+                            item._postProcess(this.allowUnisonSelection ? item.value === this.itemAt(this.selectedIndex).value ? item.value : 'Off' :
+                                this._hasDuplicates ? (this.selectedIndex === i ? i.toString() : 'Off') : (this.selectedIndex === i ? item.value : 'Off'));
                             this._drawAppearance(item);
                         }
                         item._dictionary._updated = !isFlatten;
@@ -5029,7 +5174,8 @@ export class PdfRadioButtonListField extends PdfField {
                     const template: PdfTemplate = this._createAppearance(item, state);
                     this._drawTemplate(template, item._getPage(), item.bounds);
                 } else if (!this._isDuplicatePage) {
-                    item._postProcess(this.selectedIndex === i ? item.value : 'Off');
+                    item._postProcess(this.allowUnisonSelection ? item.value === this.itemAt(this.selectedIndex).value ? item.value : 'Off' :
+                        this._hasDuplicates ? (this.selectedIndex === i ? i.toString() : 'Off') : (this.selectedIndex === i ? item.value : 'Off'));
                     this._drawAppearance(item);
                 }
                 item._dictionary._updated = !isFlatten;
@@ -5096,7 +5242,10 @@ export class PdfRadioButtonListField extends PdfField {
         const normalUncheckedReference: _PdfReference = this._crossReference._getNextReference();
         this._crossReference._cacheMap.set(normalUncheckedReference, normalUnchecked._content);
         const normalDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-        let actualValue: string = item.value;
+        const itemField : PdfRadioButtonListField = item._field as PdfRadioButtonListField;
+        let actualValue: string = itemField.allowUnisonSelection
+            ? item.value
+            : (this._hasDuplicates ? (item._index).toString() : item.value);
         if (!actualValue && item._enableGrouping) {
             actualValue = 'check' + item._index;
         }
@@ -6247,6 +6396,21 @@ export abstract class PdfListField extends PdfField {
         widget._mkDictionary.update('BG', [1, 1, 1]);
         widget._dictionary.update('DA', '/TiRo 0 Tf 0 0 0 rg');
     }
+    _getStringFormat(): PdfStringFormat {
+        const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
+        const stringFormat: PdfStringFormat = new PdfStringFormat();
+        stringFormat.lineAlignment =
+            (this._fieldFlags & _FieldFlag.multiLine) > 0
+                ? PdfVerticalAlignment.top
+                : PdfVerticalAlignment.middle;
+        if (widget && widget._dictionary.has('Q')) {
+            const flagValue: number = widget._dictionary.get('Q');
+            if (flagValue !== null && typeof flagValue !== 'undefined') {
+                stringFormat.alignment = flagValue as PdfTextAlignment;
+            }
+        }
+        return stringFormat;
+    }
 }
 /**
  * `PdfComboBoxField` class represents the combo box field objects.
@@ -6571,17 +6735,17 @@ export class PdfComboBoxField extends PdfListField {
         }
         if (i >= 0 && i < options.length) {
             const item: any = options[<number>i]; // eslint-disable-line 
-            const location: number[] = [0, 0];
+            const offset: number[] = [0, 0];
             const borderWidth: number = parameter.borderWidth;
             const doubleBorderWidth: number = 2 * borderWidth;
             const defaultPadding: number = 2;
             const padding: boolean = (parameter.borderStyle === PdfBorderStyle.inset || parameter.borderStyle === PdfBorderStyle.beveled);
             if (padding) {
-                location[0] = 2 * doubleBorderWidth;
-                location[1] = 2 * borderWidth;
+                offset[0] = 2 * doubleBorderWidth;
+                offset[1] = 2 * borderWidth;
             } else {
-                location[0] = doubleBorderWidth + defaultPadding;
-                location[1] = 1 * borderWidth + (defaultPadding - 1);
+                offset[0] = doubleBorderWidth + defaultPadding;
+                offset[1] = 1 * borderWidth;
             }
             let brush: PdfBrush = parameter.foreBrush;
             const rect: number[] = parameter.bounds;
@@ -6600,7 +6764,7 @@ export class PdfComboBoxField extends PdfListField {
                     width -= doubleBorderWidth;
                 }
                 brush = new PdfBrush([153, 193, 218]);
-                graphics.drawRectangle(x, location[1], width, rect[3], brush);
+                graphics.drawRectangle(x, offset[1], width, rect[3], brush);
                 brush = new PdfBrush([0, 0, 0]);
             }
             let value: string;
@@ -6610,7 +6774,7 @@ export class PdfComboBoxField extends PdfListField {
                 value = item;
             }
             if (value) {
-                const itemTextBound: number[] = [location[0], location[1], width - location[0], rect[3]];
+                const itemTextBound: number[] = [offset[0], offset[1], width - offset[0], rect[3]];
                 if (parameter.rotationAngle > 0) {
                     const state: PdfGraphicsState = graphics.save();
                     if (parameter.rotationAngle === 90) {
@@ -6638,7 +6802,7 @@ export class PdfComboBoxField extends PdfListField {
                         width -= doubleBorderWidth;
                     }
                     brush = new PdfBrush([153, 193, 218]);
-                    graphics.drawRectangle(x, location[1], width, rect[3], brush);
+                    graphics.drawRectangle(x, offset[1], width, rect[3], brush);
                     brush = new PdfBrush([0, 0, 0]);
                     graphics.drawString(value, font, itemTextBound, null, brush, stringFormat);
                     graphics.restore(state);
@@ -7400,8 +7564,13 @@ export class PdfSignatureField extends PdfField {
             } else if (graphicsRotation === 270) {
                 graphics.translateTransform(0, template._size[0]);
                 graphics.rotateTransform(270);
-                x = -(page._size[0] - bounds.x - bounds.width);
-                y = bounds.y;
+                if (page._size[0] > page._size[1]) {
+                    x = -(page._size[0] - bounds.x - template.size[0]);
+                    y = bounds.y - bounds.height;
+                } else {
+                    x = -(page._size[0] - bounds.x - bounds.width);
+                    y = bounds.y;
+                }
             }
         }
         return {x: x, y: y, width: bounds.width, height: bounds.height};

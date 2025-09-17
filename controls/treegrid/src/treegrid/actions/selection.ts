@@ -120,7 +120,7 @@ export class Selection {
         const headerCelllength: number = this.parent.getHeaderContent().querySelectorAll('.e-headercelldiv').length;
         for (let j: number = 0; j < headerCelllength; j++) {
             const headercell: Element = this.parent.getHeaderContent().querySelectorAll('.e-headercelldiv')[parseInt(j.toString(), 10)];
-            if (headercell.getAttribute('e-mappinguid') === mappingUid) {
+            if (headercell.getAttribute('data-mappinguid') === mappingUid) {
                 columnIndex = j;
             }
         }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.20 (2025-09-10)
+
+### Dialog
+
+#### New Features
+
+- `#695711` - Provided the `preventFocus` property to the Dialog component to prevent focus from returning to the previously active element after the dialog is closed. This enhancement helps avoid unintended page scrolls that may occur due to automatic focus behaviour in scrollable containers.
+
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

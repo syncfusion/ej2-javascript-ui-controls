@@ -2,15 +2,25 @@
 
 ## [Unreleased]
 
-## 31.1.19 (2025-09-11)
+## 31.1.20 (2025-09-10)
 
 ### Chart
 
 #### Bug Fixes
 
-- `#T742786` - Trendlines now render correctly when dynamically enabled.
 - `#F69182` - Columns with a single X-axis value now render with the correct width.
-- `#T757693` - Now the secondary axis label renders properly when the position is set to 'inside'.
+- `#I762508` - The legend highlight now works correctly when the highlight mode is set to `Series`.
+- `#I760409` - The Zoom toolbar tooltip will be displayed on the pop-up.
+- `#I762919` - The sparkline tooltip renders properly on enabling RTL.
+
+## 31.1.18 (2025-09-10)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I742786` - Trendlines now render correctly when dynamically enabled.
+- `#I757693` - Now the secondary axis label renders properly when the position is set to 'inside'.
 
 ### 3D Chart
 

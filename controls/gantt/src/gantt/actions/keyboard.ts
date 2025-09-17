@@ -73,13 +73,15 @@ export class FocusModule {
         }
         switch (e.action) {
         case 'home':
-            if (ganttObj.selectionModule && ganttObj.selectionSettings.mode !== 'Cell') {
-                if (ganttObj.selectedRowIndex === 0) {
-                    return;
-                }
-                if (ganttObj.selectionModule && ganttObj.selectionModule.getCellSelectedRecords().length === 0) {
-                    ganttObj.selectionModule.selectRow(0, false, true);
-                }
+            if (!ganttObj.selectionModule) {
+                return;
+            }
+            if (ganttObj.selectionSettings.mode === 'Cell') {
+                ganttObj.selectionModule.selectCell({ rowIndex: 0, cellIndex: 0 });
+            }
+            else {
+                ganttObj.clearSelection();
+                ganttObj.selectionModule.selectRow(0);
             }
             break;
         case 'end':

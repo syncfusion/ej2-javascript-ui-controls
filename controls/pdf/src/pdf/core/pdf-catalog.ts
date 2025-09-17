@@ -7,7 +7,7 @@ export class _PdfCatalog {
     pageIndexCache: _PdfReferenceSetCache;
     pageKidsCountCache: _PdfReferenceSetCache;
     _topPagesDictionary: _PdfDictionary;
-    _pageIndices: number[] = [];
+    _paresedPages: number[] = [];
     _pageCache: Map<number, {
         dictionary: _PdfDictionary,
         reference: _PdfReference,
@@ -74,7 +74,7 @@ export class _PdfCatalog {
             reference: reference,
             parent: dictionary.get('Parent')
         });
-        this._pageIndices.push(pageIndex);
+        this._paresedPages.push(pageIndex);
     }
     _getPageDictionary(pageIndex: number): { dictionary: _PdfDictionary, reference: _PdfReference } {
         if (pageIndex !== 0 && this._checkPageTreeFormat()) {
@@ -101,11 +101,11 @@ export class _PdfCatalog {
         return this._hasInvalidPageTree;
     }
     private _findNearestIndex(targetIndex: number): number {
-        let length: number = this._pageIndices.length;
-        let nearest: number = this._pageIndices[0];
+        let length: number = this._paresedPages.length;
+        let nearest: number = this._paresedPages[0];
         let minDistance: number = Math.abs(nearest - targetIndex);
         for (let i: number = 1; i < length; i++) {
-            const index: number = this._pageIndices[i];
+            const index: number = this._paresedPages[i];
             const distance: number = Math.abs(index - targetIndex);
             if (distance < minDistance) {
                 nearest = index;
@@ -305,7 +305,7 @@ export class _PdfCatalog {
         }
         this._hasInvalidPageTree = undefined;
         this._pageCache.clear();
-        this._pageIndices = [];
+        this._paresedPages = [];
     }
     /* eslint-enable */
 }

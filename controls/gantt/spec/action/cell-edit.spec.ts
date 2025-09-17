@@ -6987,7 +6987,6 @@ describe('Gantt editing action', () => {
                 ],
             }, done);
     });
-
     it('Editing Custom column', () => {
         expect(ganttObj.ganttColumns[4].allowEditing).toBe(false);
     });

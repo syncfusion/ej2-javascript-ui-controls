@@ -542,3 +542,39 @@ describe('Excel Exporting Remote data with exportType as AllPage', () => {
         gridObj.excelExportModule.destroy();
     });
 });
+
+describe('custom aggregate Pdf Exporting with pdfAggregateQueryCellInfo', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging: true,
+          allowExcelExport: true,
+          allowPdfExport: true,
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('check the removeEventListener', (done: Function) => {
+        gridObj.isDestroyed = true;
+        gridObj.pdfExportModule.removeEventListener();
+        done();
+    });
+    it('check the removeEventListener', (done: Function) => {
+        gridObj.isDestroyed = false;
+        gridObj.pdfExportModule.removeEventListener();
+        done();
+    done();
+    });
+    it('check the destroy method', (done: Function) => {
+        gridObj.pdfExportModule.destroy();
+        done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+});

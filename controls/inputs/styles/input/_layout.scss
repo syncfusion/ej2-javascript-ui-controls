@@ -761,7 +761,6 @@
       @if $input-skin-name == 'tailwind3' {
         padding-left: 0;
         left: 12px;
-        top: 40%;
       }
     }
     @else if ($input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3') {

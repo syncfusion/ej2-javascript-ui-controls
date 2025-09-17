@@ -1273,7 +1273,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 break;
             case 'enableFieldSearching':
             case 'allowCalculatedField':
-                this.refresh();
+                this.fieldListRender();
                 break;
             case 'allowDeferLayoutUpdate':
                 this.isDeferLayoutUpdate = this.allowDeferLayoutUpdate;

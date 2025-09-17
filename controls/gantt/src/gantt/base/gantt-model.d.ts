@@ -127,6 +127,13 @@ export interface GanttModel extends ComponentModel{
     allowSelection?: boolean;
 
     /**
+     * If `enableHover` is set to true, it enables hover in the Gantt chart and highlights the rows, chart rows, header cells and timeline cells.
+     *
+     * @default false
+     */
+    enableHover?: boolean;
+
+    /**
      * If `allowSorting` is set to true, it enables sorting of Gantt chart tasks when the column header is clicked.
      *
      * @default false

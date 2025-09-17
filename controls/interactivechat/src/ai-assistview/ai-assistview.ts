@@ -1131,13 +1131,13 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
 
     private handleActionComplete(args: ActionCompleteEventArgs): void {
-        if (args.fileData[0].statusCode === '0' && args.fileData[0].status.includes('File size')) {
+        const statustext: boolean = args.fileData[0].status === (this.uploaderObj as any).l10n.getConstant('invalidMaxFileSize');
+        if (args.fileData[0].statusCode === '0' && statustext) {
             const failureAlert: HTMLElement = this.renderFailureAlert();
             if (this.viewWrapper.contains(this.footer)) {
                 this.viewWrapper.insertBefore(failureAlert, this.footer);
             }
             const messageElement: HTMLElement = failureAlert.querySelector('.e-failure-message') as HTMLElement;
-            this.l10n.setLocale(this.locale);
             messageElement.textContent = this.l10n.getConstant('fileSizeFailure');
 
             failureAlert.classList.add('e-show');

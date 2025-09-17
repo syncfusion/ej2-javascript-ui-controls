@@ -329,6 +329,11 @@ describe('Unscheduled task rendering with duration alone', () => {
     it('parent dates update', () => {
         expect(ganttObj.flatData[0].ganttProperties.endDate.getDate()).toBe(4);
     });
+    it('check max limit value', () => {
+        expect(ganttObj.treeGridModule['maxLimits']('minute')).toBe(24000);
+        expect(ganttObj.treeGridModule['maxLimits']('hour')).toBe(1440000);
+        expect(ganttObj.treeGridModule['maxLimits']('min')).toBe(1000);
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);

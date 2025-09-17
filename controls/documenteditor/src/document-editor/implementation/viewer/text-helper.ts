@@ -39,6 +39,17 @@ export class TextHelper {
     private documentHelper: DocumentHelper;
     private context: CanvasRenderingContext2D;
     private paragraphMarkInfo: TextHeightInfo = {};
+    private _position: number = 0;
+    /**
+     * @private
+     * Current position of the fulltext
+     */
+    public get position(): number {
+        return this._position;
+    }
+    public set position(value: number) {
+        this._position = value;
+    }
 
 
     private static wordSplitCharacters: string[] = [String.fromCharCode(32), String.fromCharCode(33), String.fromCharCode(34),
@@ -379,25 +390,165 @@ export class TextHelper {
      * @param {FontScriptType} scriptType - Specifies the script type
      * @returns {boolean} - Returns true if given text is unicode text.
      */
-    public isUnicodeText(text: string, scriptType: FontScriptType): boolean {
+    public isUnicodeText(text: string, scriptType: FontScriptType, isWordBreak: boolean = false): boolean {
         let isUnicode: boolean = false;
         if (!isNullOrUndefined(text)) {
             for (let i: number = 0; i < text.length; i++) {
                 let temp: string = text[i];
-                if (((temp >= '\u3000' && temp <= '\u30ff') // Japanese characters
+                if ((temp >= '\u3000' && temp <= '\u30ff') // Japanese characters
                     || (temp >= '\uff00' && temp <= '\uffef') // Full-width roman characters and half-width katakana
                     || (temp >= '\u4e00' && temp <= '\u9faf') //CJK unifed ideographs - Common and uncommon kanji
                     || (temp >= '\u3400' && temp <= '\u4dbf') //CJK unified ideographs Extension A - Rare kanji
                     || (temp >= '\uac00' && temp <= '\uffef') //Korean Hangul characters
-                    || (temp >= '\u0d80' && temp <= '\u0dff')) && scriptType !== 0) //Sinhala characters
-                {
-                    isUnicode = true;
-                    break;
+                    || (temp >= '\u0d80' && temp <= '\u0dff') //Sinhala characters
+                    || (isWordBreak && ((temp >= '\u0590' && temp <= '\u05FF')  // Hebrew characters
+                        || (temp >= '\u0400' && temp <= '\u04FF')  // Cyrillic characters
+                        || (temp >= '\u00C0' && temp <= '\u00FF')  // Accented Latin characters (Latin-1 Supplement)
+                        || (temp >= '\u0100' && temp <= '\u017F') // Latin Extended-A
+                        || (temp >= '\u0180' && temp <= '\u024F') // Latin Extended-B
+                        || (temp >= '\u1E00' && temp <= '\u1EFF')
+                        || (temp >= '\u0E00' && temp <= '\u0E7F') // Thai
+                        || (temp >= '\u0600' && temp <= '\u06FF')))) { // Arabic characters
+                    if (isWordBreak || scriptType !== 0) {
+                        isUnicode = true;
+                        break;
+                    }
                 }
             }
         }
         return isUnicode;
     }
+
+    /**
+     * @private
+     * @param {string} text - Specifies the text
+     * @param {Dictionary<TextElementBox, number>} elements - Elements of the text
+     * @param {boolean} isAutoWidth
+     * @param {boolean} isAllColumnHasAutoWidthType 
+     */
+    public readWord(text: string, elements: Dictionary<TextElementBox, number>, isAutoWidth: boolean, isAllColumnHasAutoWidthType: boolean): string {
+        let pos: number = this._position;
+        let length: number = text.length;
+        let char: string = '';
+        while (pos < length) {
+            char = text[pos];
+            let isSplitChar = false;
+            const code = char.charCodeAt(0);
+            // \u2002 -- En Space, \u200C -- Zero Width Non-Joiner 
+            if (char === '\u2002' || char === '\u200C' || (char === '\u00A0' && !isAutoWidth) || (isAllColumnHasAutoWidthType && (code >= 0x4E00 && code <= 0x9FFF))) {
+                isSplitChar = true;
+            }
+            if ((char === '/' || char === '.' || char === ',' || char === '=' || char === '*' || char === '«' || char === '»' || char === '?' || char === '>' || char === '<') && !isAllColumnHasAutoWidthType) {
+                isSplitChar = true;
+            }
+            switch (char) {
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\r':
+                case '\v':
+                case '\f':
+                case '\\':
+                case ':':
+                case '-':
+                    isSplitChar = true;
+            }
+            if (isSplitChar) {
+                if (char === ' ' && pos < HelperMethods.trimEnd(text).length && this.isTextContainsNonBreakingSpaceCharacter(text)
+                    && this.isNonBreakingCharacterCombinedWithSpace(text, pos)) {
+                    pos++;
+                    continue;
+                }
+                if (pos === this._position || char === '-') {
+                    pos++;
+                }
+                var text2 = text.substring(this._position, pos);
+                this._position = pos;
+                return text2;
+            }
+            let elementBox: TextElementBox = this.getElementBoxOfChar(pos, elements);
+            //Check whether character is unicode if it is unicode it reads character from text
+            if (this.isUnicodeText(char, elementBox.scriptType, !isAllColumnHasAutoWidthType)) {
+                if (pos === this._position) {
+                    pos++;
+                }
+                if (pos > this._position) {
+                    const unicodeText = text.substring(this._position, pos);
+                    this._position = pos;
+                    return unicodeText;
+                }
+
+            }
+            pos++;
+        }
+        // The remaining text.
+        if (pos > this._position) {
+            const remainingText: string = text.substring(this._position, pos);
+            this._position = pos;
+            return remainingText;
+        }
+        return '';
+    }
+
+    /**
+    * @private
+    * @param {number} pos - Current text position 
+    * @param {Dictionary<TextElementBox, number>} elements - Elements of the text
+    */
+    public getElementBoxOfChar(pos: number, elements: Dictionary<TextElementBox, number>): TextElementBox {
+        const keys: TextElementBox[] = elements.keys
+        const values: number[] = elements.values
+        let low: number = 0;
+        let high: number = values.length - 1;
+        while (low <= high) {
+            const mid: number = Math.floor((low + high) / 2);
+            const start: number = values[mid];
+            const element: TextElementBox = keys[mid];
+            if (pos >= start && pos < start + element.text.length) {
+                return element;
+            } else if (pos < start) {
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return undefined;
+    }
+
+
+    /**
+     * @private
+     * @param {string} text - Text which contains non-breaking space character.
+     */
+    public isTextContainsNonBreakingSpaceCharacter(text: string): boolean {
+        return (this.documentHelper.compatibilityMode === 'Word2013' || this.documentHelper.compatibilityMode === 'Word2010') && text.indexOf('\u00A0') >= 0;
+    }
+
+    /**
+     * @private
+     * @param {string} text - Text which contains non-breaking space character.
+     * @param {number} pos - Position of the empty space character
+     */
+    public isNonBreakingCharacterCombinedWithSpace(text: string, pos: number): boolean {
+        for (let i: number = pos + 1; i < text.length; i++) {
+            if (text[i] == '\u00A0')
+                return true;
+            else if (text[i] == ' ')
+                continue;
+            else
+                break;
+        }
+        for (let i: number = pos - 1; i >= 0; i--) {
+            if (text[i] == '\u00A0')
+                return true;
+            else if (text[i] == ' ')
+                continue;
+            else
+                return false;
+        }
+        return false;
+    }
+
     /**
      * @private
      * @param {string} text - Specifies the text

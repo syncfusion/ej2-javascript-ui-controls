@@ -39,7 +39,7 @@ import { SelectionSettingsModel } from '../models/selection-settings-model';
 import {getActualProperties, SortDirection, getObject, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { PrintMode, Data, IGrid, ContextMenuItemModel } from '@syncfusion/ej2-grids';
 import { ColumnMenuItem, ColumnMenuItemModel, CheckBoxChangeEventArgs } from '@syncfusion/ej2-grids';
-import { ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, AggregateQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { PdfExportCompleteArgs, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelExportProperties, PdfExportProperties, CellSelectingEventArgs, PrintEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
@@ -79,7 +79,8 @@ import { InfiniteScrollSettings } from '../models/infinite-scroll-settings';
 import { InfiniteScrollSettingsModel } from '../models/infinite-scroll-settings-model';
 import { TreeActionEventArgs } from '..';
 import * as literals from '../base/constant';
-
+import { ColumnChooserSettings } from '../models/column-chooser-settings';
+import { ColumnChooserSettingsModel } from '../models/column-chooser-settings-model';
 
 
 /**
@@ -461,7 +462,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     @Property('USD')
     private currencyCode: string;
     /**
-     * @hidden
      * It used to render pager template
      * @default null
      * @aspType string
@@ -484,7 +484,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(false)
     public showColumnChooser: boolean;
-
+    /**
+     * Configures the column chooser in the Grid.
+     *
+     * @default { columnChooserOperator: 'startsWith' }
+     */
+    @Complex<ColumnChooserSettingsModel>({}, ColumnChooserSettings)
+    public columnChooserSettings: ColumnChooserSettingsModel;
     /**
      * If `allowSorting` is set to true, it allows sorting of treegrid records when column header is clicked.
      *
@@ -732,6 +738,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(false)
     public enableStickyHeader: boolean;
+    /**
+     * The empty record template that renders customized element or text or image instead of displaying the empty record message in the TreeGrid.
+     *
+     * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+     *
+     * @default null
+     * @aspType string
+     */
+    @Property()
+    public emptyRecordTemplate: string | Function;
     /**
      * Defines the scrollable height of the TreeGrid content.
      *
@@ -1343,6 +1359,22 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Event()
     public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
+
+    /**
+     * Triggers before exporting aggregate cell to PDF document. You can also customize the PDF cells.
+     *
+     * @event pdfAggregateQueryCellInfo
+     */
+    @Event()
+    public pdfAggregateQueryCellInfo: EmitType<AggregateQueryCellInfoEventArgs>;
+
+    /**
+     * Triggers before exporting aggregate cell to Excel document.
+     *
+     * @event excelAggregateQueryCellInfo
+     */
+    @Event()
+    public excelAggregateQueryCellInfo: EmitType<AggregateQueryCellInfoEventArgs>;
 
     /**
      * Triggers before each header cell is exported to an Excel file, allowing customization of cells.
@@ -2208,7 +2240,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         let alignColumn: any;
-        if (this.treeColumnIndex !== null && this.treeColumnIndex !== -1) {
+        if (this.treeColumnIndex !== null && this.treeColumnIndex !== -1 && this.treeColumnIndex < this.columns.length) {
             alignColumn = this.columnModel.filter((col: any) => col.textAlign === 'Right' && col.field === this.columnModel[this.treeColumnIndex].field);
             if (alignColumn.length !== 0) {
                 failureCases.push('TextAlign right for the tree column is not applicable.');
@@ -2316,6 +2348,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         this.grid.toolbarTemplate = this.toolbarTemplate as any;
         this.grid.showColumnChooser = this.showColumnChooser;
+        this.grid.columnChooserSettings = this.columnChooserSettings;
         this.grid.filterSettings = getActualProperties(this.filterSettings);
         this.grid.selectionSettings = getActualProperties(this.selectionSettings);
         this.grid.sortSettings = getActualProperties(this.sortSettings);
@@ -2343,6 +2376,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const enableHtmlSanitizer: string = 'enableHtmlSanitizer';
         this.grid[`${enableHtmlSanitizer}`] = this.enableHtmlSanitizer;
         this.grid.enableStickyHeader = this.enableStickyHeader;
+        this.grid.emptyRecordTemplate = this.emptyRecordTemplate;
         const isTreeGrid: string = 'isTreeGrid';
         this.grid[`${isTreeGrid}`] = true;
     }
@@ -2406,6 +2440,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid.excelQueryCellInfo = (args: ExcelQueryCellInfoEventArgs): void => {
             this.notify('excelCellInfo', args);
             args = <ExcelQueryCellInfoEventArgs>this.dataResults;
+        };
+        this.grid.excelAggregateQueryCellInfo = (args: AggregateQueryCellInfoEventArgs): void => {
+            this.notify('excelAggregateCellInfo', args);
+            args = <AggregateQueryCellInfoEventArgs>this.dataResults;
+        };
+        this.grid.pdfAggregateQueryCellInfo = (args: AggregateQueryCellInfoEventArgs): void => {
+            this.notify('pdfAggregateCellInfo', args);
+            args = <AggregateQueryCellInfoEventArgs>this.dataResults;
         };
         this.grid.pdfQueryCellInfo = (args?: PdfQueryCellInfoEventArgs): void => {
             this.notify('pdfCellInfo', args);
@@ -3274,6 +3316,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.grid.enableHover = this.enableHover; break;
             case 'enableAutoFill':
                 this.grid.enableAutoFill = this.enableAutoFill; break;
+            case 'columnChooserSettings':
+                this.grid.columnChooserSettings = getActualProperties(this.columnChooserSettings); break;
             case 'enableAdaptiveUI':
                 this.grid.enableAdaptiveUI = this.enableAdaptiveUI; break;
             case 'enableImmutableMode':
@@ -3308,6 +3352,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.grid.columnMenuItems = getActualProperties(this.columnMenuItems); break;
             case 'enableStickyHeader':
                 this.grid.enableStickyHeader = this.enableStickyHeader; break;
+            case 'emptyRecordTemplate':
+                this.grid.emptyRecordTemplate = this.emptyRecordTemplate; break;
             case 'editSettings':
                 if (this.grid.isEdit && this.grid.editSettings.mode === 'Normal' && newProp[`${prop}`].mode &&
                           (newProp[`${prop}`].mode === 'Cell' || newProp[`${prop}`].mode === 'Row')) {
@@ -5065,9 +5111,17 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         const deff: Deferred = new Deferred();
         const childDataBind: string = 'childDataBind';
+        let state: DataStateChangeEventArgs;
+        if (this.query) {
+            state = this.grid.getDataModule().getStateEventArgument(this.query);
+            state.action = expandingArgs;
+        }
+        else {
+            state = expandingArgs;
+        }
         expandingArgs[`${childDataBind}`] = deff.resolve;
         const record: ITreeData = expandingArgs.data;
-        this.trigger(events.dataStateChange, expandingArgs);
+        this.trigger(events.dataStateChange, state);
         deff.promise.then(() => {
             if (expandingArgs.childData.length) {
                 if (isCountRequired(this)) {

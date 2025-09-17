@@ -495,9 +495,17 @@ export class RowDD {
             && !isNullOrUndefined(droppedRecord.taskData)) {
             const keys: string[] = Object.keys(temporaryDataSource);
             for (let i: number = 0; i < keys.length; i++) {
-                if (temporaryDataSource[parseInt(i.toString(), 10)][this.parent.childMapping] ===
-                    droppedRecord.taskData[this.parent.childMapping]) {
-                    indexOfDroppedRecord = i;
+                if (temporaryDataSource[parseInt(i.toString(), 10)][this.parent.childMapping]) {
+                    if (temporaryDataSource[parseInt(i.toString(), 10)][this.parent.childMapping] ===
+                        droppedRecord.taskData[this.parent.childMapping]) {
+                        indexOfDroppedRecord = i;
+                    }
+                } else {
+                    const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+                    if (temporaryDataSource[parseInt(i.toString(), 10)][`${primaryKeyField}`] ===
+                        droppedRecord.taskData[`${primaryKeyField}`]) {
+                        indexOfDroppedRecord = i;
+                    }
                 }
             }
             if (!this.parent.idMapping) {

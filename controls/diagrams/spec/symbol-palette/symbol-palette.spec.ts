@@ -3834,13 +3834,11 @@ describe('974569: Group Node Not Rendering Properly in Symbol Palette Without Ex
         ele = createElement('div', { styles: 'width:100%;height:500px;' });
         ele.appendChild(createElement('div', { id: 'symbolpaletteGroupSize', styles: 'width:25%;float:left;' }));
         document.body.appendChild(ele);
-
         let palettes: PaletteModel[] = [{
             id: 'shapes-palette', expanded: true, symbols: [
                 { id: 'path1', shape: { type: 'Path', data: 'M14 10 A5 5 0 0 1 14 0' } },
                 { id: 'path2', shape: { type: 'Path', data: 'M 0,0 L 0,5' } },
                 { id: 'path3', shape: { type: 'Path', data: 'M 31 13 L 32 13' } },
-
                 {
                     id: 'rect1',
                     style: {
@@ -3946,7 +3944,6 @@ describe('974569: Group Node Not Rendering Properly in Symbol Palette Without Ex
                     pivot: { x: 0, y: 0 },
                     children: ['rect1', 'poly1',],
                 },
-
                 {
                     id: 'line1',
                     //   constraints: 0,
@@ -3985,7 +3982,6 @@ describe('974569: Group Node Not Rendering Properly in Symbol Palette Without Ex
                     pivot: { x: 0, y: 0 },
                     children: ['line1', 'line2'],
                 },
-
             ],
             title: 'Shapes'
         }]
@@ -3994,7 +3990,6 @@ describe('974569: Group Node Not Rendering Properly in Symbol Palette Without Ex
             palettes: palettes, enableSearch: true,
             expandMode: "Multiple",
             symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
-
         });
         palette.appendTo('#symbolpaletteGroupSize');
     });
@@ -4011,8 +4006,8 @@ describe('974569: Group Node Not Rendering Properly in Symbol Palette Without Ex
         let paletteElement = document.getElementById('symbolpaletteGroupSize_container');
         let group = document.getElementById('CustomLines_container');
         let groupBounds: any = group.getBoundingClientRect();
-        mouseEvents.mouseDownEvent(paletteElement,groupBounds.x + groupBounds.width / 2, groupBounds.y + groupBounds.height / 2);
-        mouseEvents.mouseMoveEvent(paletteElement,groupBounds.x + groupBounds.width / 2 + 10, groupBounds.y + groupBounds.height / 2 + 10);
+        mouseEvents.mouseDownEvent(paletteElement, groupBounds.x + groupBounds.width / 2, groupBounds.y + groupBounds.height / 2);
+        mouseEvents.mouseMoveEvent(paletteElement, groupBounds.x + groupBounds.width / 2 + 10, groupBounds.y + groupBounds.height / 2 + 10);
         done();
     });
 });

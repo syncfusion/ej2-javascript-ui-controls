@@ -1,5 +1,5 @@
 import { TreeGrid, Filter as TreeGridFilter, FilterSettingsModel as TreeFilterSettingsModel } from '@syncfusion/ej2-treegrid';
-import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
+import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion, ColumnMenuOpenEventArgs, IFilterCreate } from '@syncfusion/ej2-grids';
 import { getActualProperties, IFilterMUI, Filter as GridFilter, getCustomDateFormat } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { FilterSettingsModel, ColumnModel, TaskFieldsModel } from '../models/models';
@@ -104,7 +104,7 @@ export class Filter {
             ? parent.defaultStartTime : parent.defaultEndTime;
         let dropDateInstance: DatePicker;
         const filterDateUI: IFilterMUI = {
-            create: (args: { target: Element, column: ColumnModel }) => {
+            create: (args: IFilterCreate) => {
                 const format: string = getCustomDateFormat(args.column.format, args.column.type);
                 const flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
@@ -130,7 +130,7 @@ export class Filter {
     private getDateTimePickerFilter(): IFilterMUI {
         let dropInstance: DateTimePicker;
         const filterDateTimeUI: IFilterMUI = {
-            create: (args: { target: Element, column: ColumnModel }) => {
+            create: (args: IFilterCreate) => {
                 const format: string = getCustomDateFormat(args.column.format, args.column.type);
                 const flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
@@ -155,7 +155,7 @@ export class Filter {
         let textBoxInstance: TextBox;
         let textValue: string = '';
         const filterDurationUI: IFilterMUI = {
-            create: (args: { target: Element, column: Object }) => {
+            create: (args: IFilterCreate) => {
                 const flValInput: HTMLElement = createElement('input', { className: 'e-input' });
                 flValInput.setAttribute('placeholder', this.parent.localeObj.getConstant('enterValue'));
                 args.target.appendChild(flValInput);
@@ -237,12 +237,11 @@ export class Filter {
             }
         }
         if (args.requestType === filterAfterOpen) {
-            if (this.parent.treeGrid.filterSettings.type === 'Menu') {
-                this.filterMenuElement = getValue('filterModel.dlgObj.element', args);
-            }
-            else {
-                this.filterMenuElement = getValue('filterModel.dialogObj.element', args);
-            }
+            const globalFilterType: string = this.parent.treeGrid.filterSettings.type;
+            const colFilterType: string = this.parent.treeGrid.getColumnByField(args.columnName).filter.type;
+            const filterModelKey: string = colFilterType || globalFilterType;
+            const dialogKey: string = filterModelKey === 'Menu' ? 'dlgObj' : 'dialogObj';
+            this.filterMenuElement = getValue(`filterModel.${dialogKey}.element`, args);
             this.updateFilterMenuPosition(this.filterMenuElement, args);
             // To set default values as 'contains' in filter dialog
             const taskID: string = this.parent.taskFields.id;
@@ -294,6 +293,9 @@ export class Filter {
         }
         let targetElement: HTMLElement;
         element.style.display = 'block';
+        const globalFilterType: string = this.parent.treeGrid.filterSettings.type;
+        const colFilterType: string = this.parent.treeGrid.getColumnByField(args.columnName).filter.type;
+        const filterModelKey: string = colFilterType || globalFilterType;
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
             if (targetElement) {
@@ -311,20 +313,14 @@ export class Filter {
             }
         } else {
             targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');
-            if (this.parent.treeGrid.filterSettings.type === 'Menu') {
-                getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args));
-            }
-            else {
-                getFilterMenuPostion(targetElement, getValue('filterModel.dialogObj', args));
-            }
+            const dialogObjKey: string = filterModelKey === 'Menu' ? 'dlgObj' : 'dialogObj';
+            getFilterMenuPostion(targetElement, getValue(`filterModel.${dialogObjKey}`, args));
         }
         element.style.visibility = 'visible';
-        if (this.parent.treeGrid.filterSettings.type === 'Menu') {
+        if (filterModelKey === 'Menu') {
             (element.querySelector('.e-valid-input') as HTMLElement).focus();
-        }
-        if (this.parent.treeGrid.filterSettings.type === 'Excel') {
-            const inputElement: HTMLElement = document.querySelector('.e-searchinput') as HTMLElement;
-            inputElement.focus();
+        } else {
+            (document.querySelector('.e-searchinput') as HTMLElement).focus();
         }
     }
 

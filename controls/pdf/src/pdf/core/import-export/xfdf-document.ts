@@ -1357,6 +1357,12 @@ export class _XfdfDocument extends _ExportHelper {
             case 'C':
                 this._writeColor(writer, primitive, 'color', 'c');
                 break;
+            case 'OC':
+                this._writeColor(writer, primitive, 'oc');
+                break;
+            case 'AFC':
+                this._writeColor(writer, primitive, 'afc');
+                break;
             case 'IC':
                 this._writeColor(writer, primitive, 'interior-color');
                 break;
@@ -1990,6 +1996,22 @@ export class _XfdfDocument extends _ExportHelper {
                 values = _convertToColor(value);
                 if (values && values.length === 3) {
                     dictionary.update('C', [values[0] / 255, values[1] / 255, values[2] / 255]);
+                }
+                break;
+            case 'oc':
+                if (value && dictionary.get('Subtype').name === 'Redact') {
+                    values = _convertToColor(value);
+                    if (values && values.length === 3) {
+                        dictionary.update('OC', [values[0] / 255, values[1] / 255, values[2] / 255]);
+                    }
+                }
+                break;
+            case 'afc':
+                if (value && dictionary.get('Subtype').name === 'Redact') {
+                    values = _convertToColor(value);
+                    if (values && values.length === 3) {
+                        dictionary.update('AFC', [values[0] / 255, values[1] / 255, values[2] / 255]);
+                    }
                 }
                 break;
             case 'interior-color':

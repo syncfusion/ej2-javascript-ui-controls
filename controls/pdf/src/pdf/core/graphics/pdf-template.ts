@@ -268,12 +268,12 @@ export class PdfTemplate {
         this._content.dictionary.set('Type', _PdfName.get('XObject'));
         this._content.dictionary.set('Subtype', _PdfName.get('Form'));
     }
-    _exportStream(dictionary: _PdfDictionary, crossReference: _PdfCrossReference): void {
+    _exportStream(dictionary: _PdfDictionary, crossReference: _PdfCrossReference, key: string): void {
         const jsonDocument: _JsonDocument = new _JsonDocument();
         jsonDocument._crossReference = crossReference;
         jsonDocument._isAnnotationExport = true;
         const resourceTable: Map<string, string> = new Map<string, string>();
-        jsonDocument._writeObject(resourceTable, dictionary.get('N'), dictionary, 'normal');
+        jsonDocument._writeObject(resourceTable, dictionary.get(key), dictionary, 'normal');
         this._appearance = jsonDocument._convertToJson(resourceTable);
         jsonDocument._dispose();
     }

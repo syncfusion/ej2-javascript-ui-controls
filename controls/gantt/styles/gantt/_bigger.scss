@@ -161,16 +161,16 @@
 
       .e-connectorpoint-left-hover,
       .e-connectorpoint-right-hover {
-        background-color: $connector-point-hover-color;
-        border-color: $connector-point-border-color;
+        background-color: $connector-node-hover-color;
+        border-color: $connector-node-border-color;
         position: relative;
       }
 
       .e-connectorpoint-left-hover:hover,
       .e-connectorpoint-right-hover:hover {
-        background-color: $connector-point-hover-color;
-        border-color: $connector-point-border-color;
-        outline: 2px solid $connector-point-hover-outerline-color;
+        background-color: $connector-node-hover-color;
+        border-color: $connector-node-border-color;
+        outline: 2px solid $connector-node-hover-outerline-color;
       }
 
       .e-connectorpoint-left-hover::after,

@@ -113,10 +113,10 @@ export interface ITaskData {
     baselineStartDate?: Date;
     /** Defines the baseline enddate of task. */
     baselineEndDate?: Date;
-    /** Defines the duration of the baseline. */
-    baselineDuration?: number;
     /** Defines the baseline width of task. */
     baselineWidth?: number;
+    /** Defines the duration of the baseline. */
+    baselineDuration?: number;
     /** Defines the end date of task. */
     endDate?: Date;
     /** Defines the css class of task. */

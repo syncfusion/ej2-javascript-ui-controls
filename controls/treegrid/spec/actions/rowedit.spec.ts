@@ -13,12 +13,13 @@ import { select } from '@syncfusion/ej2-base';
 import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
 import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
 import { Page } from '../../src/treegrid/actions/page';
+import { CommandColumn } from '../../src/treegrid/actions/command-column';
 
 
 /**
  * Grid Row Edit spec 
  */
-TreeGrid.Inject(Edit, Toolbar, Sort, RowDD, VirtualScroll, Page);
+TreeGrid.Inject(Edit, Toolbar, Sort, RowDD, VirtualScroll, Page, CommandColumn);
 describe('Edit module', () => {
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
@@ -3784,4 +3785,135 @@ describe('Row Editing - Add record in last page then cancel', () => {
     afterAll(() => {
         destroy(gridObj);
     });
+});
+
+   describe('977200 -AddRecord method', () => {
+    let gridObj: TreeGrid;
+    let index=100;
+    function onClick(): any {
+       let treegrid: TreeGrid = gridObj;
+       var data = { taskID: index++, taskName: 'New Task' };
+       treegrid.addRecord(data, treegrid.selectedRowIndex, 'Child');
+    }
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                 dataSource:[],
+                 childMapping: 'subtasks',
+                 treeColumnIndex: 2,
+                 height: 400,
+                 editSettings: {
+                   allowAdding: true,
+                   allowEditing: true,
+                   allowDeleting: true,
+                   mode: 'Row',
+                   allowEditOnDblClick: false,
+                   newRowPosition: 'Top',
+                 },
+                 selectionSettings : { enableToggle: false },
+                toolbar: ["Add","Edit","Delete","Update","Cancel",'ExcelExport', 'CsvExport', 'PdfExport'],
+                 columns: [
+                   {
+                     field: 'taskID',
+                     isPrimaryKey: true,
+                     headerText: 'Task ID',
+                     width: 70,
+                     textAlign: 'Right',
+                   },
+                   {
+                     field: 'taskName',
+                     headerText: 'Task Name',
+                     width: 200,
+                     textAlign: 'Left',
+                   },
+                   
+                   {
+                     field: 'duration',
+                     headerText: 'Duration',
+                     width: 80,
+                     textAlign: 'Right',
+                   },
+                    {
+                     headerText: 'Manage Records',
+                     width: 130,
+                     freeze: 'Right',
+                     commands: [
+                       { buttonOption: { content: 'Add', cssClass: 'e-flat', click: onClick } },
+                       {
+                         type: 'Edit',
+                         buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' },
+                       },
+                       {
+                         type: 'Delete',
+                         buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' },
+                       },
+                       {
+                         type: 'Save',
+                         buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' },
+                       },
+                       {
+                         type: 'Cancel',
+                         buttonOption: {
+                           iconCss: 'e-icons e-cancel-icon',
+                           cssClass: 'e-flat',
+                         },
+                       },
+                     ],
+                   },
+                 ],
+            },
+            done
+        );
+    });
+
+
+    it('Add Toolbar with empty tree grid', (done: Function) => {
+       let actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect((gridObj.flatData[0] as any).taskID == 98).toBe(true);
+                done();
+            }
+        };
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+        let formEle = gridObj.grid.editModule.formObj.element;
+        (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = 98;
+        (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'Test';
+         gridObj.actionComplete = actionComplete;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+       
+    });
+    it('Add Toolbar click add record for top', (done: Function) => {
+      
+        let actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+             expect((gridObj.flatData[0] as any).taskID == 99).toBe(true);
+             expect((gridObj.flatData[1] as any).taskID == 98).toBe(true);
+             done();
+            }
+        };
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+        let formEle1  =(<any>gridObj).grid.editModule.formObj.element;
+        (select('#' + gridObj.grid.element.id + 'taskID', formEle1) as any).value = 99;
+        (select('#' + gridObj.grid.element.id + 'taskName', formEle1) as any).value = 'Test1';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+       gridObj.actionComplete = actionComplete;
+       
+        
+    });
+    it('Add record using addRecord method as child', (done: Function) => {
+        
+         let actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+              expect((gridObj.flatData[0] as any).hasChildRecords).toBe(true);
+              done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+     gridObj.getCellFromIndex(0, 3).querySelector(".e-unboundcelldiv").childNodes[0].dispatchEvent(new MouseEvent('click'));  
+      });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
 });

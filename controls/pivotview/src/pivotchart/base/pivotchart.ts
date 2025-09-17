@@ -193,8 +193,9 @@ export class PivotChart {
         let ignoreCount: number = 0;
         let rowReduction: number = 0;
         let previousHeader: number = 0;
-        for (const rKey of rKeys) {
-            const rowIndex: number = Number(rKey);
+        const subTotals: (string | number)[] = [];
+        for (let a: number = 0, b: number = rKeys.length; a < b; a++) {
+            const rowIndex: number = Number(rKeys[a as number]);
             let drillMem: boolean;
             let previousRow: boolean = false;
             let firstRowCell: IAxisSet;
@@ -205,6 +206,15 @@ export class PivotChart {
                 firstRowCell = pivotValues[rowIndex as number] &&
                     pivotValues[rowIndex as number][this.parent.gridSettings.layout === 'Tabular' ?
                         this.parent.engineModule.rowMaxLevel : 0];
+            }
+            if (this.parent.gridSettings.layout === 'Tabular' && this.parent.dataType === 'pivot') {
+                const parent: IAxisSet = firstRowCell && pivotValues[rowIndex - rowReduction][firstRowCell.level - 1];
+                const pField: IField = parent && parent.valueSort && this.engineModule.fieldList[parent.valueSort.axis as string];
+                if (pField && !pField.showSubTotals && subTotals.indexOf(parent.actualText) === -1) {
+                    firstRowCell = pivotValues[rowIndex - rowReduction][0] as IAxisSet;
+                    subTotals.push(parent.actualText);
+                    a--;
+                }
             }
             if (firstRowCell) {
                 indexReduction = rowReduction === firstRowCell.level ? 1 : (rowReduction + 1);
@@ -1807,7 +1817,8 @@ export class PivotChart {
             this.dataSourceSettings.drilledMembers[0].delimiter : '**';
         const fieldName: string = labelInfo.fieldName as string;
         const currentColIndex: number = (this.parent.gridSettings.layout === 'Tabular' ? (!this.parent.dataSourceSettings.showSubTotals ||
-            (!this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals)) ?
+            (!this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals) ||
+            this.engineModule && !this.engineModule.fieldList[labelInfo.fieldName as string].showSubTotals) ?
             labelInfo.level as number : this.parent.engineModule.rowMaxLevel : labelInfo.colIndex as number);
         const currentCell: IAxisSet = this.engineModule.pivotValues[labelInfo.rowIndex as number][
             currentColIndex as number] as IAxisSet;

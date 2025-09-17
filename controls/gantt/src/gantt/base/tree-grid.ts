@@ -1,7 +1,7 @@
 import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
 import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, remove, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { FilterEventArgs, SortEventArgs, FailureEventArgs, Grid, ColumnMenuItem, ColumnMenuItemModel } from '@syncfusion/ej2-grids';
+import { FilterEventArgs, SortEventArgs, FailureEventArgs, Grid, ColumnMenuItem, ColumnMenuItemModel, IFilterCreate, IFilterWrite } from '@syncfusion/ej2-grids';
 import { setValue} from '@syncfusion/ej2-base';
 import { Deferred, Query} from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
@@ -42,6 +42,7 @@ export class GanttTreeGrid {
         this.parent.treeGrid.allowKeyboard = this.parent.allowKeyboard;
         this.parent.treeGrid['${enableHtmlSanitizer}'] = this.parent.enableHtmlSanitizer;
         this.parent.treeGrid.enableImmutableMode = this.parent.enableImmutableMode;
+        this.parent.treeGrid.enableHover = this.parent.enableHover; // grid rows hover
         this.treeGridColumns = [];
         if (!this.parent.isLocaleChanged && this.parent.isLoad) {
             this.parent.previousGanttColumns = (extend([], [], this.parent.columns, true) as ColumnModel[]);
@@ -176,10 +177,12 @@ export class GanttTreeGrid {
         const headerDiv: HTMLElement = this.getHeaderDiv();
         const scrollWidth: number = this.getScrollbarWidth();
         const isMobile: boolean = /Android|Mac|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (scrollWidth === 0 && navigator.userAgent.includes('Firefox')) {
+            headerDiv.style.cssText += 'width: calc(100% + ' + (6) + 'px);';
+            content.style.cssText += 'width: calc(100% + ' + (6) + 'px);';
         // For Firefox scrollWidth value return 0, causes the grid side column misalign- Task(888356)
-        if (scrollWidth !== 0 || navigator.userAgent.includes('Firefox')) {
-            content.style.cssText += 'width: calc(100% + ' + (scrollWidth + 1) + 'px);'; //actual scrollbar width 17 px but here scrollbar width set to 16px hence adding increment of 1
-
+        } else if (scrollWidth !== 0) {
+            content.style.cssText += 'width: calc(100% + ' + (scrollWidth) + 'px);'; //actual scrollbar width 17 px
         } else {
             content.classList.add('e-gantt-scroll-padding');
         }
@@ -210,6 +213,10 @@ export class GanttTreeGrid {
     }
 
     private beforeDataBound(args: object): void {
+        if (this.parent.enableHover) {
+            const columnHeader: HTMLElement = this.treeGridElement.querySelector('.e-columnheader');
+            columnHeader.classList.add('e-headercell-hover');
+        }
         const arg: { result: { updatedCollection: object[] } } = { result: args['result'] };
         this.parent.trigger('beforeDataBound', arg);
         if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings &&
@@ -305,7 +312,7 @@ export class GanttTreeGrid {
     private collapsed(args: object): void {
         const collapsingNodeData: any = (args as Record<string, any>).data;
         const expanded: boolean = collapsingNodeData && collapsingNodeData.expanded;
-        if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping && !this.parent.enableVirtualization && !expanded) {
+        if (!this.parent.enableVirtualization && this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping && !expanded) {
             (args as Record<string, any>)['data'][this.parent.taskFields.expandState] = false;
         }
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart  && !this.parent.isExpandCollapseLevelMethod) {
@@ -372,6 +379,7 @@ export class GanttTreeGrid {
         if (args && args.type === 'save' && args['rowData'] && args['rowData'].ganttProperties) {
             this.perviousStartDate = args['rowData'].ganttProperties.startDate;
             this.perviousEndDate = args['rowData'].ganttProperties.endDate;
+
         }
         this.parent.notify('actionBegin', args);
         const flag: boolean = getValue('doubleClickTarget', this.parent.treeGrid.editModule);
@@ -453,6 +461,65 @@ export class GanttTreeGrid {
             return false;
         }
     }
+    public maxLimits(durationUnit: string): number {
+        switch (durationUnit) {
+        case 'day':
+            return 1000;
+        case 'minute':
+            return 24000;
+        case 'hour':
+            return 1440000;
+        default:
+            return 1000; // fallback value
+        }
+    }
+    public isGuID(str: string): boolean {
+        const uuidRegex: RegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(str);
+    }
+    public splitByLastOffset(input: string): number {
+        const lastPlus: number = input.lastIndexOf('+');
+        const lastMinus: number = input.lastIndexOf('-');
+        const splitIndex: number = Math.max(lastPlus, lastMinus);
+        let offset: string = '';
+        if (splitIndex === -1) {
+            return offset = null; // No + or - found
+        }
+        offset = input.substring(splitIndex);
+        let offsetNumber: number = Number(offset.match(/\d+/));
+        offsetNumber = this.isGuID(input) ? 0 : offsetNumber;
+        return offsetNumber;
+    }
+
+    public updatePredecessorLimits(
+        splits: string[],
+        previousData: string,
+        maxLimits: number
+    ): string {
+        const updatedSplits: (string | string[])[] = splits.map((item: string) => {
+            let result: string[] | string = '';
+            const offset: number = this.splitByLastOffset(item);
+            if (!isNaN(offset) && offset >= maxLimits) {
+                /* eslint-disable-next-line */
+                let offsetValue: string[] | string = item.split(/[\+\-]/);
+                const previousDataSplits: string[] = previousData.split(',');
+                const index: number = previousDataSplits.findIndex((prevItem: string) => {
+                    return prevItem.trim().toLowerCase() === offsetValue[0].trim().toLowerCase();
+                });
+                if (index !== -1) {
+                    result = previousDataSplits[index as number];
+                    (offsetValue as string[]).pop(); // Remove the offset part
+                }
+            } else {
+                result = item; // Keep original string if condition not met
+            }
+
+            return result;
+        });
+
+        return updatedSplits.join(',');
+    }
+
     private treeActionComplete(args: object): void {
         let fieldName: string = null ;
         let preventEventTrigger: boolean = false;
@@ -531,6 +598,11 @@ export class GanttTreeGrid {
                 if (isEmptyObject(this.currentEditRow) && args['column'] && args['column'].edit && args['column'].field === this.parent.taskFields.resourceInfo) {
                     const field: string = this.parent.taskFields.resourceInfo;
                     this.currentEditRow = { [field]: data['resources'] };
+                }
+                if (args['data'][this.parent.taskFields.dependency] && args['column'].field === this.parent.taskFields.dependency) {
+                    const splits: string[] = args['data'][this.parent.taskFields.dependency].split(',');
+                    const maxLimits: number = this.maxLimits(this.parent.durationUnit);
+                    args['data'][this.parent.taskFields.dependency] = this.updatePredecessorLimits(splits, args['previousData'], maxLimits);
                 }
                 this.parent.editModule.cellEditModule.initiateCellEdit(args, this.currentEditRow);
                 this.parent.editModule.cellEditModule.isCellEdit = false;
@@ -914,7 +986,7 @@ export class GanttTreeGrid {
             if (isNullOrUndefined(column.filter) && this.parent.locale !== 'en-US') {
                 column.filter = {
                     'ui': {
-                        create: (args: { target: Element, column: Object }) => {
+                        create: (args: IFilterCreate) => {
                             const flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
                             args.target.appendChild(flValInput);
                             this.dropInstance = new AutoComplete({
@@ -925,10 +997,7 @@ export class GanttTreeGrid {
                             });
                             this.dropInstance.appendTo(flValInput);
                         },
-                        write: (args: {
-                            column: Object, target: Element, parent: any,
-                            filteredValue: number | string
-                        }) => {
+                        write: (args: IFilterWrite ) => {
                             this.dropInstance.value = args.filteredValue;
                         },
                         read: (args: { target: Element, column: any, operator: string, fltrObj: any }) => {

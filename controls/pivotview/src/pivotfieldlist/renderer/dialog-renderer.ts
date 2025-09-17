@@ -549,7 +549,7 @@ export class DialogRenderer {
         });
         calculateField.isStringTemplate = true;
         calculateField.appendTo(calculatedButton);
-        if (this.parent.calculatedFieldModule) {
+        if (this.parent.calculatedFieldModule && this.parent.allowCalculatedField) {
             removeClass([calculatedButton], cls.ICON_DISABLE);
         }
         calculateField.element.onclick = this.showCalculatedField.bind(this);

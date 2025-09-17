@@ -1559,7 +1559,10 @@ export class PdfDocument {
         }
         this._startXrefSignature = undefined;
         this._stream = undefined;
-        this._form = undefined;
+        if (this._form) {
+            this._form._fontCache = undefined;
+            this._form = undefined;
+        }
         _clearPrimitiveCaches();
         if (this._mergeHelperCache) {
             if (this._mergeHelperCache.size > 0) {

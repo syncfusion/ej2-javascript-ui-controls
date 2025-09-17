@@ -1305,7 +1305,7 @@ export class PivotEngine {
                             field.expandAll : false,
                         pid: (field && 'groupName' in field && field.groupName) ? field.groupName :
                             this.groupingFieldsInfo[key as string] ? this.groupingFieldsInfo[key as string] : undefined,
-                        aggregateType: (field && 'type' in field) ? field.type :
+                        aggregateType: (field && 'type' in field) ? this.getFieldType(field) :
                             (((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ? 'string' :
                                 (type === undefined || type === 'undefined') ? 'number' : type) === 'number' ? 'Sum' : 'Count',
                         baseField: (field && 'baseField' in field) ?
@@ -1373,7 +1373,7 @@ export class PivotEngine {
                         field.isCalculatedField : false,
                     expandAll: (field && 'expandAll' in field) ?
                         field.expandAll : false,
-                    aggregateType: (field && 'type' in field) ? field.type :
+                    aggregateType: (field && 'type' in field) ? this.getFieldType(field) :
                         (((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ? 'string' :
                             (type === undefined || type === 'undefined') ? 'number' : type) === 'number' ? 'Sum' : 'Count',
                     baseField: (field && 'baseField' in field) ?
@@ -1388,6 +1388,13 @@ export class PivotEngine {
         this.updateTreeViewData(dataFields);
     }
 
+    private getFieldType(field: IFieldOptions): string {
+        if (!isNullOrUndefined(field.dataType) && field.dataType !== 'number' && field.type !== 'DistinctCount' &&
+            field.type !== 'Count') {
+            field.type = 'Count';
+        }
+        return field.type;
+    }
     private updateMembersOrder(key: string): void {
         for (const sortInfo of this.dataSourceSettings.sortSettings) {
             if (key === sortInfo.name && sortInfo.membersOrder) {
@@ -1425,7 +1432,7 @@ export class PivotEngine {
                 field.caption = fields[cnt as number].caption ? fields[cnt as number].caption : fields[cnt as number].name;
                 field.isSelected = true;
                 field.showNoDataItems = fields[cnt as number].showNoDataItems;
-                field.aggregateType = fields[cnt as number].type;
+                field.aggregateType = this.getFieldType(fields[cnt as number]);
                 field.baseField = fields[cnt as number].baseField;
                 field.baseItem = fields[cnt as number].baseItem;
                 field.allowDragAndDrop = fields[cnt as number].allowDragAndDrop;

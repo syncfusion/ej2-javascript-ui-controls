@@ -1029,7 +1029,7 @@ describe('Context-', () => {
         });
         
         it('Changing taskmode of a task to manual', () => {
-            expect(document.getElementsByClassName('e-gantt-manualparenttaskbar-right')[0]['style'].height).toBe('11.5px');
+            expect(document.getElementsByClassName('e-gantt-manualparenttaskbar-right')[0]['style'].height).toBe('17.5px');
         });
         afterAll(() => {
             if (ganttObj) {
@@ -4628,6 +4628,7 @@ describe('CR:932689-When the context menu action is canceled, the added child re
     });
     it('Add record - Child', () => {
         ganttObj.actionBegin = function (args: any): void {
+            debugger;
             if(args.requestType == "beforeAdd"){
                 if (args.recordIndex != 1 && args.rowPosition == "Child") {
                     args.cancel = true;

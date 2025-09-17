@@ -1743,12 +1743,6 @@ export function updateAction(
         break;
     case 'chartRefresh':
         chartElement = document.getElementById(options.eventArgs.id);
-        if (chartElement) {
-            chartElement.style.height = isRedo === false ? options.eventArgs.prevHeight + 'px' : options.eventArgs.currentHeight + 'px';
-            chartElement.style.width = isRedo === false ? options.eventArgs.prevWidth + 'px' : options.eventArgs.currentWidth + 'px';
-            chartElement.style.top = isRedo === false ? options.eventArgs.prevTop + 'px' : options.eventArgs.currentTop + 'px';
-            chartElement.style.left = isRedo === false ? options.eventArgs.prevLeft + 'px' : options.eventArgs.currentLeft + 'px';
-        }
         if (isRedo === false) {
             spreadsheet.notify(refreshChartCellObj, extend({}, options.eventArgs, {
                 currentColIdx: options.eventArgs.prevColIdx, currentHeight: options.eventArgs.prevHeight,

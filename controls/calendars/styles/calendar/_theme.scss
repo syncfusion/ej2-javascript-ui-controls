@@ -713,6 +713,10 @@
       border-color: transparent;
       color: $calendar-today-disabled-color;
     }
+    @if $skin-name == 'tailwind3' {
+      background-color: $calendar-today-disabled-background-style;
+      border-color: $calendar-today-disabled-border-style;
+    }
   }
   .e-calendar .e-calendar-content-table .e-cell.e-focused-cell span.e-day {
     box-shadow: $calendar-focused-cell-box-shadow;

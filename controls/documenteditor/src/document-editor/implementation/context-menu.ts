@@ -369,7 +369,6 @@ export class ContextMenu {
             items: this.addMenuItems(this.menuItems),
             cssClass: 'e-de-contextmenu-wrapper',
             select: (args: MenuEventArgs) => {
-                this.contextMenuInstance.element.parentElement.style.height = '';
                 let item: string = args.element.id;
                 this.handleContextMenuItem(item);
             },
@@ -397,9 +396,6 @@ export class ContextMenu {
                 classList(this.documentHelper.selection.caret, [], ['e-de-cursor-animation']);
                 this.documentHelper.selection.showCaret();
             }
-            this.contextMenuInstance.enableScrolling = true;		
-            this.contextMenuInstance.element.parentElement.style.height = this.documentHelper.viewerContainer.style.height;
-            this.contextMenuInstance.element.style.width = 'auto';
         };
         if (!isNullOrUndefined(this.documentHelper.owner.documentEditorSettings.popupTarget)) {
             this.documentHelper.owner.documentEditorSettings.popupTarget.append(document.getElementsByClassName('e-de-contextmenu-wrapper')[0]);

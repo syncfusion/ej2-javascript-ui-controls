@@ -557,6 +557,14 @@ export class Gantt extends Component<HTMLElement>
     public allowSelection: boolean;
 
     /**
+     * If `enableHover` is set to true, it enables hover in the Gantt chart and highlights the rows, chart rows, header cells and timeline cells.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableHover: boolean;
+
+    /**
      * If `allowSorting` is set to true, it enables sorting of Gantt chart tasks when the column header is clicked.
      *
      * @default false
@@ -2134,6 +2142,27 @@ export class Gantt extends Component<HTMLElement>
         }
     }
     /**
+     * Inserts a record into the flatData array at the specified index and updates the flatDataMap.
+     * @param {IGanttData} record - The Gantt data record to insert, containing ganttProperties with a rowUniqueID.
+     * @param {number} index - The index at which to insert the record in the flatData array.
+     * @returns {void}.
+     * @private
+     */
+    public insertRecord(record: IGanttData, index: number): void {
+        this.flatData.splice(index, 0, record);
+    }
+    /**
+     * Removes one or more Gantt records from the flatData array starting at the specified index and deletes their entries from the flatDataMap.
+     * @param {number} startIndex - The starting index from which to remove records in the flatData array.
+     * @param {number} count - The number of records to remove (default is 1).
+     * @returns {void}
+     * @private
+     */
+    public removeRecords(startIndex: number, count: number = 1): void {
+        this.flatData.splice(startIndex, count);
+    }
+
+    /**
      * @returns {string} .
      * @private
      */
@@ -3083,7 +3112,7 @@ export class Gantt extends Component<HTMLElement>
         if (this.currentViewData.length > 0 && this.loadChildOnDemand && this.taskFields.hasChildMapping) {
             this.isLoad = true;
             this.flatData = [];
-            this.dataOperation.taskIds = [];
+            this.dataOperation.taskIds = {};
             this.ids = [];
             this.dataOperation.recordIndex = 0;
             this.dataOperation.dataArray = this.currentViewData;
@@ -3540,12 +3569,13 @@ export class Gantt extends Component<HTMLElement>
         this.initialChartRowElements = this.ganttChartModule.getChartRows();
         this.isLoad = false;
         this.isExpandPerformed = !this.enableVirtualization ? false : this.isExpandPerformed;
-        if (!this.isExpandPerformed) {
+        if (!this.isExpandPerformed && !this.isVirtualScroll && this.undoRedoModule) {
             this.previousFlatData = extend([], this.flatData, [], true) as IGanttData[];
         }
         if (this.undoRedoModule && Object.keys(this.undoRedoModule['undoActionDetails']).length !== 0) {
             const actionDetail: object = this.undoRedoModule['undoActionDetails'];
             if (actionDetail['action'] === 'RowDragAndDrop' || actionDetail['action'] === 'TaskbarDragAndDrop') {
+                this.undoRedoModule['isUndoRedoPerformed'] = true;
                 actionDetail['beforeDrop'].forEach((data: Object) => {
                     this.updateRecordByID(data['data']);
                 });
@@ -3557,8 +3587,17 @@ export class Gantt extends Component<HTMLElement>
             }
             this.undoRedoModule['undoActionDetails'] = {};
         }
+        if (this.undoRedoModule && this.undoRedoModule['isPreventRowDeselectOnUndoRedo']) {
+            this.undoRedoModule['isPreventRowDeselectOnUndoRedo'] = false;
+        }
         if (this.undoRedoModule && this.undoRedoModule['isUndoRedoPerformed']) {
             this.undoRedoModule['isUndoRedoPerformed'] = false;
+        }
+        if (navigator.userAgent.includes('Firefox')) {
+            const tableContent: HTMLElement = this.treeGrid.element.querySelector('.e-content')!.children[0] as HTMLElement;
+            const tableHeader: HTMLElement = this.treeGrid.element.querySelector('.e-headercontent .e-table');
+            tableContent.style.borderSpacing = '0';
+            tableHeader.style.borderSpacing = '0';
         }
         this.trigger('dataBound', args);
     }
@@ -3641,7 +3680,7 @@ export class Gantt extends Component<HTMLElement>
                     isRefresh = true;
                 }
                 if (this.undoRedoModule && this.undoRedoModule['isZoomingUndoRedoProgress']) {
-                    this.undoRedoModule['isZoomingUndoRedoProgress'] = false;
+                    this.undoRedoModule['isZoomingUndoRedoProgress'] =  false;
                 }
                 break;
             case 'rowHeight':
@@ -3656,6 +3695,7 @@ export class Gantt extends Component<HTMLElement>
                 break;
             case 'timezone':
             case 'durationUnit':
+                this.isLoad = true;
                 this.dataOperation.checkDataBinding(true);
                 break;
             case 'enableCriticalPath':
@@ -3747,6 +3787,7 @@ export class Gantt extends Component<HTMLElement>
                 break;
             case 'dayWorkingTime':
             case 'weekWorkingTime':
+            case 'enableHover':
                 isRefresh = true;
                 break;
             case 'addDialogFields':
@@ -4414,7 +4455,7 @@ export class Gantt extends Component<HTMLElement>
                 + 'As the result, the links cannot be honored. Select one action below to perform',
             taskAfterPredecessorSF: 'You moved "{0}" to finish after "{1}" starts and the two tasks are linked.'
                 + 'As the result, the links cannot be honored. Select one action below to perform',
-            okText: 'Ok',
+            okText: 'OK',
             confirmDelete: 'Are you sure you want to Delete Record?',
             from: 'From',
             to: 'To',
@@ -4526,26 +4567,28 @@ export class Gantt extends Component<HTMLElement>
      * Get parent task by clone parent item.
      *
      * @param {IParent} cloneParent - Defines the clone parent item.
+     * @param {Map<string, IGanttData>} [parentRecords] - Optional map of parent records.
      * @returns {IGanttData} .
      * @hidden
      */
-    public getParentTask(cloneParent: IParent): IGanttData | null {
+    public getParentTask(cloneParent: IParent, parentRecords?: Map<string, IGanttData>): IGanttData | null {
         if (isNullOrUndefined(cloneParent)) {
             return null;
         }
-        if (!this.autoCalculateDateScheduling && this.dataMap && this.dataMap.size > 0 && !this.taskFields.hasChildMapping &&
-            this.isLoad) {
+        if (parentRecords && parentRecords.size > 0) {
+            const result: IGanttData = parentRecords.get(cloneParent.uniqueID);
+            if (result) {
+                return result;
+            }
+        }
+        if (!this.autoCalculateDateScheduling && this.dataMap && this.dataMap.size > 0 &&
+            !this.taskFields.hasChildMapping && this.isLoad) {
             const parent: IGanttData = this.dataMap.get(cloneParent.uniqueID);
             if (parent) {
                 return parent;
             }
-        } else {
-            const parent: IGanttData = this.flatData.find((val: IGanttData) => cloneParent.uniqueID === val.uniqueID);
-            if (parent) {
-                return parent;
-            }
         }
-        return null;
+        return this.flatData.find((val: IGanttData) => cloneParent.uniqueID === val.uniqueID) || null;
     }
     /**
      * Get parent task by clone parent item.
@@ -5526,9 +5569,15 @@ export class Gantt extends Component<HTMLElement>
      */
     public updatePredecessor(id: number | string, predecessorString: string): void {
         if (this.connectorLineModule) {
+            const fieldName: string = this.taskFields.dependency;
             const ganttRecord: IGanttData = this.connectorLineModule.getRecordByID(id.toString());
             if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
-                this.connectorLineEditModule.updatePredecessor(ganttRecord, predecessorString);
+                const splits: string[] = predecessorString.split(',');
+                const maxLimits: number = this.treeGridModule.maxLimits(this.durationUnit);
+                const predecessorStringValue: string = this.treeGridModule.updatePredecessorLimits(splits,
+                                                                                                   ganttRecord[fieldName as string],
+                                                                                                   maxLimits);
+                this.connectorLineEditModule.updatePredecessor(ganttRecord, predecessorStringValue);
             }
         }
     }

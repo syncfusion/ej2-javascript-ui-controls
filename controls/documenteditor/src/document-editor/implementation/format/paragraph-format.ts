@@ -9,7 +9,8 @@ import { ParagraphWidget, BodyWidget, TableCellWidget, BlockContainer, TextFrame
 import { WStyle, WParagraphStyle } from './style';
 import { WListLevel } from '../list/list-level';
 import { DocumentHelper } from '../viewer';
-import { ParagraphFormatResult } from '../editor/editor-helper';
+import { ParagraphFormatInfo } from '../editor/editor-helper';
+import { ParagraphFormatProperties } from '../editor';
 /* eslint-disable */
 /**
  * @private
@@ -363,12 +364,14 @@ export class WParagraphFormat {
     }
     private getDefaultValue(property: string): Object {
         const propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-        const paragraphFormatResult: ParagraphFormatResult = this.getDocumentParagraphFormat();
-        const docParagraphFormat: WParagraphFormat = paragraphFormatResult.docParagraphFormat as WParagraphFormat;
-        const isPaste: boolean = paragraphFormatResult.isPaste;
+        const paragraphFormatInfo: ParagraphFormatInfo = this.getDocumentParagraphFormat();
+       
+        const docParagraphFormat: WParagraphFormat = paragraphFormatInfo.docParagraphFormat as WParagraphFormat;
+        const editorFormat: ParagraphFormatProperties = paragraphFormatInfo.editorFormat
         if (isNullOrUndefined(docParagraphFormat) || isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat)) {
-            return WParagraphFormat.getPropertyDefaultValue(property);
+            return !isNullOrUndefined(editorFormat) && editorFormat.hasOwnProperty(property) ? (editorFormat as any)[property] : WParagraphFormat.getPropertyDefaultValue(property);
         }
+        const isPaste: boolean = paragraphFormatInfo.isPaste;
         const ownerBase = this.ownerBase;
         let isInsideBodyWidget = false;
         if (ownerBase && ownerBase instanceof ParagraphWidget) {
@@ -382,25 +385,28 @@ export class WParagraphFormat {
                 return propValue;
             }
         }
-        return WParagraphFormat.getPropertyDefaultValue(property);
+        return !isNullOrUndefined(editorFormat) && editorFormat.hasOwnProperty(property) ? (editorFormat as any)[property] : WParagraphFormat.getPropertyDefaultValue(property);
     }
     /**
     * @private
     */
-    public getDocumentParagraphFormat(): ParagraphFormatResult {	        
+    public getDocumentParagraphFormat(): ParagraphFormatInfo {	        
         let docParagraphFormat: WParagraphFormat = new WParagraphFormat();
         let isPasteAction: boolean = false;
+        let editorFormat: ParagraphFormatProperties;
         if (!isNullOrUndefined(this.ownerBase)) {
             let documentHelper: DocumentHelper = this.getDocumentHelperObject();
             if (!isNullOrUndefined(documentHelper)) {
                 docParagraphFormat = documentHelper.paragraphFormat;
                 if (!isNullOrUndefined(documentHelper.owner) && !isNullOrUndefined(documentHelper.owner.editorModule)) {
                     isPasteAction = documentHelper.owner.editorModule.isPaste;
+                    editorFormat = documentHelper.owner.paragraphFormat
                 }
             }		            
         }
         return {
                 docParagraphFormat: docParagraphFormat,
+                editorFormat: editorFormat,
                 isPaste: isPasteAction
             };
     }		    

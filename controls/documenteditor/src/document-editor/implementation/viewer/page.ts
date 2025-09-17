@@ -1358,6 +1358,8 @@ export class ParagraphWidget extends BlockWidget {
             let text: string = '';
             let elements: Dictionary<TextElementBox, number> = new Dictionary<TextElementBox, number>();
             let imageWidths: number[] = [];
+            let isAutoWidth: boolean = false;
+            let isAllColumnHasAutoWidthType: boolean = false;
             do {
                 if (element instanceof TextElementBox && (element as TextElementBox).text !== '') {
                     elements.add(element as TextElementBox, text.length);
@@ -1376,38 +1378,43 @@ export class ParagraphWidget extends BlockWidget {
                 element = element.nextNode as ElementBox;
             } while (true);
 
-            let pattern;
             if (this.isInsideTable && this.containerWidget instanceof TableCellWidget && this.containerWidget.ownerTable &&
                 this.containerWidget.ownerTable.bodyWidget && this.containerWidget.ownerTable.bodyWidget.page &&
                 this.containerWidget.ownerTable.bodyWidget.page.documentHelper && this.containerWidget.ownerTable.bodyWidget.page.documentHelper.layout
                 && this.bodyWidget.page.documentHelper.layout.isAllColumnHasAutoWidthType) {
-                pattern = new RegExp('[^\\s\\-\\u4E00-\\u9FFF]+', 'g');
-            } else {
-                pattern = new RegExp('\\b\\w+\\b', 'g');
+                isAllColumnHasAutoWidthType = true;
             }
-
-            let matches: RegExpExecArray[] = [];
-            let matchInfo: RegExpExecArray;
-            // eslint-disable  no-cond-assign
-            while (!isNullOrUndefined(matchInfo = pattern.exec(text))) {
-                matches.push(matchInfo);
+            if (this.containerWidget instanceof TableCellWidget && this.containerWidget.ownerTable && (this.containerWidget.ownerTable.tableFormat.preferredWidthType === 'Auto' || (this.containerWidget.ownerTable.tableFormat.preferredWidthType === "Point" && this.containerWidget.ownerTable.tableFormat.preferredWidth === 0))) {
+                isAutoWidth = true;
             }
-            for (let i: number = 0; i < matches.length; i++) {
-                let match: RegExpExecArray = matches[i];
+            //Word split
+            let texts: { value: string; index: number }[] = [];
+            let word: string;
+            this.bodyWidget.page.documentHelper.textHelper.position = 0;
+            do {
+                let pos: number = this.bodyWidget.page.documentHelper.textHelper.position
+                word = this.bodyWidget.page.documentHelper.textHelper.readWord(text, elements, isAutoWidth, isAllColumnHasAutoWidthType);
+                if (word) {
+                    texts.push({ value: word, index: pos });
+                }
+            } while (this.bodyWidget.page.documentHelper.textHelper.position < text.length);
+            for (let i: number = 0; i < texts.length; i++) {
+                let match: string = texts[i].value;
+                let position: number = texts[i].index;
                 let width: number = 0;
                 text = '';
                 let matchedValue: string = '';
                 let wordStartIndex: number = 0;
-                let wordEndIndex: number = match.index;
-                let index: number = match.index;
+                let wordEndIndex: number = position;
+                let index: number = position;
                 for (let j: number = 0; j < elements.keys.length; j++) {
                     let span: TextElementBox = elements.keys[j];
                     let startIndex: number = elements.get(span);
                     let spanLength: number = span.length;
                     if (index <= startIndex + spanLength) {
                         wordStartIndex = index - startIndex;
-                        if (match.index + match[0].length <= startIndex + spanLength) {
-                            wordEndIndex = (match.index + match[0].length) - (startIndex + wordStartIndex);
+                        if (position + match.length <= startIndex + spanLength) {
+                            wordEndIndex = (position + match.length) - (startIndex + wordStartIndex);
                         } else {
                             wordEndIndex = spanLength - wordStartIndex;
                             index += wordEndIndex;
@@ -1418,7 +1425,7 @@ export class ParagraphWidget extends BlockWidget {
                     if (text !== '') {
                         width += this.bodyWidget.page.documentHelper.textHelper.getWidth(text, span.characterFormat, span.scriptType);
                     }
-                    if (matchedValue === match[0]) {
+                    if (matchedValue === match) {
                         break;
                     }
                 }
@@ -2297,7 +2304,7 @@ export class TableWidget extends BlockWidget {
      * @private
      */
     /* eslint-disable  */
-    public calculateGrid(isInsertRow?: boolean): void {
+    public calculateGrid(isInsertRow?: boolean, isOnlyRow?: boolean): void {
         let tempGrid: number[] = [];
         let tempSpanDecimal: number[] = [];
         let spannedCells: TableCellWidget[] = [];
@@ -2407,7 +2414,7 @@ export class TableWidget extends BlockWidget {
         tempGrid.sort((a: number, b: number) => { return a - b; });
         tempSpanDecimal.sort((a: number, b: number) => { return a - b; });
         if (this.tableHolder.columns.length > 0 || isInsertRow) {
-            this.updateColumnSpans(tempGrid, tableWidth, tempSpanDecimal);
+            this.updateColumnSpans(tempGrid, tableWidth, tempSpanDecimal, isOnlyRow);
         }
         this.tableCellInfo.clear();
         this.tableCellInfo = undefined;
@@ -2424,7 +2431,7 @@ export class TableWidget extends BlockWidget {
             }
         }
     }
-    private updateColumnSpans(tempGrid: number[], containerWidth: number, tempSpan: number[]): void {
+    private updateColumnSpans(tempGrid: number[], containerWidth: number, tempSpan: number[], isInsertRow?: boolean): void {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
             if (row.rowFormat.gridBeforeWidth >= 0) {
@@ -2433,7 +2440,7 @@ export class TableWidget extends BlockWidget {
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
                 let columnSpan: number = row.getGridCount(tempGrid, cell, cell.getIndex(), containerWidth, tempSpan);
-                if (columnSpan > 0 && cell.cellFormat.columnSpan !== columnSpan) {
+                if (columnSpan > 0 && cell.cellFormat.columnSpan !== columnSpan && !isInsertRow) {
                     cell.cellFormat.columnSpan = columnSpan;
                 }
             }
@@ -2916,7 +2923,7 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
-    public insertTableRowsInternal(tableRows: TableRowWidget[], startIndex: number, isInsertRow?: boolean, initilizeCellBorder?: boolean): void {
+    public insertTableRowsInternal(tableRows: TableRowWidget[], startIndex: number, isInsertRow?: boolean, initilizeCellBorder?: boolean, isOnlyRow?: boolean): void {
         for (let i: number = tableRows.length - 1; i >= 0; i--) {
             let row: TableRowWidget = tableRows.splice(i, 1)[0] as TableRowWidget;
             row.containerWidget = this;
@@ -2931,7 +2938,7 @@ export class TableWidget extends BlockWidget {
         this.updateRowIndex(startIndex);
         this.isGridUpdated = false;
         if (isInsertRow) {
-            this.calculateGrid(true);
+            this.calculateGrid(true, isOnlyRow);
             this.buildTableColumns();
         }
         this.isGridUpdated = true;
@@ -10073,9 +10080,16 @@ export class WTableHolder {
             let column: WColumn = this.columns[i];
             // If preferred width of column is less than column minimum width and also column is empty, considered column preferred width
             if (column.minimumWordWidth === 0 && column.maximumWordWidth === 0 && column.minWidth === 0) {
-                column.minimumWordWidth = column.minimumWidth > 0 ? column.minimumWidth : column.preferredWidth;
-                column.maximumWordWidth = column.minimumWidth > 0 ? column.minimumWidth : column.preferredWidth;
-                column.minWidth = column.minimumWidth > 0 ? column.minimumWidth : column.preferredWidth;
+                if (isAllColumnPointWidth) {
+                    column.minimumWordWidth = column.minimumWidth > column.preferredWidth ? column.minimumWidth : column.preferredWidth;
+                    column.maximumWordWidth = column.minimumWidth > column.preferredWidth ? column.minimumWidth : column.preferredWidth;
+                    column.minWidth = column.minimumWidth > column.preferredWidth ? column.minimumWidth : column.preferredWidth;
+                }
+                else {
+                    column.minimumWordWidth = column.minimumWidth > 0 ? column.minimumWidth : column.preferredWidth;
+                    column.maximumWordWidth = column.minimumWidth > 0 ? column.minimumWidth : column.preferredWidth;
+                    column.minWidth = column.minimumWidth > 0 ? column.minimumWidth : column.preferredWidth;
+                }
             }
             if (isTableHasPointWidth) {
                 this.columns[i].preferredWidth = (this.columns[i].preferredWidth / totalColumnsPreferredWidth) * preferredTableWidth;
@@ -10209,14 +10223,61 @@ export class WTableHolder {
                     let availableWidth: number = 0;
                     if (((totalMinWidth < containerWidth) && ((containerWidth - totalMinWidth) >= 1) && !isAllColumnPointWidth)
                         || (isAllColumnPointWidth && !hasSpannedCells && totalMinimumWordWidth > containerWidth)
-                        || (hasSpannedCells && totalMinimumWordWidth > containerWidth && totalPreferredWidth > containerWidth && totalMaximumWordWidth > clientWidth)) {
-                        availableWidth = containerWidth - totalMinWidth;
-                        for (let i: number = 0; i < this.columns.length; i++) {
-                            let column: WColumn = this.columns[i];
-                            // The factor depends of current column's minimum word width and total minimum word width.
-                            let factor: number = availableWidth * column.minimumWordWidth / totalMinimumWordWidth;
-                            factor = isNaN(factor) ? 0 : factor;
-                            column.preferredWidth = (column.minimumWidth == 0 ? 1 : column.minimumWidth) + factor;
+                        || (hasSpannedCells && Math.round(totalPreferredWidth) > Math.round(containerWidth) && totalMaximumWordWidth > clientWidth)) {
+                        if (isNestedTable || !hasSpannedCells || !isAllColumnPointWidth) {
+                            availableWidth = containerWidth - totalMinWidth;
+                            for (let i: number = 0; i < this.columns.length; i++) {
+                                let column: WColumn = this.columns[i];
+                                // The factor depends of current column's minimum word width and total minimum word width.
+                                let factor: number = availableWidth * column.minimumWordWidth / totalMinimumWordWidth;
+                                factor = isNaN(factor) ? 0 : factor;
+                                column.preferredWidth = (column.minimumWidth == 0 ? 1 : column.minimumWidth) + factor;
+                            }
+                        }
+                        else {
+                            // Case 1: When the total minimum word width is less than the container width
+                            // The remaining space is distributed across columns based on how much extra width each column is allowed beyond its minimum.
+                            // Each column's share of the extra space is determined by comparing its preferred width to its minimum word width.
+                            // The final preferred width is updated by adding the calculated share of extra space to the column's minimum word width.
+                            if (totalMinimumWordWidth <= preferredTableWidth || totalMinimumWordWidth <= containerWidth) {
+                                let targetwidth: number = containerWidth > preferredTableWidth ? containerWidth : preferredTableWidth;
+                                let extraSpace: number = targetwidth - totalMinimumWordWidth;
+                                let totalDifference: number = Math.abs(totalPreferredWidth - totalMinimumWordWidth);
+                                for (let i: number = 0; i < this.columns.length; i++) {
+                                    let column: WColumn = this.columns[i];
+                                    if (column.preferredWidth === 0) {
+                                        column.preferredWidth = column.minimumWordWidth;
+                                    } else {
+                                        if (column.preferredWidth < column.minimumWordWidth) {
+                                            column.preferredWidth = column.minimumWordWidth;
+                                        }
+                                    }
+                                    let balance: number = column.preferredWidth - column.minimumWordWidth;
+                                    let factor: number = extraSpace * balance / totalDifference;
+                                    factor = isNaN(factor) ? 0 : factor;
+                                    column.preferredWidth = column.minimumWordWidth + factor;
+                                }
+                                // Case 2: When the total minimum word width exceeds the container width
+                                // Each column's content width is considered to understand how much space it ideally needs
+                                // The final preferred width is calculated by adding a proportion of the available space to the column's minimum width, based on how much content it holds relative to the total content.
+                            } else if (totalPreferredWidth > containerWidth || totalPreferredWidth < totalMinimumWordWidth) {
+                                availableWidth = containerWidth - totalMinWidth;
+                                const contentWidths: number[] = [];
+                                let totalContentWidth: number = 0;
+                                for (let i: number = 0; i < this.columns.length; i++) {
+                                    const col: WColumn = this.columns[i];
+                                    const contentWidth: number = col.minimumWordWidth - col.minimumWidth === 0 ? col.minimumWidth : Math.abs(col.minimumWordWidth - col.minimumWidth);
+                                    contentWidths[i] = contentWidth;
+                                    totalContentWidth += contentWidth;
+                                }
+                                for (let i: number = 0; i < this.columns.length; i++) {
+                                    let column: WColumn = this.columns[i];
+                                    // The factor depends of current column's content width and total content width.
+                                    let factor: number = availableWidth * contentWidths[i] / totalContentWidth;
+                                    factor = isNaN(factor) ? 0 : factor;
+                                    column.preferredWidth = (column.minimumWidth == 0 ? 1 : column.minimumWidth) + factor;
+                                }
+                            }
                         }
                         // table width exceeds container width
                     } else if (totalPreferredWidth > containerWidth) {

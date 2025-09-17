@@ -19,6 +19,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
+import { Index, Indexes } from '../../../src/common/model/base';
 
 Chart.Inject(
     LineSeries, DataEditing, StepLineSeries, ColumnSeries, AreaSeries, StackingAreaSeries, Highlight,
@@ -486,7 +487,7 @@ describe('Chart Control Highlight ', () => {
         chartObj.highlightPattern = 'HorizontalStripe';
         chartObj.refresh();
     });
-    it('Patterns with Bubble',  (done: Function) => {
+   it('Patterns with Bubble',  (done: Function) => {
         loaded = () => {
             element = document.getElementById(id + '_Series_1_Point_' + 5 + '_Symbol');
             let chartArea: Element = document.getElementById(id + '_ChartAreaBorder');
@@ -505,7 +506,24 @@ describe('Chart Control Highlight ', () => {
         chartObj.series[1].marker.shape = 'Circle';
         chartObj.refresh();
     });
-
+    it('Line series with enable highlight and mode as Series with group element',  (done: Function) => {
+        loaded = () => {
+            element = document.getElementById(id + '_Series_1');
+            let element1 = document.getElementById(id + 'SeriesGroup2');
+            chartObj.highlightModule.highlightChart(element, 'mousemove');
+            chartObj.highlightModule.highlightDataIndexes = [{ series: 1, point: 0 }] as any;
+            chartObj.highlightModule.highlightChart(element1, 'mousemove');
+            expect(element != null).toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.legendSettings.visible = true;
+        chartObj.legendSettings.enableHighlight = true;
+        chartObj.highlightMode = 'Series';
+        chartObj.series[1].type = 'Line';
+        chartObj.series[1].marker.visible = true;
+        chartObj.refresh();
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

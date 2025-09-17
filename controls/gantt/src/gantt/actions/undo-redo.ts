@@ -23,6 +23,7 @@ export class UndoRedo {
     private canUpdateIndex: boolean = true;
     private sortedColumnsLength: number = 0;
     private isZoomingUndoRedoProgress: boolean = false;
+    private isPreventRowDeselectOnUndoRedo: boolean = false;
     // Initialize a collection to store only unique top-level deleted records
     private uniqueDeletedRecords: Object[] = [];
 
@@ -53,6 +54,7 @@ export class UndoRedo {
             return false;
         }.bind(this));
     }
+
     /**
      *Initiates an undo action to revert the most recent change performed.
      *

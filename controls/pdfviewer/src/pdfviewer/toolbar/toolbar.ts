@@ -1030,6 +1030,9 @@ export class Toolbar {
                 }
                 this.pdfViewerBase.currentPageNumber = pageIndex;
                 this.pdfViewer.currentPageNumber = pageIndex;
+                if (pageIndex === this.pdfViewerBase.pageCount) {
+                    this.updateNavigationButtons();
+                }
             } else {
                 this.pdfViewerBase.mobileSpanContainer.innerHTML = pageIndex.toString();
                 this.pdfViewerBase.mobilecurrentPageContainer.innerHTML = pageIndex.toString();

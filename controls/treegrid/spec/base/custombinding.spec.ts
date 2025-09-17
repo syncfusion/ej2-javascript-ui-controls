@@ -73,7 +73,7 @@ describe('Custom Binding', () => {
         gridObj.actionComplete = (args: any) => {
             if (args.requestType === 'paging') {
                 expect(gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell')[1].querySelectorAll('.e-treecell')[0].innerHTML == 'Parent Task 2').toBe(true);
-                expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('index')).toBe('2');
+                expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('data-index')).toBe('2');
             }
             done();
         };

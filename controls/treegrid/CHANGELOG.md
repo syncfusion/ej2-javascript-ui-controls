@@ -2,59 +2,24 @@
 
 ## [Unreleased]
 
-## 30.1.38 (2025-07-02)
+## 31.1.20 (2025-09-10)
 
 ### Tree Grid
 
 #### Bug Fixes
 
-- `#F68080` - Fixed an issue where the header checkbox remained checked when the data source was empty and aggregate columns were included.
-- `#F68277` - Fixed an issue where the `getCheckedRecords()` method returned incorrect results when the auto-check hierarchy feature was disabled.
+-`#I759266` - The `addRecord` method of the TreeGrid correctly adds a child record to the specified parent node.
+- `#F69767` - Fixed an issue where data was being duplicated when dragging and dropping items and refreshing in the treegrid.
 
-## 30.1.37 (2025-06-25)
-
-### Tree Grid
-
-#### Features
-
-- `#I651431` - The Tree Grid now supports enhanced `in` and `not in` filters, allowing users to filter multiple values in a column using a multiselect checkbox. Explore the demo [here](https://ej2.syncfusion.com/demos/#/tailwind3/tree-grid/filter-menu.html).
-- Enhanced the EJ2 Tree Grid performance by removing unnecessary attributes and inline styles, ensuring a leaner HTML structure for faster rendering and improved responsiveness.
-  
-### Tree Grid
-
-#### Breaking Changes
-
-- The behavior of the [LoadChildOnDemand](https://helpej2.syncfusion.com/documentation/api/treegrid/#loadchildondemand) property in the Tree Grid has been modified. Previously, when this property was set to `true`, both parent and child records were loaded simultaneously. Now, when set to `true`, parent records will initially be rendered in a collapsed state, with child records being loaded only when the parent row is expanded. Additionally, the default value of `LoadChildOnDemand` has been changed from `false` to `true`.
-
-#### Bug Fixes
-
-- `#F61040` - Fixed a focus issue that occurred when using the up/down arrow keys during editing.
+## 31.1.17 (2025-09-05)
 
 ### Tree Grid
 
 #### Features
 
-- `#I341079` - Provided support for exporting data to PDF, CSV, and Excel formats using server-side functionality. Please find the demo [here](https://ej2.syncfusion.com/aspnetcore/TreeGrid/ServerSideExporting#/material3).
+- Introduced sticky header support in the Tree Grid, allowing column headers to stay fixed during scrolling. This improves navigation and readability in large hierarchical data views. Explore the demo [here](https://ej2.syncfusion.com/demos/#/tailwind3/tree-grid/sticky-header.html).
 
-- Added support for the new `fixed` mode within the `freeze` property of column settings. When a column is set as `fixed`, it will stay within the viewport during horizontal scrolling, enhancing the user experience with improved visibility and efficiency.
-
-#### Breaking Changes
-
-- Optimized the frozen columns feature in Tree Grid and thus changed the dom structure of tree grid from two table to single table architecture. Also, the following methods have been removed, and it's recommended to use the following alternatives instead.
-
-| Removed methods  | Suggested to use alternative methods |
-|----------|----------|
-| `getMoavableRows`, `getFrozenRightRows` | `getRows` |
-| `getMovableRowByIndex`, `getFrozenRowByIndex`, `getFrozenRightRowByIndex` | `getRowByIndex` |
-| `getMovableCellFromIndex`, `getFrozenRightCellFromIndex` | `getCellFromIndex` |
-| `getMovableDataRows`, `getFrozenRightDataRows`, `getFrozenDataRows` | `getDataRows` |
-| `getAllMovableDataRows`, `getAllFrozenDataRows`, `getAllFrozenRightDataRows` | `getAllDataRows` |
-| `getMovableColumnHeaderByIndex`, `getFrozenRightColumnHeaderByIndex`, `getFrozenLeftColumnHeaderByIndex` | `getColumnHeaderByIndex` |
-| `getFrozenRightHeader`, `getMovableHeader` | `getHeaderContent` |
-| `getFrozenRightRowsObject`, `getMovableRwsObject` | `getRowsObject` |
-| `getFrozenRightHeaderTbody`, `getMovableHeaderTbody`, `getFrozenHeaderTbody` | `getContent().querySelector(‘tbody’)` |
-| `getFrozenLeftContentTbody`, `getFrozenRightContentTbody`, `getMovableContentTbody` | `getHeaderContent().querySelector(‘tbody’)` |
-| `getFrozenRightContent`, `getMovableContent` | `getContent` |
+- Enhanced support for `LoadChildOnDemand` in the Tree Grid with remote data binding and virtual scrolling. This improvement enables efficient, on-demand retrieval of child records, ensuring smoother performance when working with large hierarchical datasets.
 
 ## 20.2.36 (2022-06-30)
 

@@ -1563,6 +1563,229 @@ describe('Chart ->', () => {
         });
     });
 
+    describe('966952 - Chart Drag and Drop with Freeze Pane position restore ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }],  frozenRows: 5, frozenColumns: 3 }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Set D6 cell to freeze pane and insert chart at D6:E9', (done: Function) => {
+            helper.invoke('selectRange', ['D6:E9']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Column"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#clusteredColumn').click();
+            setTimeout(() => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].frozenRows).toBe(5);
+                expect(spreadsheet.sheets[0].frozenColumns).toBe(3);
+                const initialCell = spreadsheet.sheets[0].rows[5].cells[3];
+                expect(initialCell.chart).toBeDefined();
+                expect(initialCell.chart.length).toBe(1);
+                expect(initialCell.chart[0].type).toBe('Column');
+                done();
+            });
+        });
+        it('Drag and drop chart from D6 to F6 cell', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const initialChartId = spreadsheet.sheets[0].rows[5].cells[3].chart[0].id;
+            helper.triggerMouseAction('mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 }, chart, chart);
+            const targetCell = helper.invoke('getCell', [5, 5]); // F6 cell
+            const targetRect = targetCell.getBoundingClientRect();
+            helper.triggerMouseAction('mousemove', { x: targetRect.left + 10, y: targetRect.top + 10 }, chart, chart);
+            helper.triggerMouseAction('mouseup', { x: targetRect.left + 10, y: targetRect.top + 10 }, document, chart);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[5].cells[3].chart.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[5].cells[5].chart).toBeDefined();
+                expect(spreadsheet.sheets[0].rows[5].cells[5].chart.length).toBe(1);
+                expect(spreadsheet.sheets[0].rows[5].cells[5].chart[0].id).toBe(initialChartId);
+                done();
+            });
+        });
+        it('Drag and drop chart from F6 to F23', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            helper.triggerMouseAction('mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 }, chart, chart);
+            const targetCell = helper.invoke('getCell', [22, 5]);
+            const targetRect = targetCell.getBoundingClientRect();
+            helper.triggerMouseAction('mousemove', { x: targetRect.left + 10, y: targetRect.top + 10 }, chart, chart);
+            helper.triggerMouseAction('mouseup', { x: targetRect.left + 10, y: targetRect.top + 10 }, document, chart);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[5].cells[5].chart.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[22].cells[5].chart).toBeDefined();
+                expect(spreadsheet.sheets[0].rows[22].cells[5].chart.length).toBe(1);
+                done();
+            });
+        });
+        it('Drag and drop chart from F23 to B12', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            helper.triggerMouseAction('mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 }, chart, chart);
+            const targetCell = helper.invoke('getCell', [11, 1]);
+            const targetRect = targetCell.getBoundingClientRect();
+            helper.triggerMouseAction('mousemove', { x: targetRect.left + 10, y: targetRect.top + 10 }, chart, chart);
+            helper.triggerMouseAction('mouseup', { x: targetRect.left + 10, y: targetRect.top + 10 }, document, chart);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[22].cells[5].chart.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[11].cells[1].chart).toBeDefined();
+                expect(spreadsheet.sheets[0].rows[11].cells[1].chart.length).toBe(1);
+                done();
+            });
+        });
+
+        it('Drag and drop chart from B12 to B2', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            helper.triggerMouseAction('mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 }, chart, chart);
+            const targetCell = helper.invoke('getCell', [1, 1]); // B2 cell
+            const targetRect = targetCell.getBoundingClientRect();
+            helper.triggerMouseAction('mousemove', { x: targetRect.left + 10, y: targetRect.top + 10 }, chart, chart);
+            helper.triggerMouseAction('mouseup', { x: targetRect.left + 10, y: targetRect.top + 10 }, document, chart);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[11].cells[1].chart.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[1].cells[1].chart).toBeDefined();
+                expect(spreadsheet.sheets[0].rows[1].cells[1].chart.length).toBe(1);
+                done();
+            });
+        });
+        it('Drag and drop chart from B2 to F2', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            helper.triggerMouseAction('mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 }, chart, chart);
+            const targetCell = helper.invoke('getCell', [1, 5]);
+            const targetRect = targetCell.getBoundingClientRect();
+            helper.triggerMouseAction('mousemove', { x: targetRect.left + 10, y: targetRect.top + 10 }, chart, chart);
+            helper.triggerMouseAction('mouseup', { x: targetRect.left + 10, y: targetRect.top + 10 }, document, chart);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].cells[1].chart.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[1].cells[5].chart).toBeDefined();
+                expect(spreadsheet.sheets[0].rows[1].cells[5].chart.length).toBe(1);
+                done();
+            });
+        });
+        it('Drag and drop chart from F2 to H6', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            helper.triggerMouseAction('mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 }, chart, chart);
+            const targetCell = helper.invoke('getCell', [5, 7]);
+            const targetRect = targetCell.getBoundingClientRect();
+            helper.triggerMouseAction('mousemove', { x: targetRect.left + 10, y: targetRect.top + 10 }, chart, chart);
+            helper.triggerMouseAction('mouseup', { x: targetRect.left + 10, y: targetRect.top + 10 }, document, chart);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].cells[5].chart.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[5].cells[7].chart).toBeDefined();
+                expect(spreadsheet.sheets[0].rows[5].cells[7].chart.length).toBe(1);
+                done();
+            });
+        });
+        it('Resize chart to height 350px and width 350px', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart).not.toBeNull();
+            const overlay: HTMLElement = helper.getElementFromSpreadsheet('.e-ss-overlay-active');
+            expect(overlay).not.toBeNull();
+            const overlayBottomHandle: HTMLElement = overlay.querySelector('.e-ss-overlay-b');
+            let offset: DOMRect = overlayBottomHandle.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top }, overlay, overlayBottomHandle);
+            const heightDifference = 60;
+            helper.triggerMouseAction('mousemove', { x: offset.left, y: offset.top + heightDifference }, overlay, overlayBottomHandle);
+            helper.triggerMouseAction('mouseup', { x: offset.left, y: offset.top + heightDifference }, document, overlayBottomHandle);
+            setTimeout(() => {
+                const overlayRightHandle: HTMLElement = overlay.querySelector('.e-ss-overlay-r');
+                offset = overlayRightHandle.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top }, overlay, overlayRightHandle);
+                const widthDifference = -130;
+                helper.triggerMouseAction('mousemove', { x: offset.left + widthDifference, y: offset.top }, overlay, overlayRightHandle);
+                helper.triggerMouseAction('mouseup', { x: offset.left + widthDifference, y: offset.top }, document, overlayRightHandle);
+                setTimeout(() => {
+                    expect(chart.style.height).toBe('350px');
+                    expect(chart.style.width).toBe('350px');
+                    const chartModel = spreadsheet.sheets[0].rows[5].cells[7].chart[0];
+                    expect(chartModel.height).toBe(350);
+                    expect(chartModel.width).toBe(350);
+                    done();
+                });
+            });
+        });
+        it('Perform all undo operations in sequence', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.style.width).toBe('480px');
+            expect(chart.style.height).toBe('350px');
+            helper.click('#spreadsheet_undo');
+            expect(chart.style.height).toBe('290px');
+            expect(chart.style.width).toBe('480px');
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[5].cells[7].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[1].cells[5].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[1].cells[5].chart.length).toBe(1);
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[1].cells[5].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[1].cells[1].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[1].cells[1].chart.length).toBe(1);
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[1].cells[1].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[11].cells[1].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[11].cells[1].chart.length).toBe(1);
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[11].cells[1].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[22].cells[5].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[22].cells[5].chart.length).toBe(1);
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[22].cells[5].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[5].cells[5].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[5].cells[5].chart.length).toBe(1);
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[5].cells[5].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[5].cells[3].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[5].cells[3].chart.length).toBe(1);
+            done();
+        });
+        it('Perform all redo operations in sequence', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.click('#spreadsheet_redo');
+            expect(spreadsheet.sheets[0].rows[5].cells[3].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[5].cells[5].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[5].cells[5].chart.length).toBe(1);
+            helper.click('#spreadsheet_redo');
+            expect(spreadsheet.sheets[0].rows[5].cells[5].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[22].cells[5].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[22].cells[5].chart.length).toBe(1);
+            helper.click('#spreadsheet_redo');
+            expect(spreadsheet.sheets[0].rows[22].cells[5].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[11].cells[1].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[11].cells[1].chart.length).toBe(1);
+            helper.click('#spreadsheet_redo');
+            expect(spreadsheet.sheets[0].rows[11].cells[1].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[1].cells[1].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[1].cells[1].chart.length).toBe(1);
+            helper.click('#spreadsheet_redo');
+            expect(spreadsheet.sheets[0].rows[1].cells[1].chart.length).toBe(0); 
+            expect(spreadsheet.sheets[0].rows[1].cells[5].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[1].cells[5].chart.length).toBe(1);
+            helper.click('#spreadsheet_redo');
+            expect(spreadsheet.sheets[0].rows[1].cells[5].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[5].cells[7].chart).toBeDefined();
+            expect(spreadsheet.sheets[0].rows[5].cells[7].chart.length).toBe(1);
+            helper.click('#spreadsheet_redo');
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.style.height).toBe('350px');
+            helper.click('#spreadsheet_redo');
+            expect(chart.style.width).toBe('350px');
+            expect(chart.style.height).toBe('350px');
+            (spreadsheet.serviceLocator.getService('shape') as Overlay).destroy();
+            done();
+        });
+    });
+        
     describe('EJ2-883265 -> Testing bar chart with Add chart elements UI interaction->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -3788,6 +4011,18 @@ describe('Chart ->', () => {
                 (spreadsheet.serviceLocator.getService('shape') as Overlay).destroy();
                 done();
             });
+        });
+        it('Deleting chart within the Apply freezepane', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const chartId: string = spreadsheet.sheets[0].rows[0].cells[6].chart[0].id;
+            const chart: ExtendedChartModel = spreadsheet.chartColl.find((model: ChartModel) => model.id === chartId);
+            expect(chart.address[0]).toBe(0);
+            expect(chart.address[1]).toBe(6);
+            delete chart.address;
+            helper.invoke('deleteChart', [chartId]);
+            expect(spreadsheet.sheets[0].rows[0].cells[6].chart.length).toBe(0);
+            expect(document.getElementById(chart.id + '_overlay')).toBeNull();
+            done();
         });
     });
 

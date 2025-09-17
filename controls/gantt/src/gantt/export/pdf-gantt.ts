@@ -184,7 +184,7 @@ export class PdfGantt extends PdfTreeGrid {
                 else {
                     currentDate.setDate(currentDate.getDate() + endDays * count);
                 }
-                const secondsToAdd: number = this.parent.workingTimeRanges[0].to * 1000;
+                const secondsToAdd: number = this.parent.workingTimeRanges[this.parent.workingTimeRanges.length - 1].to * 1000;
                 detail.endDate = new Date(currentDate.getTime());
                 detail.endDate.setTime(detail.endDate.getTime() + secondsToAdd);
                 break;

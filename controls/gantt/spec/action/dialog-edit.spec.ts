@@ -3,7 +3,7 @@
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs, UndoRedo  } from '../../src/index';
-import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue, resourceResources, data931222, resource931222, baselinedurationdata} from '../base/data-source.spec';
+import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue, resourceResources, data931222, resource931222, baselinedurationdata, t974566} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -14908,5 +14908,86 @@ describe('Edit baseline duration', function () {
        ganttObj.editModule.dialogModule['dialogEditValidationFlag'] = false;
        ganttObj.editModule.dialogModule.validateDuration(ganttObj.currentViewData[1], true)
 
+   });
+});
+
+
+describe('T:974566-readOnly property not working for hierarchy data binding', function () {
+   let ganttObj: Gantt;
+   beforeAll(function (done) {
+       ganttObj = createGantt({
+           dataSource: t974566,
+             height: '450px',
+    highlightWeekends: true,
+    allowSelection: true,
+    treeColumnIndex: 1,
+    allowReordering: true,
+    enableContextMenu: true,
+    taskFields: {
+        id: 'TaskId',
+        name: 'TaskName',
+        startDate: 'StartDate',
+        endDate: 'EndDate',
+        duration: 'Duration',
+        progress: 'Progress',
+        dependency: 'Predecessor',
+        parentID: 'ParentId'
+    },
+    editSettings: {
+        allowAdding: true,
+        allowEditing: true,
+        allowDeleting: true,
+        allowTaskbarEditing: true,
+        showDeleteConfirmDialog: true
+    },
+    columns: [
+        { field: 'taskID', width: 60 },
+        { field: 'taskName', width: 250 },
+        { field: 'startDate' },
+        { field: 'endDate' },
+        { field: 'duration' },
+        { field: 'predecessor' },
+        { field: 'progress' },
+    ],
+    sortSettings: {
+        columns: [{ field: 'taskID', direction: 'Ascending' },
+        { field: 'taskName', direction: 'Ascending' }]
+    },
+    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+    allowRowDragAndDrop: true,
+    selectedRowIndex: 1,
+    splitterSettings: {
+        columnIndex: 2
+    },
+    allowFiltering: true,
+    gridLines: "Both",
+    showColumnMenu: true,
+    allowResizing: true,
+    readOnly: true,
+    taskbarHeight: 20,
+    rowHeight: 40,
+    allowUnscheduledTasks: true,
+    projectStartDate: new Date('01/28/2019'),
+    projectEndDate: new Date('03/10/2019')
+       }, done);
+   });
+   afterAll(function () {
+       if (ganttObj) {
+           destroyGantt(ganttObj);
+       }
+   });
+   beforeEach((done) => {
+           setTimeout(done, 500);
+       });
+   it('should disable TaskName field in edit dialog', () => {
+       ganttObj.openEditDialog(5);
+           let name: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'TaskName')).ej2_instances[0];
+           expect(name.element.classList.contains("e-disabled")).toBe(true);
+   });
+   it('should disable StartDate field in edit dialog', () => {
+       ganttObj.openEditDialog(5);
+           let name: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+           expect(name.element.classList.contains("e-disabled")).toBe(true);
    });
 });

@@ -5374,3 +5374,42 @@ describe('963939: Last row border line is missing when we update record by using
         gridObj = null;
     });
 });
+
+describe('979939: Need to remove "aria-selected" attribute from detail template expand/collapse icon cell', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                height: 300,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', width: 'auto' },
+                    { headerText: 'CustomerID', field: 'CustomerID', width: 150 },
+                    {headerText: 'Freight', field: 'Freight', width: 150},
+                ],
+                childGrid: {
+                    dataSource: data,
+                    queryString: 'OrderID',
+                    columns: [
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 'auto'},
+                    ],
+                },
+            }, done);
+    });
+
+    it('Select the 1st row', (done: Function) => {
+        gridObj.selectRow(0);
+        done();
+    });
+    it('Check the attribute', (done: Function) => {
+        expect(gridObj.getContentTable().querySelector('.e-detailrowcollapse.e-selectionbackground').getAttribute('aria-selected')).toBeFalsy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -6,7 +6,7 @@ import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfCjkStandardFont, PdfFont, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from './../fonts/pdf-standard-font';
 import { _PdfStringLayouter, _PdfStringLayoutResult, _LineInfo, _LineType, _StringTokenizer } from './../fonts/string-layouter';
-import { PdfTextAlignment, _PdfGraphicsUnit, PdfTextDirection, PdfSubSuperScript, PdfBlendMode, PdfLineJoin, PdfLineCap, PdfDashStyle, PdfFillMode, PathPointType } from './../enumerator';
+import { PdfTextAlignment, _PdfGraphicsUnit, PdfTextDirection, PdfSubSuperScript, PdfBlendMode, PdfLineJoin, PdfLineCap, PdfDashStyle, PdfFillMode, PathPointType, PdfRotationAngle } from './../enumerator';
 import { PdfStringFormat, PdfVerticalAlignment } from './../fonts/pdf-string-format';
 import { PdfTemplate } from './pdf-template';
 import { PdfPath } from './pdf-path';
@@ -907,8 +907,19 @@ export class PdfGraphics {
                     hasPendingTemplate = false;
                 }
             }
-            const scaleX: number = (template && template._size[0] > 0) ? bounds.width / template._size[0] : 1;
-            const scaleY: number = (template && template._size[1] > 0) ? bounds.height / template._size[1] : 1;
+            let scaleX: number;
+            let scaleY: number;
+            if (this._page &&
+                this._page.rotation &&
+                template._isSignature &&
+                this._page._size[0] > this._page._size[1] &&
+                this._page.rotation === PdfRotationAngle.angle270) {
+                scaleX = (template && template._size[0] > 0) ? bounds.width / template._size[1] : 1;
+                scaleY = (template && template._size[1] > 0) ? bounds.height / template._size[0] : 1;
+            } else {
+                scaleX = (template && template._size[0] > 0) ? bounds.width / template._size[0] : 1;
+                scaleY = (template && template._size[1] > 0) ? bounds.height / template._size[1] : 1;
+            }
             const needScale: boolean = !(Math.trunc(scaleX * 1000) / 1000 === 1 && Math.trunc(scaleY * 1000) / 1000 === 1);
             let cropBox: number[];
             let mediaBox: number[];

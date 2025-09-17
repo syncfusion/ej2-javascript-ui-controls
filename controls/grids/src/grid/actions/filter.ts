@@ -92,6 +92,8 @@ export class Filter implements IAction {
     private docClickHandler: Function;
     /** @hidden */
     public inputList: InputArgs[] = [];
+    /** @hidden */
+    public isFilterCleared: boolean = false;
 
     /**
      * Constructor for Grid filtering module
@@ -803,6 +805,7 @@ export class Filter implements IAction {
      */
     public clearFiltering(fields?: string[]): void {
         const cols: PredicateModel[] = getActualPropFromColl(this.filterSettings.columns);
+        this.isFilterCleared = true;
         if (!isNullOrUndefined(fields)) {
             this.refresh = false;
             fields.forEach((field: string) => { this.removeFilteredColsByField(field, false); });

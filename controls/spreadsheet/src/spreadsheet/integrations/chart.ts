@@ -231,8 +231,8 @@ export class SpreadsheetChart {
         const prevCellObj: CellModel = getCell(args.prevRowIdx, args.prevColIdx, sheet);
         const currCellObj: CellModel = getCell(args.currentRowIdx, args.currentColIdx, sheet);
         const prevCellChart: object[] = prevCellObj ? prevCellObj.chart : [];
-        let prevChartObj: ChartModel;
-        let currChartObj: ChartModel[];
+        let prevChartObj: ExtendedChartModel;
+        let currChartObj: ExtendedChartModel[];
         let prevCellChartLen: number = (prevCellChart && prevCellChart.length) ? prevCellChart.length : 0;
         if (prevCellChartLen) {
             for (let i: number = 0; i < prevCellChartLen; i++) {
@@ -242,6 +242,7 @@ export class SpreadsheetChart {
                     prevChartObj.width = args.currentWidth;
                     prevChartObj.top = args.currentTop;
                     prevChartObj.left = args.currentLeft;
+                    prevChartObj.address = [args.currentRowIdx, args.currentColIdx];
                     prevCellChart.splice(i, 1);
                     i--; prevCellChartLen--;
                     for (let idx: number = 0, chartCollLen: number = this.parent.chartColl.length; idx < chartCollLen; idx++) {
@@ -251,6 +252,7 @@ export class SpreadsheetChart {
                             this.parent.chartColl[idx as number].height = args.currentHeight;
                             this.parent.chartColl[idx as number].top = args.currentTop;
                             this.parent.chartColl[idx as number].left = args.currentLeft;
+                            this.parent.chartColl[idx as number].address = prevChartObj.address;
                         }
                     }
                 }
@@ -275,6 +277,32 @@ export class SpreadsheetChart {
                     id: args.id, sheetIdx: sheetIndex
                 };
                 this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'chartRefresh' });
+            }
+        }
+        if (args.isUndoRedo && sheetIndex === this.parent.activeSheetIndex) {
+            const overlayEle: HTMLElement = document.getElementById(args.id);
+            if (overlayEle) {
+                overlayEle.style.height = `${args.currentHeight}px`;
+                overlayEle.style.width = `${args.currentWidth}px`;
+                const frozenRow: number = this.parent.frozenRowCount(sheet);
+                const frozenCol: number = this.parent.frozenColCount(sheet);
+                if (frozenRow || frozenCol) {
+                    if (args.currentRowIdx < frozenRow || args.currentColIdx < frozenCol) {
+                        this.parent.element.querySelector('#' + this.parent.element.id + '_sheet').appendChild(overlayEle);
+                    } else {
+                        this.parent.getMainContent().appendChild(overlayEle);
+                    }
+                    this.parent.serviceLocator.getService<Overlay>(overlay).adjustFreezePaneSize(
+                        { top: args.currentTop, left: args.currentLeft }, overlayEle,
+                        getCellAddress(args.currentRowIdx, args.currentColIdx));
+                    const chartEle: HTMLElement = overlayEle.querySelector('.e-chart');
+                    if (chartEle) {
+                        focus(chartEle);
+                    }
+                } else {
+                    overlayEle.style.top = `${args.currentTop}px`;
+                    overlayEle.style.left = `${args.currentLeft}px`;
+                }
             }
         }
     }
@@ -1028,22 +1056,28 @@ export class SpreadsheetChart {
             let chartTop: { clientY: number, isImage?: boolean, target?: Element };
             let chartleft: { clientX: number, isImage?: boolean, target?: Element };
             if (sheet.frozenRows || sheet.frozenColumns) {
-                const clientRect: ClientRect = chartElements.getBoundingClientRect();
-                chartTop = { clientY: clientRect.top }; chartleft = { clientX: clientRect.left };
-                if (clientRect.top < this.parent.getColumnHeaderContent().getBoundingClientRect().bottom) {
-                    chartTop.target = this.parent.getColumnHeaderContent();
-                }
-                if (clientRect.left < this.parent.getRowHeaderContent().getBoundingClientRect().right) {
-                    chartleft.target = this.parent.getRowHeaderTable();
+                if (chartObj.address) {
+                    rowIdx = chartObj.address[0]; colIdx = chartObj.address[1];
+                } else {
+                    const clientRect: ClientRect = chartElements.getBoundingClientRect();
+                    chartTop = { clientY: clientRect.top }; chartleft = { clientX: clientRect.left };
+                    if (clientRect.top < this.parent.getColumnHeaderContent().getBoundingClientRect().bottom) {
+                        chartTop.target = this.parent.getColumnHeaderContent();
+                    }
+                    if (clientRect.left < this.parent.getRowHeaderContent().getBoundingClientRect().right) {
+                        chartleft.target = this.parent.getRowHeaderTable();
+                    }
+                    this.parent.notify(getRowIdxFromClientY, chartTop); this.parent.notify(getColIdxFromClientX, chartleft);
+                    rowIdx = chartTop.clientY; colIdx = chartleft.clientX;
                 }
             } else {
                 chartTop = { clientY: parseFloat(chartElements.style.top), isImage: true };
                 chartleft = { clientX: parseFloat(chartElements.style.left), isImage: true };
+                this.parent.notify(getRowIdxFromClientY, chartTop); this.parent.notify(getColIdxFromClientX, chartleft);
+                rowIdx = chartTop.clientY; colIdx = chartleft.clientX;
             }
             this.parent.notify(deleteChartColl, { id: args.id });
-            this.parent.notify(getRowIdxFromClientY, chartTop); this.parent.notify(getColIdxFromClientX, chartleft);
             isRemoveEle = true;
-            rowIdx = chartTop.clientY; colIdx = chartleft.clientX;
             sheet = this.parent.sheets[this.parent.activeSheetIndex];
         } else {
             this.parent.notify(deleteChartColl, { id: args.id });
@@ -1801,7 +1835,7 @@ export class SpreadsheetChart {
         if (!this.parent.isDestroyed) {
             this.parent.off(initiateChart, this.initiateChartHandler);
             this.parent.off(refreshChartCellObj, this.refreshChartCellObj);
-            this.parent.off(refreshChartCellOnInit, this.refreshChartCellModel);
+            this.parent.off(refreshChartCellOnInit, this.refreshChartCellObj);
             this.parent.off(refreshChartCellModel, this.refreshChartCellModel);
             this.parent.off(deleteChart, this.deleteChart);
             this.parent.off(clearChartBorder, this.clearBorder);

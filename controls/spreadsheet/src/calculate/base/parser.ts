@@ -156,6 +156,7 @@ export class Parser {
                 }
             }
         }
+        text = this.processIndexArg(text);
         text = this.markLibraryFormulas(text);
         try {
             text = this.formulaAutoCorrection(text);
@@ -981,12 +982,13 @@ export class Parser {
                     throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.MismatchedParentheses]);
                 }
                 let i: number = leftParens - 1;
-                while (i > -1 && (this.parent.isChar(formula[i as number]))) {
+                while (i > -1 && (this.parent.isChar(formula[i as number]) || formula[i as number] === '.')) {
                     i--;
                 }
                 const len: number = leftParens - i - 1;
                 const libFormula: string = this.parent.substring(formula, i + 1, len);
-                if (len > 0 && !isNullOrUndefined(this.parent.getFunction(libFormula))) {
+                if (len > 0 && !isNullOrUndefined(this.parent.getFunction(libFormula)) && (!libFormula.includes('.') ||
+                    this.isValidDotFormulaName(libFormula))) {
                     let substr: string = this.parent.substring(formula, leftParens, rightParens - leftParens + 1);
                     const argsSep: string = this.parent.getParseArgumentSeparator();
                     if (libFormula === 'AREAS') {
@@ -1354,4 +1356,41 @@ export class Parser {
         loc = loc - l;
         return loc;
     };
+
+    private processIndexArg(text: string): string {
+        const search: string = 'INDEX((';
+        const idx: number = text.indexOf(search);
+        if (idx !== -1) {
+            const start: number = idx + (search.length - 1);
+            if (start !== -1) {
+                let braces: number = 0;
+                let end: number = -1;
+                for (let j: number = start; j < text.length; j++) {
+                    if (text[j as number] === '(') {
+                        braces++;
+                    } else if (text[j as number] === ')') {
+                        braces--;
+                    }
+                    if (braces === 0) {
+                        end = j;
+                        break;
+                    }
+                }
+                if (end > start) {
+                    text = text.slice(0, start) +
+                        this.parent.tic +
+                        text.slice(start + 1, end) +
+                        this.parent.tic +
+                        text.slice(end + 1);
+                }
+            }
+        }
+        return text;
+    }
+    private isValidDotFormulaName(formulaName: string): boolean {
+        formulaName = formulaName.toUpperCase();
+        const dotFormulaNames: string[] = ['STDEV.P', 'STDEV.S', 'VAR.S', 'VAR.P', 'T.TEST', 'F.TEST', 'Z.TEST', 'CHISQ.TEST',
+            'COVARIANCE.S','COVARIANCE.P','CHISQ.DIST', 'F.DIST', 'T.DIST'];
+        return dotFormulaNames.some((formula: string) => formulaName === formula);
+    }
 }

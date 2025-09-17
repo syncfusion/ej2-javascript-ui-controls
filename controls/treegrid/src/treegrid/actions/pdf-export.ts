@@ -1,6 +1,6 @@
 import { TreeGrid } from '../base/treegrid';
 import { ITreeData, TreeGridPdfExportProperties } from '../base/interface';
-import { getObject, PdfExport as GridPdf, Grid, BeforeDataBoundArgs, PdfExportProperties} from '@syncfusion/ej2-grids';
+import { getObject, PdfExport as GridPdf, Grid, BeforeDataBoundArgs, PdfExportProperties, AggregateQueryCellInfoEventArgs} from '@syncfusion/ej2-grids';
 import { PdfQueryCellInfoEventArgs, PdfStyle } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline } from '../utils';
 import { isNullOrUndefined, setValue, Fetch, extend, getValue } from '@syncfusion/ej2-base';
@@ -42,6 +42,7 @@ export class PdfExport {
     public addEventListener(): void {
         this.parent.on('pdfCellInfo', this.pdfQueryCellInfo, this);
         this.parent.on('updateResults', this.updatePdfResultModel, this);
+        this.parent.on('pdfAggregateCellInfo', this.pdfAggregateCellInfo, this);
     }
     /**
      * @hidden
@@ -51,6 +52,7 @@ export class PdfExport {
         if (this.parent.isDestroyed) { return; }
         this.parent.off('pdfCellInfo', this.pdfQueryCellInfo);
         this.parent.off('updateResults', this.updatePdfResultModel);
+        this.parent.off('pdfAggregateCellInfo', this.pdfAggregateCellInfo);
     }
     /**
      * To destroy the PDF Export
@@ -166,5 +168,15 @@ export class PdfExport {
         }
         this.parent.notify('updateResults', args);
         this.parent.trigger('pdfQueryCellInfo', args);
+    }
+    /**
+     * TreeGrid PDF Export Aggregate cell modifier
+     *
+     * @param {AggregateQueryCellInfoEventArgs} args - current cell details
+     * @hidden
+     * @returns {void}
+     */
+    private pdfAggregateCellInfo(args?: AggregateQueryCellInfoEventArgs) : void {
+        this.parent.trigger('pdfAggregateQueryCellInfo', args);
     }
 }

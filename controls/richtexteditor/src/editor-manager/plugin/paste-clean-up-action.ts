@@ -70,7 +70,7 @@ export class PasteCleanupAction {
      * @hidden
      */
     public splitBreakLine(value: string): string {
-        const enterSplitText: string[] = value.split('\r\n\r\n');
+        const enterSplitText: string[] = Browser.userAgent.indexOf('Firefox') !== -1 ? value.split(/\r\n\r\n|\n\n/g) : value.split('\r\n\r\n');
         let finalText: string = '';
         const startNode: string = this.getHtmlNode(true);
         const endNode: string = this.getHtmlNode(false);

@@ -3,11 +3,11 @@ import { WListFormat } from '../../../src/document-editor/implementation/format/
 import { createElement } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
-import { Editor } from '../../../src/document-editor/implementation/editor/editor';
+import { Editor, ParagraphFormatProperties } from '../../../src/document-editor/implementation/editor/editor';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
 import { TestHelper } from '../../test-helper.spec';
 import { SfdtExport } from '../../../src/document-editor/implementation/writer/sfdt-export';
-import { BodyWidget, DocumentHelper, Page, ParagraphWidget } from '../../../src/index';
+import { BodyWidget, DocumentEditorContainer, DocumentHelper, Page, ParagraphWidget, Toolbar } from '../../../src/index';
 /**
  * Paragraph format spec
  */
@@ -107,6 +107,11 @@ describe('Default Paragraph Format API Validation', () => {
     it('Check Text Alignment is center', () => {
         console.log('Check Text Alignment is center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
+    });
+    it('Check Text Alignment is center using getDefaultparagraphFormat API', () => {
+        console.log('Check Text Alignment is center using getDefaultparagraphFormat API');
+        let format = editor.getDefaultParagraphFormat();
+        expect(format.textAlignment).toBe('Center');
     });
 });
 
@@ -226,3 +231,85 @@ describe('Assign the paragraph formatting', () => {
         expect(sourceFormat.widowControl).toBe(true);
     });
 });
+
+describe('container document paragraph format validation', () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ enableToolbar: false });
+        let defaultParagraphFormat: ParagraphFormatProperties = {
+        beforeSpacing: 8,
+        lineSpacing: 1.5,
+        leftIndent: 24,
+        textAlignment: "Center"
+        };
+        container.setDocumentParagraphFormat(defaultParagraphFormat);
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        expect(() => { container.destroy(); }).not.toThrowError();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        
+        element = undefined;
+        container = undefined;
+    });
+
+    it('Set document defalut paragraph format API validation', () => {
+        console.log('Set paragraph format API validation');
+        container.documentEditor.openBlank();
+        expect(container.documentEditor.selection.paragraphFormat.textAlignment).toBe('Center');
+        expect(container.documentEditor.selection.paragraphFormat.beforeSpacing).toBe(8);
+        expect(container.documentEditor.selection.paragraphFormat.lineSpacing).toBe(1.5);
+        expect(container.documentEditor.selection.paragraphFormat.leftIndent).toBe(24);
+    });
+    it('Get document defalut paragraph format API validation', () => {
+        console.log('Get paragraph format API validation');
+        let format: any = container.getDocumentParagraphFormat();
+        expect(format.textAlignment).toBe('Center');
+        expect(format.beforeSpacing).toBe(8);
+        expect(format.lineSpacing).toBe(1.5);
+        expect(format.leftIndent).toBe(24);
+        format = container.documentEditor.getDocumentParagraphFormat();
+        expect(format.textAlignment).toBe('Center');
+        expect(format.beforeSpacing).toBe(8);
+        expect(format.lineSpacing).toBe(1.5);
+        expect(format.leftIndent).toBe(24);
+    });
+    
+});
+describe('container document default paragraph format validation', () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ enableToolbar: false });
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        expect(() => { container.destroy(); }).not.toThrowError();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        
+        element = undefined;
+        container = undefined;
+    });
+
+    it('Set document defalut paragraph format API validation', () => {
+        console.log('Set paragraph format API validation');
+        container.documentEditor.openBlank();
+        container.setDefaultParagraphFormat({ textAlignment: "Center" });
+        expect(container.documentEditor.selection.paragraphFormat.textAlignment).toBe("Center");
+    });
+    it('Get document defalut paragraph format API validation', () => {
+        console.log('Get paragraph format API validation');
+        let format: any = container.getDefaultParagraphFormat();
+        expect(format.textAlignment).toBe("Center");
+    });
+    
+}); 

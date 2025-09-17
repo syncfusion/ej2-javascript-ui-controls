@@ -1,4 +1,4 @@
-import { WTableHolder, Selection } from '../../../src/index';
+import { WTableHolder, Selection, DocumentEditorContainer, Toolbar } from '../../../src/index';
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { Editor } from '../../../src/document-editor/implementation/editor/editor';
 import { createElement } from '@syncfusion/ej2-base';
@@ -132,5 +132,75 @@ console.log('check right margin');
 //         editor.editor.insertPageNumber();
 //         expect(() => { editor.selection.sectionFormat.footerDistance = 34; }).not.toThrowError();
 //     });
+});
+
+describe('container document default section format validation', () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    let defaultSectionFormat: any;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ enableToolbar: false });
+        defaultSectionFormat = {
+        pageWidth: 500,
+        pageHeight: 800,
+        headerDistance: 56,
+        footerDistance: 48,
+        leftMargin: 12,
+        rightMargin: 12,
+        topMargin: 0,
+        bottomMargin: 0,
+        };
+        container.setDefaultSectionFormat(defaultSectionFormat);
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        expect(() => { container.destroy(); }).not.toThrowError();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        
+        element = undefined;
+        container = undefined;
+    });
+
+    it('Set document defalut section format API validation', () => {
+        console.log('Set section format API validation');
+        container.documentEditor.openBlank();
+        container.setDefaultSectionFormat(defaultSectionFormat);
+        expect(container.documentEditor.selection.sectionFormat.pageWidth).toBe(500);
+        expect(container.documentEditor.selection.sectionFormat.pageHeight).toBe(800);
+        expect(container.documentEditor.selection.sectionFormat.headerDistance).toBe(56);
+        expect(container.documentEditor.selection.sectionFormat.footerDistance).toBe(48);
+        expect(container.documentEditor.selection.sectionFormat.leftMargin).toBe(12);
+        expect(container.documentEditor.selection.sectionFormat.rightMargin).toBe(12);
+        expect(container.documentEditor.selection.sectionFormat.topMargin).toBe(0);
+        expect(container.documentEditor.selection.sectionFormat.bottomMargin).toBe(0);
+    });
+    it('Get document defalut section format API validation', () => {
+        console.log('Get section format API validation');
+        // Container API
+        let format: any = container.getDefaultSectionFormat();
+        expect(format.pageWidth).toBe(500);
+        expect(format.pageHeight).toBe(800);
+        expect(format.headerDistance).toBe(56);
+        expect(format.footerDistance).toBe(48);
+        expect(format.leftMargin).toBe(12);
+        expect(format.rightMargin).toBe(12);
+        expect(format.topMargin).toBe(0);
+        expect(format.bottomMargin).toBe(0);
+        // Editor API
+        format = container.documentEditor.getDefaultSectionFormat();
+        expect(format.pageWidth).toBe(500);
+        expect(format.pageHeight).toBe(800);
+        expect(format.headerDistance).toBe(56);
+        expect(format.footerDistance).toBe(48);
+        expect(format.leftMargin).toBe(12);
+        expect(format.rightMargin).toBe(12);
+        expect(format.topMargin).toBe(0);
+        expect(format.bottomMargin).toBe(0);
+    });
+    
 });
 

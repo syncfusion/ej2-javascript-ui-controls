@@ -2,70 +2,28 @@
 
 ## [Unreleased]
 
-## 31.1.19 (2025-09-11)
+## 31.1.20 (2025-09-10)
 
 ### GanttChart
 
 #### Bug fixes
 
-- `#I750331` - Fixed an issue where label customization using the `pdfQueryTaskbarInfo` event was not working properly.
-- `#I745469` - Resolved a white space issue that occurred while scrolling up and down at the bottom of the Tree Grid side.
-- `#I750677` - Fixed an issue where the filter item template was not functioning correctly in the Angular platform.
+- `#I762115` - The issue where the Offset value was not updating correctly when a dependency was connected to parent tasks has been resolved.
+- `#I759114` - The issue where the 'Start No Later Than' constraint type was not properly enforced on the Start Date has been resolved.
+- `#I763040` - Cell navigation not working properly when selection is disabled issue has been resolved.
+- `#I759336` - Resolved critical task calculation to use `projectEndDate` as the maximum end date when it is mapped, replacing the previous approach of considering the task's maximum end date.
+- `#I759336` - Resolved an issue where the `workWeek` and `weekWorkingTime` properties were not functioning correctly, causing unresponsiveness during dynamic updates.
 
-## 30.2.4 (2025-08-07)
-
-### GanttChart
-
-#### Feature
-
-- `#I705390`, `#I665780` - Improved the Gantt chart's baseline functionality by adding support for `baselineDuration` data mapping, alongside the `baselineStartDate` and `baselineEndDate` properties. These enhancements make it easier to configure baseline milestones.
-
-#### Bug fix
-
-- `#I746805` - Fixed blank spaces and missing rows during scroll with timeline virtualization in Gantt Chart.
-
-## 30.1.42 (2025-07-29)
+## 31.1.18 (2025-09-10)
 
 ### GanttChart
 
 #### Bug fixes
 
-- `#I745434` - Taskbar rendering is mismatched between UI and pdf export while using split task issue has been resolved.
-- `#I732347` - Spinner is not shown when editing a cell issue has been resolved.
-- `#I751091` - Disabling `allowEditing` property for custom columns does not work issue has been resolved.
-
-## 30.1.41 (2025-07-08)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#F197011` - Fixed an issue where collapsed parent tasks automatically expanded during drag-and-drop in the `multitaskbar` feature, ensuring they remain collapsed as intended.
-- `#I744105` - Console error occurs while refresh the component with toolbar template issue has been resolved.
-- `#I744544` - Fixed incorrect parent taskbar rendering by ensuring child tasks update before parent during dependency has been resolved.
-- `#I746332` - Console error occurs when refresh action is performed in Gantt followed by toolbar add action issue has been resolved.
-- `#I748609` - The issue where the `actionBegin` event was not triggered during the save operation following cell editing has been successfully resolved.
-
-## 30.1.39 (2025-07-08)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I740257` - End date timing not updating properly when `autoCalculateDateScheduling` property is set to false has been resolved.
-- `#F197010` - The issue where the last collapsed parent task was not visible during Gantt chart scrolling has been resolved.
-- `#I722922` - Initial load and scroll performance of the Gantt Chart with virtualization has improved significantly, resulting in a 60% increase in rendering efficiency.
-
-## 30.1.38 (2025-07-02)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I737233` - Unwanted Element Appearing Next to Gantt Chart During Row Drag and Drop issue has been resolved.
-- `#F196872` - The issue where the Gantt chart became unresponsive when editing the start date of a task with multiple dependency connections has been resolved.
-- `#I730000` - Resolved the issue where the scrollbar reverted to the top and white space appeared during child load in combination with the expand-on-demand action.
-- `#F196826` - Resolved the performance issue occurring when the critical path was enabled dynamically for large data sets.
+- `#I759097` - The issue where setting the constraint type to "Must Start On" caused the spinner to run continuously when modifying the End Date or Duration has been resolved.
+ `#I758384` - Console error occur while add action after hiding column by method issue has been resolved.
+ `#I755129` - The `readOnly` property not working for hierarchy data binding issue has been resolved.
+ `#I756416` - Console error occur while using different filter options issue has been resolved.
 
 ## 30.1.37 (2025-06-25)
 

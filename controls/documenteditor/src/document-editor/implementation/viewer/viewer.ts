@@ -1129,6 +1129,9 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.owner.documentCharacterFormat)) {
             this.owner.parser.parseCharacterFormat(0, this.owner.documentCharacterFormat, this.characterFormat);
         }
+        if (!isNullOrUndefined(this.owner.documentParagraphFormat)) {
+            this.owner.parser.parseParagraphFormat(0, this.owner.documentParagraphFormat, this.paragraphFormat);
+        }
     }
 
     private setDefaultCharacterValue(characterFormat: WCharacterFormat): void {

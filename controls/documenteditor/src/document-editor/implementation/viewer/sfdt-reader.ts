@@ -121,7 +121,11 @@ export class SfdtReader {
         if (isNullOrUndefined(jsonObject[paragraphFormatProperty[this.keywordIndex]])) {
             this.parseParagraphFormat(0, this.viewer.owner.paragraphFormat, this.documentHelper.paragraphFormat);
         } else {
+            this.documentHelper.paragraphFormat.clearFormat();
             this.parseParagraphFormat(this.keywordIndex, jsonObject[paragraphFormatProperty[this.keywordIndex]], this.documentHelper.paragraphFormat);
+        }
+        if (!isNullOrUndefined(this.viewer.owner.documentParagraphFormat)) {
+            this.parseParagraphFormat(0, this.viewer.owner.documentParagraphFormat, this.documentHelper.paragraphFormat);
         }
         if(!isNullOrUndefined(jsonObject[themeFontLanguagesProperty[this.keywordIndex]])){
             this.parseCharacterFormat(this.keywordIndex, jsonObject[themeFontLanguagesProperty[this.keywordIndex]], this.documentHelper.themeFontLanguage);

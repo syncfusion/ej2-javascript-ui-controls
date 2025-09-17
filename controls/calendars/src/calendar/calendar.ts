@@ -525,14 +525,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected minMaxUpdate(value?: Date): void {
+        this.min = isNullOrUndefined(this.min) || !(+this.min) ? this.min = new Date(1900, 0, 1) : this.min;
+        this.max = isNullOrUndefined(this.max) || !(+this.max) ? this.max = new Date(2099, 11, 31) : this.max;
         if (!(+this.min <= +this.max)) {
             this.setProperties({ min: this.min }, true);
             addClass([this.element], OVERLAY);
         } else {
             removeClass([this.element], OVERLAY);
         }
-        this.min = isNullOrUndefined(this.min) || !(+this.min) ? this.min = new Date(1900, 0, 1) : this.min;
-        this.max = isNullOrUndefined(this.max) || !(+this.max) ? this.max = new Date(2099, 11, 31) : this.max;
         if (+this.min <= +this.max && value && +value <= +this.max && +value >= +this.min) {
             this.currentDate = new Date(this.checkValue(value));
         } else {

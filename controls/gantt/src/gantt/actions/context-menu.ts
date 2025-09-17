@@ -452,7 +452,24 @@ export class ContextMenu {
             for (const item of args.items) {
                 // let target: EventTarget = target;
                 if (!item.separator) {
-                    if ((target.classList.contains('e-gantt-unscheduled-taskbar')) && ((item.text === this.getLocale('splitTask')) || (item.text === this.getLocale('mergeTask')))) {
+                    let isInvalidSegmentSplit: boolean = false;
+                    let isSingleDayTask: boolean = false;
+                    if (item.text === this.getLocale('splitTask') && this.rowData) {
+                        const ganttProp: ITaskData = this.rowData.ganttProperties;
+                        if (this.parent.editModule && this.parent.editModule.taskbarEditModule) {
+                            const segmentIndex: number = this.parent.editModule.taskbarEditModule.segmentIndex;
+                            isInvalidSegmentSplit = ganttProp && ganttProp.segments &&
+                                ganttProp.segments.length > 1 && segmentIndex === -1;
+                            if (ganttProp.segments && segmentIndex !== -1 && ganttProp.segments[segmentIndex as number]) {
+                                const isMultiSegment: boolean = ganttProp.segments.length > 1;
+                                const isWiderThanUnit: boolean = ganttProp.segments[segmentIndex as number].width >
+                                    this.parent.timelineSettings.timelineUnitSize;
+                                isSingleDayTask = !(isMultiSegment && isWiderThanUnit);
+                            }
+                        }
+                    }
+                    if (((target.classList.contains('e-gantt-unscheduled-taskbar')) && ((item.text === this.getLocale('splitTask')) ||
+                        (item.text === this.getLocale('mergeTask')))) || (isInvalidSegmentSplit || isSingleDayTask)) {
                         this.hideItems.push(item.text);
                     }
                     else {

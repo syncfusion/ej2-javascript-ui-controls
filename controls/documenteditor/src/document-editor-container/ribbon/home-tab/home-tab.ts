@@ -76,7 +76,7 @@ export class HomeTab {
         this.fontGroup.updateSelection();
         this.paragraphGroup.updateSelection();
         this.findGroup.updateSelection();
-        this.stylesGroup.updateSelection();
+        this.stylesGroup.updateStyleGallery();
     }
     public updateContentChanged(): void {
         this.historyGroup.updateContentChanged();

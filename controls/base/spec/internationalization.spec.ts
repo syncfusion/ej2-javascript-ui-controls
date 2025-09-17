@@ -120,6 +120,30 @@ describe('Internationalization', () => {
         });
     });
 
+    describe('Check custom format "#.##" for rounding to two decimals', () => {
+        let numIntl: Internationalization = new Internationalization();
+        it('should format 66622.245 as "66622.25"', () => {
+            let result: string = numIntl.formatNumber(66622.245, { format: '#.##' });
+            expect(result).toBe('66622.25');
+        });
+        it('should format 1444.245 as "1444.25"', () => {
+            let result: string = numIntl.formatNumber(1444.245, { format: '#.##' });
+            expect(result).toBe('1444.25');
+        });
+        it('should format 666.245 as "666.25"', () => {
+            let result: string = numIntl.formatNumber(666.245, { format: '#.##' });
+            expect(result).toBe('666.25');
+        });
+        it('should format 666 as "666.00"', () => {
+            let result: string = numIntl.formatNumber(666, { format: '#.##' });
+            expect(result).toBe('666.00');
+        });
+        afterAll(() => {
+            setCulture('en-US');
+            setCurrencyCode('USD');
+        });
+   });
+
     describe('Check number fromatting and trailing zeros for decimal type', () => {
         let numIntl: Internationalization = new Internationalization();
         it('numberfromatting using the formatNumber #1', () => {

@@ -183,7 +183,7 @@ export class FreeTextAnnotation {
     private freeTextPaddingLeft: number = 4;
     private freeTextPaddingTop: number = 5;
     private defaultFontSize: number = 16;
-    private lineGap: number = 1.5;
+    private lineGap: number = 1.8;
     /**
      * @private
      */
@@ -948,9 +948,9 @@ export class FreeTextAnnotation {
                 this.selectedAnnotation.bounds.height = inputEleHeight;
                 let lineSpace: any = 0;
                 lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
-                this.selectedAnnotation.wrapper.children[1].margin.left = this.freeTextPaddingLeft;
+                this.selectedAnnotation.wrapper.children[1].margin.left = this.freeTextPaddingLeft + 1;
                 this.selectedAnnotation.wrapper.children[1].margin.top =
-                 ((parseFloat(this.inputBoxElement.style.paddingTop) / Math.max(1, zoomFactor))) + lineSpace;
+                 ((parseFloat(this.inputBoxElement.style.paddingTop) / Math.max(1, zoomFactor))) + lineSpace - 1;
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName);
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);

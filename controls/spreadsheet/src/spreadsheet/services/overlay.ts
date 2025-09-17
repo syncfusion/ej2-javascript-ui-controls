@@ -3,7 +3,7 @@ import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChar
 import { getRowIdxFromClientY, getColIdxFromClientX, overlayEleSize, getStartEvent, getMoveEvent, selectionStatus } from '../common/index';
 import { getEndEvent, getClientX, getClientY, spreadsheetDestroyed, getPageX, getPageY, isTouchMove } from '../common/index';
 import { getRangeIndexes, SheetModel, refreshChartSize, focusChartBorder, getRowsHeight, getCellIndexes, addDPRValue } from '../../workbook/index';
-import { getColumnsWidth, ChartModel } from '../../workbook/index';
+import { getColumnsWidth, ChartModel, ExtendedChartModel } from '../../workbook/index';
 import { EventHandler, removeClass, closest, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { focus } from '../common/index';
 
@@ -297,7 +297,8 @@ export class Overlay {
             const prevColIdx: { clientX: number, isImage?: boolean, target?: Element, size?: number } =
              { clientX: eventArgs.prevLeft, isImage: true };
             const overlayEle: HTMLElement = this.parent.element.getElementsByClassName('e-ss-overlay-active')[0] as HTMLElement;
-            if (sheet.frozenRows || sheet.frozenColumns) {
+            const isFreezeAvailable: boolean = !!(sheet.frozenRows || sheet.frozenColumns);
+            if (isFreezeAvailable) {
                 if (!overlayEle) { return; }
                 prevRowIdx.isImage = false; prevColIdx.isImage = false;
                 prevRowIdx.target = overlayEle; prevColIdx.target = overlayEle;
@@ -325,7 +326,18 @@ export class Overlay {
             this.parent.notify(getColIdxFromClientX, prevColIdx); this.parent.notify(getColIdxFromClientX, currColIdx);
             if (currRowIdx.size) { eventArgs.currentTop = currRowIdx.size; }
             if (currColIdx.size) { eventArgs.currentLeft = currColIdx.size; }
-            eventArgs.prevRowIdx = prevRowIdx.clientY; eventArgs.prevColIdx = prevColIdx.clientX;
+            if (isFreezeAvailable) {
+                const chartId: string = overlayEle.id.split('_overlay')[0];
+                const prevChart: ExtendedChartModel = this.parent.chartColl.find((chartobj: ChartModel) => chartobj.id === chartId);
+                if (prevChart && prevChart.address) {
+                    eventArgs.prevRowIdx = prevChart.address[0]; eventArgs.prevColIdx = prevChart.address[1];
+                    eventArgs.prevTop = prevChart.top; eventArgs.prevLeft = prevChart.left;
+                } else {
+                    eventArgs.prevRowIdx = prevRowIdx.clientY; eventArgs.prevColIdx = prevColIdx.clientX;
+                }
+            } else {
+                eventArgs.prevRowIdx = prevRowIdx.clientY; eventArgs.prevColIdx = prevColIdx.clientX;
+            }
             eventArgs.currentRowIdx = currRowIdx.clientY; eventArgs.currentColIdx = currColIdx.clientX;
             if ((sheet.frozenColumns || sheet.frozenRows) && !closest(overlayEle, '.e-sheet-content')) {
                 const frozenCol: number = this.parent.frozenColCount(sheet); const frozenRow: number = this.parent.frozenRowCount(sheet);

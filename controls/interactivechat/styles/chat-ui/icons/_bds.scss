@@ -47,4 +47,19 @@
   .e-user-offline::before {
     content: '\e878';
   }
+  .e-chat-attachment-icon::before {
+    content: '\e940';
+  }
+  .e-chat-file-format-icon::before {
+    content: '\e941';
+  }
+  .e-chat-upload::before {
+    content: '\e712';
+  }
+  .e-chat-video-play::before {
+    content: '\e70c';
+  }
+  .e-chat-download::before {
+    content: '\e7a1';
+  }
 }

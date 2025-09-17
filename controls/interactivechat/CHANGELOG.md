@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.20 (2025-09-10)
+
+### AI AssistView
+
+#### Bug Fixes
+
+- `#I762089` - Now the issue with maxFileSize validation when locale is configured for the file status text has been resolved.
+
 ## 29.1.33 (2025-03-25)
 
 ### Chat UI

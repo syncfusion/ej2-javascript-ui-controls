@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.20 (2025-09-10)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I762396` - Resolved the script error that occurred when copying and pasting bullet list content from Outlook into the `RichTextEditor`.
+
 ## 28.2.9 (2025-03-04)
 
 ### ComboBox

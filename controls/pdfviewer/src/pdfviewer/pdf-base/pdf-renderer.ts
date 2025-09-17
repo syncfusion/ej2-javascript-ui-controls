@@ -1063,6 +1063,45 @@ export class PdfRenderer {
     }
 
     /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        if (this.loadedDocument) {
+            this.loadedDocument.destroy();
+            this.loadedDocument = null;
+        }
+        if (this.loadImportedDocument) {
+            this.loadImportedDocument.destroy();
+            this.loadImportedDocument = null;
+        }
+        if (this.document) {
+            this.document.destroy();
+            this.document = null;
+        }
+        this.loadedByteArray = null;
+        this.digitialByteArray = null;
+        this.loadImportedBase64String = null;
+        this.password = null;
+        this.importedDocpassword = null;
+        this.pageSizes = {};
+        this.documentTextCollection = [];
+        this.bookmarkStyles = [];
+        this.bookmarkCollection = [];
+        this.pageRotationCollection = [];
+        this.bookmarkDictionary = {};
+        this.annotationDetailCollection = {};
+        this.textCollections = [];
+        this.restrictionList = [];
+        this._fallbackFontCollection = {};
+        this.searchResults = {};
+        this.renderer = null;
+        this.formFieldsBase = null;
+        this.signatureBase = null;
+        this.annotationRenderer = null;
+    }
+
+    /**
      * @param {number} pageIndex - pageIndex
      * @private
      * @returns {void}

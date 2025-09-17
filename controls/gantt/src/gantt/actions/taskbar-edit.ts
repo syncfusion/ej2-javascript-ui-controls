@@ -2528,6 +2528,7 @@ export class TaskbarEdit extends DateProcessor {
                 this.previousFlatData = [...this.parent.flatData];
                 this.taskBarEditedAction(e);
                 this.isMouseDragged = false;
+                this.parent.hideSpinner();
             } else {
                 this.parent.isOnEdit = false;
                 this.cancelTaskbarEditActionInMouseLeave();
@@ -2632,7 +2633,7 @@ export class TaskbarEdit extends DateProcessor {
         const segments: ITaskSegment[] = taskData.segments;
         let fixedWidth: boolean = true;
         const totalTaskWidth: number = this.splitTasksDuration(segments) * this.parent.perDayWidth;
-        const progress: number = Math.ceil((taskData.progressWidth / totalTaskWidth) * 100);
+        const progress: number = (taskData.progressWidth / totalTaskWidth) * 100;
         let totalProgressWidth: number = (totalTaskWidth * progress) / 100;
         const tempWidth: number = totalProgressWidth;
         for (let i: number = 0; i < segments.length; i++) {
@@ -2772,14 +2773,8 @@ export class TaskbarEdit extends DateProcessor {
                     new Date(previousSegment.endDate.getTime()) : this.parent.cloneProjectStartDate;
                 const cStartDate: Date = new Date(segment.startDate.getTime());
                 const cEndDate: Date = new Date(segment.endDate.getTime());
-                if (this.parent.timelineModule.topTier === 'Day' && this.parent.timelineModule.bottomTier === 'Hour') {
-                    cStartDate.setHours(cStartDate.getHours() - 1);
-                    cEndDate.setHours(cEndDate.getHours() + 1);
-                }
-                else {
-                    cStartDate.setDate(cStartDate.getDate());
-                    cEndDate.setDate(cEndDate.getDate());
-                }
+                cStartDate.setDate(cStartDate.getDate());
+                cEndDate.setDate(cEndDate.getDate());
                 if (this.parent.includeWeekend) {
                     sDate.setHours(0, 0, 0, 0);
                     eDate.setHours(0, 0, 0, 0);

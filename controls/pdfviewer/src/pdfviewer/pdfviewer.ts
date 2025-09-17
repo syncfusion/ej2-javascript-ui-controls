@@ -9872,6 +9872,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (this.viewerBase.navigationPane){
             this.viewerBase.navigationPane.restrictUpdateZoomValue = true;
         }
+        this.defaultLocale = {};
+        this.fileByteArray = null;
+        this.uploadedFileByteArray = null;
     }
 
 

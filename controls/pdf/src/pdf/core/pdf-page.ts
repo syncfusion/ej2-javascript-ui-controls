@@ -1181,7 +1181,7 @@ export class _PdfDestinationHelper {
             index = value;
         } else if (value instanceof _PdfDictionary) {
             index = _getPageIndex(loadedDocument, value);
-        } else if (value) {
+        } else if (value instanceof _PdfReference) {
             const pageDictionary: _PdfDictionary = loadedDocument._crossReference._fetch(value);
             if (pageDictionary && pageDictionary instanceof _PdfDictionary) {
                 index = _getPageIndex(loadedDocument, pageDictionary);

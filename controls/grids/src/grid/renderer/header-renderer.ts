@@ -615,6 +615,7 @@ export class HeaderRender implements IRenderer {
         const table: Element = this.getTable();
         const tableName: freezeTable = undefined;
         if (table) {
+            this.droppableDestroy();
             remove(table);
             if (this.parent.editSettings.showAddNewRow && !this.parent.isAddNewRow && table.querySelector('.e-addedrow') &&
                 (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
@@ -634,6 +635,7 @@ export class HeaderRender implements IRenderer {
             this.widthService.setWidthToColumns();
             this.parent.updateDefaultCursor();
             this.initializeHeaderDrag();
+            this.initializeHeaderDrop();
             const rows: Element[] = [].slice.call(headerDiv.querySelectorAll('tr.e-columnheader'));
             for (const row of rows) {
                 const gCells: Element[] = [].slice.call(row.getElementsByClassName('e-grouptopleftcell'));

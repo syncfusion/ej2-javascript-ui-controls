@@ -2703,7 +2703,7 @@ export class Annotation {
             freeTextAnnotation.inputBoxElement.blur();
         }
         const canvas: HTMLElement = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', currentAnnotation.pageIndex);
-        this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, currentAnnotation.pageIndex);
+        this.pdfViewer.renderDrawing(canvas as HTMLCanvasElement, currentAnnotation.pageIndex);
     }
 
     /**

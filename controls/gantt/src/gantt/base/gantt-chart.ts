@@ -350,6 +350,9 @@ export class GanttChart {
      */
     private renderBodyContainers(): void {
         this.chartBodyContainer = createElement('div', { className: cls.chartBodyContainer });
+        if (this.parent.enableHover) {
+            this.chartBodyContainer.classList.add('e-chart-row-hover');
+        }
         this.chartElement.appendChild(this.chartBodyContainer);
         this.scrollElement = createElement('div', {
             className: cls.chartScrollElement + ' ' + cls.scrollContent, styles: 'position:relative;'
@@ -841,6 +844,11 @@ export class GanttChart {
         if (this.parent.allowFiltering && this.parent.filterModule) {
             this.parent.filterModule.closeFilterOnContextClick(e.srcElement as Element);
         }
+        if (this.parent.element.querySelectorAll('.e-focused').length > 0) {
+            this.parent.element.querySelectorAll('.e-focused').forEach(function (el: Element): void {
+                el.classList.remove('e-focused');
+            });
+        }
         if (this.parent.allowTaskbarDragAndDrop) {
             const Check: HTMLElement = this.parent.chartPane.querySelector('.e-clone-taskbar');
             if (!isNullOrUndefined(Check)) {
@@ -1203,7 +1211,7 @@ export class GanttChart {
             }
             for (let i: number = 0; i < rows.length; i++) {
                 rows[i as number].style.display = displayType;
-                if (childRecords[i as number].childRecords &&
+                if (!isNullOrUndefined(childRecords[i as number]) && childRecords[i as number].childRecords &&
                     childRecords[i as number].childRecords.length &&
                     (action === 'collapse' ||
                         childRecords[i as number].expanded ||
@@ -1526,7 +1534,7 @@ export class GanttChart {
         if (e.action === 'shiftTab' && $target.classList.contains('e-timeline-header-container')) {
             for (let i: number = this.parent.treeGrid.columns.length; i > 0; i--) {
                 if (this.parent.treeGrid.columns[i - 1]['visible']) {
-                    nextElement = document.getElementsByClassName('e-columnheader')[0].childNodes[i - 1] as HTMLElement;
+                    nextElement = document.getElementsByClassName('e-columnheader')[0].childNodes[this.parent.allowRowDragAndDrop ? i : i - 1] as HTMLElement;
                     break;
                 }
             }

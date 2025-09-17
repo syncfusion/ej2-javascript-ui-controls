@@ -308,7 +308,8 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
 
-        const localeText: object = { Apply: 'Apply', Cancel: 'Cancel', ModeSwitcher: 'Switch Mode', RecentColors: 'Recent colors' };
+        const localeText: object = { Apply: 'Apply', Cancel: 'Cancel', ModeSwitcher: 'Switch Mode', RecentColors: 'Recent colors',
+            CurrentColor: 'Current', PreviousColor: 'Previous' };
         this.l10n = new L10n('colorpicker', localeText, this.locale);
         if (ele.getAttribute('ejs-for') && !ele.getAttribute('name')) {
             ele.setAttribute('name', ele.id);
@@ -777,11 +778,11 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     private createPreview(parentEle?: Element): void {
         const previewContainer: HTMLElement = this.createElement('div', { className: PREVIEW });
         parentEle.appendChild(previewContainer);
-        let preview: HTMLElement = this.createElement('span', { className: 'e-preview ' + CURRENT });
+        let preview: HTMLElement = this.createElement('span', { className: 'e-preview ' + CURRENT, attrs: { title: this.l10n.getConstant('CurrentColor') } });
         previewContainer.appendChild(preview);
         const colorValue: string = this.convertToRgbString(this.rgb);
         preview.style.backgroundColor = colorValue;
-        preview = this.createElement('span', { className: 'e-preview ' + PREVIOUS });
+        preview = this.createElement('span', { className: 'e-preview ' + PREVIOUS, attrs: { title: this.l10n.getConstant('PreviousColor') } });
         previewContainer.appendChild(preview);
         preview.style.backgroundColor = colorValue;
     }

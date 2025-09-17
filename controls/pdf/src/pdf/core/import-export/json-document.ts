@@ -306,6 +306,12 @@ export class _JsonDocument extends _ExportHelper {
         case 'IC':
             this._writeColor(primitive, 'interior-color');
             break;
+        case 'OC':
+            this._writeColor(primitive, 'oc');
+            break;
+        case 'AFC':
+            this._writeColor(primitive, 'afc');
+            break;
         case 'DA':
             value = dictionary.get('DA');
             if (value) {
@@ -969,7 +975,6 @@ export class _JsonDocument extends _ExportHelper {
         let endLineStyle: string;
         let values: string = '';
         let rect: {x: string, y: string, width: string, height: string};
-        let outColor: string[];
         annotationKeys.forEach((key: string) => {
             let value: any = annotation[key]; // eslint-disable-line
             switch (key.toLowerCase()) {
@@ -1024,11 +1029,16 @@ export class _JsonDocument extends _ExportHelper {
                 break;
             case 'oc':
                 if (value && dictionary.get('Subtype').name === 'Redact') {
-                    outColor = value.split(',');
-                    const color: number[] = outColor.map((entry: string) => Number.parseFloat(entry));
-                    if (color && color.length > 0) {
-                        dictionary.update('OC', color);
+                    value = _convertToColor(value);
+                    if (value && value.length === 3) {
+                        dictionary.update('OC', [value[0] / 255, value[1] / 255, value[2] / 255]);
                     }
+                }
+                break;
+            case 'afc':
+                value = _convertToColor(value);
+                if (value && value.length === 3) {
+                    dictionary.update('AFC', [value[0] / 255, value[1] / 255, value[2] / 255]);
                 }
                 break;
             case 'interior-color':

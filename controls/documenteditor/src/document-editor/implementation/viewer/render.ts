@@ -2451,7 +2451,7 @@ private calculatePathBounds(data: string): Rect {
             left -= elementBox.width;
         }
         if (this.documentHelper.owner.isSpellCheck) {
-            if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && elementBox.text.trim() !== '' && !this.documentHelper.textHelper.containsSpecialCharAlone(elementBox.text) && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox && (elementBox.previousNode as FieldElementBox).fieldType === 2)))) {
+            if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && elementBox.text.trim() !== '' && !this.documentHelper.textHelper.containsSpecialCharAlone(elementBox.text) && (this.documentHelper.owner.documentEditorSettings.enableSpellCheckOnScroll || !this.documentHelper.isScrollHandler) && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox && (elementBox.previousNode as FieldElementBox).fieldType === 2)))) {
                 elementBox.canTrigger = true;
                 this.leftPosition = this.pageLeft;
                 this.topPosition = this.pageTop;

@@ -6,6 +6,8 @@ import { EditorHistory } from '../../../src/document-editor/implementation/edito
 import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../../src/index';
 import { Selection, SfdtExport } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
+import { Toolbar } from '../../../src/document-editor-container/tool-bar/tool-bar';
+import { DocumentEditorContainer } from '../../../src/document-editor-container/document-editor-container';
 /**
  * Character format spec
  */
@@ -324,4 +326,70 @@ describe('Applying the default Character Format to document', () => {
         container.selection.selectAll();
         expect(container.selection.characterFormat.fontSize).toBe(14);
     });
+});
+describe('container document character format validation', () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ enableToolbar: false });
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        expect(() => { container.destroy(); }).not.toThrowError();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        
+        element = undefined;
+        container = undefined;
+    });
+
+    it('Set character format API validation', () => {
+        console.log('Set character format API validation');
+        container.documentEditor.openBlank();
+        container.setDocumentCharacterFormat({ fontSize: 20 });
+        expect(container.documentEditor.selection.characterFormat.fontSize).toBe(20);
+    });
+    it('Get character format API validation', () => {
+        console.log('Get character format API validation');
+        let format: any = container.getDocumentCharacterFormat();
+        expect(format.fontSize).toBe(20);
+    });
+    
+}); 
+describe('container document default format validation', () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ enableToolbar: false });
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        expect(() => { container.destroy(); }).not.toThrowError();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        
+        element = undefined;
+        container = undefined;
+    });
+
+    it('Set document defalut character format API validation', () => {
+        console.log('Set character format API validation');
+        container.documentEditor.openBlank();
+        container.setDefaultCharacterFormat({ fontSize: 20 });
+        expect(container.documentEditor.selection.characterFormat.fontSize).toBe(20);
+    });
+    it('Get document defalut character format API validation', () => {
+        console.log('Get character format API validation');
+        let format: any = container.getDefaultCharacterFormat();
+        expect(format.fontSize).toBe(20);
+        format = container.documentEditor.getDefaultCharacterFormat();
+        expect(format.fontSize).toBe(20);
+    });
+    
 });

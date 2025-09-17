@@ -4,11 +4,12 @@ import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlig
 import { _PdfTransformationMatrix } from './graphics/pdf-graphics';
 import { PdfDocument, PdfPageSettings } from './pdf-document';
 import { _PdfBaseStream, _PdfStream } from './base-stream';
-import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfInteractiveBorder, _PaintParameter, PdfRubberStampAnnotation } from './annotations/annotation';
+import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfInteractiveBorder, _PaintParameter, PdfRedactionAnnotation, PdfRubberStampAnnotation, PdfListFieldItem } from './annotations/annotation';
 import { PdfPopupAnnotationCollection } from './annotations/annotation-collection';
 import { PdfTemplate } from './graphics/pdf-template';
 import { PdfField, PdfTextBoxField, PdfComboBoxField } from './form/field';
 import { PdfCjkFontFamily, PdfCjkStandardFont, PdfFont, PdfFontFamily, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from './fonts/pdf-standard-font';
+import { PdfStringFormat } from './fonts/pdf-string-format';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { PdfForm } from './form';
 import { _ImageDecoder } from './graphics/images/image-decoder';
@@ -1447,6 +1448,11 @@ export function _getItemValue(itemDictionary: _PdfDictionary): string {
     let name: _PdfName;
     if (itemDictionary.has('AS')) {
         name = itemDictionary.get('AS');
+        if (name !== null && name.name !== 'Off') {
+            itemValue = name.name;
+        }
+    } else if (itemDictionary.has('V')) {
+        name = itemDictionary.get('V');
         if (name !== null && name.name !== 'Off') {
             itemValue = name.name;
         }
@@ -3729,17 +3735,22 @@ export function _defaultToString(item: string|number|string[]|number[]|Object|Ob
  * @param {PdfField} field field.
  * @returns {PdfFont} font.
  */
-export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, field: PdfField): PdfFont {
+export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, field?: PdfField): PdfFont {
     let fontFamily: string = '';
     let fontSize: number;
     let font: PdfFont;
-    let defaultAppearance: string;
+    let defaultAppearance: any; // eslint-disable-line
+    let cacheKey: string;
+    let hasValidFontCache: boolean = true;
     if (widget && widget._dictionary.has('DA') || field._dictionary.has('DA')) {
         if (widget && widget._dictionary.has('DA')) {
             defaultAppearance = widget._dictionary.get('DA');
         } else {
             defaultAppearance = field._dictionary.get('DA');
         }
+    }
+    if (defaultAppearance instanceof _PdfName) {
+        defaultAppearance = defaultAppearance.name;
     }
     if (defaultAppearance && defaultAppearance.includes('Tf')) {
         const parts: string[] = defaultAppearance.trim().split(/\s+/);
@@ -3767,26 +3778,47 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
                 if (fontDictionary && fontFamily && fontDictionary.has('BaseFont')) {
                     const baseFont: _PdfName = fontDictionary.get('BaseFont');
                     let textFontStyle: PdfFontStyle = PdfFontStyle.regular;
+                    let family: PdfFontFamily = PdfFontFamily.helvetica;
+                    if (fontFamily !== null && typeof fontFamily !== 'undefined' && fontFamily !== '') {
+                        family = _getFontFamily(fontFamily);
+                    }
+                    if (fontSize === 0) {
+                        fontSize = _getFontSize(field, family);
+                    }
+                    if (field && field._dictionary.has('AP')) {
+                        hasValidFontCache = _hasSharedFontResource(field);
+                    }
+                    if (hasValidFontCache) {
+                        cacheKey = `${fontFamily}_${fontSize}_${textFontStyle}`;
+                    }
                     if (baseFont) {
                         defaultAppearance = baseFont.name;
                         if (baseFont.name === 'Helvetica') {
                             baseFont.name = 'Helv';
                         }
                         textFontStyle = _getFontStyle(baseFont.name);
-                        if (defaultAppearance.includes('-')) {
-                            defaultAppearance = defaultAppearance.substring(0, defaultAppearance.indexOf('-'));
-                        }
-                        if (widget && widget._dictionary.has('DA')) {
-                            if (widget._dictionary.has('AP')) {
-                                font = _mapFont(defaultAppearance, fontSize, textFontStyle, widget);
-                            } else {
-                                font = _mapFont(defaultAppearance, fontSize, textFontStyle, widget, fontDictionary);
+                        if (form && form._fontCache && form._fontCache.has(cacheKey) && fontSize !== 0) {
+                            font = form._fontCache.get(cacheKey);
+                            if (field._dictionary && field._dictionary.has('V') && font instanceof PdfTrueTypeFont) {
+                                font._isUnicode = _checkUnicodeString(field._dictionary);
                             }
-                        } else if (field && field._dictionary.has('DA')) {
-                            if (field._dictionary.has('AP')) {
-                                font = _mapFont(defaultAppearance, fontSize, textFontStyle, field);
-                            } else {
-                                font = _mapFont(defaultAppearance, fontSize, textFontStyle, field, fontDictionary);
+                        }
+                        if (!font) {
+                            if (defaultAppearance.includes('-')) {
+                                defaultAppearance = defaultAppearance.substring(0, defaultAppearance.indexOf('-'));
+                            }
+                            if (widget && widget._dictionary.has('DA')) {
+                                if (widget._dictionary.has('AP')) {
+                                    font = _mapFont(defaultAppearance, fontSize, textFontStyle, widget);
+                                } else {
+                                    font = _mapFont(defaultAppearance, fontSize, textFontStyle, widget, fontDictionary);
+                                }
+                            } else if (field && field._dictionary.has('DA')) {
+                                if (field._dictionary.has('AP')) {
+                                    font = _mapFont(defaultAppearance, fontSize, textFontStyle, field);
+                                } else {
+                                    font = _mapFont(defaultAppearance, fontSize, textFontStyle, field, fontDictionary);
+                                }
                             }
                         }
                     }
@@ -3843,8 +3875,15 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
             }
         }
     }
-    if ((font === null || typeof font === 'undefined') && fontSize) {
-        font = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, PdfFontStyle.regular);
+    if ((font === null || typeof font === 'undefined') && typeof fontSize !== 'undefined') {
+        let family: PdfFontFamily = PdfFontFamily.helvetica;
+        if (fontFamily !== null && typeof fontFamily !== 'undefined' && fontFamily !== '') {
+            family = _getFontFamily(fontFamily);
+        }
+        if (fontSize === 0) {
+            fontSize = _getFontSize(field, family);
+        }
+        font = new PdfStandardFont(family, fontSize, PdfFontStyle.regular);
     }
     if ((font === null || typeof font === 'undefined') || (font && font.size === 1)) {
         if (widget && !(widget._field instanceof PdfComboBoxField)) {
@@ -3853,7 +3892,191 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
             font = field._circleCaptionFont;
         }
     }
+    if (form && form._fontCache && fontSize !== 0 && font && typeof cacheKey === 'string' && !form._fontCache.has(cacheKey)) {
+        form._fontCache.set(cacheKey, font);
+    }
     return font;
+}
+/**
+ * Gets the form field font size.
+ *
+ * @param {PdfField} field Form field.
+ * @param {PdfFontFamily} family Font family.
+ * @returns {number} Font size.
+ */
+export function _getFontSize(field: PdfField, family: PdfFontFamily): number {
+    let selectedValue: string;
+    const measureValue: number[][] = [];
+    let s: number = 0;
+    if (field instanceof PdfComboBoxField) {
+        const boundsWidth: number = field.bounds.width;
+        const boundsHeight: number = field.bounds.height;
+        const itemFont: PdfStandardFont = new PdfStandardFont(family, 12);
+        if (typeof field.selectedIndex === 'number') {
+            const item: PdfListFieldItem = field.itemAt(field.selectedIndex as number);
+            if (item && typeof item.text === 'string') {
+                selectedValue = item.text as string;
+                measureValue.push(itemFont.measureString(selectedValue));
+            }
+        } else if (Array.isArray(field.selectedIndex)) {
+            for (let i: number = 0; i < field.selectedIndex.length; i++) {
+                selectedValue = field.itemAt(field.selectedIndex[<number>i]).text as string;
+                measureValue.push(itemFont.measureString(selectedValue));
+            }
+        }
+        const offset: number[] = [0, 0];
+        const borderWidth: number = field.border.width;
+        const doubleBorderWidth: number = 2 * borderWidth;
+        const defaultPadding: number = 2;
+        const padding: boolean = (field.border.style === PdfBorderStyle.inset || field.border.style === PdfBorderStyle.beveled);
+        if (padding) {
+            offset[0] = 2 * doubleBorderWidth;
+            offset[1] = 2 * borderWidth;
+        } else {
+            offset[0] = doubleBorderWidth + defaultPadding;
+            offset[1] = 1 * borderWidth + (defaultPadding - 1);
+        }
+        const rect: number[] = [0, 0, boundsWidth, boundsHeight];
+        let width: number = rect[2] - doubleBorderWidth;
+        const rectangle: number[] = rect;
+        if (padding) {
+            rectangle[3] -= doubleBorderWidth;
+        } else {
+            rectangle[3] -= borderWidth;
+        }
+        if (field.rotationAngle === 0 && padding) {
+            width -= doubleBorderWidth;
+        }
+        if (measureValue.length > 0) {
+            const maxWidthSize: number = (12 * (width - offset[0])) / measureValue[measureValue.length - 1][0];
+            const maxHeightSize: number = (12 * (rect[3] - offset[1])) / measureValue[measureValue.length - 1][1];
+            s = Math.min(maxWidthSize, maxHeightSize);
+        } else {
+            s = 12;
+        }
+        if (field._obtainSelectedValue().length !== 0) {
+            let fonts: PdfStandardFont = new PdfStandardFont(family, s);
+            let text: string = field._dictionary.get('V');
+            let textSize: number[];
+            if (typeof text !== 'undefined') {
+                if (Array.isArray(text) && text.length >= 1) {
+                    textSize = fonts.measureString(text[0]);
+                } else {
+                    textSize = fonts.measureString(text);
+                }
+            }
+            if (typeof textSize !== 'undefined') {
+                if (textSize[0] > boundsWidth || textSize[1] > boundsHeight) {
+                    const width: number = boundsWidth - 4 * field.border.width;
+                    const heightLimit: number = boundsHeight - 4 * field.border.width;
+                    const minimumFontSize: number = 0.248;
+                    let fontSize: number = s;
+                    for (let i: number = 1; i <= boundsHeight; i++) {
+                        fonts = new PdfStandardFont(family, i);
+                        fonts._size = i;
+                        let textSize: number[];
+                        if (typeof text !== 'undefined') {
+                            if (Array.isArray(text) && text.length >= 1) {
+                                textSize = fonts.measureString(text[0]);
+                            } else {
+                                textSize = fonts.measureString(text);
+                            }
+                        }
+                        if (textSize[0] > boundsWidth || textSize[1] > heightLimit) {
+                            fontSize = i;
+                            do {
+                                fontSize -= 0.001;
+                                if (fontSize < minimumFontSize) {
+                                    fonts._size = minimumFontSize;
+                                    break;
+                                }
+                                fonts = new PdfStandardFont(family, fontSize);
+                                fonts._size = fontSize;
+                                const stringFormat: PdfStringFormat = field._getStringFormat();
+                                if (Array.isArray(text) && text.length >= 1) {
+                                    text = text[0];
+                                }
+                                const textWidth: number = fonts.getLineWidth(text, stringFormat);
+                                const newSize: number[] = fonts.measureString(text, stringFormat);
+                                if (textWidth < width && newSize[1] < heightLimit) {
+                                    fonts._size = fontSize;
+                                    break;
+                                }
+                            } while (fontSize > minimumFontSize);
+                            s = fontSize;
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if (s > 12) {
+            s = 12;
+        }
+    } else if (field instanceof PdfTextBoxField) {
+        const boundsWidth: number = field.bounds.width;
+        const boundsHeight: number = field.bounds.height;
+        const text: string = field.text || '';
+        const offset: number[] = [0, 0];
+        const borderWidth: number = field.border.width;
+        const doubleBorderWidth: number = 2 * borderWidth;
+        const defaultPadding: number = 2;
+        const hasPadding: boolean = (field.border.style === PdfBorderStyle.inset || field.border.style === PdfBorderStyle.beveled);
+        if (hasPadding) {
+            offset[0] = 2 * doubleBorderWidth;
+            offset[1] = 2 * borderWidth;
+        } else {
+            offset[0] = doubleBorderWidth + defaultPadding;
+            offset[1] = borderWidth + defaultPadding - 1;
+        }
+        const availableWidth: number = boundsWidth - offset[0];
+        const availableHeight: number = boundsHeight - offset[1];
+        const refFontSize: number = 12;
+        const refFont: PdfStandardFont = new PdfStandardFont(family, refFontSize);
+        if (!field.multiLine) {
+            const [refWidth, refHeight] = refFont.measureString(text);
+            if (refWidth > 0 && refHeight > 0) {
+                const sizeBasedOnWidth: number = (refFontSize * availableWidth) / refWidth;
+                const sizeBasedOnHeight: number = (refFontSize * availableHeight) / refHeight;
+                s = Math.min(sizeBasedOnWidth, sizeBasedOnHeight);
+            } else {
+                s = 8;
+            }
+        } else {
+            s = 12.5;
+        }
+    }
+    return s === 0 ? 12 : s;
+}
+/**
+ * Gets the form field font family.
+ *
+ * @param {string} name Font name.
+ * @returns {PdfFontFamily} Font family.
+ */
+export function _getFontFamily(name: string): PdfFontFamily {
+    let fontFamily: string = name ? name : '';
+    if (fontFamily.includes('-')) {
+        fontFamily = fontFamily.substring(0, fontFamily.indexOf('-'));
+    }
+    switch (fontFamily) {
+    case 'Helv':
+    case 'Helvetica':
+        return PdfFontFamily.helvetica;
+    case 'Cour':
+    case 'Courier':
+        return PdfFontFamily.courier;
+    case 'Symb':
+    case 'Symbol':
+        return PdfFontFamily.symbol;
+    case 'Times':
+    case 'TiRo':
+    case 'TimesRoman':
+        return PdfFontFamily.timesRoman;
+    case 'ZaDb':
+    case 'ZapfDingbats':
+        return PdfFontFamily.zapfDingbats;
+    }
+    return PdfFontFamily.helvetica;
 }
 /**
  * Gets the font style.
@@ -3911,7 +4134,8 @@ export function _mapFont(name: string, size: number, style: PdfFontStyle, annota
         size = 10;
     }
     const fontSize: number = typeof size !== 'undefined' ? size : 1;
-    if (annotation._dictionary.has('DS') || annotation._dictionary.has('DA')) {
+    if (annotation._dictionary.has('DS') || annotation._dictionary.has('DA') || annotation instanceof PdfRedactionAnnotation
+        && annotation._dictionary.has('AP')) {
         switch (fontFamily) {
         case 'Helv':
         case 'Helvetica':
@@ -3957,41 +4181,15 @@ export function _mapFont(name: string, size: number, style: PdfFontStyle, annota
             break;
         default:
             if (annotation._dictionary.has('AP')) {
-                fontData = _tryParseFontStream(annotation._dictionary, annotation._crossReference, annotation, name);
+                fontData = _tryParseFontStream(annotation._crossReference, annotation, name);
             } else if (fontDictionary) {
                 fontData = _getFontFromDescriptor(fontDictionary);
             }
             if (fontData && fontData.length > 0) {
-                let isUnicode: boolean = true;
-                if (annotation._dictionary && annotation._dictionary.has('V')) {
-                    const text: string = annotation._dictionary.get('V');
-                    if (text !== null && typeof text !== 'undefined') {
-                        isUnicode = _isUnicode(text);
-                        if (annotation._dictionary.has('FT')) {
-                            const type: _PdfName = annotation._dictionary.get('FT');
-                            if (type.name === 'Ch' && annotation._dictionary.has('Opt')) {
-                                const options: Array<string>[] = annotation._dictionary.get('Opt');
-                                if (options && options.length > 0) {
-                                    for (let i: number = 0 ; i < options.length; i++) {
-                                        const innerArray: string[] = options[<number>i];
-                                        if (innerArray && innerArray.length > 1) {
-                                            const itemsKey: string = innerArray[0];
-                                            const itemsValue: string = innerArray[1];
-                                            if (itemsKey && itemsValue) {
-                                                if (itemsKey === text &&  itemsValue) {
-                                                    isUnicode = _isUnicode(itemsValue);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
                 const ttf: PdfTrueTypeFont = new PdfTrueTypeFont(fontData, fontSize, style) as PdfTrueTypeFont;
-                ttf._isUnicode = isUnicode;
+                if (annotation._dictionary && annotation._dictionary.has('V')) {
+                    ttf._isUnicode = _checkUnicodeString(annotation._dictionary);
+                }
                 font = ttf;
             }
             break;
@@ -4000,12 +4198,12 @@ export function _mapFont(name: string, size: number, style: PdfFontStyle, annota
     if (font === null || typeof font === 'undefined') {
         const isAnnotation: boolean = annotation instanceof PdfAnnotation;
         const isField: boolean = annotation instanceof PdfField;
-        if (isAnnotation || isField) {
+        if ((isAnnotation && !(annotation instanceof PdfRedactionAnnotation)) || isField) {
             const annotationType: _PdfAnnotationType = (annotation as PdfAnnotation)._type;
             const hasCircleFont: boolean = annotation._circleCaptionFont && fontSize > annotation._circleCaptionFont.size;
             const isWidget: boolean = isAnnotation && annotationType !== _PdfAnnotationType.widgetAnnotation;
             const isLargerTextBox: boolean = annotation instanceof PdfTextBoxField && hasCircleFont;
-            const isLargerComboBox: boolean  = annotation instanceof PdfComboBoxField && hasCircleFont;
+            const isLargerComboBox: boolean = annotation instanceof PdfComboBoxField && hasCircleFont;
             if (isWidget || isLargerTextBox || isLargerComboBox) {
                 font = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, style);
             } else {
@@ -4019,56 +4217,137 @@ export function _mapFont(name: string, size: number, style: PdfFontStyle, annota
     return font;
 }
 /**
- * Gets the font stream.
+ * Checks whether the value of a form field is a Unicode string.
  *
- * @param {_PdfDictionary} widgetDictionary Widget dictionary.
- * @param {_PdfCrossReference} crossReference Cross reference.
- * @param {PdfAnnotation} annotation Annotation.
- * @param {string} fontResourceName Font resource name.
- * @returns {Uint8Array} result.
+ * @param {_PdfDictionary} dictionary - The dictionary representing the form field.
+ * @returns {boolean} `true` if the value or corresponding display value is Unicode; otherwise, `false`..
  */
-export function _tryParseFontStream(widgetDictionary: _PdfDictionary, crossReference: _PdfCrossReference,
-                                    annotation: PdfAnnotation | PdfField, fontResourceName?: string): Uint8Array {
-    let fontData: Uint8Array;
-    const appearance: _PdfDictionary = widgetDictionary.get('AP');
-    if (appearance && appearance instanceof _PdfDictionary && appearance.has('N')) {
-        let baseStream: any = appearance.get('N'); // eslint-disable-line
-        let normal: any; // eslint-disable-line
-        if (baseStream) {
-            if (baseStream instanceof _PdfStream) {
-                normal = baseStream;
-            } else if ((annotation instanceof PdfField || annotation instanceof PdfWidgetAnnotation) && baseStream.stream &&
-                baseStream.stream instanceof _PdfStream) {
-                normal = baseStream.stream;
-            } else if (baseStream.stream && baseStream.stream instanceof _PdfStream) {
-                normal = baseStream.stream;
+function _checkUnicodeString(dictionary: _PdfDictionary): boolean {
+    let isUnicode: boolean = true;
+    const text: string = dictionary.get('V');
+    if (text !== null && typeof text !== 'undefined') {
+        isUnicode = _isUnicode(text);
+        if (dictionary.has('FT')) {
+            const type: _PdfName = dictionary.get('FT');
+            if (type.name === 'Ch' && dictionary.has('Opt')) {
+                const options: Array<string>[] = dictionary.get('Opt');
+                if (options && options.length > 0) {
+                    for (let i: number = 0; i < options.length; i++) {
+                        const innerArray: string[] = options[<number>i];
+                        if (innerArray && innerArray.length > 1) {
+                            const itemsKey: string = innerArray[0];
+                            const itemsValue: string = innerArray[1];
+                            if (itemsKey && itemsValue) {
+                                if (itemsKey === text && itemsValue) {
+                                    isUnicode = _isUnicode(itemsValue);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-        if (normal && normal instanceof _PdfStream && normal.dictionary.has('Resources')) {
-            const resourcesDictionary: _PdfDictionary = normal.dictionary.get('Resources');
-            if (resourcesDictionary && resourcesDictionary.has('Font')) {
-                const fontDictionary: _PdfDictionary = resourcesDictionary.get('Font');
-                if (fontDictionary && fontDictionary instanceof _PdfDictionary) {
-                    fontDictionary.forEach((key: _PdfName, value: _PdfReference) => {
-                        if (value instanceof _PdfReference) {
-                            const dictionary: _PdfDictionary = crossReference._fetch(value);
-                            fontData = _getFontFromDescriptor(dictionary);
+    }
+    return isUnicode;
+}
+/**
+ * Retrieves the font resources dictionary from a widget's appearance stream.
+ *
+ * @private
+ * @param {PdfWidgetAnnotation | PdfField} annotation The annotation or field containing the appearance stream.
+ * @returns {_PdfDictionary} The font resources dictionary, or undefined if not found.
+ */
+function _getAppearanceFontResources(annotation: PdfWidgetAnnotation | PdfField): _PdfDictionary {
+    let fontResources: _PdfDictionary;
+    const widgetDictionary: _PdfDictionary = annotation._dictionary;
+    if (widgetDictionary && widgetDictionary.has('AP')) {
+        const appearance: _PdfDictionary = widgetDictionary.get('AP');
+        if (appearance && appearance instanceof _PdfDictionary && appearance.has('N')) {
+            const baseStream: any = appearance.get('N'); // eslint-disable-line
+            let normal: _PdfStream;
+            if (baseStream) {
+                if (baseStream instanceof _PdfStream) {
+                    normal = baseStream;
+                } else if (baseStream.stream && baseStream.stream instanceof _PdfStream) {
+                    normal = baseStream.stream;
+                }
+            }
+            if (normal && normal.dictionary && normal.dictionary.has('Resources')) {
+                const resourcesDictionary: _PdfDictionary = normal.dictionary.get('Resources');
+                if (resourcesDictionary && resourcesDictionary instanceof _PdfDictionary && resourcesDictionary.has('Font')) {
+                    const fontDictionary: _PdfDictionary = resourcesDictionary.get('Font');
+                    if (fontDictionary instanceof _PdfDictionary) {
+                        fontResources = fontDictionary;
+                    }
+                }
+            }
+        }
+    }
+    return fontResources;
+}
+/**
+ * Checks if a font resource from the field's appearance stream is also defined in the form's default resources.
+ *
+ * @private
+ * @param {PdfAnnotation | PdfField} annotation The annotation or field object.
+ * @returns {boolean} Returns `true` if the form field appearance font has a form object font resource.
+ */
+export function _hasSharedFontResource(annotation: PdfAnnotation | PdfField): boolean {
+    let hasFontResources: boolean = false;
+    const fontDictionary: _PdfDictionary = _getAppearanceFontResources(annotation as (PdfWidgetAnnotation | PdfField));
+    if (fontDictionary && annotation instanceof PdfField) {
+        const form: PdfForm = annotation.form;
+        if (form && form._dictionary.has('DR')) {
+            const resources: _PdfDictionary = form._dictionary.get('DR');
+            if (resources.has('Font')) {
+                if (!form._fontResources) {
+                    form._fontResources = resources.get('Font');
+                }
+                const fonts: _PdfDictionary = form._fontResources;
+                if (fonts) {
+                    fontDictionary.forEach((key: string, value: _PdfReference) => { // eslint-disable-line
+                        if (fonts.has(key)) {
+                            hasFontResources = true;
                         }
                     });
                 }
             }
         }
     }
-    if (!fontData && annotation && annotation instanceof PdfField && annotation._form && annotation._form._dictionary.has('DR')
-        && fontResourceName !== null && typeof fontResourceName !== 'undefined') {
-        const form: PdfForm = annotation._form;
-        const resources: _PdfDictionary = form._dictionary.get('DR');
-        if (resources && resources.has('Font')) {
-            const fonts: _PdfDictionary = resources.get('Font');
-            if (fonts && fonts.has(fontResourceName)) {
-                const fontDictionary: _PdfDictionary = fonts.get(fontResourceName);
-                if (fontDictionary && fontDictionary.has('FontDescriptor')) {
-                    fontData = _getFontFromDescriptor(fontDictionary);
+    return hasFontResources;
+}
+/**
+ * Gets the font stream.
+ *
+ * @param {_PdfCrossReference} crossReference Cross reference.
+ * @param {PdfAnnotation} annotation Annotation.
+ * @param {string} fontResourceName Font resource name.
+ * @returns {Uint8Array} result.
+ */
+export function _tryParseFontStream(crossReference: _PdfCrossReference,
+                                    annotation: PdfAnnotation | PdfField, fontResourceName?: string): Uint8Array {
+    let fontData: Uint8Array;
+    const appearanceFonts: _PdfDictionary = _getAppearanceFontResources(annotation as (PdfWidgetAnnotation | PdfField));
+    if (appearanceFonts) {
+        appearanceFonts.forEach((key: _PdfName, value: _PdfReference) => {
+            if (!fontData && value instanceof _PdfReference) {
+                const dictionary: _PdfDictionary = crossReference._fetch(value);
+                fontData = _getFontFromDescriptor(dictionary);
+            }
+        });
+    }
+    if (!fontData && annotation instanceof PdfField && fontResourceName) {
+        const form: PdfForm = annotation.form;
+        if (form && form._dictionary.has('DR')) {
+            const resources: _PdfDictionary = form._dictionary.get('DR');
+            if (resources && resources.has('Font')) {
+                const fonts: _PdfDictionary = resources.get('Font');
+                if (fonts && fonts.has(fontResourceName)) {
+                    const fontDictionary: _PdfDictionary = fonts.get(fontResourceName);
+                    if (fontDictionary) {
+                        fontData = _getFontFromDescriptor(fontDictionary);
+                    }
                 }
             }
         }
@@ -4100,7 +4379,7 @@ export function _getFontFromDescriptor(dictionary: _PdfDictionary): Uint8Array {
         const fontFile: any = fontDescriptor.get('FontFile2'); // eslint-disable-line
         if (fontFile instanceof _PdfStream && fontFile.length > 0) {
             fontData = fontFile.getByteRange(fontFile.start, fontFile.end);
-        } else if (fontFile.stream instanceof _PdfStream && fontFile.stream.length > 0 && fontFile.dictionary &&
+        } else if (fontFile.stream && fontFile.dictionary &&
             (fontFile.dictionary.has('Length1') || fontFile.dictionary.has('Length'))) {
             const streamLength: number = fontFile.dictionary.get(fontFile.dictionary.has('Length1') ? 'Length1' : 'Length');
             fontFile.getBytes(streamLength);
@@ -4436,7 +4715,7 @@ export function _createFontStream(form: PdfForm, font: _PdfDictionary): Uint8Arr
         font.forEach((key: any, value: _PdfReference) => { // eslint-disable-line
             if (value && value.objectNumber) {
                 const dictionary: _PdfDictionary = form._crossReference._fetch(value);
-                if (dictionary) {
+                if (dictionary && dictionary instanceof _PdfDictionary) {
                     dictionary.forEach((key: any, value: any) => { // eslint-disable-line
                         if (value && value instanceof _PdfName && value.name === 'FontDescriptor') {
                             let fontFile: any; // eslint-disable-line
@@ -4530,6 +4809,16 @@ export function _updateDashedBorderStyle(border: PdfInteractiveBorder, parameter
         parameter.borderPen._dashStyle = PdfDashStyle.dash;
         parameter.borderPen._dashPattern = [3];
     }
+}
+/**
+ * Reads a 16-bit unsigned integer from the specified offset in the given data array.
+ *
+ * @param {Uint8Array} data - The data array containing the bytes.
+ * @param {number} offset - The position in the data array to start reading.
+ * @returns {number} The 16-bit unsigned integer read from the data array.
+ */
+export function _readUnsignedInteger16(data: Uint8Array, offset: number): number {
+    return (data[<number>offset] << 8) | data[offset + 1];
 }
 /**
  * Sets the rotation angle for a PDF annotation if necessary.

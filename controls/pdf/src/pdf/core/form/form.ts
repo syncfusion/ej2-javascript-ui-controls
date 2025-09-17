@@ -5,9 +5,10 @@ import { _getInheritableProperty, _getPageIndex, _isNullOrUndefined } from './..
 import { PdfFormFieldsTabOrder, _FieldFlag, _SignatureFlag } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
-import { PdfWidgetAnnotation } from './../annotations/annotation';
+import { PdfRadioButtonListItem, PdfWidgetAnnotation } from './../annotations/annotation';
 import { PdfDocument } from '../pdf-document';
 import { _PdfCatalog } from '../pdf-catalog';
+import { PdfFont } from './../fonts/pdf-standard-font';
 /**
  * Represents a PDF form.
  * ```typescript
@@ -42,6 +43,10 @@ export class PdfForm {
     _signFlag: _SignatureFlag = _SignatureFlag.none;
     _isNeedAppearances: boolean = false;
     _formNames: Array<string> = [];
+    _fieldAutoNaming: boolean = false;
+    _fieldName: Array<string> = [];
+    _fontCache: Map<string, PdfFont> = new Map();
+    _fontResources: _PdfDictionary;
     /**
      * Represents a loaded from the PDF document.
      *
@@ -147,6 +152,45 @@ export class PdfForm {
         }
     }
     /**
+     * Gets a value indicating whether the automatic field naming is enabled for form fields.
+     *
+     * @returns {boolean} Indicates if field auto naming is enabled.
+     *
+     * ```typescript
+     * // Create new document.
+     * let document: PdfDocument = new PdfDocument();
+     * // Access loaded form
+     * let form: PdfForm = document.form;
+     * // Gets the value indicating if automatic field naming is enabled
+     * let fieldAutoNaming: boolean = form.fieldAutoNaming;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get fieldAutoNaming(): boolean {
+        return this._fieldAutoNaming;
+    }
+    /**
+     * Sets a value indicating whether field auto-naming is enabled for form fields.
+     *
+     * @param {boolean} value Enable or disable field auto naming. The default value is false.
+     * ```typescript
+     * // Create a new document
+     * let document: PdfDocument = new PdfDocument();
+     * // Access loaded form
+     * let form: PdfForm = document.form;
+     * // Enable automatic field naming for new form fields.
+     * form.fieldAutoNaming = true;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set fieldAutoNaming(value: boolean) {
+        this._fieldAutoNaming = value;
+    }
+    /**
      * Gets the `PdfField` at the specified index.
      *
      * @param {number} index Field index.
@@ -243,6 +287,26 @@ export class PdfForm {
      * ```
      */
     add(field: PdfField): number {
+        if (this._fields.length > 0) {
+            const fieldsCollection: PdfField[] = this._getFields();
+            const old: PdfField = fieldsCollection.find(oldField => oldField.name === field.name); // eslint-disable-line
+            if (old && this._fieldAutoNaming) {
+                const newName: string = this._getCorrectName(field._name);
+                field._name = newName;
+                field._dictionary.update('T', newName);
+                this._fieldName.push(field._name);
+                return this._doAdd(field);
+            } else if (old && ((old instanceof PdfSignatureField && (old._isLoaded
+                       || old._crossReference._document._isLoaded)) ||
+                       !(old instanceof PdfSignatureField)) && this._checkType(old, field)) {
+                this._fieldName.push(field._name);
+                return this._groupingFormFields(field, old);
+            }
+        }
+        this._fieldName.push(field._name);
+        return this._doAdd(field);
+    }
+    _doAdd(field: PdfField): number {
         this._fields.push(field._ref);
         this._dictionary.update('Fields', this._fields);
         this._parsedFields.set(this._fields.length - 1, field);
@@ -253,6 +317,164 @@ export class PdfForm {
         }
         this._isNeedAppearances = true;
         return (this._fields.length - 1);
+    }
+    _groupingFormFields(field: PdfField, oldField: PdfField): number {
+        if (oldField._name === field._name) {
+            if (oldField.flatten || field.flatten) {
+                field.flatten = true;
+                oldField.flatten = true;
+            }
+        }
+        if (!(field instanceof PdfRadioButtonListField && oldField instanceof PdfRadioButtonListField)) {
+            const widgetDictionary: _PdfDictionary = (field as PdfField).itemAt(0)._dictionary;
+            if (widgetDictionary && widgetDictionary.has('Parent')) {
+                delete widgetDictionary._map.Parent;
+            }
+            (field as PdfField).itemAt(0)._dictionary.set('Parent', oldField._ref);
+            const fieldKidRef: _PdfReference = field.itemAt(0)._ref;
+            let oldFieldKids: any = oldField._dictionary.get('Kids'); // eslint-disable-line
+            if (oldFieldKids && oldFieldKids.length > 0) {
+                oldFieldKids.push(fieldKidRef);
+                oldField._dictionary.update('Kids', oldFieldKids);
+                oldField._dictionary._updated = true;
+            } else {
+                this._updateFieldsKids(oldField, field);
+            }
+            if (field instanceof PdfCheckBoxField && oldField instanceof PdfCheckBoxField) {
+                if (typeof(oldField.itemAt(0).exportValue) !== 'undefined' && typeof(field.itemAt(0).exportValue) !== 'undefined' && oldField.itemAt(0).exportValue === field.itemAt(0).exportValue) {
+                    field.itemAt(0).checked = oldField.itemAt(0).checked;
+                }
+                oldField._parsedItems.set(oldField.itemsCount - 1, field.itemAt(0));
+            }
+            if ((field instanceof PdfButtonField && oldField instanceof PdfButtonField)) {
+                if (!oldField._setAppearance) {
+                    oldField._setAppearance = true;
+                }
+            }
+            return this._fields.length - 1;
+        } else {
+            const baseDictionary: _PdfDictionary = oldField._dictionary;
+            if (baseDictionary && baseDictionary.has('Opt')) {
+                delete baseDictionary._map.Opt;
+            }
+            const _radioButtonGroupingFields: PdfField[] = [];
+            _radioButtonGroupingFields.push(oldField);
+            _radioButtonGroupingFields.push(field);
+            let itemCount: number = 0;
+            let globalSelectedIndex: number = -1;
+            _radioButtonGroupingFields.forEach(field => { // eslint-disable-line
+                if ((field as PdfRadioButtonListField).selectedIndex >= 0) {
+                    const selectedItemIndex: number = itemCount + (field as PdfRadioButtonListField).selectedIndex;
+                    if (selectedItemIndex > globalSelectedIndex) {
+                        globalSelectedIndex = selectedItemIndex;
+                    }
+                }
+                itemCount += field._kids.length;
+            });
+            if (oldField._kids.length !== oldField._parsedItems.size) {
+                for (let j: number = 0; j < oldField._kids.length; j++) {
+                    const existingItem: PdfRadioButtonListItem = oldField._parsedItems.get(j);
+                    if (!existingItem || (existingItem as PdfRadioButtonListItem).value !== (oldField.itemAt(j) as
+                                          PdfRadioButtonListItem).value) {
+                        oldField._parsedItems.set(j, oldField.itemAt(j));
+                    }
+                }
+            }
+            let fieldKids: any = field._dictionary.get('Kids'); // eslint-disable-line
+            if (fieldKids.length > 0) {
+                let oldFieldKids: any = oldField._dictionary.get('Kids'); // eslint-disable-line
+                let itemsCount: number = oldField.itemsCount;
+                for (let i: number = 0; i < field.itemsCount; i++) {
+                    const widgetDictionary: _PdfDictionary = (field as PdfField).itemAt(i)._dictionary;
+                    if (widgetDictionary && widgetDictionary.has('Parent')) {
+                        delete widgetDictionary._map.Parent;
+                    }
+                    widgetDictionary.set('Parent', oldField._ref);
+                    field.itemAt(i)._field = oldField;
+                    field.itemAt(i)._index = itemsCount++;
+                    itemCount++;
+                    const fieldKidRef: _PdfReference = field.itemAt(i)._ref;
+                    oldFieldKids.push(fieldKidRef);
+                }
+                oldField._dictionary.update('Kids', oldFieldKids);
+                oldField._dictionary._updated = true;
+            }
+            oldField.allowUnisonSelection = field.allowUnisonSelection;
+            let count: number = oldField._parsedItems.size;
+            for (let j: number = 0; j < field.itemsCount; j++) {
+                oldField._parsedItems.set(count, field.itemAt(j));
+                count++;
+            }
+            if (!field.allowUnisonSelection) {
+                this._addItemsToOptionsArray(oldField);
+            }
+            if (_radioButtonGroupingFields.length > 0 && globalSelectedIndex >= 0 && globalSelectedIndex < itemCount) {
+                (_radioButtonGroupingFields[0] as PdfRadioButtonListField).selectedIndex = globalSelectedIndex;
+            }
+            return this._fields.length - 1;
+        }
+    }
+    _updateFieldsKids(oldField: PdfField, newField: PdfField): void {
+        const oldFieldDict: _PdfDictionary = oldField._dictionary;
+        const newDict: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        const newFieldRef: _PdfReference = this._crossReference._getNextReference();
+        const fieldKeys: string[] = ['FT', 'T', 'V', 'Ff', 'Opt', 'I', 'TU'];
+        fieldKeys.forEach(key => { // eslint-disable-line
+            if (oldFieldDict.has(key)) {
+                newDict.update(key, oldFieldDict.get(key));
+                delete oldFieldDict._map[key]; // eslint-disable-line
+            }
+        });
+        oldField._dictionary._updated = true;
+        oldFieldDict.set('Parent', newFieldRef);
+        newField.itemAt(0)._dictionary.set('Parent', newFieldRef);
+        const kidElements: _PdfReference[] = [];
+        kidElements.push(oldField._ref);
+        const fieldKidRef: _PdfReference = newField.itemAt(0)._ref;
+        kidElements.push(fieldKidRef);
+        newDict.update('Kids', kidElements);
+        newDict._updated = true;
+        this._crossReference._cacheMap.set(newFieldRef, newDict);
+        const acroForm: any= this._crossReference._document._catalog._catalogDictionary.get('AcroForm'); // eslint-disable-line
+        const fields: any = acroForm.get('Fields'); // eslint-disable-line
+        const index: number = fields.indexOf(oldField._ref);
+        if (index !== -1) {
+            fields[<number>index] = newFieldRef;
+        }
+        oldField._ref = newFieldRef;
+        oldField._dictionary = newDict;
+        oldField._kids = newDict.get('Kids');
+        oldField._dictionary._updated = true;
+    }
+    _addItemsToOptionsArray (baseField: PdfField): void {
+        const seenValues: Set<string> = new Set();
+        const duplicateValues: Set<string> = new Set();
+        const allValues: string[] = [];
+        const radioField: PdfRadioButtonListField = baseField as PdfRadioButtonListField;
+        for (let i: number = 0; i < radioField.itemsCount; i++) {
+            const value: string = radioField.itemAt(i).value;
+            allValues.push(value);
+            if (seenValues.has(value)) {
+                duplicateValues.add(value);
+            } else {
+                seenValues.add(value);
+            }
+        }
+        if (duplicateValues.size > 0) {
+            baseField._dictionary.set('Opt', allValues);
+        }
+    }
+    _getCorrectName(name: string): string {
+        let correctName: string = name;
+        const existingIndex: number = this._fieldName.indexOf(name);
+        if (existingIndex !== -1) {
+            const uid: string = this._generateUniqueIdentifier();
+            correctName = `${name}_${uid}`;
+        }
+        return correctName;
+    }
+    _generateUniqueIdentifier(): string {
+        return Math.floor(Math.random() * 10000).toString();
     }
     /**
      * Remove the specified PDF form field.
@@ -1192,5 +1414,14 @@ export class PdfForm {
     _clear(): void {
         this._fields = [];
         this._parsedFields = new Map();
+    }
+    _checkType(field1: PdfField, field2: PdfField): boolean {
+        return (field1 instanceof PdfTextBoxField && field2 instanceof PdfTextBoxField) ||
+            (field1 instanceof PdfButtonField && field2 instanceof PdfButtonField) ||
+            (field1 instanceof PdfCheckBoxField && field2 instanceof PdfCheckBoxField) ||
+            (field1 instanceof PdfComboBoxField && field2 instanceof PdfComboBoxField) ||
+            (field1 instanceof PdfListBoxField && field2 instanceof PdfListBoxField) ||
+            (field1 instanceof PdfRadioButtonListField && field2 instanceof PdfRadioButtonListField) ||
+            (field1 instanceof PdfSignatureField && field2 instanceof PdfSignatureField);
     }
 }

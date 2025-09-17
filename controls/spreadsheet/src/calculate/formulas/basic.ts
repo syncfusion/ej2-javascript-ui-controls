@@ -3499,8 +3499,10 @@ export class BasicFormulas {
             return errCollection[CommonErrors.Value];
         } else if (argArr[0].indexOf(':') === -1) {
             return errCollection[CommonErrors.Ref];
+        } else if (argArr[3] && argArr[3] === '0') {
+            return errCollection[CommonErrors.Value];
         }
-        let row: number; let col: number;
+        let row: number; let col: number; let area: number;
         const processArgs: Function = (actualValue: string): string | number => {
             if (isNullOrUndefined(actualValue) || actualValue === '') {
                 return 1;
@@ -3529,6 +3531,18 @@ export class BasicFormulas {
             }
             return value;
         };
+        if (argArr[3]) {
+            area = processArgs(argArr[3]);
+            if (errCollection.indexOf(area.toString()) > -1) { return area.toString(); }
+        }
+        if (argArr[0].startsWith(this.parent.tic) && argArr[0].endsWith(this.parent.tic)) {
+            argArr[0] = argArr[0].substring(1, argArr[0].length - 1);
+        }
+        const rangeArr: string[] = argArr[0].split(this.parent.getParseArgumentSeparator());
+        argArr[0] = rangeArr[area ? area - 1 : 0];
+        if (!argArr[0]) {
+            return errCollection[CommonErrors.Ref];
+        }
         value = argArr[0];
         row = processArgs(argArr[1]);
         if (errCollection.indexOf(row.toString()) > -1) { return row.toString(); }

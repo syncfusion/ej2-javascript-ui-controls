@@ -2,18 +2,25 @@
 
 ## [Unreleased]
 
-## 31.1.19 (2025-09-11)
+## 31.1.20 (2025-09-10)
 
 ### Diagram
 
 #### Bug Fixes
 
-- `#I752739` - Connector segments now update correctly when dragging the connector's source thumb.
 - `#I753805` - Group nodes without explicit size definitions are now rendered properly in the symbol palette
 - `#I742819` - Resolved connector overlapping issues in complex hierarchical tree layouts.
-- `#I759916` - The issue in the distribute method has been resolved.
 - `#I759053` - Locked nodes will no longer move along with unlocked nodes.
-- `#I757716` - Issues in UML connectors has been fixed.
+- `#I752739` - Connector segments now update correctly when dragging the connector's source thumb.
+
+## 31.1.18 (2025-09-10)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I759916` - Node distribution now works correctly even when a connector is selected.
+- `#I757716` - UML inheritance connectors now render properly according to the standard.
 
 ## 31.1.17 (2025-09-05)
 

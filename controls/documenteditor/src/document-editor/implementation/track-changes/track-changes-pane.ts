@@ -6,7 +6,7 @@ import { CommentReviewPane } from '../comments';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButtonModel, DropDownButton, MenuEventArgs, ItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget, TableWidget, BlockWidget, HeaderFooterWidget, ChartElementBox, TableCellWidget } from '../viewer/page';
-import { WRowFormat, WCharacterFormat, SelectionSectionFormat } from '../index';
+import { WRowFormat, WCharacterFormat, SelectionSectionFormat, TextHelper, TextPosition } from '../index';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary, HeaderFooterType, RevisionType } from '../../base/index';
 /**
@@ -543,6 +543,26 @@ export class TrackChangesPane {
                 changesSingleView.clear();
             }
             this.changes.clear();
+        }
+    }
+    /**
+     * @private
+     * Updates the date value for the revision
+     */
+    public setDateInternal(revision: Revision): void {
+        let date: string = revision.date;
+        let startTextPosition: TextPosition = new TextPosition(this.owner);
+        let endTextPosition: TextPosition = new TextPosition(this.owner);
+        this.owner.selection.selectRevision(revision, startTextPosition, endTextPosition);
+        let endIndex: number = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(endTextPosition);
+        let currentChangeView: ChangesSingleView;
+        if (!isNullOrUndefined(revision)) {
+            currentChangeView = this.owner.trackChangesPane.changes.get(revision);
+        }
+        if (!isNullOrUndefined(currentChangeView)) {
+            const dateView: HTMLDivElement = currentChangeView.singleInnerDiv.querySelector('.e-de-track-date') as HTMLDivElement;
+            dateView.textContent = HelperMethods.getModifiedDate(revision.date);
+            this.owner.getRevisionData(endIndex, date);
         }
     }
     /**

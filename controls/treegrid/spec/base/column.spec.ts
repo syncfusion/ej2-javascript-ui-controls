@@ -135,7 +135,7 @@ describe('columns method', () => {
     it('column methods', () => {
         expect(gridObj.getCellFromIndex(2, 1).querySelector('.e-treecell').textContent).toBe('Plan budget');
         expect(gridObj.getColumnByField('taskName').headerText).toBe('Task Name');
-        const uid: string = gridObj.getHeaderContent().querySelectorAll('.e-headercelldiv')[1].getAttribute('e-mappinguid');
+        const uid: string = gridObj.getHeaderContent().querySelectorAll('.e-headercelldiv')[1].getAttribute('data-mappinguid');
         expect(gridObj.getColumnByUid(uid).headerText).toBe('Task Name');
         expect(gridObj.getColumnFieldNames()[2]).toBe('startDate');
         expect(gridObj.getColumnHeaderByField('startDate').querySelector('.e-headertext').textContent).toBe('Start Date');
@@ -1072,5 +1072,151 @@ describe('858073-Dynamically changing columns from stacked to normal throws exce
     });
     afterAll(() => {
         destroy(gridObj);
+    });
+});
+
+describe('TreeGrid ColumnChooser Settings', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                showColumnChooser: true,
+                columnChooserSettings: {
+                    template: '<div class="customTemplate">Content Template</div>',
+                },
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true,  textAlign: 'Right', width: 100 },
+                    { field: 'taskName', headerText: 'Task Name', width: 250, showInColumnChooser: false },
+                    { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+                    { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+                    { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+                ]
+            },
+            done
+        );
+    });
+    it('Content template should be rendered correctly', (done) => {
+        gridObj.columnChooserModule.openColumnChooser(100, 50);
+        const headerContent = document.querySelector('.customTemplate').innerHTML;
+        expect(headerContent).toBe('Content Template');
+        done();
+    });
+    afterAll(() => {
+        // Clean up
+        (<any>gridObj).columnChooserModule.destroy();
+        gridObj.destroy();
+        gridObj = null;
+    });
+});
+describe('TreeGrid ColumnChooser Settings', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                showColumnChooser: true,
+                columnChooserSettings: {
+                    headerTemplate: '<div class="e-cc-header1">Header Template</div>',
+                },
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true,  textAlign: 'Right', width: 100 },
+                    { field: 'taskName', headerText: 'Task Name', width: 250, showInColumnChooser: false },
+                    { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+                    { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+                    { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+                ]
+            },
+            done
+        );
+    });
+    it('Header template should be rendered correctly', (done) => {
+        gridObj.columnChooserModule.openColumnChooser(100, 50);
+        const headerContent = document.querySelector('.e-cc-header1').innerHTML;
+        expect(headerContent).toBe('Header Template');
+        done();
+    });
+    afterAll(() => {
+        // Clean up
+        (<any>gridObj).columnChooserModule.destroy();
+        gridObj.destroy();
+        gridObj = null;
+    });
+});
+describe('TreeGrid ColumnChooser Settings', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                showColumnChooser: true,
+                columnChooserSettings: {
+                    footerTemplate: '<div class="customFooter">Footer Template</div>',
+                },
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true,  textAlign: 'Right', width: 100 },
+                    { field: 'taskName', headerText: 'Task Name', width: 250, showInColumnChooser: false },
+                    { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+                    { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+                    { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+                ]
+            },
+            done
+        );
+    });
+    it('Footer template should be rendered correctly', (done) => {
+        gridObj.columnChooserModule.openColumnChooser(100, 50);
+        const footerContent = document.querySelector('.customFooter').innerHTML;
+        expect(footerContent).toBe('Footer Template');
+        done();
+    });
+    afterAll(() => {
+        // Clean up
+        (<any>gridObj).columnChooserModule.destroy();
+        gridObj.destroy();
+        gridObj = null;
+    });
+});
+describe('TreeGrid ColumnChooser Settings', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                showColumnChooser: true,
+                columnChooserSettings: {
+                    enableSearching:false
+                },
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true,  textAlign: 'Right', width: 100 },
+                    { field: 'taskName', headerText: 'Task Name', width: 250, showInColumnChooser: false },
+                    { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+                    { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+                    { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+                ]
+            },
+            done
+        );
+    });
+    it('Searching input should be rendered correctly', (done) => {
+        gridObj.columnChooserModule.openColumnChooser(100, 50);
+        const searchInput = document.querySelector('.e-cc-searchdiv');
+        let a = isNullOrUndefined(searchInput);
+        expect(a).toBe(false);
+        done();
+    });
+    afterAll(() => {
+        // Clean up
+        (<any>gridObj).columnChooserModule.destroy();
+        gridObj.destroy();
+        gridObj = null;
     });
 });

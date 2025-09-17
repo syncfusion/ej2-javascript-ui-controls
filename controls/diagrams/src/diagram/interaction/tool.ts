@@ -784,7 +784,6 @@ export class ConnectTool extends ToolBase {
                         tempArgs = this.commandHandler.connect(this.endPoint, args, this.canCancel) as any;
                     }
 
-                    this.commandHandler.updateSelector();
                 } else {
                     // EJ2-65331 - The condition checks whether the cancel argument is true or false
                     if (!arg.cancel) {

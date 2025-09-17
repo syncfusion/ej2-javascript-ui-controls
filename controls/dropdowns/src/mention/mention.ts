@@ -718,7 +718,9 @@ export class Mention extends DropDownBase {
             this.inputElement.focus(); }
         if (this.isContentEditable(this.inputElement)) {
             this.range = this.getCurrentRange();
-            rangetextContent = this.range.startContainer.textContent.split('');
+            if (this.range) {
+                rangetextContent = this.range.startContainer.textContent.split('');
+            }
         }
         const currentRange: string = this.getTextRange();
         // eslint-disable-next-line security/detect-non-literal-regexp
@@ -826,7 +828,8 @@ export class Mention extends DropDownBase {
     }
 
     private getCurrentRange(): Range {
-        this.range = this.inputElement.ownerDocument.getSelection().getRangeAt(0);
+        this.range = this.inputElement.ownerDocument.getSelection().rangeCount > 0 &&
+            this.inputElement.ownerDocument.getSelection().getRangeAt(0);
         return this.range;
     }
 

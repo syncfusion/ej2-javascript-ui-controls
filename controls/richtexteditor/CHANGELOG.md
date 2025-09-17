@@ -2,13 +2,19 @@
 
 ## [Unreleased]
 
-## 31.1.19 (2025-09-11)
+## 31.1.20 (2025-09-10)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
 - `#I750223` - Now, drag and drop image insertion into the editor functions reliably even when no image path is configured.
+
+- `#I762924` - Now, the Rich Text Editor works properly when pasting list content as plain text in the Firefox browser, and the list no longer becomes a single element.
+
+- `#I762935` - Now, the Rich Text Editor works properly when the font color is removed from list content, and the bullet list element no longer retains the font color.
+
+- `#I762475` - Now, the Rich Text Editor works properly when using Clear Format to remove inline styles from table content.
 
 ## 31.1.18 (2025-09-10)
 

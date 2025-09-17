@@ -98,7 +98,9 @@ export class ContextMenu {
                     }
                 }
                 tObj.grid.contextMenuModule.contextMenu.hideItems(tObj.grid.contextMenuModule['hiddenItems']);
-                indent.style.display = outdent.style.display = 'none';
+                if (indent || outdent) {
+                    indent.style.display = outdent.style.display = 'none';
+                }
             }
         }
     }

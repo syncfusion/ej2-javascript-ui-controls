@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.20 (2025-09-10)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- `#I751146` - Added the title attribute for the preview and current color span element in the color picker.
+
 ## 31.1.17 (2025-09-05)
 
 ### ColorPicker

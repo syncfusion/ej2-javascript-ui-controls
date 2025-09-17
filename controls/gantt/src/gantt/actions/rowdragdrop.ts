@@ -895,7 +895,7 @@ export class RowDD {
         for (let i: number = 0; i < length; i++) {
             currentRecord = record.childRecords[i as number];
             count++;
-            gObj.flatData.splice(count, 0, currentRecord);
+            this.parent.insertRecord(currentRecord, count);
             this.parent.ids.splice(count, 0, currentRecord.ganttProperties.rowUniqueID.toString());
             if (this.parent.viewType === 'ResourceView') {
                 const taskId: string  = (currentRecord.level === 0 ? 'R' : 'T') + currentRecord.ganttProperties.taskId;

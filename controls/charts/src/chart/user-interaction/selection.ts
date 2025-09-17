@@ -1772,6 +1772,12 @@ export class Selection extends BaseSelection {
                 if (target.id.indexOf('_legend_text') > 1) {
                     target = getElement(target.id.replace('text', 'shape'));
                 }
+                if (target.id.indexOf('marker') > 1) {
+                    target = getElement(target.id.replace('_marker', ''));
+                }
+                if (target.id.indexOf('g') > 1) {
+                    target = getElement(target.id.replace('_g_', '_shape_'));
+                }
                 if ((target).hasAttribute('class') && ((target).getAttribute('class').indexOf('highlight') > -1 ||
                     target.getAttribute('class').indexOf('selection') > -1)) {
                     return;

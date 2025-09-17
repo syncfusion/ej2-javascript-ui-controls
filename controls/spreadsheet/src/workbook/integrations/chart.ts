@@ -83,7 +83,7 @@ export class WorkbookChart {
                 const rangeAddress: string = getRangeAddress(rangeIdx);
                 if (chartModel.range.indexOf('!') > 0) {
                     chartModel.range = chartModel.range.substring(0, chartModel.range.lastIndexOf('!')) + '!' + rangeAddress;
-                } else {
+                } else if (chartModel.range !== '') {
                     chartModel.range = this.parent.getActiveSheet().name + '!' + rangeAddress;
                 }
                 if (isNullOrUndefined(chartModel.id)) {
@@ -130,6 +130,7 @@ export class WorkbookChart {
                         : this.parent.sheets[sheetIdx as number];
                     const cell: CellModel = getCell(rowIdx, colIdx, sheet);
                     if (!this.parent.isPrintingProcessing) {
+                        chartModel.address = [rowIdx, colIdx];
                         if (cell && cell.chart) {
                             cell.chart.push(chartModel);
                         } else {

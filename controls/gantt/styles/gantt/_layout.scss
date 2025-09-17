@@ -222,6 +222,10 @@
       }
     }
 
+    .e-gantt-splitter:has(.e-headercell.e-fltr-icon) {
+      overflow: visible !important; /* stylelint-disable-line declaration-no-important */
+    }
+
     .e-temp-content {
       border-left: 1px solid;
     }
@@ -237,6 +241,9 @@
     .e-gantt-tree-grid-pane {
       .e-grid {
         border-width: 0;
+      }
+      .e-grid:has(.e-headercell.e-fltr-icon):not(.e-gantt .e-grid.e-rtl)  {
+        position: inherit;
       }
       .e-grid .e-row .e-input-group {
         margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */

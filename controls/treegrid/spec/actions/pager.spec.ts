@@ -44,16 +44,16 @@ describe('TreeGrid Pager module', () => {
     });
 
     it('current page testing', () => {
-        expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('index')).toBe('2');
+        expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('data-index')).toBe('2');
     });
     it('gotpage testing', () => {
         gridObj.goToPage(2);
-        expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('index')).toBe('2');
+        expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('data-index')).toBe('2');
     });
     it('set model testing pager settings', () => {
         gridObj.pageSettings = {currentPage: 1};
         gridObj.dataBind();
-        expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('index')).toBe('1');
+        expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('data-index')).toBe('1');
     });
     afterAll(() => {
       destroy(gridObj);

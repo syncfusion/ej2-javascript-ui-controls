@@ -19,13 +19,13 @@ $event-marker-label-font-color: rgba($warning-dark) !default;
 $connector-line-color: rgba($primary) !default;
 $connector-line-hover-color: rgba($primary) !default;
 $connector-false-line-color: rgba($primary) !default;
-$connector-point-hover-color: rgba($icon-color) !default;
-$connector-point-border-color: rgba($content-bg-color) !default;
-$connector-point-hover-bg-color: rgba($icon-color-hover) !default;
-$connector-point-hover-outerline-color: $connector-point-border-color !default;
+$connector-node-hover-color: rgba($icon-color) !default;
+$connector-node-border-color: rgba($content-bg-color) !default;
+$connector-node-hover-bg-color: rgba($icon-color-hover) !default;
+$connector-node-hover-outerline-color: $connector-node-border-color !default;
 $critical-connector-line-color: rgba($danger) !default;
 $critical-connector-line-hover-color: rgba($danger-light) !default;
-$connector-point-hover-border-color: rgba($content-bg-color) !default;
+$connector-node-hover-border-color: rgba($content-bg-color) !default;
 $gantt-line-container-cell-border-color: rgba($border-light) !default;
 /* stylelint-disable */
 $gantt-unscheduled-taskbar-background: linear-gradient(to right, rgba($primary-light), rgba($primary) 30%, rgba($primary) 70%, rgba($primary) 70%, rgba($primary-light) 100%) !default;
@@ -93,6 +93,9 @@ $error-elem-color: rgba($danger) !default;
 $gantt-active-container-border: rgba($border) !default;
 $rangecontainer-border-color: rgba($border-warning) !default;
 $gantt-chartrow-hover-bg-color: rgba($secondary-container) !default;
+$gantt-timelinecell-hover-bg-color: $content-bg-color-hover !default;
+$gantt-headercell-hover-bg-color: $content-bg-color-hover !default;
+$gantt-weekendcell-hover-bg-color: $table-bg-color-hover !default;
 
 // Layout
 $holiday-label-font-size: 13px !default;

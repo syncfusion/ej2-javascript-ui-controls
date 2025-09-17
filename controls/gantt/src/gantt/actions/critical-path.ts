@@ -29,7 +29,8 @@ export class CriticalPath {
         if (isCritical && this.parent.flatData.length > 0) {
             this.parent.enableCriticalPath = true;
             const parentRecords: IGanttData[] = this.parent.treeGrid.parentData;
-            let checkEndDate: Date = parentRecords[0].ganttProperties.endDate;
+            let checkEndDate: Date = this.parent.projectEndDate ? new Date(this.parent.projectEndDate) :
+                parentRecords[0].ganttProperties.endDate;
             let dateDifference: number = 0;
             /* eslint-disable-next-line */
             const checkBeyondEnddate: any[] = [];
@@ -47,14 +48,16 @@ export class CriticalPath {
             if (parentRecords[0].ganttProperties.autoEndDate > parentRecords[0].ganttProperties.endDate && !parentRecords[0].ganttProperties.isAutoSchedule) {
                 checkEndDate = parentRecords[0].ganttProperties.autoEndDate;
             }
-            // Find the total project endDate
-            for (let i: number = 1; i < parentRecords.length; i++) {
-                if (parentRecords[i as number].ganttProperties.endDate >= checkEndDate) {
-                    checkEndDate = parentRecords[i as number].ganttProperties.endDate;
-                }
-                if (!parentRecords[i as number].ganttProperties.isAutoSchedule) {
-                    if (parentRecords[i as number].ganttProperties.autoEndDate >= checkEndDate) {
-                        checkEndDate = parentRecords[i as number].ganttProperties.autoEndDate;
+            if (isNullOrUndefined(this.parent.projectEndDate)) {
+                // Find the total project endDate
+                for (let i: number = 1; i < parentRecords.length; i++) {
+                    if (parentRecords[i as number].ganttProperties.endDate >= checkEndDate) {
+                        checkEndDate = parentRecords[i as number].ganttProperties.endDate;
+                    }
+                    if (!parentRecords[i as number].ganttProperties.isAutoSchedule) {
+                        if (parentRecords[i as number].ganttProperties.autoEndDate >= checkEndDate) {
+                            checkEndDate = parentRecords[i as number].ganttProperties.autoEndDate;
+                        }
                     }
                 }
             }
@@ -400,8 +403,8 @@ export class CriticalPath {
                         if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
                             collection[fromTaskIdIndex as number]['slack'] = dateDifference;
                         }
-                        else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference &&
-                            collection[fromTaskIdIndex as number]['slack'] !== 0) {
+                        else if (collection[fromTaskIdIndex as number]['slack'] !== 0 &&
+                            collection[fromTaskIdIndex as number]['slack'] > dateDifference) {
                             collection[fromTaskIdIndex as number]['slack'] = dateDifference;
                         }
                     }
@@ -583,7 +586,7 @@ export class CriticalPath {
                         if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
                             collection[fromTaskIdIndex as number]['slack'] = dateDifference;
                         }
-                        else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference && collection[fromTaskIdIndex as number]['slack'] !== 0) {
+                        else if (collection[fromTaskIdIndex as number]['slack'] !== 0 && collection[fromTaskIdIndex as number]['slack'] > dateDifference) {
                             collection[fromTaskIdIndex as number]['slack'] = dateDifference;
                         }
                     }
@@ -706,7 +709,7 @@ export class CriticalPath {
                     if (toID !== -1) {
                         if (predecessorLength[i as number].type === 'FS') {
                             if (predecessorLength[i as number].to !== currentData.taskId.toString()) {
-                                if (predecessorLength[i as number].to !== currentData.taskId.toString() || this.parent.viewType === 'ResourceView') {
+                                if (this.parent.viewType === 'ResourceView' || predecessorLength[i as number].to !== currentData.taskId.toString()) {
                                     /* eslint-disable-next-line */
                                     dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
                                 }
@@ -759,7 +762,12 @@ export class CriticalPath {
                     }
                 }
             }
-            if (flatRecords[index as number].slack === noSlackValue) {
+            const isValidCriticalTask: boolean = (this.parent.projectEndDate && flatRecords[index as number]
+                && flatRecords[index as number].ganttProperties &&
+                flatRecords[index as number].ganttProperties.endDate)
+                ? flatRecords[index as number].ganttProperties.endDate.getTime() >= this.maxEndDate.getTime()
+                : true;
+            if (flatRecords[index as number].slack === noSlackValue && isValidCriticalTask) {
                 if (flatRecords[index as number].ganttProperties.progress < 100) {
                     flatRecords[index as number].isCritical = true;
                     flatRecords[index as number].ganttProperties.isCritical = true;

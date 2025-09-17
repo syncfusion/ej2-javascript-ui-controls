@@ -19,11 +19,11 @@ $event-marker-label-font-color: $warning-dark !default;
 $connector-line-color: $primary !default;
 $connector-line-hover-color: $primary !default;
 $connector-false-line-color: $primary !default;
-$connector-point-hover-color: color.adjust($primary, $lightness: -10%) !default;
-$connector-point-border-color: $content-bg-color !default;
-$connector-point-hover-bg-color: $icon-color-hover !default;
-$connector-point-hover-outerline-color: $primary !default;
-$connector-point-hover-border-color: $content-bg-color !default;
+$connector-node-hover-color: color.adjust($primary, $lightness: -10%) !default;
+$connector-node-border-color: $content-bg-color !default;
+$connector-node-hover-bg-color: $icon-color-hover !default;
+$connector-node-hover-outerline-color: $primary !default;
+$connector-node-hover-border-color: $content-bg-color !default;
 $critical-connector-line-color: $danger !default;
 $critical-connector-line-hover-color: $danger-light !default;
 $gantt-line-container-cell-border-color: $border-light !default;
@@ -93,6 +93,10 @@ $error-elem-color: $danger;
 $gantt-active-container-border: $border !default;
 $rangecontainer-border-color: $border-warning;
 $gantt-chartrow-hover-bg-color: $table-bg-color-hover !default;
+$gantt-timelinecell-hover-bg-color: $content-bg-color-hover !default;
+$gantt-headercell-hover-bg-color: $content-bg-color-hover !default;
+$gantt-weekendcell-hover-bg-color: $table-bg-color-hover !default;
+
 
 // Layout
 $holiday-label-font-size: $font-icon-13 !default;

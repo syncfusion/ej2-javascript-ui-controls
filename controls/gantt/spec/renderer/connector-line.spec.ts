@@ -1161,7 +1161,7 @@ describe('Gantt predecessor for GUID', () => {
             input.value = '321e4567-e89c-12c3-a456-454414174000FS - 2';
             let update: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(6)') as HTMLElement;
             triggerMouseEvent(update, 'click');
-            expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('321e4567-e89c-12c3-a456-454414174000FS');
+            expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('321e4567-e89c-12c3-a456-454414174000FS-1 days');
     });
     it('mouseover dependency lines', () => {
         let element: Element = ganttObj.connectorLineEditModule['getConnectorLineHoverElement'](document.getElementsByClassName('e-connector-line')[0]);
@@ -1290,7 +1290,7 @@ describe('critical path for GUID', () => {
             input.value = '321e4567-e89c-12c3-a456-454414174000FS - 2';
             let update: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(6)') as HTMLElement;
             triggerMouseEvent(update, 'click');
-            expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('321e4567-e89c-12c3-a456-454414174000FS');
+            expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('321e4567-e89c-12c3-a456-454414174000FS-1 days');
     });
     it('mouseover dependency lines', () => {
         let element: Element = ganttObj.connectorLineEditModule['getConnectorLineHoverElement'](document.getElementsByClassName('e-connector-line')[1]);
@@ -1540,7 +1540,7 @@ describe('render dependency from parent to child', () => {
     });
     
     it('dependency', () => {
-        expect(ganttObj.currentViewData[0].ganttProperties.predecessorsName).toBe('5FS');
+        expect(ganttObj.currentViewData[0].ganttProperties.predecessorsName).toBe('5FS-2 days');
         expect(ganttObj.connectorLineEditModule['compareArrays'](ganttObj.currentViewData[0].ganttProperties.predecessor, ganttObj.currentViewData[4].ganttProperties.predecessor)).toBe(true);
     });
     afterAll(() => {

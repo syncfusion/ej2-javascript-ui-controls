@@ -99,3 +99,29 @@ $pinned-background-color: unset !default;
 $reply-wrapper-bg-color: unset !default;
 $reply-wrapper-border-bg-color: rgba(156, 163, 175, 1) !default;
 $message-toolbar-border-color: $neutral-tertiary !default;
+
+//Mention support related variables
+$mentioned-user-color: $msg-bg-color !default;
+$mentioned-left-user-color: rgba(150, 31, 18, 1) !default;
+$mention-popup-border-color: $neutral-light !default;
+$mentioned-user-font-weight: 400 !default;
+$mentioned-left-user-font-weight: 600 !default;
+
+//Attachment support related variables
+$attachment-icon-color: $theme-dark-font !default;
+$image-preview-overlay-bg: $neutral-white !default;
+$image-preview-header-bg-color: $neutral-lighter-alt !default;
+$image-preview-header-text-color: $theme-dark-font !default;
+$video-play-icon-color: $theme-dark-font !default;
+$video-play-background-color: $neutral-light !default;
+$video-overlay-bg-color: rgba(0, 0, 0, .4) !default;
+$progress-wrapper-bg: $neutral-light !default;
+$file-wrapper-bg: $neutral-white !default;
+$progress-fill-color: $theme-primary !default;
+$progress-track-color: $neutral-quintenaryalt !default;
+$file-size-text-color: $neutral-tertiary !default;
+$file-name-text-color: $theme-dark-font !default;
+$file-download-icon-color: $theme-dark-font !default;
+$file-wrapper-border: $neutral-quintenaryalt !default;
+$stop-icon-color: $theme-dark-font !default;
+$retry-icon-color: $theme-dark-font !default;

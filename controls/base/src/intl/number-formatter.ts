@@ -352,6 +352,12 @@ export class NumberFormat {
      * @param {NumberFormatOptions} [option] ?
      * @returns {string} ?
      */
+
+    private static roundTo(value: number, digits: number): string {
+        const factor = Math.pow(10, digits);
+        return (Math.round(value * factor) / factor).toFixed(digits);
+    }
+
     private static processFraction(value: number, min: number, max: number, option ?: NumberFormatOptions): string {
         const temp: string = (value + '').split('.')[1];
         const length: number = temp ? temp.length : 0;
@@ -368,7 +374,7 @@ export class NumberFormat {
             }
             return value.toFixed(min);
         } else if (!isNullOrUndefined(max) && (length > max || max === 0)) {
-            return value.toFixed(max);
+            return this.roundTo(value, max);
         }
         let str: string = value + '';
         if (str[0] === '0' && option && option.format === '###.00')

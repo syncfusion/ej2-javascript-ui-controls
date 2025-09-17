@@ -1722,7 +1722,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /** @private */
     public isLegendClicked: boolean = false;
-
     public isZoomed: boolean = false;
     private previousTargetId: string = '';
     private currentPointIndex: number = 0;

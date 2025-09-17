@@ -177,6 +177,9 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
           opacity: .9;
         }
       }
+      .e-headercell-hover .e-headercell:not(.e-active):hover{
+        background-color: $gantt-headercell-hover-bg-color;
+      }
     }
     .e-taskbar-resize-div {
       border-color: $event-marker-line-color;
@@ -218,7 +221,9 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
       .e-chart-row-hover .e-chart-row:not(.e-active):hover {
         background-color: $gantt-chartrow-hover-bg-color;
       }
-      
+      .e-timeline-cell-hover .e-timeline-top-header-cell:not(.e-active):hover{
+        background-color: $gantt-timelinecell-hover-bg-color;
+      }
       .e-chart-row-border {
         border-top-color: $gantt-grid-line-color;
       }
@@ -347,6 +352,10 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
         background: $weekend-background;
       }
 
+      .e-weekend-cell-hover:not(.e-active):hover{
+        background-color: $gantt-weekendcell-hover-bg-color;
+      }
+
       .e-rangecontainer {
         .e-rg-rangdiv {
           border: 2px solid $rangecontainer-border-color;
@@ -445,12 +454,12 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
 
       .e-connectorpoint-left-hover,
       .e-connectorpoint-right-hover {
-        @include background-styles($connector-point-hover-color,$connector-point-border-color);
+        @include background-styles($connector-node-hover-color,$connector-node-border-color);
       }
 
       .e-connectorpoint-left-hover:hover,
       .e-connectorpoint-right-hover:hover {
-        @include background-styles($connector-point-hover-bg-color,$connector-point-hover-border-color);
+        @include background-styles($connector-node-hover-bg-color,$connector-node-hover-border-color);
       }
 
       .e-left-label-inner-div,

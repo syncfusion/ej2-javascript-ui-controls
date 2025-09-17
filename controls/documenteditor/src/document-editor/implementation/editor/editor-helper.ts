@@ -1,7 +1,7 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget, TableRowWidget, TableCellWidget, TableWidget, ListTextElementBox, ImageElementBox } from '../viewer/page';
-import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList, Revision, CommentElementBox, CharacterFormatProperties } from '../index';
+import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList, Revision, CommentElementBox, CharacterFormatProperties, ParagraphFormatProperties } from '../index';
 import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, BreakClearType, LineStyle, TextAlignment, LineSpacingType, OutlineLevel, VerticalAlignment, FontHintType } from '../../base/types';
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { Dictionary, MentionDataEditInfo } from '../..';
@@ -944,6 +944,53 @@ export class HelperMethods {
             format.allCaps = characterFormat.allCaps;
         }
     }
+
+    /**
+     * Writes paragraph format properties from a WParagraphFormat instance
+     * into a ParagraphFormatProperties object.
+     */
+    public static writeParagraphFormatProperties(paragraphFormat: WParagraphFormat, format: any) {
+        if (!isNullOrUndefined(paragraphFormat.leftIndent)) {
+            format.leftIndent = paragraphFormat.leftIndent;
+        }
+        if (!isNullOrUndefined(paragraphFormat.rightIndent)) {
+            format.rightIndent = paragraphFormat.rightIndent;
+        }
+        if (!isNullOrUndefined(paragraphFormat.firstLineIndent)) {
+            format.firstLineIndent = paragraphFormat.firstLineIndent;
+        }
+        if (!isNullOrUndefined(paragraphFormat.textAlignment)) {
+            format.textAlignment = paragraphFormat.textAlignment;
+        }
+        if (!isNullOrUndefined(paragraphFormat.afterSpacing)) {
+            format.afterSpacing = paragraphFormat.afterSpacing;
+        }
+        if (!isNullOrUndefined(paragraphFormat.beforeSpacing)) {
+            format.beforeSpacing = paragraphFormat.beforeSpacing;
+        }
+        if (!isNullOrUndefined(paragraphFormat.lineSpacing)) {
+            format.lineSpacing = paragraphFormat.lineSpacing;
+        }
+        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
+            format.lineSpacingType = paragraphFormat.lineSpacingType;
+        }
+        if (!isNullOrUndefined(paragraphFormat.bidi)) {
+            format.bidi = paragraphFormat.bidi;
+        }
+        if (!isNullOrUndefined(paragraphFormat.keepWithNext)) {
+            format.keepWithNext = paragraphFormat.keepWithNext;
+        }
+        if (!isNullOrUndefined(paragraphFormat.keepLinesTogether)) {
+            format.keepLinesTogether = paragraphFormat.keepLinesTogether;
+        }
+        if (!isNullOrUndefined(paragraphFormat.widowControl)) {
+            format.widowControl = paragraphFormat.widowControl;
+        }
+        if (!isNullOrUndefined(paragraphFormat.outlineLevel)) {
+            format.outlineLevel = paragraphFormat.outlineLevel;
+        }
+    }
+
     /// <summary>
     /// To check whether the font name is theme font or not.
     /// </summary>
@@ -1809,9 +1856,17 @@ export interface ElementInfo {
 /**
  * @private
  */
-export interface ParagraphFormatResult {
+export interface ParagraphFormatInfo {
     docParagraphFormat: WParagraphFormat;
     isPaste: boolean;
+    editorFormat: ParagraphFormatProperties;
+}
+/**
+ * @private
+ */
+export interface CharacterFormatInfo {
+    editorFormat: CharacterFormatProperties;
+    documentFormat: WCharacterFormat;
 }
 /**
  * @private

@@ -10,6 +10,7 @@ import { getValue, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { TaskbarEdit } from './taskbar-edit';
 import { PdfExport } from './pdf-export';
 import { ConstraintType, ExportType, ViolationType } from '../base/enum';
+import { Edit } from './edit';
 
 export class Dependency {
 
@@ -244,207 +245,232 @@ export class Dependency {
                                 flatDataMap: Map<string, IGanttData> = null): IPredecessor[] {
         const predecessor: string = predecessorValue.toString();
         const collection: IPredecessor[] = [];
-        let match: string[];
-        let values: string[] = [];
-        let offsetValue: string;
-        let predecessorText: string;
         const parentRecords: IGanttData[] = [];
-        predecessor.split(',').forEach((el: string): void => {
-            let isGUId: boolean = false;
-            let firstPart: string;
-            let predecessorName: string;
-            let isAlpha: boolean = false;
-            const regex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-            const elSplit: string[] = el.split('-');
-            let id: string;
-            if (elSplit.length === 6) {
-                elSplit[4] = elSplit[4] + '-' + elSplit[5];
-                elSplit.pop();
+        const isResourceView: boolean = this.parent.viewType === 'ResourceView';
+        const isProjectView: boolean = this.parent.viewType === 'ProjectView';
+        const allowParentDependency: boolean = this.parent.allowParentDependency;
+        const ids: string[] = isResourceView ? this.parent.getTaskIds() : this.parent.ids;
+        const targetId: string = isResourceView
+            ? ganttRecord.ganttProperties.taskId.toString()
+            : ganttRecord.ganttProperties.rowUniqueID.toString();
+        const guidRegex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+        const alphaRegex: RegExp = /[A-Za-z]/;
+        const validTypes: Set<string> = new Set(['FS', 'FF', 'SF', 'SS']);
+        const predecessorParts: string[] = predecessor.split(',');
+        for (const el of predecessorParts) {
+            const result: {
+                match: string[];
+                predecessorText: string;
+                offsetValue: string;
+                values: string[];
+            } = this.processPredecessorElement(
+                el, ids, isResourceView, guidRegex, alphaRegex, validTypes
+            );
+            if (!result) {
+                continue;
             }
-            if (elSplit.length === 5 && elSplit[4].length >= 12) {
-                id = el.substring(0, 36);
-                if (regex.test(id)) {
-                    isGUId = true;
-                }
-            }
-            if (el.includes('-')) {
-                const lastIndex: number = el.lastIndexOf('-');
-                const lastPart: string = el.substring(lastIndex + 1);
-                const baseString: string = el.replace(lastPart, '').trim();
-                const match: RegExpMatchArray | null = baseString.match(/(FS|SS|SF|FF)-$/);
-                let processedResult: string = (match ? match[0] : '') + lastPart;
-                if (!/^(FS|SS|SF|FF)/.test(processedResult)) {
-                    const prefixMatch: RegExpMatchArray | null = processedResult.match(/(FS|SS|SF|FF)/);
-                    processedResult = prefixMatch
-                        ? prefixMatch[0] + processedResult.slice(processedResult.indexOf(prefixMatch[0]) + prefixMatch[0].length)
-                        : el;
-                }
-                predecessorName = processedResult;
-                if (el.includes('-') && /[A-Za-z]/.test(predecessorName)) {
-                    const indexFS: number = el.indexOf(predecessorName);
-                    if (indexFS !== -1) {
-                        firstPart = el.substring(0, indexFS);
-                        if (firstPart.includes('-')) {
-                            isAlpha = true;
-                        }
-                    }
-                }
-            }
-            if (isGUId) {
-                let split: string[];
-                split = elSplit[4].split('+');
-                let spliceLength: number;
-                if (split.length === 1) {
-                    values[0] = el;
-                }
-                else {
-                    spliceLength = split[1].length;
-                    values[0] = el.slice(0, -(spliceLength + 1));
-                    values[1] = split[1];
-                }
-                offsetValue = '+';
-                if (elSplit[4].indexOf('-') >= 0) {
-                    split = elSplit[4].split('-');
-                    if (split.length === 1) {
-                        values[0] = el;
-                    }
-                    else {
-                        spliceLength = split[1].length;
-                        values[0] = el.slice(0, -(spliceLength + 1));
-                        values[1] = split[1];
-                    }
-                    offsetValue = '-';
-                }
-            }
-            else {
-                if (isAlpha && firstPart.includes('-')) {
-                    values[0] = firstPart;
-                }
-                else {
-                    values = el.split('+');
-                    offsetValue = '+';
-                    if (el.indexOf('-') >= 0) {
-                        values = el.split('-');
-                        offsetValue = '-';
-                    }
-                }
-            }
-            match = [];
-            const ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;
-            const isExist1: number = this.parent.viewType === 'ResourceView' ? ids.indexOf('T' + values[0]) : ids.indexOf(values[0]);
-            if (isExist1 !== -1) {
-                match[0] = values[0];
-            }
-            else {
-                if (ids.indexOf(values[0]) === -1) {
-                    match = values[0].split(' ');
-                    if (match.length === 1) {
-                        if (match[0].indexOf(' ') !== -1) {
-                            match = values[0].match(/(\d+|[A-z]+)/g);
-                        }
-                        else {
-                            match[0] = values[0].slice(0, -2);
-                            match[1] = values[0].slice(-2);
-                        }
-                    }
-                } else {
-                    match[0] = values[0];
-                }
-            }
-            const isExist: number = this.parent.viewType === 'ResourceView' ? ids.indexOf('T' + match[0]) : ids.indexOf(match[0]);
-            /*Validate for appropriate predecessor*/
-            if (match[0] && isExist !== -1) {
-                if (match.length > 1) {
-                    const type: string = match[1].toUpperCase();
-                    if (type === 'FS' || type === 'FF' || type === 'SF' || type === 'SS') {
-                        predecessorText = type;
-                    } else {
-                        const e: string = `The provided dependency type, ${type}, is invalid. Please ensure that the Dependency Type is FS or FF or SS or SF`;
-                        this.parent.trigger('actionFailure', { error: e });
-                        predecessorText = 'FS';
-                    }
-                }
-                else if (el.includes('-') && /[A-Za-z]/.test(predecessorName) && firstPart.includes('-')) {
-                    const type: string = el.slice(-2).toString();
-                    type.toUpperCase();
-                    if (type === 'FS' || type === 'FF' || type === 'SF' || type === 'SS') {
-                        predecessorText = type;
-                    }
-                    else {
-                        predecessorText = 'FS';
-                    }
-                }
-                else {
-                    predecessorText = 'FS';
-                }
-            }
-            else {
-                return; // exit current loop for invalid id (match[0])
-            }
-            const tempOffset: string = values.length > 1 ? offsetValue + '' + values[1] : '0';
-            const offsetUnits: { duration: number, durationUnit: string } = this.getOffsetDurationUnit(tempOffset);
-
+            const { match, predecessorText, offsetValue, values } = result;
+            const tempOffset: string = values.length > 1 ? offsetValue + values[1] : '0';
+            const offsetUnits: {
+                duration: number;
+                durationUnit: string;
+            } = this.getOffsetDurationUnit(tempOffset);
             const obj: IPredecessor = {
                 from: match[0],
                 type: predecessorText,
                 isDrawn: false,
-                to: this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId.toString()
-                    : ganttRecord.ganttProperties.rowUniqueID.toString(),
+                to: targetId,
                 offsetUnit: offsetUnits.durationUnit,
                 offset: offsetUnits.duration
             };
-            const isOwnParent: boolean = this.checkIsParent(match[0]);
-            if (!this.parent.allowParentDependency) {
-                if (!isOwnParent) {
+            if (!allowParentDependency) {
+                if (!this.checkIsParent(match[0])) {
                     collection.push(obj);
                 }
+            } else {
+                this.handleParentDependency(obj, collection, parentRecords, flatDataMap, isProjectView);
             }
-            else {
-                let fromData: IGanttData = null;
-                let toData: IGanttData = null;
-                if (this.parent.viewType === 'ProjectView' && !isNullOrUndefined(flatDataMap) && flatDataMap.size > 0)
-                {
-                    fromData = flatDataMap.get(obj.from);
-                    toData = flatDataMap.get(obj.to);
-                }
-                else
-                {
-                    fromData = this.parent.connectorLineModule.getRecordByID(obj.from);
-                    toData = this.parent.connectorLineModule.getRecordByID(obj.to);
-                }
-                let isValid: boolean;
-                if (toData && fromData) {
-                    isValid = this.validateParentPredecessor(fromData, toData);
-                    if (isValid) {
-                        collection.push(obj);
-                        if (parentRecords.indexOf(fromData) === -1 && fromData.hasChildRecords && this.parent.editModule
-                            && this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit) {
-                            parentRecords.push(extend([], [], [fromData], true)[0]);
-                        }
-                    }
-                }
-                else {
-                    collection.push(obj);
-                }
-                match.splice(0);
-            }
-        });
-        if (parentRecords.length > 0 && this.parent.undoRedoModule && this.parent.editModule && this.parent.editModule.cellEditModule &&
-            this.parent.editModule.cellEditModule.isCellEdit) {
-            this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1]['connectedRecords'] = parentRecords;
         }
-        const creatCollection: IPredecessor[] = [];
-        collection.map((data: IPredecessor) => {
-            const from: string = data.from;
-            const to: string = data.to;
-            let checkColloction: IPredecessor[] = [];
-            checkColloction = collection.filter((fdata: IPredecessor) => fdata.from === from && fdata.to === to);
-            if (creatCollection.indexOf(checkColloction[checkColloction.length - 1]) === -1) {
-                creatCollection.push(checkColloction[checkColloction.length - 1]);
-            }
+        this.handleUndoRedoParentRecords(parentRecords);
+        return this.removeDuplicatePredecessors(collection);
+    }
 
-        });
-        return creatCollection;
+    private processPredecessorElement(
+        el: string, ids: string[], isResourceView: boolean,
+        guidRegex: RegExp, alphaRegex: RegExp, validTypes: Set<string>
+    ): { match: string[], predecessorText: string, offsetValue: string, values: string[] } | null {
+        let values: string[] = [];
+        let offsetValue: string = '+';
+        let predecessorText: string = 'FS';
+        const { isGuid, processedValues, processedOffset } = this.processElementFormat(el, guidRegex, ids, isResourceView, validTypes);
+        values = processedValues;
+        offsetValue = processedOffset;
+        const match: string[] = this.extractAndValidateMatch(values[0], ids, isResourceView);
+        if (!match) {
+            return null;
+        }
+        predecessorText = this.determinePredecessorType(
+            el, match, alphaRegex, validTypes
+        );
+        return { match, predecessorText, offsetValue, values };
+    }
+    private processElementFormat(
+        el: string,
+        guidRegex: RegExp,
+        ids?: string[],
+        isResourceView?: boolean,
+        validTypes?: Set<string>
+    ): {
+            isGuid: boolean;
+            processedValues: string[];
+            processedOffset: string;
+        } {
+        const elSplit: string[] = el.split('-');
+        let values: string[] = [];
+        let offsetValue: '+' | '-' | null = '+';
+        let isGuid: boolean = false;
+        if (elSplit.length >= 5) {
+            const id: string = el.substring(0, 36);
+            if (guidRegex.test(id)) {
+                isGuid = true;
+                const lastPart: string = elSplit[4] + (elSplit[5] ? '-' + elSplit[5] : '');
+                if (lastPart.includes('+')) {
+                    const split: string[] = lastPart.split('+');
+                    values = [el.slice(0, -(split[1].length + 1)).trim(), split[1].trim()];
+                    offsetValue = '+';
+                } else if (lastPart.includes('-')) {
+                    const split: string[] = lastPart.split('-');
+                    if (split.length > 1) {
+                        values = [el.slice(0, -(split[1].length + 1)).trim(), split[1].trim()];
+                        offsetValue = '-';
+                    } else {
+                        values = [el];
+                    }
+                } else {
+                    values = [el];
+                }
+                return { isGuid, processedValues: values, processedOffset: offsetValue };
+            }
+        }
+        const operator: '+' | '-' | null = el.includes('+') ? '+' : (el.includes('-') ? '-' : null);
+        if (operator !== null) {
+            const lastOperatorIndex: number = el.lastIndexOf(operator);
+            const base: string = el.substring(0, lastOperatorIndex);
+            const suffix: string = el.substring(lastOperatorIndex + 1);
+            const lastTwo: string = base.slice(-2).toUpperCase();
+            let finalBase: string = base;
+            if (!validTypes.has(lastTwo)) {
+                finalBase = base + 'FS';
+            }
+            const prefix: string = finalBase.slice(0, -2).trim();
+            const finalTestId: string = isResourceView ? 'T' + prefix : prefix;
+            if (ids.indexOf(finalTestId) === -1 || suffix === '') {
+                values = [el];
+                offsetValue = '+';
+            } else {
+                values = [finalBase, suffix];
+                offsetValue = operator;
+            }
+        } else {
+            const lastTwo: string = el.slice(-2).toUpperCase();
+            if (validTypes.has(lastTwo)) {
+                const prefix: string = el.slice(0, -2);
+                const finalTestId: string = isResourceView ? 'T' + prefix : prefix;
+                if (ids.indexOf(finalTestId) === -1) {
+                    values = [el];
+                } else {
+                    values = [el];
+                }
+            } else {
+                values = [el];
+            }
+        }
+        return { isGuid, processedValues: values, processedOffset: offsetValue };
+    }
+    private extractAndValidateMatch(value: string, ids: string[], isResourceView: boolean): string[] | null {
+        const testId: string = isResourceView ? 'T' + value : value;
+        if (ids.indexOf(testId) !== -1) {
+            return [value];
+        }
+        if (ids.indexOf(value) !== -1) {
+            return [value];
+        }
+        let match: string[] = value.split(' ');
+        if (match.length === 1) {
+            if (value.indexOf(' ') !== -1) {
+                match = value.match(/(\d+|[A-z]+)/g) || [];
+            } else if (value.length > 2) {
+                match = [value.slice(0, -2), value.slice(-2)];
+            }
+        }
+        const finalTestId: string = isResourceView ? 'T' + match[0] : match[0];
+        return ids.indexOf(finalTestId) !== -1 ? match : null;
+    }
+    private determinePredecessorType(
+        el: string, match: string[], alphaRegex: RegExp, validTypes: Set<string>
+    ): string {
+        if (match.length > 1) {
+            const type: string = match[1].toUpperCase();
+            if (validTypes.has(type)) {
+                return type;
+            } else {
+                const error: string = `The provided dependency type, ${type}, is invalid. Please ensure that the Dependency Type is FS or FF or SS or SF`;
+                this.parent.trigger('actionFailure', { error });
+                return 'FS';
+            }
+        }
+        if (el.indexOf('-') !== -1 && alphaRegex.test(el)) {
+            const type: string = el.slice(-2).toUpperCase();
+            return validTypes.has(type) ? type : 'FS';
+        }
+        return 'FS';
+    }
+    private handleParentDependency(
+        obj: IPredecessor, collection: IPredecessor[], parentRecords: IGanttData[],
+        flatDataMap: Map<string, IGanttData>, isProjectView: boolean
+    ): void {
+        let fromData: IGanttData = null;
+        let toData: IGanttData = null;
+        if (isProjectView && flatDataMap && flatDataMap.size > 0) {
+            fromData = flatDataMap.get(obj.from);
+            toData = flatDataMap.get(obj.to);
+        } else {
+            fromData = this.parent.connectorLineModule.getRecordByID(obj.from);
+            toData = this.parent.connectorLineModule.getRecordByID(obj.to);
+        }
+        if (toData && fromData) {
+            const isValid: boolean = this.validateParentPredecessor(fromData, toData);
+            if (isValid) {
+                collection.push(obj);
+                if (fromData.hasChildRecords &&
+                    parentRecords.indexOf(fromData) === -1 &&
+                    this.parent.editModule && this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit) {
+                    parentRecords.push(extend([], [], [fromData], true)[0]);
+                }
+            }
+        } else {
+            collection.push(obj);
+        }
+    }
+    private handleUndoRedoParentRecords(parentRecords: IGanttData[]): void {
+        if (parentRecords.length > 0 &&
+            this.parent.undoRedoModule &&
+            this.parent.editModule && this.parent.editModule.cellEditModule &&
+            this.parent.editModule.cellEditModule.isCellEdit) {
+            const undoCollection: Object[] = this.parent.undoRedoModule['getUndoCollection'];
+            const lastUndo: Object = undoCollection[undoCollection.length - 1];
+            if (lastUndo) {
+                lastUndo['connectedRecords'] = parentRecords;
+            }
+        }
+    }
+    private removeDuplicatePredecessors(collection: IPredecessor[]): IPredecessor[] {
+        const seen: Map<string, IPredecessor> = new Map<string, IPredecessor>();
+        for (const data of collection) {
+            const key: string = `${data.from}-${data.to}`;
+            seen.set(key, data);
+        }
+        return Array.from(seen.values());
     }
 
     /**
@@ -643,50 +669,64 @@ export class Dependency {
         }
         const flatData: IGanttData[] = this.parent.flatData;
         const totLength: number = flatData.length;
-        if (isNullOrUndefined(flatDataCollection)){
-            flatDataCollection = new Map();
+        if (totLength === 0) {
+            return;
+        }
+        if (isNullOrUndefined(flatDataCollection)) {
+            flatDataCollection = new Map<string, IGanttData>();
             for (const record of flatData) {
                 flatDataCollection.set(record.ganttProperties.rowUniqueID.toString(), record);
             }
         }
+        const parentsToUpdate: Set<string> = new Set<string>();
+        const isProjectView: boolean = this.parent.viewType === 'ProjectView';
+        const allowParentDependency: boolean = this.parent.allowParentDependency;
+        const validatedRecords: Set<string> = new Set<string>();
         for (let count: number = 0; count < totLength; count++) {
             const currentTask: IGanttData = flatData[count as number];
             const properties: ITaskData = currentTask.ganttProperties;
-            if (properties.predecessorsName) {
+            if (!properties.predecessorsName) {
+                continue;
+            }
+            const currentTaskKey: string = currentTask.ganttProperties.taskId.toString();
+            if (!validatedRecords.has(currentTaskKey)) {
                 this.validatePredecessorDates(currentTask, flatDataCollection);
-                if (currentTask.hasChildRecords && properties.startDate && this.parent.allowParentDependency) {
-                    this.updateChildItems(currentTask);
-                }
-                const predecessorCollection: IPredecessor[] = properties.predecessor;
-                if (predecessorCollection && predecessorCollection.length > 1) {
-                    for (const predecessor of predecessorCollection) {
-                        let validateRecord: IGanttData;
-                        if (this.parent.viewType === 'ProjectView') {
-                            validateRecord = flatDataCollection.get(predecessor.to);
-                        }
-                        else {
-                            validateRecord = this.parent.connectorLineModule.getRecordByID(predecessor.to);
-                        }
-                        if (validateRecord) {
-                            this.validatePredecessorDates(validateRecord, flatDataCollection);
-                        }
-                    }
-                }
-                if (currentTask.parentItem) {
-                    const recordId: string = currentTask.parentItem.taskId;
-                    let parentRecord: IGanttData;
-                    if (this.parent.viewType === 'ProjectView') {
-                        parentRecord = flatDataCollection.get(recordId);
-                    }
-                    else {
-                        parentRecord = this.parent.getRecordByID(recordId);
-                    }
-                    if (parentRecord) {
-                        this.traverseParents(parentRecord, true);
+            }
+            if (currentTask.hasChildRecords && properties.startDate && allowParentDependency) {
+                this.updateChildItems(currentTask);
+            }
+            const predecessorCollection: IPredecessor[] = properties.predecessor;
+            if (predecessorCollection && predecessorCollection.length > 1) {
+                const currentTaskId: string = currentTask.ganttProperties.taskId.toString();
+                for (const predecessor of predecessorCollection) {
+                    const validateRecord: IGanttData = isProjectView
+                        ? flatDataCollection.get(predecessor.to)
+                        : this.parent.connectorLineModule.getRecordByID(predecessor.to);
+                    if (validateRecord && validateRecord.ganttProperties.taskId.toString() !== currentTaskId) {
+                        this.validatePredecessorDates(validateRecord, flatDataCollection);
+                        validatedRecords.add(validateRecord.ganttProperties.taskId.toString());
                     }
                 }
             }
+            if (currentTask.parentItem || currentTask.hasChildRecords) {
+                const parentId: string = currentTask.parentItem ? currentTask.parentItem.taskId : currentTask.ganttProperties.taskId;
+                parentsToUpdate.add(parentId);
+            }
         }
+        if (!this.parent.isLoad) {
+            parentsToUpdate.forEach((parentId: string) => {
+                if (!parentsToUpdate.has(parentId)) {
+                    return;
+                }
+                const parentRecord: IGanttData = isProjectView
+                    ? flatDataCollection.get(parentId)
+                    : this.parent.getRecordByID(parentId);
+                if (parentRecord) {
+                    this.traverseParents(parentRecord, true);
+                }
+            });
+        }
+        this.parent.dataOperation['processedParentItems'].clear();
     }
     public updateParentPredecessor (flatDataCollection: Map<string, IGanttData> = null): void  {
         if (this.parent.enablePredecessorValidation)
@@ -711,71 +751,105 @@ export class Dependency {
      * @private
      */
     public validatePredecessorDates(ganttRecord: IGanttData, flatDataCollection: Map<string, IGanttData> = null): void {
-        if (ganttRecord.ganttProperties.predecessor) {
-            const predecessorsCollection: IPredecessor[] = ganttRecord.ganttProperties.predecessor;
-            let count: number;
-            let parentGanttRecord: IGanttData;
-            let record: IGanttData = null;
-            const currentTaskId: string = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId.toString()
-                : ganttRecord.ganttProperties.rowUniqueID.toString();
-            const predecessors: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor): IPredecessor => {
-                if (data.to === currentTaskId) {
-                    return data;
-                } else {
-                    return null;
+        const predecessorsCollection: IPredecessor[] = ganttRecord.ganttProperties.predecessor;
+        if (!predecessorsCollection || predecessorsCollection.length === 0) {
+            return;
+        }
+        const isResourceView: boolean = this.parent.viewType === 'ResourceView';
+        const isProjectView: boolean = this.parent.viewType === 'ProjectView';
+        const allowParentDependency: boolean = this.parent.allowParentDependency;
+        const allowTaskbarDragAndDrop: boolean = this.parent.allowTaskbarDragAndDrop;
+        const validateManualTasks: boolean = this.parent.validateManualTasksOnLinking;
+        const isLoad: boolean = this.parent.isLoad;
+        const hasValidFlatData: boolean = isProjectView && !isNullOrUndefined(flatDataCollection);
+        const currentTaskId: string = isResourceView
+            ? ganttRecord.ganttProperties.taskId.toString()
+            : ganttRecord.ganttProperties.rowUniqueID.toString();
+        const predecessors: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor) =>
+            data.to === currentTaskId
+        );
+        if (predecessors.length === 0) {
+            return;
+        }
+        const predecessor: IPredecessor = predecessors[0];
+        let parentGanttRecord: IGanttData;
+        let record: IGanttData;
+        if (hasValidFlatData) {
+            parentGanttRecord = flatDataCollection.get(predecessor.from);
+            record = flatDataCollection.get(predecessor.to);
+        } else {
+            parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
+            record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
+        }
+        if (allowParentDependency && parentGanttRecord && parentGanttRecord.hasChildRecords) {
+            this.parent.dataOperation.updateParentItems(parentGanttRecord);
+        }
+        if (isProjectView && allowTaskbarDragAndDrop) {
+            if (isNullOrUndefined(record)) {
+                const index: number = this.parent.editModule.taskbarEditModule.previousIds.indexOf(predecessor.to);
+                if (index !== -1) {
+                    record = this.parent.editModule.taskbarEditModule.previousFlatData[index as number];
                 }
-            });
-            for (count = 0; count < predecessors.length; count++) {
-                const predecessor: IPredecessor = predecessors[count as number];
-                if (this.parent.viewType === 'ProjectView' && !isNullOrUndefined(flatDataCollection))
-                {
-                    parentGanttRecord = flatDataCollection.get(predecessor.from);
-                    record = flatDataCollection.get(predecessor.to);
-                }
-                else
-                {
-                    parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
-                    record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
-                }
-                if (this.parent.allowParentDependency && parentGanttRecord.hasChildRecords) {
-                    this.parent.dataOperation.updateParentItems(parentGanttRecord);
-                }
-                if (this.parent.viewType === 'ProjectView' && this.parent.allowTaskbarDragAndDrop) {
-                    let index: number;
-                    if (isNullOrUndefined(record)) {
-                        index = this.parent.editModule.taskbarEditModule.previousIds.indexOf(predecessor.to);
-                        record = this.parent.editModule.taskbarEditModule.previousFlatData[index as number];
-                    } else if (isNullOrUndefined(parentGanttRecord)) {
-                        index = this.parent.editModule.taskbarEditModule.previousIds.indexOf(predecessor.from);
-                        parentGanttRecord = this.parent.editModule.taskbarEditModule.previousFlatData[index as number];
-                    }
-                }
-                if (this.parent.allowParentDependency && this.parent.isLoad && this.parentPredecessors.indexOf(ganttRecord) === -1
-                    && (ganttRecord.hasChildRecords || record.hasChildRecords)) {
-                    this.parentPredecessors.push(ganttRecord);
-                }
-                if (record.ganttProperties.isAutoSchedule || this.parent.validateManualTasksOnLinking) {
-                    this.validateChildGanttRecord(parentGanttRecord, record, flatDataCollection);
+            } else if (isNullOrUndefined(parentGanttRecord)) {
+                const index: number = this.parent.editModule.taskbarEditModule.previousIds.indexOf(predecessor.from);
+                if (index !== -1) {
+                    parentGanttRecord = this.parent.editModule.taskbarEditModule.previousFlatData[index as number];
                 }
             }
         }
+        if (allowParentDependency && isLoad &&
+            this.parentPredecessors.indexOf(ganttRecord) === -1 &&
+            (ganttRecord.hasChildRecords || (record && record.hasChildRecords))) {
+            this.parentPredecessors.push(ganttRecord);
+        }
+        if (record && (record.ganttProperties.isAutoSchedule || validateManualTasks)) {
+            this.validateChildGanttRecord(parentGanttRecord, record, flatDataCollection, predecessors);
+        }
     }
-    private getConstraintDate(constraintType: number, startDate: Date, endDate: Date): Date | null {
+    private getConstraintDate(
+        constraintType: number,
+        startDate: Date,
+        endDate: Date,
+        constraintDate: Date
+    ): Date | null {
+        let sourceDate: Date | null = null;
         switch (constraintType) {
         case ConstraintType.AsSoonAsPossible:
         case ConstraintType.AsLateAsPossible:
             return null;
         case ConstraintType.MustStartOn:
         case ConstraintType.StartNoEarlierThan:
-            return startDate;
+            if (!constraintDate) {
+                return startDate;
+            }
+            sourceDate = startDate;
+            break;
         case ConstraintType.MustFinishOn:
         case ConstraintType.FinishNoEarlierThan:
         case ConstraintType.StartNoLaterThan:
         case ConstraintType.FinishNoLaterThan:
-            return endDate;
+            if (!constraintDate) {
+                return endDate;
+            }
+            sourceDate = endDate;
+            break;
         default:
             return null;
         }
+        if (sourceDate) {
+            if (typeof constraintDate === 'string') {
+                constraintDate = new Date(constraintDate);
+            }
+            if (constraintDate instanceof Date) {
+                constraintDate.setHours(
+                    sourceDate.getHours(),
+                    sourceDate.getMinutes(),
+                    sourceDate.getSeconds(),
+                    sourceDate.getMilliseconds()
+                );
+            }
+        }
+        return constraintDate;
     }
     /**
      * Method to validate task with predecessor
@@ -783,52 +857,72 @@ export class Dependency {
      * @param {IGanttData} parentGanttRecord .
      * @param {IGanttData} childGanttRecord .
      * @param {Map<string, IGanttData>} flatDataCollection .
+     * @param {IPredecessor[]} childPredecessorCollection .
      * @returns {void} .
      */
     private validateChildGanttRecord(parentGanttRecord: IGanttData, childGanttRecord: IGanttData,
-                                     flatDataCollection: Map<string, IGanttData> = null): void {
-        if ((this.parent.editedPredecessorRecords.indexOf(childGanttRecord) !== -1) || (parentGanttRecord &&
-            isNullOrUndefined(isScheduledTask(parentGanttRecord.ganttProperties)))
-            || (childGanttRecord && isNullOrUndefined(isScheduledTask(childGanttRecord.ganttProperties)))) {
+                                     flatDataCollection: Map<string, IGanttData> = null,
+                                     childPredecessorCollection?: IPredecessor[]): void {
+        if (this.parent.editedPredecessorRecords.indexOf(childGanttRecord) !== -1) {
             return;
         }
-        if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule ||
-            this.parent.validateManualTasksOnLinking)) {
-            const childRecordProperty: ITaskData = childGanttRecord.ganttProperties;
-            const currentTaskId: string = this.parent.viewType === 'ResourceView' ? childRecordProperty.taskId.toString()
-                : childRecordProperty.rowUniqueID.toString();
+        if (parentGanttRecord && isNullOrUndefined(isScheduledTask(parentGanttRecord.ganttProperties))) {
+            return;
+        }
+        if (childGanttRecord && isNullOrUndefined(isScheduledTask(childGanttRecord.ganttProperties))) {
+            return;
+        }
+        const isInPredecessorValidation: boolean = this.parent.isInPredecessorValidation;
+        const validateManualTasks: boolean = this.parent.validateManualTasksOnLinking;
+        const childRecordProperty: ITaskData = childGanttRecord.ganttProperties;
+        if (!isInPredecessorValidation || !(childRecordProperty.isAutoSchedule || validateManualTasks)) {
+            return;
+        }
+        const isResourceView: boolean = this.parent.viewType === 'ResourceView';
+        const taskFields: TaskFieldsModel = this.parent.taskFields;
+        const hasConstraintFields: string = taskFields.constraintDate && taskFields.constraintType;
+        const isLoad: boolean = this.parent.isLoad;
+        const isFromOnPropertyChange: boolean = this.parent.isFromOnPropertyChange;
+        const updateOffsetOnTaskbarEdit: boolean = this.parent.updateOffsetOnTaskbarEdit;
+        const currentTaskId: string = isResourceView
+            ? childRecordProperty.taskId.toString()
+            : childRecordProperty.rowUniqueID.toString();
+        let childPredecessor: IPredecessor[];
+        if (!isNullOrUndefined(childPredecessorCollection)) {
+            childPredecessor = childPredecessorCollection;
+        } else {
             const predecessorsCollection: IPredecessor[] = childRecordProperty.predecessor;
-            const childPredecessor: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor): IPredecessor => {
-                if (data.to === currentTaskId) { return data; } else { return null; }
-            });
-            const startDate: Date = this.getPredecessorDate(childGanttRecord, childPredecessor, flatDataCollection, true);
-            this.parent.setRecordValue('startDate', startDate, childRecordProperty, true);
-            this.parent.dataOperation.updateMappingData(childGanttRecord, 'startDate');
-            if (this.parent.taskFields.constraintDate && this.parent.taskFields.constraintType && this.parent.updateOffsetOnTaskbarEdit) {
-                this.parent.connectorLineEditModule['calculateOffset'](childGanttRecord);
+            childPredecessor = predecessorsCollection.filter((data: IPredecessor) =>
+                data.to === currentTaskId
+            );
+        }
+        const startDate: Date = this.getPredecessorDate(childGanttRecord, childPredecessor, flatDataCollection);
+        this.parent.setRecordValue('startDate', startDate, childRecordProperty, true);
+        this.parent.dataOperation.updateMappingData(childGanttRecord, 'startDate');
+        if (hasConstraintFields && updateOffsetOnTaskbarEdit && this.parent.connectorLineEditModule) {
+            this.parent.connectorLineEditModule['calculateOffset'](childGanttRecord);
+        }
+        const segments: ITaskSegment[] = childRecordProperty.segments;
+        if (isNullOrUndefined(segments) || segments.length === 0) {
+            this.dateValidateModule.calculateEndDate(childGanttRecord);
+        }
+        this.parent.dataOperation.updateWidthLeft(childGanttRecord);
+        if (!isLoad && !isFromOnPropertyChange && childGanttRecord.parentItem &&
+            isInPredecessorValidation &&
+            this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule) {
+            const parentUniqueID: string = childGanttRecord.parentItem.uniqueID;
+            if (this.parentIds.indexOf(parentUniqueID) === -1) {
+                this.parentIds.push(parentUniqueID);
+                this.parentRecord.push(childGanttRecord.parentItem);
             }
-            const segments: ITaskSegment[] = childGanttRecord.ganttProperties.segments;
-            if (isNullOrUndefined(segments) || ! isNullOrUndefined(segments) && segments.length === 0) {
-                this.dateValidateModule.calculateEndDate(childGanttRecord);
-            }
-            this.parent.dataOperation.updateWidthLeft(childGanttRecord);
-
-            if (!this.parent.isLoad && !this.parent.isFromOnPropertyChange && childGanttRecord.parentItem &&
-                this.parent.isInPredecessorValidation &&
-                this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule) {
-                if (this.parentIds.indexOf(childGanttRecord.parentItem.uniqueID) === -1) {
-                    this.parentIds.push(childGanttRecord.parentItem.uniqueID);
-                    this.parentRecord.push(childGanttRecord.parentItem);
-                }
-            }
-            if (this.parent.taskFields.constraintDate && this.parent.taskFields.constraintType) {
-                const constraintType: ConstraintType = childRecordProperty.constraintType;
-                const startDate: Date = childRecordProperty.startDate;
-                const endDate: Date = childRecordProperty.endDate;
-                const constraintDate: Date = this.getConstraintDate(constraintType, startDate, endDate);
-                this.parent.setRecordValue('constraintDate', constraintDate, childRecordProperty, true);
-                this.parent.dataOperation.updateMappingData(childGanttRecord, 'constraintDate');
-            }
+        }
+        if (hasConstraintFields) {
+            const constraintType: ConstraintType = childRecordProperty.constraintType;
+            const startDate: Date = childRecordProperty.startDate;
+            const endDate: Date = childRecordProperty.endDate;
+            const constraintDate: Date = this.getConstraintDate(constraintType, startDate, endDate, childRecordProperty.constraintDate);
+            this.parent.setRecordValue('constraintDate', constraintDate, childRecordProperty, true);
+            this.parent.dataOperation.updateMappingData(childGanttRecord, 'constraintDate');
         }
     }
     private filterPredecessorsByTarget(
@@ -858,64 +952,70 @@ export class Dependency {
      * @param {IGanttData} ganttRecord .
      * @param {IPredecessor[]} predecessorsCollection .
      * @param {Map<string, IGanttData>} flatDataCollection .
-     * @param {boolean} [restrictConstraint] - Optional flag to restrict constraint validation.
      * @returns {Date} .
      * @private
      */
     public getPredecessorDate(ganttRecord: IGanttData, predecessorsCollection: IPredecessor[],
-                              flatDataCollection: Map<string, IGanttData> = null, restrictConstraint?: boolean): Date {
-        let maxStartDate: Date;
-        let tempStartDate: Date;
-        let parentGanttRecord: IGanttData;
-        let childGanttRecord: IGanttData;
+                              flatDataCollection: Map<string, IGanttData> = null): Date {
         const validatedPredecessor: IPredecessor[] = this.filterPredecessorsByTarget(
             predecessorsCollection,
             ganttRecord,
             this.parent.viewType
         );
+        if (!validatedPredecessor || validatedPredecessor.length === 0) {
+            return null;
+        }
+        const isProjectView: boolean = this.parent.viewType === 'ProjectView';
+        const hasValidFlatData: boolean = isProjectView && !isNullOrUndefined(flatDataCollection);
+        const allowTaskbarDragAndDrop: boolean = this.parent.allowTaskbarDragAndDrop;
         const isConstraintMapped: boolean = !isNullOrUndefined(this.parent.taskFields.constraintDate) &&
             !isNullOrUndefined(this.parent.taskFields.constraintType);
-        if (validatedPredecessor) {
-            const length: number = validatedPredecessor.length;
-            for (let i: number = 0; i < length; i++) {
-                const predecessor: IPredecessor = validatedPredecessor[i as number];
-                if (this.parent.viewType === 'ProjectView' && !isNullOrUndefined(flatDataCollection)) {
-                    parentGanttRecord = flatDataCollection.get(predecessor.from);
-                    childGanttRecord = flatDataCollection.get(predecessor.to);
+        const editModule: Edit = this.parent.editModule;
+        const shouldCheckOffset: boolean = !isConstraintMapped && editModule && editModule.cellEditModule &&
+            !editModule.cellEditModule.isCellEdit &&
+            !editModule.dialogModule['isFromEditDialog'] &&
+            !this.parent.updateOffsetOnTaskbarEdit &&
+            !this.parent.isLoad;
+        let maxStartDate: Date = null;
+        const length: number = validatedPredecessor.length;
+        for (let i: number = 0; i < length; i++) {
+            const predecessor: IPredecessor = validatedPredecessor[i as number];
+            let parentGanttRecord: IGanttData;
+            let childGanttRecord: IGanttData;
+            if (hasValidFlatData) {
+                parentGanttRecord = flatDataCollection.get(predecessor.from);
+                childGanttRecord = flatDataCollection.get(predecessor.to);
+            } else {
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
+                childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.to);
+            }
+            if (isProjectView && allowTaskbarDragAndDrop &&
+                !(isNullOrUndefined(childGanttRecord) && isNullOrUndefined(parentGanttRecord))) {
+
+                if (isNullOrUndefined(childGanttRecord)) {
+                    childGanttRecord = this.getRecord(parentGanttRecord, childGanttRecord, predecessor);
                 }
-                else {
-                    parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
-                    childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.to);
+                if (isNullOrUndefined(parentGanttRecord)) {
+                    parentGanttRecord = this.getRecord(parentGanttRecord, childGanttRecord, predecessor);
                 }
-                if (this.parent.viewType === 'ProjectView' && this.parent.allowTaskbarDragAndDrop && !(isNullOrUndefined(childGanttRecord) &&
-                isNullOrUndefined(parentGanttRecord))) {
-                    childGanttRecord = isNullOrUndefined(childGanttRecord) ?
-                        this.getRecord(parentGanttRecord, childGanttRecord, predecessor) : childGanttRecord;
-                    parentGanttRecord = isNullOrUndefined(parentGanttRecord) ?
-                        this.getRecord(parentGanttRecord, childGanttRecord, predecessor) : parentGanttRecord;
+            }
+            if (shouldCheckOffset) {
+                const offset: number = this.parent.connectorLineEditModule['getOffsetForPredecessor'](
+                    predecessor,
+                    this.parent.connectorLineModule.getRecordByID(predecessor.from),
+                    childGanttRecord
+                );
+                if (predecessor.offset !== offset && offset >= 0) {
+                    return childGanttRecord.ganttProperties.startDate;
                 }
-                if (
-                    !isConstraintMapped &&
-                    this.parent.editModule &&
-                    this.parent.editModule.cellEditModule &&
-                    !this.parent.editModule.cellEditModule.isCellEdit &&
-                    !this.parent.editModule.dialogModule['isFromEditDialog'] &&
-                    !this.parent.updateOffsetOnTaskbarEdit &&
-                    !this.parent.isLoad
-                ) {
-                    const offset: number = this.parent.connectorLineEditModule['getOffsetForPredecessor'](
-                        predecessor,
-                        this.parent.connectorLineModule.getRecordByID(predecessor.from),
-                        childGanttRecord
-                    );
-                    if (predecessor.offset !== offset && offset >= 0) {
-                        return childGanttRecord.ganttProperties.startDate;
-                    }
-                }
-                if (childGanttRecord && parentGanttRecord) {
-                    tempStartDate =
-                        this.getValidatedStartDate(childGanttRecord.ganttProperties, parentGanttRecord.ganttProperties, predecessor);
-                }
+            }
+            if (childGanttRecord && parentGanttRecord) {
+                const tempStartDate: Date = this.getValidatedStartDate(
+                    childGanttRecord.ganttProperties,
+                    parentGanttRecord.ganttProperties,
+                    predecessor
+                );
+
                 if (maxStartDate === null || this.dateValidateModule.compareDates(tempStartDate, maxStartDate) === 1) {
                     maxStartDate = tempStartDate;
                 }
@@ -925,8 +1025,7 @@ export class Dependency {
             maxStartDate = this.dateValidateModule.getDateByConstraint(
                 ganttRecord.ganttProperties,
                 maxStartDate,
-                restrictConstraint,
-                validatedPredecessor.length > 0
+                length > 0
             );
         }
         return maxStartDate;
@@ -1557,7 +1656,8 @@ export class Dependency {
         if (!isNullOrUndefined(validStartDate) && !isNullOrUndefined(validEndDate) && validStartDate.getTime() >= validEndDate.getTime()) {
             durationDiff = 0;
         } else {
-            durationDiff = this.parent.dateValidationModule.getDuration(validStartDate, validEndDate, 'minute', true, false);
+            durationDiff = this.parent.dateValidationModule.getDuration(validStartDate, validEndDate,
+                                                                        ganttRecord.ganttProperties.durationUnit, true, false);
         }
         for (let i: number = 0; i < childRecords.length; i++) {
             if (childRecords[i as number].ganttProperties.isAutoSchedule) {
@@ -1573,7 +1673,7 @@ export class Dependency {
                                 childRecords[i as number].ganttProperties,
                                 childRecords[i as number].ganttProperties.isMilestone),
                             durationDiff,
-                            'minute',
+                            childRecords[i as number].ganttProperties.durationUnit,
                             childRecords[i as number].ganttProperties,
                             false
                         );
@@ -1581,7 +1681,7 @@ export class Dependency {
                         calcEndDate = this.parent.dateValidationModule.getStartDate(
                             this.parent.dateValidationModule.checkEndDate(startDate, childRecords[i as number].ganttProperties),
                             durationDiff,
-                            'minute',
+                            childRecords[i as number].ganttProperties.durationUnit,
                             childRecords[i as number].ganttProperties);
                     }
                     this.calculateDateByRoundOffDuration(childRecords[i as number], calcEndDate);
@@ -1599,9 +1699,6 @@ export class Dependency {
                 }
             }
         }
-        if (childRecords.length) {
-            this.parent.dataOperation.updateParentItems(ganttRecord, true);
-        }
     }
     /**
      * To get updated child records.
@@ -1612,11 +1709,11 @@ export class Dependency {
      */
     private getUpdatableChildRecords(parentRecord: IGanttData, childLists: IGanttData[]): void {
         const childRecords: IGanttData[] = parentRecord.childRecords;
-        for (let i: number = 0; i < childRecords.length; i++) {
-            if (childRecords[i as number].ganttProperties.isAutoSchedule) {
-                childLists.push(childRecords[i as number]);
-                if (childRecords[i as number].hasChildRecords) {
-                    this.getUpdatableChildRecords(childRecords[i as number], childLists);
+        for (const childRecord of childRecords) {
+            if (childRecord.ganttProperties.isAutoSchedule) {
+                childLists.push(childRecord);
+                if (childRecord.hasChildRecords) {
+                    this.getUpdatableChildRecords(childRecord, childLists);
                 }
             }
         }

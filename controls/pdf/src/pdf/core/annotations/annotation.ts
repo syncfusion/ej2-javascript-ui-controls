@@ -17,6 +17,7 @@ import { _PdfPaddings } from './pdf-paddings';
 import { PdfForm } from '../form';
 import { PdfLayer } from '../layers/layer';
 import { PdfLayerCollection } from '../layers/layer-collection';
+import { _ContentParser, _PdfRecord } from '../content-parser';
 /**
  * Represents the base class for annotation objects.
  * ```typescript
@@ -78,6 +79,10 @@ export abstract class PdfAnnotation {
     _isRotated: boolean = false;
     _isChanged: boolean = false;
     private _layer: PdfLayer;
+    _quadPoints: Array<number> = new Array<number>(8);
+    _boundsCollection: Array<number[]> = [];
+    _points: number[];
+    _customTemplate: Map<string, PdfTemplate> = new Map();
     /**
      * Gets the author of the annotation.
      *
@@ -1839,34 +1844,39 @@ export abstract class PdfAnnotation {
         }
         const borderWidth: number = width / 2;
         const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
-        const template: PdfTemplate = new PdfTemplate(nativeRectangle, this._crossReference);
-        _setMatrix(template, this._getRotationAngle());
-        if (borderEffect.intensity !== 0 && borderEffect.style === PdfBorderEffectStyle.cloudy) {
-            template._writeTransformation = false;
-        }
-        const graphics: PdfGraphics = template.graphics;
-        const parameter: _PaintParameter = new _PaintParameter();
-        if (this.innerColor) {
-            parameter.backBrush = new PdfBrush(this._innerColor);
-        }
-        if (width > 0 && this.color) {
-            parameter.borderPen = new PdfPen(this._color, width);
-        }
-        if (this.color) {
-            parameter.foreBrush = new PdfBrush(this._color);
-        }
-        const rectangle:  number[] = this._obtainStyle(parameter.borderPen, nativeRectangle, borderWidth, borderEffect);
-        if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
-            graphics.save();
-            graphics.setTransparency(this._opacity);
-        }
-        if (borderEffect.intensity !== 0 && borderEffect.style === PdfBorderEffectStyle.cloudy) {
-            this._drawRectangleAppearance(rectangle, graphics, parameter, borderEffect.intensity);
+        let template: PdfTemplate;
+        if (this._customTemplate.has('N')) {
+            template = this._customTemplate.get('N');
         } else {
-            graphics.drawRectangle(rectangle[0], rectangle[1], rectangle[2], rectangle[3], parameter.borderPen, parameter.backBrush);
-        }
-        if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
-            graphics.restore();
+            template = new PdfTemplate(nativeRectangle, this._crossReference);
+            _setMatrix(template, this._getRotationAngle());
+            if (borderEffect.intensity !== 0 && borderEffect.style === PdfBorderEffectStyle.cloudy) {
+                template._writeTransformation = false;
+            }
+            const graphics: PdfGraphics = template.graphics;
+            const parameter: _PaintParameter = new _PaintParameter();
+            if (this.innerColor) {
+                parameter.backBrush = new PdfBrush(this._innerColor);
+            }
+            if (width > 0 && this.color) {
+                parameter.borderPen = new PdfPen(this._color, width);
+            }
+            if (this.color) {
+                parameter.foreBrush = new PdfBrush(this._color);
+            }
+            const rectangle:  number[] = this._obtainStyle(parameter.borderPen, nativeRectangle, borderWidth, borderEffect);
+            if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                graphics.save();
+                graphics.setTransparency(this._opacity);
+            }
+            if (borderEffect.intensity !== 0 && borderEffect.style === PdfBorderEffectStyle.cloudy) {
+                this._drawRectangleAppearance(rectangle, graphics, parameter, borderEffect.intensity);
+            } else {
+                graphics.drawRectangle(rectangle[0], rectangle[1], rectangle[2], rectangle[3], parameter.borderPen, parameter.backBrush);
+            }
+            if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                graphics.restore();
+            }
         }
         return template;
     }
@@ -1890,53 +1900,58 @@ export abstract class PdfAnnotation {
     }
     _createCircleAppearance(): PdfTemplate {
         const nativeBounds: number[] = [0, 0, this.bounds.width, this.bounds.height];
-        const template: PdfTemplate = new PdfTemplate(nativeBounds, this._crossReference);
-        _setMatrix(template, this._getRotationAngle());
-        if (this._dictionary.has('BE')) {
-            template._writeTransformation = false;
-        }
-        if (typeof this.color === 'undefined') {
-            this._isTransparentColor = true;
-        }
-        const graphics: PdfGraphics = template.graphics;
-        const width: number = this.border.width;
-        const borderPen: PdfPen = new PdfPen(this.color, width);
-        if (this.border.style === PdfBorderStyle.dashed) {
-            borderPen._dashStyle = PdfDashStyle.dash;
-            borderPen._dashPattern = [3, 1];
-        } else if (this.border.style === PdfBorderStyle.dot) {
-            borderPen._dashStyle = PdfDashStyle.dot;
-            borderPen._dashPattern = [1, 1];
-        }
-        const parameter: _PaintParameter = new _PaintParameter();
-        if (this.innerColor) {
-            parameter.backBrush = new PdfBrush(this._innerColor);
-        }
-        if (width > 0) {
-            parameter.borderPen = borderPen;
-        }
-        if (this.color) {
-            parameter.foreBrush = new PdfBrush(this._color);
-        }
-        parameter.borderWidth = width;
-        const borderWidth: number = width / 2;
-        const rectangle:  number[] = this._obtainStyle(borderPen, nativeBounds, borderWidth);
-        if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
-            graphics.save();
-            graphics.setTransparency(this._opacity);
-        }
-        if (this._dictionary.has('BE')) {
-            this._drawCircleAppearance(rectangle, borderWidth, graphics, parameter);
+        let template: PdfTemplate;
+        if (this._customTemplate.has('N')) {
+            template = this._customTemplate.get('N');
         } else {
-            graphics.drawEllipse(rectangle[0] + borderWidth,
-                                 rectangle[1],
-                                 rectangle[2] - width,
-                                 rectangle[3],
-                                 parameter.borderPen,
-                                 parameter.backBrush);
-        }
-        if (typeof this._opacity !== 'undefined' && this._opacity < 1) {
-            graphics.restore();
+            template = new PdfTemplate(nativeBounds, this._crossReference);
+            _setMatrix(template, this._getRotationAngle());
+            if (this._dictionary.has('BE')) {
+                template._writeTransformation = false;
+            }
+            if (typeof this.color === 'undefined') {
+                this._isTransparentColor = true;
+            }
+            const graphics: PdfGraphics = template.graphics;
+            const width: number = this.border.width;
+            const borderPen: PdfPen = new PdfPen(this.color, width);
+            if (this.border.style === PdfBorderStyle.dashed) {
+                borderPen._dashStyle = PdfDashStyle.dash;
+                borderPen._dashPattern = [3, 1];
+            } else if (this.border.style === PdfBorderStyle.dot) {
+                borderPen._dashStyle = PdfDashStyle.dot;
+                borderPen._dashPattern = [1, 1];
+            }
+            const parameter: _PaintParameter = new _PaintParameter();
+            if (this.innerColor) {
+                parameter.backBrush = new PdfBrush(this._innerColor);
+            }
+            if (width > 0) {
+                parameter.borderPen = borderPen;
+            }
+            if (this.color) {
+                parameter.foreBrush = new PdfBrush(this._color);
+            }
+            parameter.borderWidth = width;
+            const borderWidth: number = width / 2;
+            const rectangle:  number[] = this._obtainStyle(borderPen, nativeBounds, borderWidth);
+            if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                graphics.save();
+                graphics.setTransparency(this._opacity);
+            }
+            if (this._dictionary.has('BE')) {
+                this._drawCircleAppearance(rectangle, borderWidth, graphics, parameter);
+            } else {
+                graphics.drawEllipse(rectangle[0] + borderWidth,
+                                     rectangle[1],
+                                     rectangle[2] - width,
+                                     rectangle[3],
+                                     parameter.borderPen,
+                                     parameter.backBrush);
+            }
+            if (typeof this._opacity !== 'undefined' && this._opacity < 1) {
+                graphics.restore();
+            }
         }
         return template;
     }
@@ -2350,8 +2365,79 @@ export abstract class PdfAnnotation {
             if (fontFamily) {
                 fontFamily = fontFamily.trim();
             }
+        } else if (this._dictionary.has('AP')) {
+            const appearanceDict: _PdfDictionary = this._dictionary.get('AP') as _PdfDictionary;
+            const fontData: { name: string, fontSize: number, style: PdfFontStyle } =
+                this._parseFontFromAppearance(appearanceDict, (this instanceof PdfRedactionAnnotation) ?
+                    ['R', 'N', 'D'] : ['N', 'R', 'D']);
+            fontFamily = fontData.name;
+            fontSize = fontData.fontSize;
+            style = fontData.style;
         }
         return { name: fontFamily, size: fontSize, style: style };
+    }
+    _parseFontFromAppearance(source: _PdfDictionary, keys: string[]): { name: string; fontSize: number; style: PdfFontStyle } {
+        let fontData: { name: string, fontSize: number, style: PdfFontStyle };
+        let fontFamily: string;
+        let fontSize: number;
+        let style: PdfFontStyle;
+        if (source) {
+            for (const key of keys) {
+                if (source.has(key)) {
+                    const appearance: any = source.get(key); // eslint-disable-line
+                    if (appearance) {
+                        fontData = this._obtainAppearanceFont(appearance, fontFamily, fontSize, style);
+                    }
+                    break;
+                }
+            }
+        }
+        return fontData;
+    }
+    _obtainAppearanceFont(resourceDict: any, fontFamily: string, fontSize: number, style: PdfFontStyle):// eslint-disable-line
+    { name: string; fontSize: number; style: PdfFontStyle } {
+        if (resourceDict && resourceDict instanceof _PdfBaseStream && resourceDict.dictionary &&
+            resourceDict.dictionary.has('Resources')) {
+            const resourcesDict: _PdfDictionary = resourceDict.dictionary.get('Resources') as _PdfDictionary;
+            const pdfStream: _PdfStream = resourceDict as _PdfStream;
+            const contentParser: _ContentParser = new _ContentParser(pdfStream.getBytes());
+            const pdfRecords: _PdfRecord[] = contentParser._readContent();
+            for (const record of pdfRecords) {
+                const operandTokens: string[] = record._operands;
+                const operatorToken: string = record._operator;
+                if (operatorToken === 'Tf') {
+                    let fontFamilyToken: string = operandTokens[0];
+                    if (resourcesDict.has('Font')) {
+                        const fontDict: _PdfDictionary = resourcesDict.get('Font') as _PdfDictionary;
+                        if (fontDict && fontFamilyToken.includes('/')) {
+                            fontFamilyToken = fontFamilyToken.replace(/\//g, '');
+                            const fontRefDict: _PdfDictionary = fontDict.get(fontFamilyToken) as _PdfDictionary;
+                            if (fontRefDict && fontRefDict.has('BaseFont')) {
+                                const baseFontName: _PdfName = fontRefDict.get('BaseFont') as _PdfName;
+                                fontFamily = baseFontName.name;
+                                if (fontFamily) {
+                                    const containsBold: boolean = fontFamily.includes('Bold');
+                                    const containsItalic: boolean = fontFamily.includes('Italic') || fontFamily.includes('Oblique');
+                                    if (fontFamily.includes('Times') || fontFamily.includes('Helvetica') || fontFamily.includes('Courier')) {
+                                        if (containsBold && containsItalic) {
+                                            style = PdfFontStyle.bold | PdfFontStyle.italic;
+                                        } else if (containsBold) {
+                                            style = PdfFontStyle.bold;
+                                        } else if (containsItalic) {
+                                            style = PdfFontStyle.italic;
+                                        }
+                                    }
+                                    if (operandTokens[1]) {
+                                        fontSize = Number.parseFloat(operandTokens[1]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return { name: fontFamily, fontSize: fontSize, style: style };
     }
     _obtainFont(): PdfFont {
         const fontData: {name: string, size: number, style: PdfFontStyle} = this._obtainFontDetails();
@@ -2848,6 +2934,212 @@ export abstract class PdfAnnotation {
                 this._isMatched(layerCollection.at(i).layers, expectedReference, page);
             }
         }
+    }
+    _setQuadPoints(pageSize: number[]): void {
+        const textQuadLocation: number[] = [];
+        const pageHeight: number = pageSize[1];
+        let margins: {left: number, top: number, right: number, bottom: number};
+        if (this._page && this._page._isNew && this._page._pageSettings && this._page._pageSettings.margins) {
+            const margin: PdfMargins = this._page._pageSettings.margins;
+            margins = {left: margin.left, top: margin.top, right: margin.right, bottom: margin.bottom};
+        } else {
+            margins = {left: 0, top: 0, right: 0, bottom: 0};
+        }
+        if (this.bounds.x !== 0 && this.bounds.y !== 0 && this.bounds.width !== 0 && this.bounds.height !== 0) {
+            this._boundsCollection[0] = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
+        }
+        const noofRect: number = this._quadPoints.length / 8;
+        const cropOrMediaBox: number[] = this._getMediaOrCropBox(this._page);
+        let isContainscropOrMediaBox: boolean = false;
+        if (!this._isLoaded && cropOrMediaBox && cropOrMediaBox.length > 3 && !this.flatten) {
+            const cropOrMediaBoxX: number = cropOrMediaBox[0];
+            const cropOrMediaBoxY: number = cropOrMediaBox[1];
+            if (cropOrMediaBoxX !== 0 || cropOrMediaBoxY !== 0) {
+                for (let i: number = 0; i < noofRect; i++) {
+                    const locationX: number = this._boundsCollection[<number>i][0] + margins.left + cropOrMediaBoxX;
+                    const locationY: number = cropOrMediaBoxY + margins.top;
+                    textQuadLocation[0 + (i * 8)] = locationX + margins.left;
+                    textQuadLocation[1 + (i * 8)] = (pageHeight - (-locationY)) - margins.top -
+                    this._boundsCollection[<number>i][1];
+                    textQuadLocation[2 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) +
+                    margins.left;
+                    textQuadLocation[3 + (i * 8)] = (pageHeight - (-locationY)) - margins.top -
+                    this._boundsCollection[<number>i][1];
+                    textQuadLocation[4 + (i * 8)] = locationX + margins.left;
+                    textQuadLocation[5 + (i * 8)] = (textQuadLocation[1 + (i * 8)] -
+                    this._boundsCollection[<number>i][3]);
+                    textQuadLocation[6 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) +
+                    margins.left;
+                    textQuadLocation[7 + (i * 8)] = textQuadLocation[5 + (i * 8)];
+                }
+                isContainscropOrMediaBox = true;
+            }
+        }
+        if (!isContainscropOrMediaBox && this._boundsCollection.length > 0) {
+            for (let i: number = 0; i < noofRect; i++) {
+                const locationX: number = this._boundsCollection[<number>i][0];
+                const locationY: number = this._boundsCollection[<number>i][1];
+                textQuadLocation[0 + (i * 8)] = locationX + margins.left;
+                textQuadLocation[1 + (i * 8)] = (pageHeight - locationY) - margins.top;
+                textQuadLocation[2 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) + margins.left;
+                textQuadLocation[3 + (i * 8)] = (pageHeight - locationY) - margins.top;
+                textQuadLocation[4 + (i * 8)] = locationX + margins.left;
+                textQuadLocation[5 + (i * 8)] = (textQuadLocation[1 + (i * 8)] -
+                this._boundsCollection[<number>i][3]);
+                textQuadLocation[6 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) + margins.left;
+                textQuadLocation[7 + (i * 8)] = textQuadLocation[5 + (i * 8)];
+            }
+        }
+        this._points = textQuadLocation;
+        this._dictionary.set('QuadPoints', this._points);
+    }
+    _createTemplate(key?: string): PdfTemplate {
+        let template: PdfTemplate;
+        if (this._isLoaded) {
+            if (!key) {
+                key = 'N';
+            }
+            if (this._dictionary.has('AP')) {
+                const dictionary: _PdfDictionary = this._dictionary.get('AP');
+                if (dictionary && dictionary.has(key)) {
+                    const appearanceStream: _PdfBaseStream = dictionary.get(key);
+                    const ref: _PdfReference = dictionary.getRaw(key);
+                    if (ref && appearanceStream) {
+                        template = new PdfTemplate();
+                        template._isExported = true;
+                        const templateDictionary: _PdfDictionary = appearanceStream.dictionary;
+                        const matrix: number[] = templateDictionary.getArray('Matrix');
+                        const bounds: number[] = templateDictionary.getArray('BBox');
+                        if (matrix) {
+                            const mMatrix: number[] = [];
+                            for (let i: number = 0; i < matrix.length; i++) {
+                                const value: number = matrix[<number>i];
+                                mMatrix[<number>i] = value;
+                            }
+                            if (bounds && bounds.length > 3) {
+                                const rect: { x: number, y: number, width: number, height: number } = _toRectangle(bounds);
+                                const rectangle: number[] = this._transformBBox(rect, mMatrix);
+                                template._size = [rectangle[2], rectangle[3]];
+                                template._templateOriginalSize = [rect.width, rect.height];
+                            }
+                        } else if (bounds && (bounds[2] === this.bounds.width && bounds[3] === this.bounds.height) || _areArrayEqual(this._dictionary.get('Rect'), bounds)) {
+                            templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
+                            if (this._dictionary.has('Vertices')) {
+                                template._size = [bounds[2], bounds[3]];
+                            } else {
+                                template._size = [this.bounds.width, this.bounds.height];
+                                this._crossReference._cacheMap.set(ref, appearanceStream);
+                            }
+                        } else {
+                            const identityMatrix: number[] = [1, 0, 0, 1, 0, 0];
+                            const templateSize: number[] = this._getTransformMatrix(this._dictionary.get('Rect'), bounds, identityMatrix);
+                            if (this.bounds.width === templateSize[0] && this.bounds.height === templateSize[3]) {
+                                templateDictionary.update('Matrix', [templateSize[0], 0, 0, templateSize[3], 0, 0]);
+                                template._size = [templateSize[0], templateSize[3]];
+                                this._crossReference._cacheMap.set(ref, appearanceStream);
+                            } else {
+                                templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
+                                template._size = [bounds[2], bounds[3]];
+                            }
+                        }
+                        template._exportStream(dictionary, this._crossReference, key);
+                    }
+                }
+            }
+        }
+        return template;
+    }
+    _getTransformMatrix(rect: number[], bbox: number[], matrix: number[]): number[] {
+        const [minX, minY, maxX, maxY] = this._getAxialAlignedBoundingBox(bbox, matrix);
+        if (minX === maxX || minY === maxY) {
+            return [1, 0, 0, 1, rect[0], rect[1]];
+        }
+        const xRatio: number = (rect[2] - rect[0]) / (maxX - minX);
+        const yRatio: number = (rect[3] - rect[1]) / (maxY - minY);
+        return [xRatio, 0, 0, yRatio, rect[0] - minX * xRatio, rect[1] - minY * yRatio];
+    }
+    _getAxialAlignedBoundingBox(r: number[], m: number[]): number[] {
+        const p1: number[] = this._applyTransform(r, m);
+        const p2: number[] = this._applyTransform(r.slice(2, 4), m);
+        const p3: number[] = this._applyTransform([r[0], r[3]], m);
+        const p4: number[] = this._applyTransform([r[2], r[1]], m);
+        return [
+            Math.min(p1[0], p2[0], p3[0], p4[0]),
+            Math.min(p1[1], p2[1], p3[1], p4[1]),
+            Math.max(p1[0], p2[0], p3[0], p4[0]),
+            Math.max(p1[1], p2[1], p3[1], p4[1])
+        ];
+    }
+    _applyTransform(p: number[], m: number[]): number[] {
+        const xt: number = p[0] * m[0] + p[1] * m[2] + m[4];
+        const yt: number = p[0] * m[1] + p[1] * m[3] + m[5];
+        return [xt, yt];
+    }
+    _transformBBox(bBoxValue: { x: number, y: number, width: number, height: number }, matrix: number[]): number[] {
+        const xCoordinate: number[] = [];
+        const yCoordinate: number[] = [];
+        const point1: number[] = this._transformPoint(bBoxValue.x, bBoxValue.y + bBoxValue.height, matrix);
+        xCoordinate[0] = point1[0];
+        yCoordinate[0] = point1[1];
+        const point2: number[] = this._transformPoint(bBoxValue.x + bBoxValue.width, bBoxValue.y, matrix);
+        xCoordinate[1] = point2[0];
+        yCoordinate[1] = point2[1];
+        const point3: number[] = this._transformPoint(bBoxValue.x, bBoxValue.y, matrix);
+        xCoordinate[2] = point3[0];
+        yCoordinate[2] = point3[1];
+        const point4: number[] = this._transformPoint(bBoxValue.x + bBoxValue.width, bBoxValue.y + bBoxValue.height, matrix);
+        xCoordinate[3] = point4[0];
+        yCoordinate[3] = point4[1];
+        const rect: number[] = [this._minValue(xCoordinate), this._minValue(yCoordinate),
+            this._maxValue(xCoordinate), this._maxValue(yCoordinate)];
+        return rect;
+    }
+    _transformPoint(x: number, y: number, matrix: number[]): number[] {
+        const point: number[] = [];
+        point[0] = x * matrix[0] + y * matrix[2] + matrix[4];
+        point[1] = x * matrix[1] + y * matrix[3] + matrix[5];
+        return point;
+    }
+    _minValue(values: number[]): number {
+        let minimum: number = values[0];
+        for (let i: number = 1; i < values.length; i++) {
+            if (values[<number>i] < minimum) {
+                minimum = values[<number>i];
+            }
+        }
+        return minimum;
+    }
+    _maxValue(values: number[]): number {
+        let maximum: number = values[0];
+        for (let i: number = 1; i < values.length; i++) {
+            if (values[<number>i] > maximum) {
+                maximum = values[<number>i];
+            }
+        }
+        return maximum;
+    }
+    _drawTemplate(template: PdfTemplate, key: string): void {
+        if (template && key) {
+            if (template._isExported || template._isResourceExport) {
+                if (this._crossReference) {
+                    template._crossReference = this._crossReference;
+                    template._importStream(true, template._isResourceExport);
+                } else {
+                    template._importStream(false, template._isResourceExport);
+                }
+            }
+            this._customTemplate.set(key, template);
+        }
+    }
+    _drawCustomAppearance(appearance: _PdfDictionary): void {
+        this._customTemplate.forEach((template: PdfTemplate, key: string) => {
+            _removeDuplicateReference(appearance, this._crossReference, key);
+            const reference: _PdfReference = this._crossReference._getNextReference();
+            template._content.reference = reference;
+            template._content.dictionary._update = true;
+            this._crossReference._cacheMap.set(reference, template._content);
+            appearance.update(key, reference);
+        });
     }
 }
 /**
@@ -3449,7 +3741,7 @@ export class PdfLineAnnotation extends PdfComment {
             this._appearanceTemplate = this._createLineMeasureAppearance(flatten);
         } else {
             let isUpdated: boolean = false;
-            if (this._setAppearance) {
+            if (this._setAppearance || (this._customTemplate.has('N'))) {
                 this._appearanceTemplate = this._createAppearance();
                 if (this._page._isNew && !(this._flatten || flatten)) {
                     const boundsArray: number[] = this._obtainLineBounds();
@@ -3500,7 +3792,7 @@ export class PdfLineAnnotation extends PdfComment {
     }
     _doPostProcess(isFlatten: boolean = false): void {
         if (this._isLoaded) {
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if (this._setAppearance || this._customTemplate.size > 0 || (isFlatten && !this._dictionary.has('AP'))) {
                 if (this._dictionary.has('Measure')) {
                     this._appearanceTemplate = this._createLineMeasureAppearance(isFlatten);
                 } else {
@@ -3549,33 +3841,36 @@ export class PdfLineAnnotation extends PdfComment {
                 this._flattenPopUp();
             }
         }
-        if (isFlatten && this._appearanceTemplate) {
-            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix, true);
-        } else if (isFlatten) {
-            this._page.annotations.remove(this);
-        }
-        let appearance: _PdfDictionary;
-        if (!isFlatten && this._setAppearance && !this.measure) {
-            if (this._dictionary.has('AP')) {
-                appearance = this._dictionary.get('AP');
+        if (isFlatten) {
+            if (this._appearanceTemplate) {
+                const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+                this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix, true);
             } else {
-                const reference: _PdfReference = this._crossReference._getNextReference();
-                appearance = new _PdfDictionary(this._crossReference);
-                this._crossReference._cacheMap.set(reference, appearance);
-                this._dictionary.update('AP', reference);
+                this._page.annotations.remove(this);
             }
-        } else if (this.measure && this._setAppearance && !this._dictionary.has('AP')) {
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            appearance = new _PdfDictionary(this._crossReference);
-            this._crossReference._cacheMap.set(reference, appearance);
-            this._dictionary.update('AP', reference);
-        }
-        if (appearance && this._appearanceTemplate && this._appearanceTemplate._content) {
-            _removeDuplicateReference(appearance, this._crossReference, 'N');
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-            appearance.update('N', reference);
+        } else {
+            let appearance: _PdfDictionary;
+            if (this._setAppearance || this._customTemplate.size > 0) {
+                if (this._dictionary.has('AP')) {
+                    appearance = this._dictionary.get('AP');
+                } else {
+                    const reference: _PdfReference = this._crossReference._getNextReference();
+                    appearance = new _PdfDictionary(this._crossReference);
+                    appearance._updated = true;
+                    this._crossReference._cacheMap.set(reference, appearance);
+                    this._dictionary.update('AP', reference);
+                }
+            }
+            if (this._customTemplate.size > 0) {
+                this._drawCustomAppearance(appearance);
+            } else if (appearance && this._appearanceTemplate && this._appearanceTemplate._content) {
+                _removeDuplicateReference(appearance, this._crossReference, 'N');
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._appearanceTemplate._content.dictionary._update = true;
+                this._appearanceTemplate._content.reference = reference;
+                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                appearance.update('N', reference);
+            }
         }
     }
     _createLineMeasureAppearance(_isFlatten: boolean): PdfTemplate {
@@ -3597,166 +3892,178 @@ export class PdfLineAnnotation extends PdfComment {
             backBrush = new PdfBrush(this._innerColor);
         }
         nativeRectangle = this._obtainLineBounds();
-        const template: PdfTemplate = new PdfTemplate(nativeRectangle, this._crossReference);
-        _setMatrix(template, 0);
-        const parameter: _PaintParameter = new _PaintParameter();
-        template._writeTransformation = false;
-        const graphics: PdfGraphics = template.graphics;
-        parameter.borderPen = borderPen;
-        if (this.border.style === PdfBorderStyle.dashed) {
-            parameter.borderPen._dashStyle = PdfDashStyle.dash;
-            parameter.borderPen._dashPattern = [3, 1];
-        } else if (this.border.style === PdfBorderStyle.dot) {
-            parameter.borderPen._dashStyle = PdfDashStyle.dot;
-            parameter.borderPen._dashPattern = [1, 1];
-        }
-        parameter.backBrush = backBrush;
-        parameter.foreBrush = new PdfBrush(this.color);
-        const linePoints: number[] = this._obtainLinePoints();
-        let font: PdfFont = this._obtainFont();
-        if ((typeof font === 'undefined' || font === null) || (!this._isLoaded && font.size === 1)) {
-            font = this._lineCaptionFont;
-            this._pdfFont = font;
-        }
-        if (typeof linePoints !== 'undefined' && linePoints.length === 4) {
-            const format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
-            const fontSize: number[] = font.measureString(area.toFixed(2) + ' ' + this._unitString, [0, 0], format, 0, 0);
-            const angle: number = this._getAngle(this._linePoints);
-            let leaderLine: number = 0;
-            let lineAngle: number = 0;
-            if (this.leaderLine < 0) {
-                leaderLine = -(this.leaderLine);
-                lineAngle = angle + 180;
-            } else {
-                leaderLine = this.leaderLine;
-                lineAngle = angle;
-            }
-            const offset: number = (typeof this.leaderOffset !== 'undefined') ? (leaderLine + this.leaderOffset) : leaderLine;
-            const startPoint: number[] = this._getAxisValue([this._linePoints[0], this._linePoints[1]], (lineAngle + 90), offset);
-            const endPoint: number[] = this._getAxisValue([this._linePoints[2], this._linePoints[3]], (lineAngle + 90), offset);
-            const lineDistance: number = (Math.sqrt(Math.pow((endPoint[0] - startPoint[0]), 2) +
-                Math.pow((endPoint[1] - startPoint[1]), 2)));
-            const centerWidth: number = lineDistance / 2 - ((fontSize[0] / 2) + this.border.width);
-            const first: number[] = this._getAxisValue(startPoint, angle, centerWidth);
-            const second: number[] = this._getAxisValue(endPoint, (angle + 180), centerWidth);
-            const start: number[] = (this.lineEndingStyle.begin === PdfLineEndingStyle.openArrow ||
-                this.lineEndingStyle.begin === PdfLineEndingStyle.closedArrow) ?
-                this._getAxisValue(startPoint, angle, this.border.width) :
-                startPoint;
-            const end: number[] = (this.lineEndingStyle.end === PdfLineEndingStyle.openArrow ||
-                this.lineEndingStyle.end === PdfLineEndingStyle.closedArrow) ?
-                this._getAxisValue(endPoint, angle, -this.border.width) :
-                endPoint;
-            let state: PdfGraphicsState;
-            if (this.opacity && this._opacity < 1) {
-                state = graphics.save();
-                graphics.setTransparency(this._opacity);
-            }
-            if (this.caption.type === PdfLineCaptionType.top || (!this.caption.cap && this.caption.type === PdfLineCaptionType.inline)) {
-                graphics.drawLine(borderPen, start[0], -start[1], end[0], -end[1]);
-            } else {
-                graphics.drawLine(borderPen, start[0], -start[1], first[0], -first[1]);
-                graphics.drawLine(borderPen, end[0], -end[1], second[0], -second[1]);
-            }
-            if (this.opacity && this._opacity < 1) {
-                graphics.restore(state);
-            }
-            this._drawLineStyle(startPoint, endPoint, graphics, angle, borderPen, backBrush, this.lineEndingStyle, this.border.width);
-            const leaderExt: number = (typeof this.leaderExt !== 'undefined' ? this._leaderExt : 0);
-            const beginLineExt: number[] = this._getAxisValue(startPoint, (lineAngle + 90), leaderExt);
-            graphics.drawLine(borderPen, startPoint[0], -startPoint[1], beginLineExt[0], -beginLineExt[1]);
-            const endLineExt: number[] = this._getAxisValue(endPoint, (lineAngle + 90), leaderExt);
-            graphics.drawLine(borderPen, endPoint[0], -endPoint[1], endLineExt[0], -endLineExt[1]);
-            const beginLeaderLine: number[] = this._getAxisValue(startPoint, (lineAngle - 90), leaderLine);
-            graphics.drawLine(borderPen, startPoint[0], -startPoint[1], beginLeaderLine[0], -beginLeaderLine[1]);
-            const endLeaderLine: number[] = this._getAxisValue(endPoint, (lineAngle - 90), leaderLine);
-            graphics.drawLine(borderPen, endPoint[0], -endPoint[1], endLeaderLine[0], -endLeaderLine[1]);
-            const midpoint: number = lineDistance / 2;
-            const centerPoint: number[] = this._getAxisValue(startPoint, angle, midpoint);
-            let captionPosition: number[];
-            const height: number = font._metrics._getHeight();
-            if (this.caption.type === PdfLineCaptionType.top) {
-                captionPosition = this._getAxisValue(centerPoint, (angle + 90), height);
-            } else {
-                captionPosition = this._getAxisValue(centerPoint, (angle + 90), (height / 2));
-            }
-            graphics.translateTransform(captionPosition[0], -captionPosition[1]);
-            graphics.rotateTransform(-angle);
-            graphics.drawString(area.toFixed(2) + ' ' + this._unitString, font, [(-fontSize[0] / 2), 0, 0, 0], null, parameter.foreBrush);
-            graphics.restore();
-        }
-        if ((typeof _isFlatten !== 'undefined' && !_isFlatten) || !this._isLoaded) {
-            template._content.dictionary._updated = true;
-            const ref: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(ref, template._content);
-            template._content.reference = ref;
-            const nativeRectangle1: number[] = [this.bounds.x,
-                this.bounds.y + this.bounds.height,
-                this.bounds.width,
-                this.bounds.height];
-            const size: number[] = this._page.size;
-            nativeRectangle1[1] = size[1] - (this.bounds.y + this.bounds.height);
-            if (this._isBounds && !this.measure) {
-                nativeRectangle =  nativeRectangle1;
-                this._dictionary.update('Rect', [nativeRectangle1[0], nativeRectangle1[1], nativeRectangle1[2], nativeRectangle1[3]]);
-            } else {
-                this._dictionary.update('Rect', [nativeRectangle[0], nativeRectangle[1], nativeRectangle[2], nativeRectangle[3]]);
-            }
-            const ds: string = 'font:' +
-                font._metrics._postScriptName +
-                ' ' +
-                font._size +
-                'pt; color:' +
-                this._colorToHex(this.color);
-            this._dictionary.update('DS', ds);
-            if (typeof _isFlatten !== 'undefined' && !_isFlatten) {
-                if (this._dictionary.has('AP')) {
-                    _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
-                }
-                const dic: _PdfDictionary = new _PdfDictionary();
-                dic.set('N', ref);
-                dic._updated = true;
-                this._dictionary.set('AP', dic);
-                const measureDictionary: _PdfDictionary = this._createMeasureDictionary(this._unitString);
-                const reference: _PdfReference = this._crossReference._getNextReference();
-                this._crossReference._cacheMap.set(reference, measureDictionary);
-                measureDictionary._updated = true;
-                if (this._dictionary.has('Measure')) {
-                    _removeDuplicateReference(this._dictionary, this._crossReference, 'Measure');
-                }
-                this._dictionary.update('Measure', reference);
-            }
-            const lineStyles: _PdfName[] = [];
-            lineStyles.push(_PdfName.get(_reverseMapEndingStyle(this.lineEndingStyle.begin)));
-            lineStyles.push(_PdfName.get(_reverseMapEndingStyle(this.lineEndingStyle.end)));
-            this._dictionary.update('LE', lineStyles);
-            if (this._linePoints !== null) {
-                this._dictionary.update('L', this._linePoints);
-            } else {
-                throw new Error('LinePoints cannot be null');
-            }
-            this._dictionary.update('C',  [Number.parseFloat((this.color[0] / 255).toFixed(3)),
-                Number.parseFloat((this.color[1] / 255).toFixed(3)),
-                Number.parseFloat((this.color[2] / 255).toFixed(3))]);
-            const offset: number = this._dictionary.has('LLO') ? this.leaderOffset : 0;
-            this._dictionary.update('Subtype', new _PdfName('Line'));
-            if (this._text && this._text !== '') {
-                this._dictionary.update('Contents', this._text + ' ' + area.toFixed(2) + ' ' + this._unitString);
-            } else {
-                this._dictionary.update('Contents', area.toFixed(2) + ' ' + this._unitString);
-            }
-            this._dictionary.update('IT', new _PdfName('LineDimension'));
-            this._dictionary.update('LLE', this.leaderExt);
-            this._dictionary.update('LLO', offset);
-            this._dictionary.update('LL', this.leaderLine);
-            this._dictionary.update('CP', _PdfName.get(this.caption.type === PdfLineCaptionType.top ? 'Top' : 'Inline'));
-            this._dictionary.update('Cap', this.caption.cap);
+        let template: PdfTemplate;
+        if (this._customTemplate.has('N')) {
+            template = this._customTemplate.get('N');
             const bounds: number[] = [nativeRectangle[0],
                 nativeRectangle[1],
                 nativeRectangle[0] + nativeRectangle[2],
                 nativeRectangle[1] + nativeRectangle[3]];
             this._dictionary.update('Rect', bounds);
             this._bounds = {x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3]};
+        } else {
+            template = new PdfTemplate(nativeRectangle, this._crossReference);
+            _setMatrix(template, 0);
+            const parameter: _PaintParameter = new _PaintParameter();
+            template._writeTransformation = false;
+            const graphics: PdfGraphics = template.graphics;
+            parameter.borderPen = borderPen;
+            if (this.border.style === PdfBorderStyle.dashed) {
+                parameter.borderPen._dashStyle = PdfDashStyle.dash;
+                parameter.borderPen._dashPattern = [3, 1];
+            } else if (this.border.style === PdfBorderStyle.dot) {
+                parameter.borderPen._dashStyle = PdfDashStyle.dot;
+                parameter.borderPen._dashPattern = [1, 1];
+            }
+            parameter.backBrush = backBrush;
+            parameter.foreBrush = new PdfBrush(this.color);
+            const linePoints: number[] = this._obtainLinePoints();
+            let font: PdfFont = this._obtainFont();
+            if ((typeof font === 'undefined' || font === null) || (!this._isLoaded && font.size === 1)) {
+                font = this._lineCaptionFont;
+                this._pdfFont = font;
+            }
+            if (typeof linePoints !== 'undefined' && linePoints.length === 4) {
+                const format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
+                const fontSize: number[] = font.measureString(area.toFixed(2) + ' ' + this._unitString, [0, 0], format, 0, 0);
+                const angle: number = this._getAngle(this._linePoints);
+                let leaderLine: number = 0;
+                let lineAngle: number = 0;
+                if (this.leaderLine < 0) {
+                    leaderLine = -(this.leaderLine);
+                    lineAngle = angle + 180;
+                } else {
+                    leaderLine = this.leaderLine;
+                    lineAngle = angle;
+                }
+                const offset: number = (typeof this.leaderOffset !== 'undefined') ? (leaderLine + this.leaderOffset) : leaderLine;
+                const startPoint: number[] = this._getAxisValue([this._linePoints[0], this._linePoints[1]], (lineAngle + 90), offset);
+                const endPoint: number[] = this._getAxisValue([this._linePoints[2], this._linePoints[3]], (lineAngle + 90), offset);
+                const lineDistance: number = (Math.sqrt(Math.pow((endPoint[0] - startPoint[0]), 2) +
+                    Math.pow((endPoint[1] - startPoint[1]), 2)));
+                const centerWidth: number = lineDistance / 2 - ((fontSize[0] / 2) + this.border.width);
+                const first: number[] = this._getAxisValue(startPoint, angle, centerWidth);
+                const second: number[] = this._getAxisValue(endPoint, (angle + 180), centerWidth);
+                const start: number[] = (this.lineEndingStyle.begin === PdfLineEndingStyle.openArrow ||
+                    this.lineEndingStyle.begin === PdfLineEndingStyle.closedArrow) ?
+                    this._getAxisValue(startPoint, angle, this.border.width) :
+                    startPoint;
+                const end: number[] = (this.lineEndingStyle.end === PdfLineEndingStyle.openArrow ||
+                    this.lineEndingStyle.end === PdfLineEndingStyle.closedArrow) ?
+                    this._getAxisValue(endPoint, angle, -this.border.width) :
+                    endPoint;
+                let state: PdfGraphicsState;
+                if (this.opacity && this._opacity < 1) {
+                    state = graphics.save();
+                    graphics.setTransparency(this._opacity);
+                }
+                if (this.caption.type === PdfLineCaptionType.top ||
+                    (!this.caption.cap && this.caption.type === PdfLineCaptionType.inline)) {
+                    graphics.drawLine(borderPen, start[0], -start[1], end[0], -end[1]);
+                } else {
+                    graphics.drawLine(borderPen, start[0], -start[1], first[0], -first[1]);
+                    graphics.drawLine(borderPen, end[0], -end[1], second[0], -second[1]);
+                }
+                if (this.opacity && this._opacity < 1) {
+                    graphics.restore(state);
+                }
+                this._drawLineStyle(startPoint, endPoint, graphics, angle, borderPen, backBrush, this.lineEndingStyle, this.border.width);
+                const leaderExt: number = (typeof this.leaderExt !== 'undefined' ? this._leaderExt : 0);
+                const beginLineExt: number[] = this._getAxisValue(startPoint, (lineAngle + 90), leaderExt);
+                graphics.drawLine(borderPen, startPoint[0], -startPoint[1], beginLineExt[0], -beginLineExt[1]);
+                const endLineExt: number[] = this._getAxisValue(endPoint, (lineAngle + 90), leaderExt);
+                graphics.drawLine(borderPen, endPoint[0], -endPoint[1], endLineExt[0], -endLineExt[1]);
+                const beginLeaderLine: number[] = this._getAxisValue(startPoint, (lineAngle - 90), leaderLine);
+                graphics.drawLine(borderPen, startPoint[0], -startPoint[1], beginLeaderLine[0], -beginLeaderLine[1]);
+                const endLeaderLine: number[] = this._getAxisValue(endPoint, (lineAngle - 90), leaderLine);
+                graphics.drawLine(borderPen, endPoint[0], -endPoint[1], endLeaderLine[0], -endLeaderLine[1]);
+                const midpoint: number = lineDistance / 2;
+                const centerPoint: number[] = this._getAxisValue(startPoint, angle, midpoint);
+                let captionPosition: number[];
+                const height: number = font._metrics._getHeight();
+                if (this.caption.type === PdfLineCaptionType.top) {
+                    captionPosition = this._getAxisValue(centerPoint, (angle + 90), height);
+                } else {
+                    captionPosition = this._getAxisValue(centerPoint, (angle + 90), (height / 2));
+                }
+                graphics.translateTransform(captionPosition[0], -captionPosition[1]);
+                graphics.rotateTransform(-angle);
+                graphics.drawString(area.toFixed(2) + ' ' + this._unitString, font, [(-fontSize[0] / 2), 0, 0, 0], null, parameter.foreBrush);
+                graphics.restore();
+            }
+            if ((typeof _isFlatten !== 'undefined' && !_isFlatten) || !this._isLoaded) {
+                template._content.dictionary._updated = true;
+                const ref: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(ref, template._content);
+                template._content.reference = ref;
+                const nativeRectangle1: number[] = [this.bounds.x,
+                    this.bounds.y + this.bounds.height,
+                    this.bounds.width,
+                    this.bounds.height];
+                const size: number[] = this._page.size;
+                nativeRectangle1[1] = size[1] - (this.bounds.y + this.bounds.height);
+                if (this._isBounds && !this.measure) {
+                    nativeRectangle =  nativeRectangle1;
+                    this._dictionary.update('Rect', [nativeRectangle1[0], nativeRectangle1[1], nativeRectangle1[2], nativeRectangle1[3]]);
+                } else {
+                    this._dictionary.update('Rect', [nativeRectangle[0], nativeRectangle[1], nativeRectangle[2], nativeRectangle[3]]);
+                }
+                const ds: string = 'font:' +
+                    font._metrics._postScriptName +
+                    ' ' +
+                    font._size +
+                    'pt; color:' +
+                    this._colorToHex(this.color);
+                this._dictionary.update('DS', ds);
+                if (typeof _isFlatten !== 'undefined' && !_isFlatten) {
+                    if (this._dictionary.has('AP')) {
+                        _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
+                    }
+                    const dic: _PdfDictionary = new _PdfDictionary();
+                    dic.set('N', ref);
+                    dic._updated = true;
+                    this._dictionary.set('AP', dic);
+                    const measureDictionary: _PdfDictionary = this._createMeasureDictionary(this._unitString);
+                    const reference: _PdfReference = this._crossReference._getNextReference();
+                    this._crossReference._cacheMap.set(reference, measureDictionary);
+                    measureDictionary._updated = true;
+                    if (this._dictionary.has('Measure')) {
+                        _removeDuplicateReference(this._dictionary, this._crossReference, 'Measure');
+                    }
+                    this._dictionary.update('Measure', reference);
+                }
+                const lineStyles: _PdfName[] = [];
+                lineStyles.push(_PdfName.get(_reverseMapEndingStyle(this.lineEndingStyle.begin)));
+                lineStyles.push(_PdfName.get(_reverseMapEndingStyle(this.lineEndingStyle.end)));
+                this._dictionary.update('LE', lineStyles);
+                if (this._linePoints !== null) {
+                    this._dictionary.update('L', this._linePoints);
+                } else {
+                    throw new Error('LinePoints cannot be null');
+                }
+                this._dictionary.update('C',  [Number.parseFloat((this.color[0] / 255).toFixed(3)),
+                    Number.parseFloat((this.color[1] / 255).toFixed(3)),
+                    Number.parseFloat((this.color[2] / 255).toFixed(3))]);
+                const offset: number = this._dictionary.has('LLO') ? this.leaderOffset : 0;
+                this._dictionary.update('Subtype', new _PdfName('Line'));
+                if (this._text && this._text !== '') {
+                    this._dictionary.update('Contents', this._text + ' ' + area.toFixed(2) + ' ' + this._unitString);
+                } else {
+                    this._dictionary.update('Contents', area.toFixed(2) + ' ' + this._unitString);
+                }
+                this._dictionary.update('IT', new _PdfName('LineDimension'));
+                this._dictionary.update('LLE', this.leaderExt);
+                this._dictionary.update('LLO', offset);
+                this._dictionary.update('LL', this.leaderLine);
+                this._dictionary.update('CP', _PdfName.get(this.caption.type === PdfLineCaptionType.top ? 'Top' : 'Inline'));
+                this._dictionary.update('Cap', this.caption.cap);
+                const bounds: number[] = [nativeRectangle[0],
+                    nativeRectangle[1],
+                    nativeRectangle[0] + nativeRectangle[2],
+                    nativeRectangle[1] + nativeRectangle[3]];
+                this._dictionary.update('Rect', bounds);
+                this._bounds = {x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3]};
+            }
         }
         return template;
     }
@@ -3935,119 +4242,124 @@ export class PdfLineAnnotation extends PdfComment {
     }
     _createAppearance(): PdfTemplate {
         const bounds: number[] = this._obtainLineBounds();
-        const template: PdfTemplate = new PdfTemplate(bounds, this._crossReference);
-        const parameter: _PaintParameter = new _PaintParameter();
-        _setMatrix(template, 0);
-        template._writeTransformation = false;
-        const graphics: PdfGraphics = template.graphics;
-        const pen: PdfPen = new PdfPen(typeof this.color !== 'undefined' ? this._color : [0, 0, 0], this.border.width);
-        if (this.border.style === PdfBorderStyle.dashed) {
-            pen._dashStyle = PdfDashStyle.dash;
-            pen._dashPattern = [3, 1];
-        } else if (this.border.style === PdfBorderStyle.dot) {
-            pen._dashStyle = PdfDashStyle.dot;
-            pen._dashPattern = [1, 1];
-        }
-        if (this.border.style !== PdfBorderStyle.solid && this.border.dash) {
-            pen._dashPattern = this.border.dash;
-        }
-        parameter.borderPen = pen;
-        parameter.foreBrush = new PdfBrush(this.color);
-        let brush: PdfBrush;
-        if (this.innerColor) {
-            brush = new PdfBrush(this._innerColor);
-        }
-        let font: PdfFont = this._obtainFont();
-        if ((typeof font === 'undefined' || font === null) || (!this._isLoaded && font.size === 1)) {
-            font = this._lineCaptionFont;
-            this._pdfFont = font;
-        }
-        if (!this.text && !this._dictionary.has('Contents')) {
-            this.text = this.subject;
-        }
-        const format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
-        let lineWidth: number = 0;
-        if (this.caption.cap) {
-            lineWidth = font.measureString(this.text ? this.text : '', [0, 0], format, 0, 0)[0]; //66.71001;
-        }
-        if (typeof this.linePoints !== 'undefined' && this._linePoints.length === 4) {
-            const angle: number = this._getAngle(this._linePoints);
-            let leaderLine: number = 0;
-            let lineAngle: number = 0;
-            let leaderLineValue: number = this.leaderLine;
-            if (leaderLineValue === null || typeof leaderLineValue === 'undefined') {
-                this._leaderLine = 0;
-                leaderLineValue = 0;
+        let template: PdfTemplate;
+        if (this._customTemplate.has('N')) {
+            template = this._customTemplate.get('N');
+        } else {
+            template = new PdfTemplate(bounds, this._crossReference);
+            _setMatrix(template, 0);
+            const parameter: _PaintParameter = new _PaintParameter();
+            template._writeTransformation = false;
+            const graphics: PdfGraphics = template.graphics;
+            const pen: PdfPen = new PdfPen(typeof this.color !== 'undefined' ? this._color : [0, 0, 0], this.border.width);
+            if (this.border.style === PdfBorderStyle.dashed) {
+                pen._dashStyle = PdfDashStyle.dash;
+                pen._dashPattern = [3, 1];
+            } else if (this.border.style === PdfBorderStyle.dot) {
+                pen._dashStyle = PdfDashStyle.dot;
+                pen._dashPattern = [1, 1];
             }
-            if (leaderLineValue < 0) {
-                leaderLine = -(leaderLineValue);
-                lineAngle = angle + 180;
-            } else {
-                leaderLine = leaderLineValue;
-                lineAngle = angle;
+            if (this.border.style !== PdfBorderStyle.solid && this.border.dash) {
+                pen._dashPattern = this.border.dash;
             }
-            const offset: number = (typeof this.leaderOffset !== 'undefined') ? (leaderLine + this.leaderOffset) : leaderLine;
-            const startPoint: number[] = this._getAxisValue([this._linePoints[0], this._linePoints[1]], (lineAngle + 90), offset);
-            const endPoint: number[] = this._getAxisValue([this._linePoints[2], this._linePoints[3]], (lineAngle + 90), offset);
-            const lineDistance: number = (Math.sqrt(Math.pow((endPoint[0] - startPoint[0]), 2) +
-                Math.pow((endPoint[1] - startPoint[1]), 2)));
-            const centerWidth: number = lineDistance / 2 - ((lineWidth / 2) + this.border.width);
-            const first: number[] = this._getAxisValue(startPoint, angle, centerWidth);
-            const second: number[] = this._getAxisValue(endPoint, (angle + 180), centerWidth);
-            const start: number[] = (this.lineEndingStyle.begin === PdfLineEndingStyle.openArrow ||
-                this.lineEndingStyle.begin === PdfLineEndingStyle.closedArrow) ?
-                this._getAxisValue(startPoint, angle, this.border.width) :
-                startPoint;
-            const end: number[] = (this.lineEndingStyle.end === PdfLineEndingStyle.openArrow ||
-                this.lineEndingStyle.end === PdfLineEndingStyle.closedArrow) ?
-                this._getAxisValue(endPoint, angle, -this.border.width) :
-                endPoint;
-            if (this.opacity && this._opacity < 1) {
-                const state: PdfGraphicsState = graphics.save();
-                graphics.setTransparency(this._opacity);
-                this._drawLine(graphics, pen, start, end, first, second);
-                graphics.restore(state);
-            } else {
-                this._drawLine(graphics, pen, start, end, first, second);
+            parameter.borderPen = pen;
+            parameter.foreBrush = new PdfBrush(this.color);
+            let brush: PdfBrush;
+            if (this.innerColor) {
+                brush = new PdfBrush(this._innerColor);
             }
-            this._drawLineStyle(startPoint, endPoint, graphics, angle, pen, brush, this.lineEndingStyle, this.border.width);
-            const leaderExt: number = (typeof this.leaderExt !== 'undefined' ? this._leaderExt : 0);
-            const beginLineExt: number[] = this._getAxisValue(startPoint, (lineAngle + 90), leaderExt);
-            graphics.drawLine(pen, startPoint[0], -startPoint[1], beginLineExt[0], -beginLineExt[1]);
-            const endLineExt: number[] = this._getAxisValue(endPoint, (lineAngle + 90), leaderExt);
-            graphics.drawLine(pen, endPoint[0], -endPoint[1], endLineExt[0], -endLineExt[1]);
-            const beginLeaderLine: number[] = this._getAxisValue(startPoint, (lineAngle - 90), leaderLine);
-            graphics.drawLine(pen, startPoint[0], -startPoint[1], beginLeaderLine[0], -beginLeaderLine[1]);
-            const endLeaderLine: number[] = this._getAxisValue(endPoint, (lineAngle - 90), leaderLine);
-            graphics.drawLine(pen, endPoint[0], -endPoint[1], endLeaderLine[0], -endLeaderLine[1]);
-            const midpoint: number = lineDistance / 2;
-            const centerPoint: number[] = this._getAxisValue(startPoint, angle, midpoint);
-            let captionPosition: number[];
-            const height: number = font._metrics._getHeight();
-            if (this.caption.type === PdfLineCaptionType.top) {
-                if (this._measure) {
-                    captionPosition = this._getAxisValue(centerPoint, (angle + 90), 2 * height);
-                } else {
-                    captionPosition = this._getAxisValue(centerPoint, (angle + 90), height);
-                }
-            } else {
-                if (this._measure) {
-                    captionPosition = this._getAxisValue(centerPoint, (angle + 90), 3 * (height / 2));
-                } else {
-                    captionPosition = this._getAxisValue(centerPoint, (angle + 90), (height / 2));
-                }
+            let font: PdfFont = this._obtainFont();
+            if ((typeof font === 'undefined' || font === null) || (!this._isLoaded && font.size === 1)) {
+                font = this._lineCaptionFont;
+                this._pdfFont = font;
             }
-            graphics.translateTransform(captionPosition[0], -captionPosition[1]);
-            graphics.rotateTransform(-angle);
+            if (!this.text && !this._dictionary.has('Contents')) {
+                this.text = this.subject;
+            }
+            const format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
+            let lineWidth: number = 0;
             if (this.caption.cap) {
-                graphics.drawString(this.text, font, [(-lineWidth / 2), 0, 0, 0], null, parameter.foreBrush);
+                lineWidth = font.measureString(this.text ? this.text : '', [0, 0], format, 0, 0)[0]; //66.71001;
             }
-            graphics.restore();
-            const rectangleBounds: number[] = _fromRectangle({ x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3] });
-            this.bounds = { x: rectangleBounds[0], y: rectangleBounds[1], width: rectangleBounds[2], height: rectangleBounds[3] };
-            if ((!this.measure) && (!this._dictionary.has('Measure'))) {
-                this._dictionary.update('Rect', [rectangleBounds[0], rectangleBounds[1], rectangleBounds[2], rectangleBounds[3]]);
+            if (typeof this.linePoints !== 'undefined' && this._linePoints.length === 4) {
+                const angle: number = this._getAngle(this._linePoints);
+                let leaderLine: number = 0;
+                let lineAngle: number = 0;
+                let leaderLineValue: number = this.leaderLine;
+                if (leaderLineValue === null || typeof leaderLineValue === 'undefined') {
+                    this._leaderLine = 0;
+                    leaderLineValue = 0;
+                }
+                if (leaderLineValue < 0) {
+                    leaderLine = -(leaderLineValue);
+                    lineAngle = angle + 180;
+                } else {
+                    leaderLine = leaderLineValue;
+                    lineAngle = angle;
+                }
+                const offset: number = (typeof this.leaderOffset !== 'undefined') ? (leaderLine + this.leaderOffset) : leaderLine;
+                const startPoint: number[] = this._getAxisValue([this._linePoints[0], this._linePoints[1]], (lineAngle + 90), offset);
+                const endPoint: number[] = this._getAxisValue([this._linePoints[2], this._linePoints[3]], (lineAngle + 90), offset);
+                const lineDistance: number = (Math.sqrt(Math.pow((endPoint[0] - startPoint[0]), 2) +
+                    Math.pow((endPoint[1] - startPoint[1]), 2)));
+                const centerWidth: number = lineDistance / 2 - ((lineWidth / 2) + this.border.width);
+                const first: number[] = this._getAxisValue(startPoint, angle, centerWidth);
+                const second: number[] = this._getAxisValue(endPoint, (angle + 180), centerWidth);
+                const start: number[] = (this.lineEndingStyle.begin === PdfLineEndingStyle.openArrow ||
+                    this.lineEndingStyle.begin === PdfLineEndingStyle.closedArrow) ?
+                    this._getAxisValue(startPoint, angle, this.border.width) :
+                    startPoint;
+                const end: number[] = (this.lineEndingStyle.end === PdfLineEndingStyle.openArrow ||
+                    this.lineEndingStyle.end === PdfLineEndingStyle.closedArrow) ?
+                    this._getAxisValue(endPoint, angle, -this.border.width) :
+                    endPoint;
+                if (this.opacity && this._opacity < 1) {
+                    const state: PdfGraphicsState = graphics.save();
+                    graphics.setTransparency(this._opacity);
+                    this._drawLine(graphics, pen, start, end, first, second);
+                    graphics.restore(state);
+                } else {
+                    this._drawLine(graphics, pen, start, end, first, second);
+                }
+                this._drawLineStyle(startPoint, endPoint, graphics, angle, pen, brush, this.lineEndingStyle, this.border.width);
+                const leaderExt: number = (typeof this.leaderExt !== 'undefined' ? this._leaderExt : 0);
+                const beginLineExt: number[] = this._getAxisValue(startPoint, (lineAngle + 90), leaderExt);
+                graphics.drawLine(pen, startPoint[0], -startPoint[1], beginLineExt[0], -beginLineExt[1]);
+                const endLineExt: number[] = this._getAxisValue(endPoint, (lineAngle + 90), leaderExt);
+                graphics.drawLine(pen, endPoint[0], -endPoint[1], endLineExt[0], -endLineExt[1]);
+                const beginLeaderLine: number[] = this._getAxisValue(startPoint, (lineAngle - 90), leaderLine);
+                graphics.drawLine(pen, startPoint[0], -startPoint[1], beginLeaderLine[0], -beginLeaderLine[1]);
+                const endLeaderLine: number[] = this._getAxisValue(endPoint, (lineAngle - 90), leaderLine);
+                graphics.drawLine(pen, endPoint[0], -endPoint[1], endLeaderLine[0], -endLeaderLine[1]);
+                const midpoint: number = lineDistance / 2;
+                const centerPoint: number[] = this._getAxisValue(startPoint, angle, midpoint);
+                let captionPosition: number[];
+                const height: number = font._metrics._getHeight();
+                if (this.caption.type === PdfLineCaptionType.top) {
+                    if (this._measure) {
+                        captionPosition = this._getAxisValue(centerPoint, (angle + 90), 2 * height);
+                    } else {
+                        captionPosition = this._getAxisValue(centerPoint, (angle + 90), height);
+                    }
+                } else {
+                    if (this._measure) {
+                        captionPosition = this._getAxisValue(centerPoint, (angle + 90), 3 * (height / 2));
+                    } else {
+                        captionPosition = this._getAxisValue(centerPoint, (angle + 90), (height / 2));
+                    }
+                }
+                graphics.translateTransform(captionPosition[0], -captionPosition[1]);
+                graphics.rotateTransform(-angle);
+                if (this.caption.cap) {
+                    graphics.drawString(this.text, font, [(-lineWidth / 2), 0, 0, 0], null, parameter.foreBrush);
+                }
+                graphics.restore();
             }
+        }
+        const rectangleBounds: number[] = _fromRectangle({ x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3] });
+        this.bounds = { x: rectangleBounds[0], y: rectangleBounds[1], width: rectangleBounds[2], height: rectangleBounds[3] };
+        if ((!this.measure) && (!this._dictionary.has('Measure'))) {
+            this._dictionary.update('Rect', [rectangleBounds[0], rectangleBounds[1], rectangleBounds[2], rectangleBounds[3]]);
         }
         return template;
     }
@@ -4327,14 +4639,14 @@ export class PdfCircleAnnotation extends PdfComment {
             this._appearanceTemplate = this._createCircleMeasureAppearance(isFlatten);
         } else {
             this._dictionary.update('Rect', _updateBounds(this));
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP')) || this._customTemplate.size > 0) {
                 this._appearanceTemplate = this._createCircleAppearance();
             }
         }
     }
     _doPostProcess(isFlatten: boolean = false): void {
         if (this._isLoaded) {
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if ((this._setAppearance || this._customTemplate.size > 0) || (isFlatten && !this._dictionary.has('AP'))) {
                 if (this._dictionary.has('Measure')) {
                     this._appearanceTemplate = this._createCircleMeasureAppearance(isFlatten);
                 } else {
@@ -4381,26 +4693,34 @@ export class PdfCircleAnnotation extends PdfComment {
                 this._flattenPopUp();
             }
         }
-        if (isFlatten && this._appearanceTemplate) {
-            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
-        } else if (isFlatten) {
-            this._page.annotations.remove(this);
-        }
-        if (!isFlatten && this._setAppearance && !this.measure) {
+        if (isFlatten) {
+            if (this._appearanceTemplate) {
+                const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+                this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            } else {
+                this._page.annotations.remove(this);
+            }
+        } else if (this._setAppearance || this._customTemplate.size > 0) {
             let appearance: _PdfDictionary;
             if (this._dictionary.has('AP')) {
                 appearance = this._dictionary.get('AP');
             } else {
                 const reference: _PdfReference = this._crossReference._getNextReference();
                 appearance = new _PdfDictionary(this._crossReference);
+                appearance._updated = true;
                 this._crossReference._cacheMap.set(reference, appearance);
                 this._dictionary.update('AP', reference);
             }
-            _removeDuplicateReference(appearance, this._crossReference, 'N');
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-            appearance.update('N', reference);
+            if (this._customTemplate.size > 0) {
+                this._drawCustomAppearance(appearance);
+            } else {
+                _removeDuplicateReference(appearance, this._crossReference, 'N');
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._appearanceTemplate._content.dictionary._update = true;
+                this._appearanceTemplate._content.reference = reference;
+                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                appearance.update('N', reference);
+            }
         }
     }
     _createCircleMeasureAppearance(_isFlatten: boolean): PdfTemplate {
@@ -4421,86 +4741,92 @@ export class PdfCircleAnnotation extends PdfComment {
             this.bounds.width,
             this.bounds.height];
         nativeRectangle[1] = nativeRectangle[1] - nativeRectangle[3];
-        const template: PdfTemplate = new PdfTemplate(nativeRectangle, this._crossReference);
-        const parameter: _PaintParameter = new _PaintParameter();
-        template._writeTransformation = false;
-        const graphics: PdfGraphics = template.graphics;
-        const width: number = borderWidth / 2;
-        parameter.borderPen = borderPen;
-        if (this.innerColor) {
-            parameter.backBrush = new PdfBrush(this._innerColor);
-        }
-        parameter.foreBrush = new PdfBrush(color);
-        const rect: number[] = [nativeRectangle[0],
-            -nativeRectangle[1] - nativeRectangle[3],
-            nativeRectangle[2],
-            nativeRectangle[3]];
-        graphics.save();
-        graphics.drawEllipse(rect[0] + width,
-                             rect[1] + width,
-                             rect[2] - borderWidth,
-                             rect[3] - borderWidth,
-                             new PdfPen(color, this.border.width));
-        if (this._measureType === PdfCircleMeasurementType.diameter) {
-            graphics.save();
-            graphics.translateTransform(nativeRectangle[0], -nativeRectangle[1]);
-            const x: number = (nativeRectangle[3] / 2) - (fontsize[0] / 2);
-            graphics.drawLine(parameter.borderPen,
-                              0,
-                              -nativeRectangle[3] / 2,
-                              nativeRectangle[0] + nativeRectangle[2],
-                              -nativeRectangle[3] / 2);
-            graphics.translateTransform(x, -(nativeRectangle[3] / 2) - font._metrics._getHeight());
-            graphics.drawString(area.toFixed(2) + ' ' + this._unitString, font,  [0, 0, 0, 0], null, parameter.foreBrush);
-            graphics.restore();
-        } else {
-            graphics.save();
-            graphics.translateTransform(nativeRectangle[0], -nativeRectangle[1]);
-            const x: number = (nativeRectangle[2] / 2) + ((nativeRectangle[2] / 4) - (fontsize[0] / 2));
-            graphics.drawLine(parameter.borderPen,
-                              nativeRectangle[2] / 2,
-                              -nativeRectangle[3] / 2,
-                              nativeRectangle[0] + nativeRectangle[2],
-                              -nativeRectangle[3] / 2);
-            graphics.translateTransform(x, -(nativeRectangle[3] / 2) - font._metrics._getHeight());
-            graphics.drawString(area.toFixed(2) + ' ' + this._unitString, font, [0, 0, 0, 0],  null, parameter.foreBrush);
-            graphics.restore();
-        }
-        graphics.restore();
-        if ((typeof _isFlatten !== 'undefined' && !_isFlatten) || !this._isLoaded) {
-            if (this._dictionary.has('AP')) {
-                _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
-            }
-            const dic: _PdfDictionary = new _PdfDictionary();
-            graphics._template._content.dictionary._updated = true;
-            const ref: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(ref, graphics._template._content);
-            graphics._template._content.reference = ref;
-            dic.set('N', ref);
-            dic._updated = true;
-            this._dictionary.set('AP', dic);
+        let template: PdfTemplate;
+        if (this._customTemplate.has('N')) {
+            template = this._customTemplate.get('N');
             this._dictionary.update('Rect', _updateBounds(this));
-            if (this._dictionary.has('Measure')) {
-                _removeDuplicateReference(this._dictionary, this._crossReference, 'Measure');
+        } else {
+            template = new PdfTemplate(nativeRectangle, this._crossReference);
+            const parameter: _PaintParameter = new _PaintParameter();
+            template._writeTransformation = false;
+            const graphics: PdfGraphics = template.graphics;
+            const width: number = borderWidth / 2;
+            parameter.borderPen = borderPen;
+            if (this.innerColor) {
+                parameter.backBrush = new PdfBrush(this._innerColor);
             }
-            const measureDictionary: _PdfDictionary = this._createMeasureDictionary(this._unitString);
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, measureDictionary);
-            measureDictionary._updated = true;
-            this._dictionary.update('Measure', reference);
-            this._dictionary.update('Subtype', new _PdfName('Circle'));
-            if (this._text && this._text !== '') {
-                this._dictionary.update('Contents', this._text + ' ' + area.toFixed(2) + ' ' + this._unitString);
+            parameter.foreBrush = new PdfBrush(color);
+            const rect: number[] = [nativeRectangle[0],
+                -nativeRectangle[1] - nativeRectangle[3],
+                nativeRectangle[2],
+                nativeRectangle[3]];
+            graphics.save();
+            graphics.drawEllipse(rect[0] + width,
+                                 rect[1] + width,
+                                 rect[2] - borderWidth,
+                                 rect[3] - borderWidth,
+                                 new PdfPen(color, this.border.width));
+            if (this._measureType === PdfCircleMeasurementType.diameter) {
+                graphics.save();
+                graphics.translateTransform(nativeRectangle[0], -nativeRectangle[1]);
+                const x: number = (nativeRectangle[3] / 2) - (fontsize[0] / 2);
+                graphics.drawLine(parameter.borderPen,
+                                  0,
+                                  -nativeRectangle[3] / 2,
+                                  nativeRectangle[0] + nativeRectangle[2],
+                                  -nativeRectangle[3] / 2);
+                graphics.translateTransform(x, -(nativeRectangle[3] / 2) - font._metrics._getHeight());
+                graphics.drawString(area.toFixed(2) + ' ' + this._unitString, font,  [0, 0, 0, 0], null, parameter.foreBrush);
+                graphics.restore();
             } else {
-                this._dictionary.update('Contents', area.toFixed(2) + ' ' + this._unitString);
+                graphics.save();
+                graphics.translateTransform(nativeRectangle[0], -nativeRectangle[1]);
+                const x: number = (nativeRectangle[2] / 2) + ((nativeRectangle[2] / 4) - (fontsize[0] / 2));
+                graphics.drawLine(parameter.borderPen,
+                                  nativeRectangle[2] / 2,
+                                  -nativeRectangle[3] / 2,
+                                  nativeRectangle[0] + nativeRectangle[2],
+                                  -nativeRectangle[3] / 2);
+                graphics.translateTransform(x, -(nativeRectangle[3] / 2) - font._metrics._getHeight());
+                graphics.drawString(area.toFixed(2) + ' ' + this._unitString, font, [0, 0, 0, 0],  null, parameter.foreBrush);
+                graphics.restore();
             }
-            const ds: string = 'font:' +
-                font._metrics._postScriptName +
-                ' ' +
-                font._size +
-                'pt; color:' +
-                this._colorToHex(this.color);
-            this._dictionary.update('DS', ds);
+            graphics.restore();
+            if ((typeof _isFlatten !== 'undefined' && !_isFlatten) || !this._isLoaded) {
+                if (this._dictionary.has('AP')) {
+                    _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
+                }
+                const dic: _PdfDictionary = new _PdfDictionary();
+                graphics._template._content.dictionary._updated = true;
+                const ref: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(ref, graphics._template._content);
+                graphics._template._content.reference = ref;
+                dic.set('N', ref);
+                dic._updated = true;
+                this._dictionary.set('AP', dic);
+                this._dictionary.update('Rect', _updateBounds(this));
+                if (this._dictionary.has('Measure')) {
+                    _removeDuplicateReference(this._dictionary, this._crossReference, 'Measure');
+                }
+                const measureDictionary: _PdfDictionary = this._createMeasureDictionary(this._unitString);
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(reference, measureDictionary);
+                measureDictionary._updated = true;
+                this._dictionary.update('Measure', reference);
+                this._dictionary.update('Subtype', new _PdfName('Circle'));
+                if (this._text && this._text !== '') {
+                    this._dictionary.update('Contents', this._text + ' ' + area.toFixed(2) + ' ' + this._unitString);
+                } else {
+                    this._dictionary.update('Contents', area.toFixed(2) + ' ' + this._unitString);
+                }
+                const ds: string = 'font:' +
+                    font._metrics._postScriptName +
+                    ' ' +
+                    font._size +
+                    'pt; color:' +
+                    this._colorToHex(this.color);
+                this._dictionary.update('DS', ds);
+            }
         }
         return template;
     }
@@ -4582,7 +4908,6 @@ export class PdfEllipseAnnotation extends PdfComment {
             throw new Error('Bounds cannot be null or undefined');
         }
         let borderWidth: number;
-
         if (this._dictionary.has('BS')) {
             borderWidth = this.border.width;
         } else {
@@ -4597,14 +4922,14 @@ export class PdfEllipseAnnotation extends PdfComment {
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
         }
-        if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+        if (this._setAppearance || (isFlatten && !this._dictionary.has('AP')) || this._customTemplate.size > 0) {
             this._appearanceTemplate = this._createCircleAppearance();
         }
         this._dictionary.update('Rect', _updateBounds(this));
     }
     _doPostProcess(isFlatten: boolean = false): void {
         if (this._isLoaded) {
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if (this._setAppearance || this._customTemplate.size > 0 || (isFlatten && !this._dictionary.has('AP'))) {
                 this._appearanceTemplate = this._createCircleAppearance();
             }
             if (!this._appearanceTemplate && isFlatten && this._dictionary.has('AP')) {
@@ -4647,26 +4972,34 @@ export class PdfEllipseAnnotation extends PdfComment {
                 this._flattenPopUp();
             }
         }
-        if (isFlatten && this._appearanceTemplate) {
-            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
-        } else if (isFlatten) {
-            this._page.annotations.remove(this);
-        }
-        if (!isFlatten && this._setAppearance) {
+        if (isFlatten) {
+            if (this._appearanceTemplate) {
+                const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+                this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            } else {
+                this._page.annotations.remove(this);
+            }
+        } else if (this._setAppearance || this._customTemplate.size > 0) {
             let appearance: _PdfDictionary;
             if (this._dictionary.has('AP')) {
                 appearance = this._dictionary.get('AP');
             } else {
                 const reference: _PdfReference = this._crossReference._getNextReference();
                 appearance = new _PdfDictionary(this._crossReference);
+                appearance._updated = true;
                 this._crossReference._cacheMap.set(reference, appearance);
                 this._dictionary.update('AP', reference);
             }
-            _removeDuplicateReference(appearance, this._crossReference, 'N');
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-            appearance.update('N', reference);
+            if (this._customTemplate.size > 0) {
+                this._drawCustomAppearance(appearance);
+            } else {
+                _removeDuplicateReference(appearance, this._crossReference, 'N');
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._appearanceTemplate._content.dictionary._update = true;
+                this._appearanceTemplate._content.reference = reference;
+                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                appearance.update('N', reference);
+            }
         }
     }
 }
@@ -4913,7 +5246,7 @@ export class PdfSquareAnnotation extends PdfComment {
         if (this._measure) {
             this._appearanceTemplate = this._createSquareMeasureAppearance(isFlatten);
         } else {
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP')) || this._customTemplate.size > 0) {
                 this._appearanceTemplate = this._createRectangleAppearance(this.borderEffect);
             }
             this._dictionary.update('Rect', _updateBounds(this));
@@ -4931,7 +5264,7 @@ export class PdfSquareAnnotation extends PdfComment {
     }
     _doPostProcess(isFlatten: boolean = false): void {
         if (this._isLoaded) {
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if (this._setAppearance || this._customTemplate.size > 0 || (isFlatten && !this._dictionary.has('AP'))) {
                 if (this._dictionary.has('Measure')) {
                     this._appearanceTemplate = this._createSquareMeasureAppearance(isFlatten);
                 } else {
@@ -4978,26 +5311,34 @@ export class PdfSquareAnnotation extends PdfComment {
                 this._flattenPopUp();
             }
         }
-        if (isFlatten && this._appearanceTemplate) {
-            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
-        } else if (isFlatten) {
-            this._page.annotations.remove(this);
-        }
-        if (!isFlatten && this._setAppearance && !this.measure) {
+        if (isFlatten) {
+            if (this._appearanceTemplate) {
+                const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+                this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            } else {
+                this._page.annotations.remove(this);
+            }
+        } else if (this._setAppearance || this._customTemplate.size > 0) {
             let appearance: _PdfDictionary;
             if (this._dictionary.has('AP')) {
                 appearance = this._dictionary.get('AP');
             } else {
                 const reference: _PdfReference = this._crossReference._getNextReference();
                 appearance = new _PdfDictionary(this._crossReference);
+                appearance._updated = true;
                 this._crossReference._cacheMap.set(reference, appearance);
                 this._dictionary.update('AP', reference);
             }
-            _removeDuplicateReference(appearance, this._crossReference, 'N');
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-            appearance.update('N', reference);
+            if (this._customTemplate.size > 0) {
+                this._drawCustomAppearance(appearance);
+            } else {
+                _removeDuplicateReference(appearance, this._crossReference, 'N');
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._appearanceTemplate._content.dictionary._update = true;
+                this._appearanceTemplate._content.reference = reference;
+                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                appearance.update('N', reference);
+            }
         }
     }
     _createSquareMeasureAppearance(_isFlatten: boolean): PdfTemplate {
@@ -5020,47 +5361,9 @@ export class PdfSquareAnnotation extends PdfComment {
             (this.bounds.y + this.bounds.height),
             this.bounds.width,
             this.bounds.height];
-        const appearance: PdfAppearance = new PdfAppearance({x: this.bounds.x, y: this.bounds.y, width: this.bounds.width,
-            height: this.bounds.height}, this);
-        nativeRectangle[1] = nativeRectangle[1] - nativeRectangle[3];
-        appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
-        const template: PdfTemplate =  appearance.normal;
-        const parameter: _PaintParameter = new _PaintParameter();
-        template._writeTransformation = false;
-        const graphics: PdfGraphics = appearance.normal.graphics;
-        const width: number = borderWidth / 2;
-        parameter.borderPen = borderPen;
-        parameter.backBrush = backBrush;
-        parameter.foreBrush = new PdfBrush(this.color);
-        const rect: number[] = [nativeRectangle[0],
-            -nativeRectangle[1] - nativeRectangle[3],
-            nativeRectangle[2],
-            nativeRectangle[3]];
-        graphics.drawRectangle(rect[0] + width,
-                               rect[1] + width,
-                               rect[2] - borderWidth,
-                               rect[3] - borderWidth,
-                               new PdfPen(this.color, this.border.width));
-        graphics.save();
-        graphics.translateTransform(nativeRectangle[0], - nativeRectangle[1]);
-        const x: number = (nativeRectangle[2] / 2) - (fontsize[0] / 2);
-        const y: number = (nativeRectangle[3] / 2) - (fontsize[1] / 2);
-        graphics.translateTransform(x, -y - font._metrics._getHeight());
-        graphics.drawString((area.toFixed(2) + ' sq ' + this._unitString), font, [0, 0, 0, 0], null, parameter.foreBrush);
-        graphics.restore();
-        if ((typeof _isFlatten !== 'undefined' && !_isFlatten) || !this._isLoaded) {
-            if (this._dictionary.has('AP')) {
-                _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
-            }
-            const dic: _PdfDictionary = new _PdfDictionary();
-            const tem: _PdfBaseStream = graphics._template._content;
-            tem.dictionary._updated = true;
-            const ref: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(ref, tem);
-            graphics._template._content.reference = ref;
-            dic.set('N', ref);
-            dic._updated = true;
-            this._dictionary.set('AP', dic);
+        let template: PdfTemplate;
+        if (this._customTemplate.has('N')) {
+            template = this._customTemplate.get('N');
             let nativeRectangle1: number[] = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
             const size: number[] = this._page.size;
             nativeRectangle1[1] = size[1] - (this.bounds.y + this.bounds.height);
@@ -5073,44 +5376,99 @@ export class PdfSquareAnnotation extends PdfComment {
                 nativeRectangle1 = _updateBounds(this);
             }
             this._dictionary.update('Rect', [nativeRectangle1[0], nativeRectangle1[1], nativeRectangle1[2], nativeRectangle1[3]]);
-            if (this._dictionary.has('Measure')) {
-                _removeDuplicateReference(this._dictionary, this._crossReference, 'Measure');
-            }
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            const measureDictionary: _PdfDictionary = this._createMeasureDictionary(this._unitString);
-            this._crossReference._cacheMap.set(reference, measureDictionary);
-            measureDictionary._updated = true;
-            this._dictionary.update('Measure', reference);
-            const ds: string = 'font:' +
-                font._metrics._postScriptName +
-                ' ' +
-                font._size +
-                'pt; color:' +
-                this._colorToHex(this.color);
-            this._dictionary.update('DS', ds);
-            if (this._text && this._text !== '') {
-                this._dictionary.update('Contents', this._text + ' ' + area.toFixed(2) + ' sq ' + this._unitString);
-            } else {
-                this._dictionary.update('Contents', area.toFixed(2) + ' sq ' + this._unitString);
-            }
-            this._dictionary.update('Subject', ('Area Measurement'));
-            if (typeof this.subject === 'undefined') {
+        } else {
+            const appearance: PdfAppearance = new PdfAppearance({x: this.bounds.x, y: this.bounds.y, width: this.bounds.width,
+                height: this.bounds.height}, this);
+            nativeRectangle[1] = nativeRectangle[1] - nativeRectangle[3];
+            appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
+            template =  appearance.normal;
+            const parameter: _PaintParameter = new _PaintParameter();
+            template._writeTransformation = false;
+            const graphics: PdfGraphics = appearance.normal.graphics;
+            const width: number = borderWidth / 2;
+            parameter.borderPen = borderPen;
+            parameter.backBrush = backBrush;
+            parameter.foreBrush = new PdfBrush(this.color);
+            const rect: number[] = [nativeRectangle[0],
+                -nativeRectangle[1] - nativeRectangle[3],
+                nativeRectangle[2],
+                nativeRectangle[3]];
+            graphics.drawRectangle(rect[0] + width,
+                                   rect[1] + width,
+                                   rect[2] - borderWidth,
+                                   rect[3] - borderWidth,
+                                   new PdfPen(this.color, this.border.width));
+            graphics.save();
+            graphics.translateTransform(nativeRectangle[0], - nativeRectangle[1]);
+            const x: number = (nativeRectangle[2] / 2) - (fontsize[0] / 2);
+            const y: number = (nativeRectangle[3] / 2) - (fontsize[1] / 2);
+            graphics.translateTransform(x, -y - font._metrics._getHeight());
+            graphics.drawString((area.toFixed(2) + ' sq ' + this._unitString), font, [0, 0, 0, 0], null, parameter.foreBrush);
+            graphics.restore();
+            if ((typeof _isFlatten !== 'undefined' && !_isFlatten) || !this._isLoaded) {
+                if (this._dictionary.has('AP')) {
+                    _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
+                }
+                const dic: _PdfDictionary = new _PdfDictionary();
+                const tem: _PdfBaseStream = graphics._template._content;
+                tem.dictionary._updated = true;
+                const ref: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(ref, tem);
+                graphics._template._content.reference = ref;
+                dic.set('N', ref);
+                dic._updated = true;
+                this._dictionary.set('AP', dic);
+                let nativeRectangle1: number[] = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
+                const size: number[] = this._page.size;
+                nativeRectangle1[1] = size[1] - (this.bounds.y + this.bounds.height);
+                nativeRectangle1[2] = (this.bounds.x + this.bounds.width);
+                nativeRectangle1[3] = size[1] - this.bounds.y;
+                if (this._isBounds) {
+                    nativeRectangle =  nativeRectangle1;
+                }
+                if (this._page._isNew && this._page._pageSettings) {
+                    nativeRectangle1 = _updateBounds(this);
+                }
+                this._dictionary.update('Rect', [nativeRectangle1[0], nativeRectangle1[1], nativeRectangle1[2], nativeRectangle1[3]]);
+                if (this._dictionary.has('Measure')) {
+                    _removeDuplicateReference(this._dictionary, this._crossReference, 'Measure');
+                }
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                const measureDictionary: _PdfDictionary = this._createMeasureDictionary(this._unitString);
+                this._crossReference._cacheMap.set(reference, measureDictionary);
+                measureDictionary._updated = true;
+                this._dictionary.update('Measure', reference);
+                const ds: string = 'font:' +
+                    font._metrics._postScriptName +
+                    ' ' +
+                    font._size +
+                    'pt; color:' +
+                    this._colorToHex(this.color);
+                this._dictionary.update('DS', ds);
+                if (this._text && this._text !== '') {
+                    this._dictionary.update('Contents', this._text + ' ' + area.toFixed(2) + ' sq ' + this._unitString);
+                } else {
+                    this._dictionary.update('Contents', area.toFixed(2) + ' sq ' + this._unitString);
+                }
                 this._dictionary.update('Subject', ('Area Measurement'));
+                if (typeof this.subject === 'undefined') {
+                    this._dictionary.update('Subject', ('Area Measurement'));
+                }
+                this._dictionary.update('MeasurementTypes', 129);
+                this._dictionary.update('Subtype', new _PdfName('Square'));
+                this._dictionary.update('IT', new _PdfName('SquareDimension'));
+                const elements: number[] = this._dictionary.getArray('Rect');
+                const vertices: number[] = new Array<number>(elements.length * 2);
+                vertices[0] = elements[0];
+                vertices[1] = elements[3];
+                vertices[2] = elements[0];
+                vertices[3] = elements[1];
+                vertices[4] = elements[2];
+                vertices[5] = elements[1];
+                vertices[6] = elements[2];
+                vertices[7] = elements[3];
+                this._dictionary.update('Vertices', vertices);
             }
-            this._dictionary.update('MeasurementTypes', 129);
-            this._dictionary.update('Subtype', new _PdfName('Square'));
-            this._dictionary.update('IT', new _PdfName('SquareDimension'));
-            const elements: number[] = this._dictionary.getArray('Rect');
-            const vertices: number[] = new Array<number>(elements.length * 2);
-            vertices[0] = elements[0];
-            vertices[1] = elements[3];
-            vertices[2] = elements[0];
-            vertices[3] = elements[1];
-            vertices[4] = elements[2];
-            vertices[5] = elements[1];
-            vertices[6] = elements[2];
-            vertices[7] = elements[3];
-            this._dictionary.update('Vertices', vertices);
         }
         return template;
     }
@@ -5274,7 +5632,7 @@ export class PdfRectangleAnnotation extends PdfComment {
             borderWidth = 1;
         }
         this._dictionary.update('Rect', _updateBounds(this));
-        if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+        if (this._setAppearance || this._customTemplate.size > 0 || (isFlatten && !this._dictionary.has('AP'))) {
             this._appearanceTemplate = this._createRectangleAppearance(this.borderEffect);
         }
         if (typeof this._intensity === 'undefined' &&
@@ -5290,7 +5648,7 @@ export class PdfRectangleAnnotation extends PdfComment {
     }
     _doPostProcess(isFlatten: boolean = false): void {
         if (this._isLoaded) {
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if (this._setAppearance || this._customTemplate.size > 0 || (isFlatten && !this._dictionary.has('AP'))) {
                 this._appearanceTemplate = this._createRectangleAppearance(this.borderEffect);
             }
             if (!this._appearanceTemplate && isFlatten && this._dictionary.has('AP')) {
@@ -5333,17 +5691,18 @@ export class PdfRectangleAnnotation extends PdfComment {
                 this._flattenPopUp();
             }
         }
-        if (isFlatten && this._appearanceTemplate) {
-            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            if (isNormalMatrix && this._page && this._page.rotation !== PdfRotationAngle.angle0 ||
-                this._isValidTemplateMatrix(this._appearanceTemplate._content.dictionary,
-                                            this.bounds, this._appearanceTemplate)) {
-                this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+        if (isFlatten) {
+            if (this._appearanceTemplate) {
+                const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+                if (isNormalMatrix && this._page && this._page.rotation !== PdfRotationAngle.angle0 ||
+                    this._isValidTemplateMatrix(this._appearanceTemplate._content.dictionary,
+                                                this.bounds, this._appearanceTemplate)) {
+                    this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+                }
+            } else {
+                this._page.annotations.remove(this);
             }
-        } else if (isFlatten) {
-            this._page.annotations.remove(this);
-        }
-        if (!isFlatten && this._setAppearance) {
+        } else if (this._setAppearance || this._customTemplate.size > 0) {
             let appearance: _PdfDictionary;
             if (this._dictionary.has('AP')) {
                 appearance = this._dictionary.get('AP');
@@ -5353,10 +5712,14 @@ export class PdfRectangleAnnotation extends PdfComment {
                 this._crossReference._cacheMap.set(reference, appearance);
                 this._dictionary.update('AP', reference);
             }
-            _removeDuplicateReference(appearance, this._crossReference, 'N');
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-            appearance.update('N', reference);
+            if (this._customTemplate.size > 0) {
+                this._drawCustomAppearance(appearance);
+            } else {
+                _removeDuplicateReference(appearance, this._crossReference, 'N');
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                appearance.update('N', reference);
+            }
         }
     }
     _isValidTemplateMatrix(dictionary: _PdfDictionary, bounds: {x: number, y: number, width: number, height: number},
@@ -5414,7 +5777,6 @@ export class PdfRectangleAnnotation extends PdfComment {
  * ```
  */
 export class PdfPolygonAnnotation extends PdfComment {
-    private _points: number[];
     private _lineExtension: number;
     private _intensity: number;
     /**
@@ -5608,7 +5970,7 @@ export class PdfPolygonAnnotation extends PdfComment {
             polygonBounds.y + polygonBounds.height];
         this._dictionary.update('Rect', bounds);
         this._dictionary.update('LLE', this._lineExtension);
-        if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+        if (this._setAppearance || (isFlatten && !this._dictionary.has('AP')) || this._customTemplate.size > 0) {
             this._appearanceTemplate = this._createPolygonAppearance(isFlatten);
         }
         this._dictionary.update('Vertices', this._points);
@@ -5626,7 +5988,7 @@ export class PdfPolygonAnnotation extends PdfComment {
     _doPostProcess(isFlatten: boolean = false): void {
         this._flatten = isFlatten;
         if (this._isLoaded) {
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if (this._setAppearance || this._customTemplate.size > 0 || (isFlatten && !this._dictionary.has('AP'))) {
                 this._appearanceTemplate = this._createPolygonAppearance(isFlatten);
             }
             if (!this._appearanceTemplate && isFlatten && this._dictionary.has('AP')) {
@@ -5678,53 +6040,70 @@ export class PdfPolygonAnnotation extends PdfComment {
             } else {
                 this._page.annotations.remove(this);
             }
-        }
-        if (!isFlatten && this._setAppearance) {
+        } else if (this._setAppearance || this._customTemplate.size > 0) {
             let appearance: _PdfDictionary;
             if (this._dictionary.has('AP')) {
                 appearance = this._dictionary.get('AP');
             } else {
                 const reference: _PdfReference = this._crossReference._getNextReference();
                 appearance = new _PdfDictionary(this._crossReference);
+                appearance._updated = true;
                 this._crossReference._cacheMap.set(reference, appearance);
                 this._dictionary.update('AP', reference);
             }
-            _removeDuplicateReference(appearance, this._crossReference, 'N');
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-            appearance.update('N', reference);
+            if (this._customTemplate.size > 0) {
+                this._drawCustomAppearance(appearance);
+            } else {
+                _removeDuplicateReference(appearance, this._crossReference, 'N');
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._appearanceTemplate._content.dictionary._update = true;
+                this._appearanceTemplate._content.reference = reference;
+                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                appearance.update('N', reference);
+            }
         }
     }
     _createPolygonAppearance(flatten: boolean): PdfTemplate {
         if (typeof flatten !== 'undefined' && flatten) {
-            let borderPen: PdfPen;
-            if (this.color && this.border.width > 0) {
-                borderPen = new PdfPen(this.color, this.border.width);
-            }
-            let backgroundBrush: PdfBrush;
-            if (this.innerColor) {
-                backgroundBrush = new PdfBrush(this.innerColor);
-            }
-            const graphics: PdfGraphics = this._page.graphics;
-            if (borderPen || backgroundBrush) {
-                let state: PdfGraphicsState;
-                if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
-                    state = graphics.save();
-                    graphics.setTransparency(this._opacity);
+            let template: PdfTemplate;
+            if (this._customTemplate.has('N')) {
+                template = this._customTemplate.get('N');
+                const polygonBounds: {x: number, y: number, width: number, height: number} = this._getBoundsValue(this._points);
+                this.bounds = {x: polygonBounds.x,
+                    y: this._page.size[1] - polygonBounds.y,
+                    width: polygonBounds.width,
+                    height: polygonBounds.height};
+            } else {
+                let borderPen: PdfPen;
+                if (this.color && this.border.width > 0) {
+                    borderPen = new PdfPen(this.color, this.border.width);
                 }
-                if (this.borderEffect.intensity !== 0 && this.borderEffect.style === PdfBorderEffectStyle.cloudy) {
-                    const radius: number = this.borderEffect.intensity * 4 + 0.5 * this.border.width;
-                    const graphicsPath: PdfPath = new PdfPath();
-                    graphicsPath.addPolygon(this._getLinePoints());
-                    this._drawCloudStyle(graphics, backgroundBrush, borderPen, radius, 0.833, graphicsPath._points, false);
-                } else {
-                    graphics.drawPolygon(this._getLinePoints(), borderPen, backgroundBrush);
+                let backgroundBrush: PdfBrush;
+                if (this.innerColor) {
+                    backgroundBrush = new PdfBrush(this.innerColor);
                 }
-                if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
-                    graphics.restore(state);
+                const graphics: PdfGraphics = this._page.graphics;
+                if (borderPen || backgroundBrush) {
+                    let state: PdfGraphicsState;
+                    if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                        state = graphics.save();
+                        graphics.setTransparency(this._opacity);
+                    }
+                    if (this.borderEffect.intensity !== 0 && this.borderEffect.style === PdfBorderEffectStyle.cloudy) {
+                        const radius: number = this.borderEffect.intensity * 4 + 0.5 * this.border.width;
+                        const graphicsPath: PdfPath = new PdfPath();
+                        graphicsPath.addPolygon(this._getLinePoints());
+                        this._drawCloudStyle(graphics, backgroundBrush, borderPen, radius, 0.833, graphicsPath._points, false);
+                    } else {
+                        graphics.drawPolygon(this._getLinePoints(), borderPen, backgroundBrush);
+                    }
+                    if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                        graphics.restore(state);
+                    }
                 }
+                template = graphics._template;
             }
-            return graphics._template;
+            return template;
         } else {
             let boundsValue: {x: number, y: number, width: number, height: number};
             const rect: {x: number, y: number, width: number, height: number} = {x: 0, y: 0, width: 0, height: 0};
@@ -5747,45 +6126,50 @@ export class PdfPolygonAnnotation extends PdfComment {
                 rect.width = boundsValue.width + (2 * this.border.width);
                 rect.height = boundsValue.height + (2 * this.border.width);
             }
-            const appearance: PdfAppearance = new PdfAppearance({x: rect.x, y: rect.y, width: rect.width, height: rect.height}, this);
-            appearance.normal = new PdfTemplate([rect.x, rect.y, rect.width, rect.height], this._crossReference);
-            const template: PdfTemplate =  appearance.normal;
-            _setMatrix(template, this._getRotationAngle());
-            template._writeTransformation = false;
-            const graphics: PdfGraphics = appearance.normal.graphics;
-            const parameter: _PaintParameter = new _PaintParameter();
-            if (this.innerColor) {
-                parameter.backBrush = new PdfBrush(this._innerColor);
-            }
-            if (this.border.width > 0 && this.color) {
-                parameter.borderPen = new PdfPen(this._color, this.border.width);
-            }
-            if (this.color) {
-                parameter.foreBrush = new PdfBrush(this._color);
-            }
-            if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
-                graphics.save();
-                graphics.setTransparency(this._opacity);
+            let template: PdfTemplate;
+            if (this._customTemplate.has('N')) {
+                template = this._customTemplate.get('N');
             } else {
-                graphics.save();
-            }
-            if (_isNullOrUndefined(this.borderEffect) && _isNullOrUndefined(this.borderEffect.intensity) &&
-                this.borderEffect.intensity !== 0 && this.borderEffect.style === PdfBorderEffectStyle.cloudy) {
-                const radius: number = this.borderEffect.intensity * 4 + 0.5 * this.border.width;
-                const graphicsPath: PdfPath = new PdfPath();
-                graphicsPath.addPolygon(this._getLinePoints());
-                this._drawCloudStyle(graphics, parameter.backBrush, parameter.borderPen, radius, 0.833, graphicsPath._points, false);
-            } else {
-                graphics.drawPolygon(this._getLinePoints(), parameter.borderPen, parameter.backBrush);
-            }
-            if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                const appearance: PdfAppearance = new PdfAppearance({x: rect.x, y: rect.y, width: rect.width, height: rect.height}, this);
+                appearance.normal = new PdfTemplate([rect.x, rect.y, rect.width, rect.height], this._crossReference);
+                template =  appearance.normal;
+                _setMatrix(template, this._getRotationAngle());
+                template._writeTransformation = false;
+                const graphics: PdfGraphics = appearance.normal.graphics;
+                const parameter: _PaintParameter = new _PaintParameter();
+                if (this.innerColor) {
+                    parameter.backBrush = new PdfBrush(this._innerColor);
+                }
+                if (this.border.width > 0 && this.color) {
+                    parameter.borderPen = new PdfPen(this._color, this.border.width);
+                }
+                if (this.color) {
+                    parameter.foreBrush = new PdfBrush(this._color);
+                }
+                if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                    graphics.save();
+                    graphics.setTransparency(this._opacity);
+                } else {
+                    graphics.save();
+                }
+                if (_isNullOrUndefined(this.borderEffect) && _isNullOrUndefined(this.borderEffect.intensity) &&
+                    this.borderEffect.intensity !== 0 && this.borderEffect.style === PdfBorderEffectStyle.cloudy) {
+                    const radius: number = this.borderEffect.intensity * 4 + 0.5 * this.border.width;
+                    const graphicsPath: PdfPath = new PdfPath();
+                    graphicsPath.addPolygon(this._getLinePoints());
+                    this._drawCloudStyle(graphics, parameter.backBrush, parameter.borderPen, radius, 0.833, graphicsPath._points, false);
+                } else {
+                    graphics.drawPolygon(this._getLinePoints(), parameter.borderPen, parameter.backBrush);
+                }
+                if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                    graphics.restore();
+                }
                 graphics.restore();
-            }
-            graphics.restore();
-            if (this._isBounds) {
-                template._content.dictionary._updated = true;
-                this._dictionary.update('LLE', this.lineExtension);
-                this._dictionary.update('Vertices', this._points);
+                if (this._isBounds) {
+                    template._content.dictionary._updated = true;
+                    this._dictionary.update('LLE', this.lineExtension);
+                    this._dictionary.update('Vertices', this._points);
+                }
             }
             this._dictionary.update('Rect', [rect.x, rect.y, rect.x + rect.width, rect.y + rect.height]);
             return template;
@@ -5871,7 +6255,6 @@ export class PdfPolygonAnnotation extends PdfComment {
  * ```
  */
 export class PdfPolyLineAnnotation extends PdfComment {
-    private _points: number[];
     private _lineExtension: number;
     private _beginLine: PdfLineEndingStyle = PdfLineEndingStyle.none;
     private _endLine: PdfLineEndingStyle = PdfLineEndingStyle.none;
@@ -6134,14 +6517,14 @@ export class PdfPolyLineAnnotation extends PdfComment {
             polyLineBounds.x + polyLineBounds.width,
             polyLineBounds.y + polyLineBounds.height];
         this._dictionary.update('Rect', rectangle);
-        if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+        if (this._setAppearance || (isFlatten && !this._dictionary.has('AP')) || this._customTemplate.size > 0) {
             this._appearanceTemplate = this._createPolyLineAppearance(isFlatten);
         }
     }
     _doPostProcess(isFlatten: boolean = false): void {
         this._flatten = isFlatten;
         if (this._isLoaded) {
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if (this._setAppearance || this._customTemplate.size > 0 || (isFlatten && !this._dictionary.has('AP'))) {
                 this._appearanceTemplate = this._createPolyLineAppearance(isFlatten);
             }
             if (!this._appearanceTemplate && isFlatten && this._dictionary.has('AP')) {
@@ -6195,21 +6578,27 @@ export class PdfPolyLineAnnotation extends PdfComment {
             } else {
                 this._page.annotations.remove(this);
             }
-        }
-        if (!isFlatten && this._setAppearance) {
+        } else if (this._setAppearance || this._customTemplate.size > 0) {
             let appearance: _PdfDictionary;
             if (this._dictionary.has('AP')) {
                 appearance = this._dictionary.get('AP');
             } else {
                 const reference: _PdfReference = this._crossReference._getNextReference();
                 appearance = new _PdfDictionary(this._crossReference);
+                appearance._updated = true;
                 this._crossReference._cacheMap.set(reference, appearance);
                 this._dictionary.update('AP', reference);
             }
-            _removeDuplicateReference(appearance, this._crossReference, 'N');
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-            appearance.update('N', reference);
+            if (this._customTemplate.size > 0) {
+                this._drawCustomAppearance(appearance);
+            } else {
+                _removeDuplicateReference(appearance, this._crossReference, 'N');
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._appearanceTemplate._content.dictionary._update = true;
+                this._appearanceTemplate._content.reference = reference;
+                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                appearance.update('N', reference);
+            }
         }
     }
     _transformToPdfCoordinates(points: number[]): number[] {
@@ -6238,61 +6627,73 @@ export class PdfPolyLineAnnotation extends PdfComment {
     _createPolyLineAppearance(flatten: boolean): PdfTemplate {
         const color: number[] = this.color ? this.color : [0, 0, 0];
         if (typeof flatten !== 'undefined' && flatten) {
-            let borderPen: PdfPen;
-            if (this.border.width > 0) {
-                borderPen = new PdfPen(color, this.border.width);
-            }
-            let backBrush: PdfBrush;
-            if (this.innerColor) {
-                backBrush = new PdfBrush(this._innerColor);
-            }
-            const graphics: PdfGraphics = this._page.graphics;
-            if (borderPen) {
-                let state: PdfGraphicsState;
-                if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
-                    state = graphics.save();
-                    graphics.setTransparency(this._opacity);
+            let template: PdfTemplate;
+            if (this._customTemplate.has('N')) {
+                template = this._customTemplate.get('N');
+                const polyLineBounds: {x: number, y: number, width: number, height: number} = this._getBoundsValue(this._points);
+                this.bounds = {x: polyLineBounds.x,
+                    y: this._page.size[1] - polyLineBounds.y,
+                    width: polyLineBounds.width,
+                    height: polyLineBounds.height};
+            } else {
+                let borderPen: PdfPen;
+                if (this.border.width > 0) {
+                    borderPen = new PdfPen(color, this.border.width);
                 }
-                const points: Array<number[]> = this._getLinePoints();
-                const pathTypes: PathPointType[] = [];
-                pathTypes.push(0);
-                if (points && points.length > 0) {
-                    for (let i: number = 1; i < points.length; i++) {
-                        pathTypes.push(1);
-                    }
-                    const path: PdfPath = new PdfPath();
-                    path._points = points;
-                    path._pathTypes = pathTypes;
-                    const angles: {startAngle: number, endAngle: number,
-                        transformedStart: number[], transformedEnd: number[]} = this._prepareStartEndAngle(path);
-                    const startPoint: number[] = this._getAxisValue(angles.transformedStart, angles.startAngle + 90);
-                    const endPoint: number[] = this._getAxisValue(angles.transformedEnd, angles.endAngle + 90);
-                    let startPoint1: number[] = startPoint;
-                    let endPoint1: number[] = endPoint;
-                    if (this.beginLineStyle === PdfLineEndingStyle.closedArrow || this.beginLineStyle === PdfLineEndingStyle.openArrow) {
-                        startPoint1 = this._getAxisValue(startPoint, angles.startAngle, this.border.width);
-                        path._points[0][0] = startPoint1[0];
-                        path._points[0][1] = -startPoint1[1];
-                    }
-                    if (this.endLineStyle === PdfLineEndingStyle.closedArrow || this.endLineStyle === PdfLineEndingStyle.openArrow) {
-                        endPoint1 = this._getAxisValue(endPoint, angles.endAngle, -this.border.width);
-                        path._points[path._points.length - 1][0] = endPoint1[0];
-                    }
-                    graphics.drawPath(path, borderPen);
-                    if (this.beginLineStyle !== PdfLineEndingStyle.none) {
-                        this._drawLineEndStyle(startPoint, graphics, angles.startAngle, borderPen, backBrush,
-                                               this.beginLineStyle, this.border.width, true);
-                    }
-                    if (this.endLineStyle !== PdfLineEndingStyle.none) {
-                        this._drawLineEndStyle(endPoint, graphics, angles.endAngle, borderPen, backBrush,
-                                               this.endLineStyle, this.border.width, false);
-                    }
+                let backBrush: PdfBrush;
+                if (this.innerColor) {
+                    backBrush = new PdfBrush(this._innerColor);
+                }
+                const graphics: PdfGraphics = this._page.graphics;
+                if (borderPen) {
+                    let state: PdfGraphicsState;
                     if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
-                        graphics.restore(state);
+                        state = graphics.save();
+                        graphics.setTransparency(this._opacity);
+                    }
+                    const points: Array<number[]> = this._getLinePoints();
+                    const pathTypes: PathPointType[] = [];
+                    pathTypes.push(0);
+                    if (points && points.length > 0) {
+                        for (let i: number = 1; i < points.length; i++) {
+                            pathTypes.push(1);
+                        }
+                        const path: PdfPath = new PdfPath();
+                        path._points = points;
+                        path._pathTypes = pathTypes;
+                        const angles: {startAngle: number, endAngle: number,
+                            transformedStart: number[], transformedEnd: number[]} = this._prepareStartEndAngle(path);
+                        const startPoint: number[] = this._getAxisValue(angles.transformedStart, angles.startAngle + 90);
+                        const endPoint: number[] = this._getAxisValue(angles.transformedEnd, angles.endAngle + 90);
+                        let startPoint1: number[] = startPoint;
+                        let endPoint1: number[] = endPoint;
+                        if (this.beginLineStyle === PdfLineEndingStyle.closedArrow ||
+                            this.beginLineStyle === PdfLineEndingStyle.openArrow) {
+                            startPoint1 = this._getAxisValue(startPoint, angles.startAngle, this.border.width);
+                            path._points[0][0] = startPoint1[0];
+                            path._points[0][1] = -startPoint1[1];
+                        }
+                        if (this.endLineStyle === PdfLineEndingStyle.closedArrow || this.endLineStyle === PdfLineEndingStyle.openArrow) {
+                            endPoint1 = this._getAxisValue(endPoint, angles.endAngle, -this.border.width);
+                            path._points[path._points.length - 1][0] = endPoint1[0];
+                        }
+                        graphics.drawPath(path, borderPen);
+                        if (this.beginLineStyle !== PdfLineEndingStyle.none) {
+                            this._drawLineEndStyle(startPoint, graphics, angles.startAngle, borderPen, backBrush,
+                                                   this.beginLineStyle, this.border.width, true);
+                        }
+                        if (this.endLineStyle !== PdfLineEndingStyle.none) {
+                            this._drawLineEndStyle(endPoint, graphics, angles.endAngle, borderPen, backBrush,
+                                                   this.endLineStyle, this.border.width, false);
+                        }
+                        if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                            graphics.restore(state);
+                        }
                     }
                 }
+                template = graphics._template;
             }
-            return graphics._template;
+            return template;
         } else {
             let rect: {x: number, y: number, width: number, height: number} = {x: 0, y: 0, width: 0, height: 0};
             if ((typeof this._points === 'undefined' || (this._points && this._points.length === 0)) && this._dictionary.has('Vertices')) {
@@ -6357,36 +6758,41 @@ export class PdfPolyLineAnnotation extends PdfComment {
                                                                      this.border.width, false);
                 rect = this._getCombinedRectangleBounds(rect, endLineStyleBounds);
             }
-            const appearance: PdfAppearance = new PdfAppearance({x: rect.x, y: rect.y, width: rect.width, height: rect.height}, this);
-            appearance.normal = new PdfTemplate([rect.x, rect.y, rect.width, rect.height], this._crossReference);
-            const template: PdfTemplate = appearance.normal;
-            _setMatrix(template, 0);
-            template._writeTransformation = false;
-            const graphics: PdfGraphics = appearance.normal.graphics;
-            if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
-                graphics.save();
-                graphics.setTransparency(this._opacity);
+            let template: PdfTemplate;
+            if (this._customTemplate.has('N')) {
+                template = this._customTemplate.get('N');
             } else {
-                graphics.save();
-            }
-            graphics.drawPath(path, parameter.borderPen);
-            if (this.beginLineStyle !== PdfLineEndingStyle.none) {
-                this._drawLineEndStyle(startPoint, graphics, angles.startAngle, parameter.borderPen, parameter.backBrush,
-                                       this.beginLineStyle, this.border.width, true);
-            }
-            if (this.endLineStyle !== PdfLineEndingStyle.none) {
-                this._drawLineEndStyle(endPoint, graphics, angles.endAngle, parameter.borderPen, parameter.backBrush,
-                                       this.endLineStyle, this.border.width, false);
-            }
-            if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                const appearance: PdfAppearance = new PdfAppearance({x: rect.x, y: rect.y, width: rect.width, height: rect.height}, this);
+                appearance.normal = new PdfTemplate([rect.x, rect.y, rect.width, rect.height], this._crossReference);
+                template = appearance.normal;
+                _setMatrix(template, 0);
+                template._writeTransformation = false;
+                const graphics: PdfGraphics = appearance.normal.graphics;
+                if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                    graphics.save();
+                    graphics.setTransparency(this._opacity);
+                } else {
+                    graphics.save();
+                }
+                graphics.drawPath(path, parameter.borderPen);
+                if (this.beginLineStyle !== PdfLineEndingStyle.none) {
+                    this._drawLineEndStyle(startPoint, graphics, angles.startAngle, parameter.borderPen, parameter.backBrush,
+                                           this.beginLineStyle, this.border.width, true);
+                }
+                if (this.endLineStyle !== PdfLineEndingStyle.none) {
+                    this._drawLineEndStyle(endPoint, graphics, angles.endAngle, parameter.borderPen, parameter.backBrush,
+                                           this.endLineStyle, this.border.width, false);
+                }
+                if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                    graphics.restore();
+                }
                 graphics.restore();
-            }
-            graphics.restore();
-            if (this._isBounds) {
-                template._content.dictionary._updated = true;
-                this._dictionary.update('LE', [_PdfName.get(_reverseMapEndingStyle(this.beginLineStyle)), _PdfName.get(_reverseMapEndingStyle(this.endLineStyle))]);
-                this._dictionary.update('LLE', this.lineExtension);
-                this._dictionary.update('Vertices', this._points);
+                if (this._isBounds) {
+                    template._content.dictionary._updated = true;
+                    this._dictionary.update('LE', [_PdfName.get(_reverseMapEndingStyle(this.beginLineStyle)), _PdfName.get(_reverseMapEndingStyle(this.endLineStyle))]);
+                    this._dictionary.update('LLE', this.lineExtension);
+                    this._dictionary.update('Vertices', this._points);
+                }
             }
             this._dictionary.update('Rect', [rect.x, rect.y, rect.x + rect.width, rect.y + rect.height]);
             return template;
@@ -6561,7 +6967,7 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
     }
     _doPostProcess(isFlatten: boolean = false): void {
         if (this._isLoaded) {
-            if (!isFlatten && this._setAppearance) {
+            if (!isFlatten && (this._setAppearance || this._customTemplate.size > 0)) {
                 this._appearanceTemplate = this._createAngleMeasureAppearance();
             }
             if (!this._appearanceTemplate && isFlatten && this._dictionary.has('AP')) {
@@ -6599,17 +7005,40 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
                 }
             }
         }
-        if (isFlatten && this._appearanceTemplate) {
-            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            if (!this._appearanceTemplate._content.dictionary.has('Matrix')) {
-                const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
-                if (box) {
-                    this._appearanceTemplate._content.dictionary.update('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
+        if (isFlatten) {
+            if (this._appearanceTemplate) {
+                const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+                if (!this._appearanceTemplate._content.dictionary.has('Matrix')) {
+                    const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
+                    if (box) {
+                        this._appearanceTemplate._content.dictionary.update('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
+                    }
                 }
+                this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            } else {
+                this._page.annotations.remove(this);
             }
-            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
-        } else if (isFlatten) {
-            this._page.annotations.remove(this);
+        } else if (this._setAppearance || this._customTemplate.size > 0) {
+            let appearance: _PdfDictionary;
+            if (this._dictionary.has('AP')) {
+                appearance = this._dictionary.get('AP');
+            } else {
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                appearance = new _PdfDictionary(this._crossReference);
+                appearance._updated = true;
+                this._crossReference._cacheMap.set(reference, appearance);
+                this._dictionary.update('AP', reference);
+            }
+            if (this._customTemplate.size > 0) {
+                this._drawCustomAppearance(appearance);
+            } else {
+                _removeDuplicateReference(appearance, this._crossReference, 'N');
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._appearanceTemplate._content.dictionary._update = true;
+                this._appearanceTemplate._content.reference = reference;
+                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                appearance.update('N', reference);
+            }
         }
     }
     _createAngleMeasureAppearance(): PdfTemplate {
@@ -6761,59 +7190,64 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
         path._pathTypes = pathTypes;
         path._points =  points;
         this._dictionary.set('Rect', [rectValue[0], rectValue[1], rectValue[0] + rectValue[2], rectValue[1] + rectValue[3]]);
-        const appearance: PdfAppearance = new PdfAppearance({x: boundsValue[0], y: boundsValue[1], width: boundsValue[2],
-            height: boundsValue[3]}, this);
-        appearance.normal = new PdfTemplate(rectValue, this._crossReference);
-        const template: PdfTemplate =  appearance.normal;
-        template._writeTransformation = false;
-        const graphics: PdfGraphics = appearance.normal.graphics;
-        const width: number = borderWidth / 2;
-        const pen: PdfPen = new PdfPen(this._color, width);
-        if (this.border.style === PdfBorderStyle.dashed) {
-            pen._dashStyle = PdfDashStyle.dash;
+        let template: PdfTemplate;
+        if (this._customTemplate.has('N')) {
+            template = this._customTemplate.get('N');
+        } else {
+            const appearance: PdfAppearance = new PdfAppearance({x: boundsValue[0], y: boundsValue[1], width: boundsValue[2],
+                height: boundsValue[3]}, this);
+            appearance.normal = new PdfTemplate(rectValue, this._crossReference);
+            template =  appearance.normal;
+            template._writeTransformation = false;
+            const graphics: PdfGraphics = appearance.normal.graphics;
+            const width: number = borderWidth / 2;
+            const pen: PdfPen = new PdfPen(this._color, width);
+            if (this.border.style === PdfBorderStyle.dashed) {
+                pen._dashStyle = PdfDashStyle.dash;
+            }
+            const brush: PdfBrush = new PdfBrush(this._color);
+            graphics.save();
+            graphics.drawPath(path, pen);
+            path.addArc(points[1][0] - this._radius,
+                        points[1][1] - this._radius,
+                        2 * this._radius,
+                        2 * this._radius,
+                        this._startAngle,
+                        this._sweepAngle);
+            if (up) {
+                graphics.drawString(angle.toString() + '°',
+                                    font,
+                                    [x1 - (size[0] / 2), -(-y + font._metrics._getHeight() + 2), 0, 0],
+                                    null,
+                                    brush);
+            } else if (right) {
+                graphics.drawString(angle.toString() + '°',
+                                    font,
+                                    [x1 + 2, -(-y + font._metrics._getHeight() / 2), 0, 0],
+                                    null,
+                                    brush);
+            } else if (left) {
+                graphics.drawString(angle.toString() + '°',
+                                    font,
+                                    [x1 - size[0] - 2, -(-y + font._metrics._getHeight() / 2), 0, 0],
+                                    null,
+                                    brush);
+            } else if (down) {
+                graphics.drawString(angle.toString() + '°', font, [x1 - (size[0] / 2), (y + 2), 0, 0], null, brush);
+            }
+            graphics.restore();
+            graphics._template._content.dictionary._updated = true;
+            const reference1: _PdfReference = this._crossReference._getNextReference();
+            this._crossReference._cacheMap.set(reference1, graphics._template._content);
+            graphics._template._content.reference = reference1;
+            if (this._dictionary.has('AP')) {
+                _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
+            }
+            const appearanceDictionary: _PdfDictionary = new _PdfDictionary();
+            appearanceDictionary.set('N', reference1);
+            appearanceDictionary._updated = true;
+            this._dictionary.set('AP', appearanceDictionary);
         }
-        const brush: PdfBrush = new PdfBrush(this._color);
-        graphics.save();
-        graphics.drawPath(path, pen);
-        path.addArc(points[1][0] - this._radius,
-                    points[1][1] - this._radius,
-                    2 * this._radius,
-                    2 * this._radius,
-                    this._startAngle,
-                    this._sweepAngle);
-        if (up) {
-            graphics.drawString(angle.toString() + '°',
-                                font,
-                                [x1 - (size[0] / 2), -(-y + font._metrics._getHeight() + 2), 0, 0],
-                                null,
-                                brush);
-        } else if (right) {
-            graphics.drawString(angle.toString() + '°',
-                                font,
-                                [x1 + 2, -(-y + font._metrics._getHeight() / 2), 0, 0],
-                                null,
-                                brush);
-        } else if (left) {
-            graphics.drawString(angle.toString() + '°',
-                                font,
-                                [x1 - size[0] - 2, -(-y + font._metrics._getHeight() / 2), 0, 0],
-                                null,
-                                brush);
-        } else if (down) {
-            graphics.drawString(angle.toString() + '°', font, [x1 - (size[0] / 2), (y + 2), 0, 0], null, brush);
-        }
-        graphics.restore();
-        graphics._template._content.dictionary._updated = true;
-        const reference1: _PdfReference = this._crossReference._getNextReference();
-        this._crossReference._cacheMap.set(reference1, graphics._template._content);
-        graphics._template._content.reference = reference1;
-        if (this._dictionary.has('AP')) {
-            _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
-        }
-        const appearanceDictionary: _PdfDictionary = new _PdfDictionary();
-        appearanceDictionary.set('N', reference1);
-        appearanceDictionary._updated = true;
-        this._dictionary.set('AP', appearanceDictionary);
         return template;
     }
     _getAngleBoundsValue(): number[] {
@@ -6974,7 +7408,6 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
  * ```
  */
 export class PdfInkAnnotation extends PdfComment {
-    private _points: number[];
     private _linePoints: number[];
     private _inkPointsCollection: Array<number[]> = [];
     private _previousCollection: Array<number[]> = [];
@@ -7111,58 +7544,81 @@ export class PdfInkAnnotation extends PdfComment {
             nativeRectangle.x + nativeRectangle.width,
             nativeRectangle.y + nativeRectangle.height];
         this._dictionary.update('Rect', bounds);
-        if (this._setAppearance) {
-            const appearance: PdfAppearance = new PdfAppearance(nativeRectangle, this);
-            appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
-            const template: PdfTemplate = appearance.normal;
-            _setMatrix(template, this._getRotationAngle());
-            template._writeTransformation = false;
-            this._appearanceTemplate = this._createInkAppearance(template);
+        if (this._setAppearance || this._customTemplate.size > 0) {
+            let appearanceDictionary: _PdfDictionary;
             if (this._dictionary.has('AP')) {
-                _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
+                appearanceDictionary = this._dictionary.get('AP');
+            } else {
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                appearanceDictionary = new _PdfDictionary(this._crossReference);
+                this._crossReference._cacheMap.set(reference, appearanceDictionary);
+                this._dictionary.update('AP', reference);
             }
-            const dictionary: _PdfDictionary = new _PdfDictionary();
-            this._appearanceTemplate._content.dictionary._updated = true;
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-            this._appearanceTemplate._content.reference = reference;
-            dictionary.set('N', reference);
-            dictionary._updated = true;
-            this._dictionary.set('AP', dictionary);
+            if (this._customTemplate.size > 0) {
+                this._appearanceTemplate = this._customTemplate.get('N');
+                this._drawCustomAppearance(appearanceDictionary);
+            } else {
+                _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
+                const appearance: PdfAppearance = new PdfAppearance(nativeRectangle, this);
+                appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
+                const template: PdfTemplate = appearance.normal;
+                _setMatrix(template, this._getRotationAngle());
+                template._writeTransformation = false;
+                this._appearanceTemplate = this._createInkAppearance(template);
+                this._appearanceTemplate._content.dictionary._updated = true;
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                this._appearanceTemplate._content.reference = reference;
+                appearanceDictionary.set('N', reference);
+                appearanceDictionary._updated = true;
+            }
         }
     }
     _doPostProcess(isFlatten: boolean = false): void {
         this._isFlatten = isFlatten;
         if (this._isLoaded) {
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if (this._setAppearance || this._customTemplate.size > 0 || (isFlatten && !this._dictionary.has('AP'))) {
                 if (this._inkPointsCollection.length === 0) {
                     this._inkPointsCollection = this._obtainInkListCollection();
                 }
                 const rect: number[] = this._getInkBoundsValue();
-                const template: PdfTemplate = new PdfTemplate(rect, this._crossReference);
-                const box: number[] = template._content.dictionary.getArray('BBox');
-                const angle: PdfRotationAngle = this._getRotationAngle();
-                if (box && angle !== null && typeof angle !== 'undefined') {
-                    template._content.dictionary.set('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
+                if (this._customTemplate.size > 0) {
+                    this._appearanceTemplate = this._customTemplate.get('N');
+                } else {
+                    const template: PdfTemplate = new PdfTemplate(rect, this._crossReference);
+                    const box: number[] = template._content.dictionary.getArray('BBox');
+                    const angle: PdfRotationAngle = this._getRotationAngle();
+                    if (box && angle !== null && typeof angle !== 'undefined') {
+                        template._content.dictionary.set('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
+                    }
+                    template._writeTransformation = false;
+                    this._appearanceTemplate = this._createInkAppearance(template);
                 }
-                template._writeTransformation = false;
-                this._appearanceTemplate = this._createInkAppearance(template);
                 this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
                 if (!isFlatten) {
+                    let appearance: _PdfDictionary;
                     if (this._dictionary.has('AP')) {
-                        _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
+                        appearance = this._dictionary.get('AP');
+                    } else {
+                        const reference: _PdfReference = this._crossReference._getNextReference();
+                        appearance = new _PdfDictionary(this._crossReference);
+                        appearance._updated = true;
+                        this._crossReference._cacheMap.set(reference, appearance);
+                        this._dictionary.update('AP', reference);
                     }
-                    const dictionary: _PdfDictionary = new _PdfDictionary();
-                    this._appearanceTemplate._content.dictionary._updated = true;
-                    const reference: _PdfReference = this._crossReference._getNextReference();
-                    this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-                    this._appearanceTemplate._content.reference = reference;
-                    dictionary.set('N', reference);
-                    dictionary._updated = true;
-                    this._dictionary.set('AP', dictionary);
+                    if (this._customTemplate.size > 0) {
+                        this._drawCustomAppearance(appearance);
+                    } else {
+                        _removeDuplicateReference(appearance, this._crossReference, 'N');
+                        this._appearanceTemplate._content.dictionary._updated = true;
+                        const reference: _PdfReference = this._crossReference._getNextReference();
+                        this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                        this._appearanceTemplate._content.reference = reference;
+                        appearance.set('N', reference);
+                        appearance._updated = true;
+                    }
                 }
-            }
-            if (!this._appearanceTemplate && isFlatten && this._dictionary.has('AP')) {
+            } else if (!this._appearanceTemplate && isFlatten && this._dictionary.has('AP')) {
                 const dictionary: _PdfDictionary = this._dictionary.get('AP');
                 if (dictionary && dictionary.has('N')) {
                     const appearanceStream: _PdfBaseStream = dictionary.get('N');
@@ -7177,31 +7633,29 @@ export class PdfInkAnnotation extends PdfComment {
             }
         } else {
             this._postProcess();
-            if (!this._appearanceTemplate) {
-                if (isFlatten) {
-                    if (!this._dictionary.has('AP')) {
-                        if (this._inkPointsCollection.length === 0) {
-                            this._inkPointsCollection = this._obtainInkListCollection();
-                        }
-                        const rect: number[] = this._getInkBoundsValue();
-                        const template: PdfTemplate = new PdfTemplate(rect, this._crossReference);
-                        _setMatrix(template, this._getRotationAngle());
-                        template._writeTransformation = false;
-                        this._appearanceTemplate = this._createInkAppearance(template);
-                        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
-                    } else {
-                        const dictionary: _PdfDictionary = this._dictionary.get('AP');
-                        if (dictionary && dictionary.has('N')) {
-                            const appearanceStream: _PdfBaseStream = dictionary.get('N');
-                            const reference: _PdfReference = dictionary.getRaw('N');
-                            if (appearanceStream) {
-                                if (reference) {
-                                    appearanceStream.reference = reference;
-                                }
-                                this._appearanceTemplate = new PdfTemplate(appearanceStream, this._crossReference);
+            if (!this._appearanceTemplate && isFlatten) {
+                if (this._dictionary.has('AP')) {
+                    const dictionary: _PdfDictionary = this._dictionary.get('AP');
+                    if (dictionary && dictionary.has('N')) {
+                        const appearanceStream: _PdfBaseStream = dictionary.get('N');
+                        const reference: _PdfReference = dictionary.getRaw('N');
+                        if (appearanceStream) {
+                            if (reference) {
+                                appearanceStream.reference = reference;
                             }
+                            this._appearanceTemplate = new PdfTemplate(appearanceStream, this._crossReference);
                         }
                     }
+                } else {
+                    if (this._inkPointsCollection.length === 0) {
+                        this._inkPointsCollection = this._obtainInkListCollection();
+                    }
+                    const rect: number[] = this._getInkBoundsValue();
+                    const template: PdfTemplate = new PdfTemplate(rect, this._crossReference);
+                    _setMatrix(template, this._getRotationAngle());
+                    template._writeTransformation = false;
+                    this._appearanceTemplate = this._createInkAppearance(template);
+                    this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
                 }
             }
         }
@@ -7212,29 +7666,30 @@ export class PdfInkAnnotation extends PdfComment {
                 this._flattenPopUp();
             }
         }
-        if (isFlatten &&
-            this._appearanceTemplate &&
-            this._appearanceTemplate._size !== null &&
-            typeof this._appearanceTemplate._size !== 'undefined') {
-            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            if (!this._appearanceTemplate._content.dictionary.has('Matrix')) {
-                const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
-                if (box) {
-                    this._appearanceTemplate._content.dictionary.update('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
+        if (isFlatten) {
+            if (this._appearanceTemplate &&
+                this._appearanceTemplate._size !== null &&
+                typeof this._appearanceTemplate._size !== 'undefined') {
+                const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+                if (!this._appearanceTemplate._content.dictionary.has('Matrix')) {
+                    const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
+                    if (box) {
+                        this._appearanceTemplate._content.dictionary.update('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
+                    }
                 }
+                this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            } else {
+                this._page.annotations.remove(this);
             }
-            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
-        } else if (isFlatten) {
-            this._page.annotations.remove(this);
-        }
-        if (isFlatten && !this.flattenPopups && this._dictionary.has('Popup')) {
-            const reference: _PdfReference = this._dictionary.getRaw('Popup');
-            if (this._page._pageDictionary.has('Annots')) {
-                const annots: any[] = this._page._pageDictionary.getRaw('Annots'); // eslint-disable-line
-                if (annots && Array.isArray(annots) && annots.length > 0) {
-                    const index: number = annots.indexOf(reference);
-                    if (index >= 0 ) {
-                        this._page.annotations.removeAt(index);
+            if (!this.flattenPopups && this._dictionary.has('Popup')) {
+                const reference: _PdfReference = this._dictionary.getRaw('Popup');
+                if (this._page._pageDictionary.has('Annots')) {
+                    const annots: any[] = this._page._pageDictionary.getRaw('Annots'); // eslint-disable-line
+                    if (annots && Array.isArray(annots) && annots.length > 0) {
+                        const index: number = annots.indexOf(reference);
+                        if (index >= 0 ) {
+                            this._page.annotations.removeAt(index);
+                        }
                     }
                 }
             }
@@ -7954,20 +8409,30 @@ export class PdfPopupAnnotation extends PdfComment {
         const rectangle: number[] = [this.bounds.x, this.bounds.y, (this.bounds.x + this.bounds.width),
             (this.bounds.y + this.bounds.height)];
         this._dictionary.update('Rect', rectangle);
-        if (this._setAppearance) {
-            this._appearanceTemplate = this._createPopupAppearance();
-            if (this._appearanceTemplate) {
-                if (this._dictionary.has('AP')) {
-                    _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
-                }
-                const dictionary: _PdfDictionary = new _PdfDictionary();
-                this._appearanceTemplate._content.dictionary._updated = true;
+        if (this._setAppearance || this._customTemplate.size > 0) {
+            let appearance: _PdfDictionary;
+            if (this._dictionary.has('AP')) {
+                appearance = this._dictionary.get('AP');
+            } else {
                 const reference: _PdfReference = this._crossReference._getNextReference();
-                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-                this._appearanceTemplate._content.reference = reference;
-                dictionary.set('N', reference);
-                dictionary._updated = true;
-                this._dictionary.set('AP', dictionary);
+                appearance = new _PdfDictionary(this._crossReference);
+                this._crossReference._cacheMap.set(reference, appearance);
+                this._dictionary.update('AP', reference);
+            }
+            if (this._customTemplate.size > 0) {
+                this._appearanceTemplate = this._customTemplate.get('N');
+                this._drawCustomAppearance(appearance);
+            } else {
+                this._appearanceTemplate = this._createPopupAppearance();
+                if (this._appearanceTemplate) {
+                    _removeDuplicateReference(this._dictionary.get('AP'), this._crossReference, 'N');
+                    this._appearanceTemplate._content.dictionary._updated = true;
+                    const reference: _PdfReference = this._crossReference._getNextReference();
+                    this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                    this._appearanceTemplate._content.reference = reference;
+                    appearance.set('N', reference);
+                    appearance._updated = true;
+                }
             }
         }
         this._dictionary.update('Rect', _updateBounds(this));
@@ -9342,10 +9807,7 @@ export class Pdf3DAnnotation extends PdfAnnotation {
  */
 export class PdfTextMarkupAnnotation extends PdfComment {
     _textMarkupType: PdfTextMarkupAnnotationType = PdfTextMarkupAnnotationType.highlight;
-    private _quadPoints: Array<number> = new Array<number>(8);
-    private _points: number[];
     private _textMarkUpColor: number[];
-    private _boundsCollection: Array<number[]> = [];
     /**
      * Initializes a new instance of the `PdfTextMarkupAnnotation` class.
      * ```typescript
@@ -9991,64 +10453,6 @@ export class PdfTextMarkupAnnotation extends PdfComment {
         path._addLines(pathPoints);
         return path;
     }
-    _setQuadPoints(pageSize: number[]): void {
-        const textQuadLocation: number[] = [];
-        const pageHeight: number = pageSize[1];
-        let margins: {left: number, top: number, right: number, bottom: number};
-        if (this._page && this._page._isNew && this._page._pageSettings && this._page._pageSettings.margins) {
-            const margin: PdfMargins = this._page._pageSettings.margins;
-            margins = {left: margin.left, top: margin.top, right: margin.right, bottom: margin.bottom};
-        } else {
-            margins = {left: 0, top: 0, right: 0, bottom: 0};
-        }
-        if (this.bounds.x !== 0 && this.bounds.y !== 0 && this.bounds.width !== 0 && this.bounds.height !== 0) {
-            this._boundsCollection[0] = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
-        }
-        const noofRect: number = this._quadPoints.length / 8;
-        const cropOrMediaBox: number[] = this._getMediaOrCropBox(this._page);
-        let isContainscropOrMediaBox: boolean = false;
-        if (!this._isLoaded && cropOrMediaBox && cropOrMediaBox.length > 3 && !this.flatten) {
-            const cropOrMediaBoxX: number = cropOrMediaBox[0];
-            const cropOrMediaBoxY: number = cropOrMediaBox[1];
-            if (cropOrMediaBoxX !== 0 || cropOrMediaBoxY !== 0) {
-                for (let i: number = 0; i < noofRect; i++) {
-                    const locationX: number = this._boundsCollection[<number>i][0] + margins.left + cropOrMediaBoxX;
-                    const locationY: number = cropOrMediaBoxY + margins.top;
-                    textQuadLocation[0 + (i * 8)] = locationX + margins.left;
-                    textQuadLocation[1 + (i * 8)] = (pageHeight - (-locationY)) - margins.top -
-                    this._boundsCollection[<number>i][1];
-                    textQuadLocation[2 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) +
-                    margins.left;
-                    textQuadLocation[3 + (i * 8)] = (pageHeight - (-locationY)) - margins.top -
-                    this._boundsCollection[<number>i][1];
-                    textQuadLocation[4 + (i * 8)] = locationX + margins.left;
-                    textQuadLocation[5 + (i * 8)] = (textQuadLocation[1 + (i * 8)] -
-                    this._boundsCollection[<number>i][3]);
-                    textQuadLocation[6 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) +
-                    margins.left;
-                    textQuadLocation[7 + (i * 8)] = textQuadLocation[5 + (i * 8)];
-                }
-                isContainscropOrMediaBox = true;
-            }
-        }
-        if (!isContainscropOrMediaBox) {
-            for (let i: number = 0; i < noofRect; i++) {
-                const locationX: number = this._boundsCollection[<number>i][0];
-                const locationY: number = this._boundsCollection[<number>i][1];
-                textQuadLocation[0 + (i * 8)] = locationX + margins.left;
-                textQuadLocation[1 + (i * 8)] = (pageHeight - locationY) - margins.top;
-                textQuadLocation[2 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) + margins.left;
-                textQuadLocation[3 + (i * 8)] = (pageHeight - locationY) - margins.top;
-                textQuadLocation[4 + (i * 8)] = locationX + margins.left;
-                textQuadLocation[5 + (i * 8)] = (textQuadLocation[1 + (i * 8)] -
-                this._boundsCollection[<number>i][3]);
-                textQuadLocation[6 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) + margins.left;
-                textQuadLocation[7 + (i * 8)] = textQuadLocation[5 + (i * 8)];
-            }
-        }
-        this._points = textQuadLocation;
-        this._dictionary.set('QuadPoints', this._points);
-    }
 }
 /**
  * `PdfWatermarkAnnotation` class represents the watermark annotation objects.
@@ -10428,52 +10832,9 @@ export class PdfRubberStampAnnotation extends PdfComment {
      * ```
      */
     createTemplate(): PdfTemplate {
-        let template: PdfTemplate;
-        if (this._isLoaded) {
-            if (this._dictionary.has('AP')) {
-                const dictionary: _PdfDictionary = this._dictionary.get('AP');
-                if (dictionary && dictionary.has('N')) {
-                    const ref: _PdfReference = dictionary.getRaw('N');
-                    const appearanceStream: _PdfBaseStream = dictionary.get('N');
-                    if (ref && appearanceStream) {
-                        template = new PdfTemplate();
-                        template._isExported = true;
-                        const templateDictionary: _PdfDictionary = appearanceStream.dictionary;
-                        const matrix: number[] = templateDictionary.getArray('Matrix');
-                        const bounds: number[] = templateDictionary.getArray('BBox');
-                        if (matrix) {
-                            const mMatrix: number[] = [];
-                            for (let i: number = 0; i < matrix.length; i++) {
-                                const value: number = matrix[<number>i];
-                                mMatrix[<number>i] = value;
-                            }
-                            if (bounds && bounds.length > 3) {
-                                const rect: { x: number, y: number, width: number, height: number } = _toRectangle(bounds);
-                                const rectangle: number[] = this._transformBBox(rect, mMatrix);
-                                template._size = [rectangle[2], rectangle[3]];
-                                template._templateOriginalSize = [rect.width, rect.height];
-                            }
-                        } else if (bounds && (bounds[2] === this.bounds.width && bounds[3] === this.bounds.height) || _areArrayEqual(this._dictionary.get('Rect'), bounds)) {
-                            templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
-                            template._size = [bounds[2], bounds[3]];
-                        } else {
-                            const identityMatrix: number[] = [1, 0, 0, 1, 0, 0];
-                            const templateSize: number[] = this._getTransformMatrix(this._dictionary.get('Rect'), bounds, identityMatrix);
-                            if (this.bounds.width === templateSize[0] && this.bounds.height === templateSize[3]) {
-                                templateDictionary.update('Matrix', [templateSize[0], 0, 0, templateSize[3], 0, 0]);
-                                template._size = [templateSize[0], templateSize[3]];
-                                this._crossReference._cacheMap.set(ref, appearanceStream);
-                            } else {
-                                templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
-                                template._size = [bounds[2], bounds[3]];
-                            }
-                        }
-                        template._exportStream(dictionary, this._crossReference);
-                    }
-                }
-            } else {
-                template = this._createRubberStampAppearance();
-            }
+        let template: PdfTemplate = this._createTemplate();
+        if (typeof template === 'undefined') {
+            template = this._createRubberStampAppearance();
         }
         return template;
     }
@@ -10515,75 +10876,6 @@ export class PdfRubberStampAnnotation extends PdfComment {
         } else {
             this._appearanceTemplate = this._createRubberStampAppearance();
         }
-    }
-    _getTransformMatrix(rect: number[], bbox: number[], matrix: number[]): number[] {
-        const [minX, minY, maxX, maxY] = this._getAxialAlignedBoundingBox(bbox, matrix);
-        if (minX === maxX || minY === maxY) {
-            return [1, 0, 0, 1, rect[0], rect[1]];
-        }
-        const xRatio: number = (rect[2] - rect[0]) / (maxX - minX);
-        const yRatio: number = (rect[3] - rect[1]) / (maxY - minY);
-        return [xRatio, 0, 0, yRatio, rect[0] - minX * xRatio, rect[1] - minY * yRatio];
-    }
-    _getAxialAlignedBoundingBox(r: number[], m: number[]): number[] {
-        const p1: number[] = this._applyTransform(r, m);
-        const p2: number[] = this._applyTransform(r.slice(2, 4), m);
-        const p3: number[] = this._applyTransform([r[0], r[3]], m);
-        const p4: number[] = this._applyTransform([r[2], r[1]], m);
-        return [
-            Math.min(p1[0], p2[0], p3[0], p4[0]),
-            Math.min(p1[1], p2[1], p3[1], p4[1]),
-            Math.max(p1[0], p2[0], p3[0], p4[0]),
-            Math.max(p1[1], p2[1], p3[1], p4[1])
-        ];
-    }
-    _applyTransform(p: number[], m: number[]): number[] {
-        const xt: number = p[0] * m[0] + p[1] * m[2] + m[4];
-        const yt: number = p[0] * m[1] + p[1] * m[3] + m[5];
-        return [xt, yt];
-    }
-    _transformBBox(bBoxValue: { x: number, y: number, width: number, height: number }, matrix: number[]): number[] {
-        const xCoordinate: number[] = [];
-        const yCoordinate: number[] = [];
-        const point1: number[] = this._transformPoint(bBoxValue.x, bBoxValue.y + bBoxValue.height, matrix);
-        xCoordinate[0] = point1[0];
-        yCoordinate[0] = point1[1];
-        const point2: number[] = this._transformPoint(bBoxValue.x + bBoxValue.width, bBoxValue.y, matrix);
-        xCoordinate[1] = point2[0];
-        yCoordinate[1] = point2[1];
-        const point3: number[] = this._transformPoint(bBoxValue.x, bBoxValue.y, matrix);
-        xCoordinate[2] = point3[0];
-        yCoordinate[2] = point3[1];
-        const point4: number[] = this._transformPoint(bBoxValue.x + bBoxValue.width, bBoxValue.y + bBoxValue.height, matrix);
-        xCoordinate[3] = point4[0];
-        yCoordinate[3] = point4[1];
-        const rect: number[] = [this._minValue(xCoordinate), this._minValue(yCoordinate),
-            this._maxValue(xCoordinate), this._maxValue(yCoordinate)];
-        return rect;
-    }
-    _transformPoint(x: number, y: number, matrix: number[]): number[] {
-        const point: number[] = [];
-        point[0] = x * matrix[0] + y * matrix[2] + matrix[4];
-        point[1] = x * matrix[1] + y * matrix[3] + matrix[5];
-        return point;
-    }
-    _minValue(values: number[]): number {
-        let minimum: number = values[0];
-        for (let i: number = 1; i < values.length; i++) {
-            if (values[<number>i] < minimum) {
-                minimum = values[<number>i];
-            }
-        }
-        return minimum;
-    }
-    _maxValue(values: number[]): number {
-        let maximum: number = values[0];
-        for (let i: number = 1; i < values.length; i++) {
-            if (values[<number>i] > maximum) {
-                maximum = values[<number>i];
-            }
-        }
-        return maximum;
     }
     _doPostProcess(isFlatten: boolean = false): void {
         let isTransformBBox: boolean = false;
@@ -11511,7 +11803,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
             this._cropBoxValueX = cropOrMediaBox[0] as number;
             this._cropBoxValueY = cropOrMediaBox[1] as number;
         }
-        if (isFlatten || this._setAppearance) {
+        if (isFlatten || this._setAppearance || this._customTemplate.size > 0) {
             this._appearanceTemplate = this._createAppearance();
         }
         if (!isFlatten) {
@@ -11521,7 +11813,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
     }
     _doPostProcess(isFlatten: boolean = false): void {
         if (this._isLoaded) {
-            if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
+            if (this._setAppearance || this._customTemplate.size > 0 || (isFlatten && !this._dictionary.has('AP'))) {
                 this._appearanceTemplate = this._createAppearance();
             }
             if (!this._appearanceTemplate && isFlatten && this._dictionary.has('AP')) {
@@ -11587,7 +11879,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
         if (this._dictionary.has('RC') && this._isContentUpdated) {
             this._updateStyle(this.font, this._textMarkUpColor, this.textAlignment);
         }
-        if (!isFlatten && this._setAppearance) {
+        if (!isFlatten && (this._setAppearance || this._customTemplate.size > 0)) {
             let appearance: _PdfDictionary;
             if (this._dictionary.has('AP')) {
                 appearance = this._dictionary.get('AP');
@@ -11595,12 +11887,19 @@ export class PdfFreeTextAnnotation extends PdfComment {
                 const reference: _PdfReference = this._crossReference._getNextReference();
                 appearance = new _PdfDictionary(this._crossReference);
                 this._crossReference._cacheMap.set(reference, appearance);
+                appearance._updated = true;
                 this._dictionary.update('AP', reference);
             }
-            _removeDuplicateReference(appearance, this._crossReference, 'N');
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
-            appearance.update('N', reference);
+            if (this._customTemplate.size > 0) {
+                this._drawCustomAppearance(appearance);
+            } else {
+                _removeDuplicateReference(appearance, this._crossReference, 'N');
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);
+                this._appearanceTemplate._content.dictionary._update = true;
+                this._appearanceTemplate._content.reference = reference;
+                appearance.update('N', reference);
+            }
         }
     }
     _isValidTemplateMatrix(dictionary: _PdfDictionary, bounds: {x: number, y: number, width: number, height: number},
@@ -11643,99 +11942,104 @@ export class PdfFreeTextAnnotation extends PdfComment {
     }
     _createAppearance(): PdfTemplate {
         let template: PdfTemplate;
-        const borderWidth: number = this.border.width / 2;
-        const nativeRectangle: number[] = this._obtainAppearanceBounds();
-        const rotationAngle: number = this.rotate;
-        if (rotationAngle === 0 || rotationAngle === 90 || rotationAngle === 180 || rotationAngle === 270) {
-            this._isAllRotation = false;
-        }
-        if (rotationAngle > 0 && this._isAllRotation) {
-            template = new PdfTemplate([0, 0, nativeRectangle[2], nativeRectangle[3]], this._crossReference);
+        if (this._customTemplate.has('N')) {
+            template = this._customTemplate.get('N');
         } else {
-            template = new PdfTemplate(nativeRectangle, this._crossReference);
-        }
-        const box: number[] = template._content.dictionary.getArray('BBox');
-        const angle: PdfRotationAngle = this._getRotationAngle();
-        if (box && angle !== null && typeof angle !== 'undefined') {
-            template._content.dictionary.set('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
-        }
-        const parameter: _PaintParameter = new _PaintParameter();
-        const text: string = this._obtainText();
-        template._writeTransformation = false;
-        const graphics: PdfGraphics = template.graphics;
-        const alignment: PdfTextAlignment = this._obtainTextAlignment();
-        const borderColor: number[] = this._obtainColor();
-        const borderPen: PdfPen = new PdfPen(borderColor, this.border.width);
-        if (this.border.width > 0) {
-            parameter.borderPen = borderPen;
-        }
-        let rectangle: number[] = this._obtainStyle(borderPen, nativeRectangle, borderWidth, parameter);
-        if (this.color) {
-            parameter.foreBrush = new PdfBrush(this._color);
-        }
-        if (this.textMarkUpColor) {
-            parameter.backBrush = new PdfBrush(this._textMarkUpColor);
-        }
-        parameter.borderWidth = this.border.width;
-        if (this.calloutLines && this._calloutLines.length >= 2) {
-            this._drawCallOuts(graphics, borderPen);
-            if (this._isLoaded && typeof this._lineEndingStyle === 'undefined') {
-                this._lineEndingStyle = this.lineEndingStyle;
+            const borderWidth: number = this.border.width / 2;
+            const nativeRectangle: number[] = this._obtainAppearanceBounds();
+            const rotationAngle: number = this.rotate;
+            if (rotationAngle === 0 || rotationAngle === 90 || rotationAngle === 180 || rotationAngle === 270) {
+                this._isAllRotation = false;
             }
-            if (this._lineEndingStyle !== PdfLineEndingStyle.none) {
-                const linePoints: number[] = this._obtainLinePoints();
-                const angle: number = this._getAngle(linePoints);
-                const endPoint: number[] = this._getAxisValue([linePoints[2], linePoints[3]], 90, 0);
-                this._drawLineEndStyle(endPoint,
-                                       graphics,
-                                       angle,
-                                       borderPen,
-                                       parameter.foreBrush,
-                                       this.lineEndingStyle,
-                                       this.border.width,
-                                       false);
+            if (rotationAngle > 0 && this._isAllRotation) {
+                template = new PdfTemplate([0, 0, nativeRectangle[2], nativeRectangle[3]], this._crossReference);
+            } else {
+                template = new PdfTemplate(nativeRectangle, this._crossReference);
             }
-            if (!this._dictionary.has('RD')) {
-                rectangle = [this.bounds.x,
-                    -((this._page.size[1] - (this.bounds.y + this.bounds.height))),
-                    this.bounds.width,
-                    -this.bounds.height];
+            const box: number[] = template._content.dictionary.getArray('BBox');
+            const angle: PdfRotationAngle = this._getRotationAngle();
+            if (box && angle !== null && typeof angle !== 'undefined') {
+                template._content.dictionary.set('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
+            }
+            const parameter: _PaintParameter = new _PaintParameter();
+            const text: string = this._obtainText();
+            template._writeTransformation = false;
+            const graphics: PdfGraphics = template.graphics;
+            const alignment: PdfTextAlignment = this._obtainTextAlignment();
+            const borderColor: number[] = this._obtainColor();
+            const borderPen: PdfPen = new PdfPen(borderColor, this.border.width);
+            if (this.border.width > 0) {
+                parameter.borderPen = borderPen;
+            }
+            let rectangle: number[] = this._obtainStyle(borderPen, nativeRectangle, borderWidth, parameter);
+            if (this.color) {
+                parameter.foreBrush = new PdfBrush(this._color);
+            }
+            if (this.textMarkUpColor) {
+                parameter.backBrush = new PdfBrush(this._textMarkUpColor);
+            }
+            parameter.borderWidth = this.border.width;
+            if (this.calloutLines && this._calloutLines.length >= 2) {
+                this._drawCallOuts(graphics, borderPen);
+                if (this._isLoaded && typeof this._lineEndingStyle === 'undefined') {
+                    this._lineEndingStyle = this.lineEndingStyle;
+                }
+                if (this._lineEndingStyle !== PdfLineEndingStyle.none) {
+                    const linePoints: number[] = this._obtainLinePoints();
+                    const angle: number = this._getAngle(linePoints);
+                    const endPoint: number[] = this._getAxisValue([linePoints[2], linePoints[3]], 90, 0);
+                    this._drawLineEndStyle(endPoint,
+                                           graphics,
+                                           angle,
+                                           borderPen,
+                                           parameter.foreBrush,
+                                           this.lineEndingStyle,
+                                           this.border.width,
+                                           false);
+                }
+                if (!this._dictionary.has('RD')) {
+                    rectangle = [this.bounds.x,
+                        -((this._page.size[1] - (this.bounds.y + this.bounds.height))),
+                        this.bounds.width,
+                        -this.bounds.height];
+                } else {
+                    rectangle = [rectangle[0], -rectangle[1], rectangle[2], -rectangle[3]];
+                }
+                rectangle[0] = rectangle[0] + this._cropBoxValueX;
+                rectangle[1] = rectangle[1] - this._cropBoxValueY;
+                this._calculateRectangle(rectangle);
+                parameter.bounds = rectangle;
             } else {
                 rectangle = [rectangle[0], -rectangle[1], rectangle[2], -rectangle[3]];
+                parameter.bounds = rectangle;
             }
-            rectangle[0] = rectangle[0] + this._cropBoxValueX;
-            rectangle[1] = rectangle[1] - this._cropBoxValueY;
-            this._calculateRectangle(rectangle);
-            parameter.bounds = rectangle;
-        } else {
-            rectangle = [rectangle[0], -rectangle[1], rectangle[2], -rectangle[3]];
-            parameter.bounds = rectangle;
-        }
-        const outerRectangle: number[] = this._obtainAppearanceBounds();
-        const value: number[] = [rectangle[0] - outerRectangle[0], (-(rectangle[1])) - outerRectangle[1], rectangle[2] - outerRectangle[2],
-            (((-rectangle[1]) - outerRectangle[1]) + (-rectangle[3])) - outerRectangle[3]];
-        for (let i: number = 0; i < value.length; i++) {
-            if (value[<number>i] < 0) {
-                value[<number>i] = -value[<number>i];
+            const outerRectangle: number[] = this._obtainAppearanceBounds();
+            const value: number[] = [rectangle[0] - outerRectangle[0],
+                (-(rectangle[1])) - outerRectangle[1], rectangle[2] - outerRectangle[2],
+                (((-rectangle[1]) - outerRectangle[1]) + (-rectangle[3])) - outerRectangle[3]];
+            for (let i: number = 0; i < value.length; i++) {
+                if (value[<number>i] < 0) {
+                    value[<number>i] = -value[<number>i];
+                }
             }
-        }
-        this._dictionary.update('RD', value);
-        if (this.opacity && this._opacity < 1) {
-            graphics.save();
-            graphics.setTransparency(this._opacity);
-        }
-        if (this.rotationAngle && this._rotate !== PdfRotationAngle.angle0) {
-            graphics.save();
-        }
-        this._drawFreeTextRectangle(graphics, parameter, rectangle, alignment);
-        if (text) {
-            this._drawFreeMarkUpText(graphics, parameter, rectangle, text, alignment);
-        }
-        if (this.opacity && this._opacity < 1) {
-            graphics.restore();
-        }
-        if (this.rotationAngle && this._rotate !== PdfRotationAngle.angle0) {
-            graphics.restore();
+            this._dictionary.update('RD', value);
+            if (this.opacity && this._opacity < 1) {
+                graphics.save();
+                graphics.setTransparency(this._opacity);
+            }
+            if (this.rotationAngle && this._rotate !== PdfRotationAngle.angle0) {
+                graphics.save();
+            }
+            this._drawFreeTextRectangle(graphics, parameter, rectangle, alignment);
+            if (text) {
+                this._drawFreeMarkUpText(graphics, parameter, rectangle, text, alignment);
+            }
+            if (this.opacity && this._opacity < 1) {
+                graphics.restore();
+            }
+            if (this.rotationAngle && this._rotate !== PdfRotationAngle.angle0) {
+                graphics.restore();
+            }
         }
         const bounds: number[] = this._obtainAppearanceBounds();
         if (this.flatten) {
@@ -12539,13 +12843,14 @@ export class PdfFreeTextAnnotation extends PdfComment {
  * document.destroy();
  * ```
  */
-export class PdfRedactionAnnotation extends PdfAnnotation {
+export class PdfRedactionAnnotation extends PdfComment {
     private _overlayText: string;
     private _repeat: boolean;
     private _font: PdfFont;
     private _textColor: number[];
     private _borderColor: number[];
     private _textAlignment: PdfTextAlignment = PdfTextAlignment.left;
+    private _appearanceFillColor: number[];
     /**
      * Initializes a new instance of the `PdfRedactionAnnotation` class.
      *
@@ -12572,14 +12877,103 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
      * document.destroy();
      * ```
      */
-    constructor(x: number, y: number, width: number, height: number )
-    constructor(x?: number, y?: number, width?: number, height?: number) {
+    constructor(x: number, y: number, width: number, height: number)
+    /**
+     * Initializes a new instance of the `PdfRedactionAnnotation` class.
+     *
+     * @param {number} x X.
+     * @param {number} y Y.
+     * @param {number} width Width.
+     * @param {number} height Height.
+     * @param {object} [properties] Optional customization properties.
+     * @param {number[]} [properties.borderColor] Border color.
+     * @param {boolean} [properties.repeatText] Repeat the overlay text.
+     * @param {string} [properties.overlayText] Overlay text.
+     * @param {PdfFont} [properties.font] Font used for the overlay text.
+     * @param {number[]} [properties.textColor] Text color.
+     * @param {number[]} [properties.appearanceFillColor] Fill color for the appearance.
+     * @param {number[]} [properties.innerColor] Inner color.
+     * @param {PdfTextAlignment} [properties.textAlignment] Alignment.
+     * @param {string} [properties.text] Additional text content.
+     * @param {string} [properties.author] Author.
+     * @param {string} [properties.subject] Subject.
+     * @param {number} [properties.opacity] Opacity.
+     * @param {Array<number[]>} [properties.boundsCollection] Bounds collection.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a new redaction annotation
+     * const font: PdfFont = new PdfStandardFont(PdfFontFamily.timesRoman, 12);
+     * const annot: PdfRedactionAnnotation = new PdfRedactionAnnotation(100, 100, 100, 100, { borderColor: [255, 0, 0], repeatText: true,
+     * overlayText: 'Sample Overlay', font: font, textColor: [0, 0, 0], appearanceFillColor: [255, 255, 255]});
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(x: number, y: number, width: number, height: number, properties: {borderColor?: number[], repeatText?: boolean,
+        overlayText?: string, font?: PdfFont, textColor?: number[], appearanceFillColor?: number[], innerColor?: number[],
+        textAlignment?: PdfTextAlignment, text?: string, author?: string, subject?: string, opacity?: number,
+        boundsCollection?: Array<number[]> })
+    constructor(x?: number, y?: number, width?: number, height?: number, properties?: {borderColor?: number[], repeatText?: boolean,
+        overlayText?: string, font?: PdfFont, textColor?: number[], appearanceFillColor?: number[], innerColor?: number[],
+        textAlignment?: PdfTextAlignment, text?: string, author?: string, subject?: string, opacity?: number,
+        boundsCollection?: Array<number[]> }) {
         super();
         this._dictionary = new _PdfDictionary();
         this._dictionary.update('Type', _PdfName.get('Annot'));
         this._dictionary.update('Subtype', _PdfName.get('Redact'));
         if (typeof x !== 'undefined' && typeof y !== 'undefined' && typeof width !== 'undefined' && typeof height !== 'undefined') {
             this.bounds = {x, y, width, height};
+            if (properties) {
+                if (_isNullOrUndefined(properties.borderColor) &&
+                    Array.isArray(properties.borderColor) && properties.borderColor.length > 0) {
+                    this.borderColor = properties.borderColor;
+                }
+                if (_isNullOrUndefined(properties.repeatText)) {
+                    this.repeatText = properties.repeatText;
+                }
+                if (_isNullOrUndefined(properties.overlayText)) {
+                    this.overlayText = properties.overlayText;
+                }
+                if (properties.font) {
+                    this.font = properties.font;
+                }
+                if (_isNullOrUndefined(properties.textColor) &&
+                           Array.isArray(properties.textColor) && properties.textColor.length > 0) {
+                    this.textColor = properties.textColor;
+                }
+                if (_isNullOrUndefined(properties.appearanceFillColor) && Array.isArray(properties.appearanceFillColor) &&
+                           properties.appearanceFillColor.length > 0) {
+                    this.appearanceFillColor = properties.appearanceFillColor;
+                }
+                if (_isNullOrUndefined(properties.innerColor) && Array.isArray(properties.innerColor) &&
+                           properties.innerColor.length > 0) {
+                    this.innerColor = properties.innerColor;
+                }
+                if (_isNullOrUndefined(properties.textAlignment)) {
+                    this.textAlignment = properties.textAlignment;
+                }
+                if (_isNullOrUndefined(properties.text)) {
+                    this.text = properties.text;
+                }
+                if (_isNullOrUndefined(properties.author)) {
+                    this.author = properties.author;
+                }
+                if (_isNullOrUndefined(properties.subject)) {
+                    this.subject = properties.subject;
+                }
+                if (_isNullOrUndefined(properties.opacity)) {
+                    this.opacity = properties.opacity;
+                }
+                if (_isNullOrUndefined(properties.boundsCollection) &&
+                           Array.isArray(properties.boundsCollection) && properties.boundsCollection.length > 0) {
+                    this.boundsCollection = properties.boundsCollection;
+                }
+            }
         }
         this._type = _PdfAnnotationType.redactionAnnotation;
     }
@@ -12676,7 +13070,7 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
      * ```
      */
     set textAlignment(value: PdfTextAlignment) {
-        if (this._textAlignment !== value) {
+        if (typeof value !== 'undefined' && value !== null && this._textAlignment !== value) {
             this._dictionary.update('Q', value as number);
         }
         this._textAlignment = value;
@@ -12853,6 +13247,9 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
      * ```
      */
     get font(): PdfFont {
+        if (!this._font) {
+            this._font = this._obtainFont();
+        }
         return this._font;
     }
     /**
@@ -12876,6 +13273,170 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
      */
     set font(value: PdfFont) {
         this._font = value;
+    }
+    /**
+     * Gets the appearance fill color of the annotation.
+     *
+     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRedactionAnnotation = page.annotations.at(0) as PdfRedactionAnnotation;
+     * // Gets the appearance fill color of the annotation.
+     * let appearanceFillColor: number[] = annotation.appearanceFillColor;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get appearanceFillColor(): number[] {
+        if ((this._appearanceFillColor === null || typeof this._appearanceFillColor === 'undefined') &&
+            this._dictionary.has('AFC')) {
+            const fillColor: number[] = this._dictionary.getArray('AFC');
+            if (fillColor) {
+                this._appearanceFillColor = _parseColor(fillColor);
+            }
+        }
+        return this._appearanceFillColor;
+    }
+    /**
+     * Sets the appearance fill color of the annotation.
+     *
+     * @param {number[]} value R, G, B color values in between 0 to 255.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRedactionAnnotation = page.annotations.at(0) as PdfRedactionAnnotation;
+     * // Sets the appearance fill color of the annotation.
+     * annotation.appearanceFillColor = [255, 255, 255];
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set appearanceFillColor(value: number[]) {
+        if (value && value.length === 3) {
+            const extColor: number[] = this.appearanceFillColor;
+            if (!this._isLoaded || typeof extColor === 'undefined' || (extColor[0] !== value[0] ||
+                extColor[1] !== value[1] || extColor[2] !== value[2])) {
+                this._appearanceFillColor = value;
+                this._dictionary.update('AFC', [Number.parseFloat((value[0] / 255).toFixed(3)),
+                    Number.parseFloat((value[1] / 255).toFixed(3)),
+                    Number.parseFloat((value[2] / 255).toFixed(3))]);
+            }
+        }
+    }
+    /**
+     * Gets the bounds collection of the annotation.
+     *
+     * @returns {Array<number[]>} bounds collection.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as  PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRedactionAnnotation =  page.annotations.at(0) as PdfRedactionAnnotation;
+     * // Gets the bounds collection of the annotation.
+     * let boundsCollection : Array<number[]> = annotation.boundsCollection;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get boundsCollection(): Array<number[]> {
+        if (this._isLoaded) {
+            const collection: Array<number[]> = [];
+            if (this._dictionary.has('QuadPoints')) {
+                const points: number[] = this._dictionary.getArray('QuadPoints');
+                if (points && points.length > 0) {
+                    const count: number = points.length / 8;
+                    for (let i: number = 0; i < count; i++) {
+                        let x: number = points[4 + (i * 8)] - points[i * 8];
+                        let y: number = points[5 + (i * 8)] - points[1 + (i * 8)];
+                        const height: number = Math.sqrt((x * x) + (y * y));
+                        x = points[6 + (i * 8)] - points[4 + (i * 8)];
+                        y = points[7 + (i * 8)] - points[5 + (i * 8)];
+                        const width: number = Math.sqrt((x * x) + (y * y));
+                        const rect: number[] = [points[i * 8], this._page.size[1] - points[1 + (i * 8)], width, height];
+                        collection.push(rect);
+                    }
+                }
+            }
+            return collection;
+        }
+        return this._boundsCollection;
+    }
+    /**
+     * Sets the bounds collection of the annotation.
+     *
+     * @param {Array<number[]>} value bounds collection.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRedactionAnnotation = page.annotations.at(0) as PdfRedactionAnnotation;
+     * // Sets the bounds collection of the annotation.
+     * annotation.boundsCollection = [[50, 50, 100, 100], [201, 101, 61, 31], [101, 401, 61, 31]];
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set boundsCollection(value: Array<number[]>) {
+        if (!this._isLoaded && typeof value !== 'undefined') {
+            if (value.length > 0) {
+                this._quadPoints = new Array<number>((value.length * 8));
+                this._boundsCollection.push(...value);
+            } else {
+                this._quadPoints = new Array<number>(8);
+                this._boundsCollection = value;
+            }
+            this._isChanged = true;
+        }
+        if (this._isLoaded && typeof value !== 'undefined') {
+            let isChanged: boolean = false;
+            if (this.boundsCollection.length === value.length) {
+                for (let i: number = 0; i < value.length; i++) {
+                    const values: number[] = value[<number>i];
+                    for (let j: number = 0; j < values.length; j++) {
+                        if (value[<number>i][<number>j] !==
+                            this.boundsCollection[<number>i][<number>j]) {
+                            isChanged = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                isChanged = true;
+            }
+            if (isChanged) {
+                this._quadPoints = new Array<number>((value.length * 8));
+                const pageHeight: number = this._page.size[1];
+                for (let i: number = 0; i < value.length; i++) {
+                    const quadValue: number[] = value[<number>i];
+                    this._quadPoints[0 + i * 8] = quadValue[0];
+                    this._quadPoints[1 + i * 8] = pageHeight - quadValue[1];
+                    this._quadPoints[2 + i * 8] = quadValue[0] + quadValue[2];
+                    this._quadPoints[3 + i * 8] = pageHeight - quadValue[1];
+                    this._quadPoints[4 + i * 8] = quadValue[0];
+                    this._quadPoints[5 + i * 8] = this._quadPoints[1 + i * 8] - quadValue[3];
+                    this._quadPoints[6 + i * 8] = quadValue[0] + quadValue[2];
+                    this._quadPoints[7 + i * 8] = this._quadPoints[5 + i * 8];
+                }
+                this._dictionary.update('QuadPoints', this._quadPoints);
+                this._isChanged = true;
+            }
+        }
     }
     static _load(page: PdfPage, dictionary: _PdfDictionary): PdfRedactionAnnotation {
         const annot: PdfRedactionAnnotation = new PdfRedactionAnnotation();
@@ -12901,7 +13462,10 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
         }
-        if (this._setAppearance) {
+        if (this._isChanged) {
+            this._setQuadPoints(this._page.size);
+        }
+        if (this._setAppearance || this._customTemplate.size > 0) {
             this._appearanceTemplate = this._createRedactionAppearance(isFlatten);
         }
         this._dictionary.update('Rect', _updateBounds(this));
@@ -12947,7 +13511,7 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
         }
     }
     _createRedactionAppearance(isFlatten: boolean): PdfTemplate {
-        const normalTemplate: PdfTemplate = this._createNormalAppearance();
+        let normalTemplate: PdfTemplate = this._createNormalAppearance();
         if (isFlatten) {
             if (this._isLoaded && this._page !== null) {
                 this._page.annotations.remove(this);
@@ -12961,128 +13525,174 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
                     _removeDuplicateReference(appearance, this._crossReference, 'R');
                 }
             }
-            const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-            borderTemplate._content.dictionary._updated = true;
-            const reference1: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference1, borderTemplate._content);
-            borderTemplate._content.reference = reference1;
-            dictionary.set('N', reference1);
-            normalTemplate._content.dictionary._updated = true;
-            const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, normalTemplate._content);
-            normalTemplate._content.reference = reference;
-            dictionary.set('R', reference);
-            dictionary._updated = true;
-            this._dictionary.set('AP', dictionary);
+            let appearance: _PdfDictionary;
+            if (this._dictionary.has('AP')) {
+                appearance = this._dictionary.get('AP');
+            } else {
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                appearance = new _PdfDictionary(this._crossReference);
+                this._crossReference._cacheMap.set(reference, appearance);
+                this._dictionary.update('AP', reference);
+            }
+            if (this._customTemplate.size > 0) {
+                normalTemplate = this._customTemplate.get('R');
+                this._drawCustomAppearance(appearance);
+            } else {
+                borderTemplate._content.dictionary._updated = true;
+                const reference1: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(reference1, borderTemplate._content);
+                borderTemplate._content.reference = reference1;
+                appearance.set('N', reference1);
+                normalTemplate._content.dictionary._updated = true;
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(reference, normalTemplate._content);
+                normalTemplate._content.reference = reference;
+                appearance.set('R', reference);
+                appearance._updated = true;
+            }
         }
         return normalTemplate;
     }
     _createBorderAppearance(): PdfTemplate {
+        let rectangle: { x: number, y: number, width: number, height: number };
+        if (this.boundsCollection.length > 1) {
+            const pdfPath: PdfPath = new PdfPath();
+            for (const bounds of this.boundsCollection) {
+                pdfPath.addRectangle(bounds[0], bounds[1], bounds[2], bounds[3]);
+            }
+            const rect: number[] = pdfPath._getBounds();
+            rectangle = { x: rect[0], y: rect[1], width: rect[2], height: rect[3] };
+            this.bounds = rectangle;
+        } else {
+            const singleBound: number[] = this.boundsCollection[0];
+            if (singleBound && singleBound.length === 4) {
+                rectangle = { x: singleBound[0], y: singleBound[1], width: singleBound[2], height: singleBound[3] };
+            } else {
+                rectangle = this.bounds;
+            }
+        }
         const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
         const template: PdfTemplate = new PdfTemplate(nativeRectangle, this._crossReference);
-        const width: number = this.border.width / 2;
         const graphics: PdfGraphics = template.graphics;
-        const actualWidth: number = this.border.width;
         let pen: PdfPen;
+        let brush: PdfBrush;
         if (this.border.width > 0 && this.borderColor) {
-            pen = new PdfPen(this.borderColor, actualWidth);
+            pen = new PdfPen(this.borderColor, this.border.width);
         }
-        const rect: number[] = [nativeRectangle[0], nativeRectangle[1], nativeRectangle[2], nativeRectangle[3]];
-        if (this.opacity < 1) {
-            const state: PdfGraphicsState = graphics.save();
-            graphics.setTransparency(this.opacity);
-            graphics.drawRectangle(rect[0] + width, rect[1] + width, rect[2] - actualWidth, rect[3] - actualWidth, pen, null);
-            graphics.restore(state);
-        } else {
-            graphics.drawRectangle(rect[0] + width, rect[1] + width, rect[2] - actualWidth, rect[3] - actualWidth, pen, null);
+        if (this.appearanceFillColor) {
+            brush = new PdfBrush(this.appearanceFillColor);
+        }
+        const effectiveBoundsCollection: Array<number[]> = (this.boundsCollection && this.boundsCollection.length > 0)
+            ? this.boundsCollection
+            : [[this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height]];
+        for (const bounds of effectiveBoundsCollection) {
+            if (this.opacity < 1) {
+                const state: PdfGraphicsState = graphics.save();
+                graphics.setTransparency(this.opacity);
+                graphics.drawRectangle(bounds[0] - rectangle.x, bounds[1] - rectangle.y, bounds[2], bounds[3], pen, brush);
+                graphics.restore(state);
+            } else {
+                graphics.drawRectangle(bounds[0] - rectangle.x, bounds[1] - rectangle.y, bounds[2], bounds[3], pen, brush);
+            }
         }
         return template;
     }
-    _createNormalAppearance(): PdfTemplate {
-        const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
-        const template: PdfTemplate = new PdfTemplate(nativeRectangle, this._crossReference);
-        _setMatrix(template, this._getRotationAngle());
-        const width: number = this.border.width / 2;
-        const graphics: PdfGraphics = template.graphics;
-        const parameter: _PaintParameter = new _PaintParameter();
-        let borderPen: PdfPen;
-        if (this.textColor && this.border.width > 0) {
-            borderPen = new PdfPen(this.textColor, this.border.width);
+    _drawText(graphics: PdfGraphics, rectangle: { x: number, y: number, width: number, height: number }): void {
+        if (!this.overlayText) {
+            return;
         }
+        if (!this.font) {
+            this.font = this._lineCaptionFont;
+        }
+        if (this._isLoaded) {
+            this._textAlignment = this.textAlignment;
+        }
+        const textFormat: PdfStringFormat = new PdfStringFormat(this._textAlignment, PdfVerticalAlignment.top);
+        const textColorBrush: PdfPen = this.textColor ? new PdfPen(this.textColor, 1) : new PdfPen([128, 128, 128], 1);
+        if (this._isLoaded && typeof this._repeat === 'undefined') {
+            this._repeat = this.repeatText;
+        }
+        const effectiveBoundsCollection: Array<number[]> = (this.boundsCollection && this.boundsCollection.length > 0)
+            ? this.boundsCollection
+            : [[this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height]];
+        for (const bounds of effectiveBoundsCollection) {
+            const rectX: number = bounds[0] - rectangle.x;
+            const rectY: number = bounds[1] - rectangle.y;
+            const textSize: number[] = this.font.measureString(this.overlayText, [0, 0]);
+            if (this.repeatText) {
+                const startX: number = rectX;
+                const startY: number = rectY;
+                const colCount: number = Math.floor(bounds[2] / textSize[0]);
+                const rowCount: number = Math.floor(bounds[3] / textSize[1]);
+                for (let col: number = 0; col < colCount; col++) {
+                    let x: number = startX + col * textSize[0];
+                    if (this.textAlignment === 1) {
+                        x += (bounds[2] - colCount * textSize[0]) / 2;
+                    } else if (this.textAlignment === 2) {
+                        x += bounds[2] - colCount * textSize[0];
+                    }
+                    for (let row: number = 0; row < rowCount; row++) {
+                        const y: number = startY + row * textSize[1];
+                        graphics.drawString(this.overlayText, this.font, [x, y, textSize[0], textSize[1]],
+                                            null, textColorBrush, textFormat);
+                    }
+                }
+            } else {
+                const rect: number[] = [rectX, rectY, bounds[2], bounds[3]];
+                const format: PdfStringFormat = new PdfStringFormat();
+                format.alignment = this.textAlignment;
+                graphics.drawString(this.overlayText, this.font, rect, null, textColorBrush, format);
+            }
+        }
+    }
+    _createNormalAppearance(): PdfTemplate {
+        const pdfPath: PdfPath = new PdfPath();
+        for (const bounds of this.boundsCollection) {
+            pdfPath.addRectangle(bounds[0], bounds[1], bounds[2], bounds[3]);
+        }
+        const rect: number[] = pdfPath._getBounds();
+        if (rect[2] === 0 && rect[3] === 0) {
+            rect[0] = this.bounds.x;
+            rect[1] = this.bounds.y;
+            rect[2] = this.bounds.width;
+            rect[3] = this.bounds.height;
+        }
+        const rectangle: { x: number, y: number, width: number, height: number } =
+        { x: rect[0], y: rect[1], width: rect[2], height: rect[3] };
+        this.bounds = rectangle;
+        const nativeRectangle: number[] = [0, 0, rectangle.width, rectangle.height];
+        const template: PdfTemplate = new PdfTemplate(nativeRectangle, this._crossReference);
+        const graphics: PdfGraphics = template.graphics;
+        const width: number = this.border.width / 2;
+        const widths: number = this.border.width;
+        let borderPen: PdfPen;
         let backBrush: PdfBrush;
-        let textcolor: PdfBrush;
+        if (this.borderColor && this.border.width > 0) {
+            borderPen = new PdfPen(this.borderColor, this.border.width);
+        }
         if (this.innerColor) {
             backBrush = new PdfBrush(this.innerColor);
         }
-        if (this.textColor) {
-            textcolor = new PdfBrush(this.textColor);
-        } else {
-            textcolor = new PdfBrush([128, 128, 128]);
-        }
-        parameter.backBrush = backBrush;
-        parameter.borderWidth = width;
-        const widths: number = this.border.width;
-        const rect: number[] = [nativeRectangle[0], nativeRectangle[1], nativeRectangle[2], nativeRectangle[3]];
-        if (this.opacity < 1) {
-            const state: PdfGraphicsState = graphics.save();
+        let state: PdfGraphicsState | undefined;
+        const shouldSetTransparency: boolean = this.opacity < 1;
+        if (shouldSetTransparency) {
+            state = graphics.save();
             graphics.setTransparency(this.opacity);
-            graphics.drawRectangle(rect[0] + width, rect[1] + width, rect[2] - widths, rect[3] - widths, borderPen, backBrush);
-            graphics.restore(state);
-        } else {
-            graphics.drawRectangle(rect[0] + width, rect[1] + width, rect[2] - widths, rect[3] - widths, borderPen, backBrush);
         }
-        graphics.restore();
-        if (this.overlayText && _isNullOrUndefined(this.overlayText) && this._overlayText !== '') {
-            let col: number = 0;
-            let row: number = 0;
-            if (typeof this.font === 'undefined' || this.font === null) {
-                this.font = this._lineCaptionFont;
+        if (this.boundsCollection && this.boundsCollection.length > 0) {
+            for (const bounds of this.boundsCollection) {
+                graphics.drawRectangle(bounds[0] - rectangle.x, bounds[1] - rectangle.y, bounds[2],
+                                       bounds[3], borderPen, backBrush);
             }
-            let y: number = 0;
-            let x: number = 0;
-            let diff: number = 0;
-            let rectangle: number[];
-            if (this._isLoaded) {
-                this._textAlignment = this.textAlignment;
-            }
-            const format: PdfStringFormat = new PdfStringFormat(this._textAlignment, PdfVerticalAlignment.top);
-            const textsize: number[] = this.font.measureString(this.overlayText, [0, 0], format, 0, 0);
-            if (this._isLoaded && typeof this._repeat === 'undefined') {
-                this._repeat = this.repeatText;
-            }
-            if (this._repeat) {
-                if (textsize[0] <= 0) {
-                    textsize[0] = 1;
-                }
-                col = this.bounds.width / textsize[0];
-                row = Math.floor(this.bounds.height / this.font._size);
-                diff = Math.abs(this.bounds.width - (Math.floor(col) * textsize[0]));
-                if (this._textAlignment === PdfTextAlignment.center) {
-                    x = diff / 2;
-                }
-                if (this._textAlignment === PdfTextAlignment.right) {
-                    x = diff;
-                }
-                for (let i: number = 1; i < col; i++) {
-                    for (let j: number = 0; j < row; j++) {
-                        rectangle = [x, y, 0, 0];
-                        graphics.drawString(this.overlayText, this.font, rectangle, null, textcolor, null);
-                        y = y + this.font._size;
-                    }
-                    x = x + textsize[0];
-                    y = 0;
-                }
-            } else {
-                diff = Math.abs(this.bounds.width - textsize[0]);
-                if (this._textAlignment === PdfTextAlignment.center) {
-                    x = diff / 2;
-                }
-                if (this._textAlignment === PdfTextAlignment.right) {
-                    x = diff;
-                }
-                rectangle = [x, 0, this.bounds.width - this.border.width, this.bounds.height - this.border.width];
-                graphics.drawString(this.overlayText, this.font, rectangle, null, textcolor, format);
-            }
+        } else {
+            graphics.drawRectangle(nativeRectangle[0] + width, nativeRectangle[1] + width, nativeRectangle[2] -
+                widths, nativeRectangle[3] - widths, borderPen, backBrush);
+        }
+        if (shouldSetTransparency) {
+            graphics.restore(state);
+        }
+        if (this.overlayText) {
+            this._drawText(graphics, rectangle);
         }
         return template;
     }
@@ -13709,6 +14319,10 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
             if (this._crossReference) {
                 const form: PdfForm = this._crossReference._document.form;
                 const fontData: { name: string, size: number, style: PdfFontStyle } = this._obtainFontDetails();
+                const cacheKey: string = `${fontData.name}_${fontData.size}_${fontData.style}`;
+                if (form && form._fontCache.has(cacheKey)) {
+                    return form._fontCache.get(cacheKey);
+                }
                 if (form && form._dictionary.has('DR')) {
                     const resources: _PdfDictionary = form._dictionary.get('DR');
                     if (resources.has('Font')) {
@@ -13724,7 +14338,14 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
                                     if (fontName.includes('-')) {
                                         fontName = fontName.substring(0, fontName.indexOf('-'));
                                     }
-                                    this._pdfFont = _mapFont(fontName, fontData.size, textFontStyle, this);
+                                    if (this._dictionary.has('DA')) {
+                                        this._pdfFont = _obtainFontDetails(form, this);
+                                    } else {
+                                        this._pdfFont = _mapFont(fontName, fontData.size, textFontStyle, this);
+                                    }
+                                    if (!form._fontCache.has(cacheKey)) {
+                                        form._fontCache.set(cacheKey, this._pdfFont);
+                                    }
                                 }
                             }
                         }
@@ -13737,6 +14358,9 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
                             this._pdfFont = _obtainFontDetails(form, this, field);
                         }
                     });
+                    if (!form._fontCache.has(cacheKey)) {
+                        form._fontCache.set(cacheKey, this._pdfFont);
+                    }
                 }
             }
         }
@@ -14075,6 +14699,7 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
 export class PdfStateItem extends PdfWidgetAnnotation {
     _style: PdfCheckBoxStyle;
     _styleText: string;
+    _exportValue: string = 'Yes';
     /**
      * Initializes a new instance of the `PdfStateItem` class.
      *
@@ -14147,7 +14772,11 @@ export class PdfStateItem extends PdfWidgetAnnotation {
                 this._setCheckedStatus(value);
                 this._field._setAppearance = true;
             }
-            this._dictionary.update('AS', _PdfName.get(value ? 'Yes' : 'Off'));
+            if (this._field && this._field._exportValue !== null && typeof this._field._exportValue !== 'undefined') {
+                this._dictionary.update('AS', _PdfName.get(value ? this._field._exportValue : 'Off'));
+            } else {
+                this._dictionary.update('AS', _PdfName.get(value ? 'Yes' : 'Off'));
+            }
         }
     }
     /**
@@ -14210,15 +14839,94 @@ export class PdfStateItem extends PdfWidgetAnnotation {
             dictionary.update('CA', _styleToString(value));
         }
     }
+    /**
+     * Gets the export value of the check box field.
+     *
+     * @returns {string} Export value.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the check box field
+     * let field: PdfCheckBoxField = document.form.fieldAt(0) as PdfCheckBoxField;
+     * // Access the first item of the check box field group
+     * let item: PdfStateItem = field.itemAt(0);
+     * // Gets the export value of the checkbox field.
+     * let text: sting = item.exportValue;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get exportValue(): string {
+        return this._tryGetExportValue(this._dictionary);
+    }
+    /**
+     * Sets the export value of the check box item.
+     *
+     * @param {string} value Export value.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the check box field
+     * let field: PdfCheckBoxField = document.form.fieldAt(0) as PdfCheckBoxField;
+     * // Access the first item of the check box field group
+     * let item: PdfStateItem = field.itemAt(0);
+     * // Sets the export value of the checkbox field.
+     * item.exportValue = 'CheckBox';
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set exportValue(value: string) {
+        this._exportValue = value;
+        if (this.checked) {
+            this._dictionary.update('AS', _PdfName.get(value));
+            this._setCheckedStatus(this.checked);
+        } else {
+            this._dictionary.update('AS', _PdfName.get('Off'));
+        }
+        if (this._dictionary.has('AP')) {
+            const dictionary: _PdfDictionary = this._dictionary.get('AP');
+            if (dictionary.has('N') || dictionary.has('D')) {
+                const oldValue: string = this._tryGetExportValue(this._dictionary);
+                const newValue: string = value;
+                if (dictionary.has('N')) {
+                    const normalDictionary: _PdfDictionary = dictionary.get('N');
+                    if (normalDictionary && normalDictionary.has(oldValue)) {
+                        const reference: _PdfReference = normalDictionary.getRaw(oldValue);
+                        delete normalDictionary._map[oldValue]; // eslint-disable-line
+                        normalDictionary.update(newValue, reference);
+                        normalDictionary._updated = true;
+                    }
+                }
+                if (dictionary.has('D')) {
+                    const downDictionary: _PdfDictionary = dictionary.get('D');
+                    if (downDictionary && downDictionary.has(oldValue)) {
+                        const reference: _PdfReference = downDictionary.getRaw(oldValue);
+                        delete downDictionary._map[oldValue]; // eslint-disable-line
+                        downDictionary.update(newValue, reference);
+                        downDictionary._updated = true;
+                    }
+                }
+            }
+        }
+        this._dictionary._updated = true;
+    }
     _setCheckedStatus(value: boolean): void {
         const check: boolean = value;
-        let fieldValue: string = this._getItemValue(this._dictionary);
+        let fieldValue: string = this._tryGetExportValue(this._dictionary);
         this._unCheckOthers(this, fieldValue, value);
         if (check) {
             if (!fieldValue) {
                 fieldValue = 'Yes';
             }
-            this._field._dictionary.update('V', fieldValue);
+            this._field._dictionary.update('V', _PdfName.get(fieldValue));
+            this._field._dictionary.update('AS', _PdfName.get(fieldValue));
             this._dictionary.update('AS', _PdfName.get(fieldValue));
             this._dictionary.update('V', _PdfName.get(fieldValue));
         } else if (this._field._dictionary) {
@@ -14239,7 +14947,7 @@ export class PdfStateItem extends PdfWidgetAnnotation {
                 const item: PdfStateItem = this._field.itemAt(i) as PdfStateItem;
                 if (item) {
                     if (item !== child) {
-                        item.checked = ((this._getItemValue(item._dictionary) === value) && isChecked);
+                        item.checked = ((this._tryGetExportValue(item._dictionary) === value) && isChecked);
                     } else if (!item.checked) {
                         item.checked = true;
                     }
@@ -14247,33 +14955,30 @@ export class PdfStateItem extends PdfWidgetAnnotation {
             }
         }
     }
-    _getItemValue(dictionary: _PdfDictionary): string {
-        let itemValue: string = '';
-        if (dictionary && dictionary.has('AS')) {
-            const asValue: _PdfName = dictionary.get('AS');
-            if (asValue && asValue.name !== 'Off') {
-                itemValue = 'Off';
-            }
-        }
-        if (itemValue === '') {
-            if (dictionary && dictionary.has('AP')) {
-                const apDictionary: _PdfDictionary = dictionary.get('AP');
-                if (apDictionary && apDictionary.has('N')) {
-                    const normalAppearance: _PdfDictionary = apDictionary.get('N');
-                    const keyList: string[] = [];
-                    normalAppearance.forEach((key: string, value: any) => { // eslint-disable-line
-                        keyList.push(key);
-                    });
-                    if (keyList.length > 0) {
-                        for (let i: number = 0; i < keyList.length; i++) {
-                            const key: string = keyList[<number>i];
-                            if (key && key !== 'Off') {
-                                itemValue = key;
-                                break;
-                            }
+    _tryGetExportValue(dictionary: _PdfDictionary): string {
+        let itemValue: string = this._exportValue;
+        if (dictionary && dictionary.has('AP')) {
+            const apDictionary: _PdfDictionary = dictionary.get('AP');
+            if (apDictionary && apDictionary.has('N')) {
+                const normalAppearance: _PdfDictionary = apDictionary.get('N');
+                const keyList: string[] = [];
+                normalAppearance.forEach((key: string, value: any) => { // eslint-disable-line
+                    keyList.push(key);
+                });
+                if (keyList.length > 0) {
+                    for (let i: number = 0; i < keyList.length; i++) {
+                        const key: string = keyList[<number>i];
+                        if (key && key !== 'Off') {
+                            itemValue = key;
+                            break;
                         }
                     }
                 }
+            }
+        } else if (dictionary && dictionary.has('AS')) {
+            const asValue: _PdfName = dictionary.get('AS');
+            if (asValue && asValue.name !== 'Off') {
+                itemValue = asValue.name;
             }
         }
         return itemValue;
@@ -14592,13 +15297,13 @@ export class PdfRadioButtonListItem extends PdfStateItem {
     }
     _postProcess(value?: string): void {
         const field: PdfRadioButtonListField = this._field as PdfRadioButtonListField;
-        if (!value && field && field.selectedIndex !== -1) {
-            value = field.itemAt(field.selectedIndex).value;
-        }
-        if (this.value === value) {
-            this._dictionary.update('AS', _PdfName.get(this.value));
-        } else {
-            this._dictionary.update('AS', _PdfName.get('Off'));
+        if (field) {
+            if (this.value === value || this._index.toString() === value) {
+                this._dictionary.update('AS', _PdfName.get(value));
+            }
+            else {
+                this._dictionary.update('AS', _PdfName.get('Off'));
+            }
         }
     }
 }

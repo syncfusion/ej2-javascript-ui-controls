@@ -110,6 +110,9 @@
             color: $chat-send-icon-disabled-color;
           }
         }
+        .e-chat-attachment-icon {
+          color: $attachment-icon-color;
+        }
       }
     }
     .e-suggestions {
@@ -255,6 +258,151 @@
     }
     .e-pinned-message-wrapper {
       background-color: $pinned-background-color;
+    }
+
+    .e-right .e-text .e-chat-mention-user-chip {
+      @if ($theme-name == 'fluent2-highcontrast') {
+        // Used this value of $theme-dark from fluent 2 highcontrast definition for minimal code usage
+        color: rgb(0, 90, 158);
+      }
+      @else
+      {
+        color: $mentioned-user-color;
+      }
+    }
+
+    .e-left .e-text .e-chat-mention-user-chip {
+      color: $mentioned-left-user-color;
+    }
+
+    .e-footer .e-chat-textarea.e-mention .e-mention-chip {
+      background: unset;
+    }
+    .e-status-wrapper {
+      .e-upload-failed {
+        color: $chat-error-color;
+      }
+    }
+    .e-img-preview-overlay {
+      background: $image-preview-overlay-bg;
+      .e-img-preview-header {
+        background: $image-preview-header-bg-color;
+        color: $image-preview-header-text-color;
+        .e-icons {
+          color: $file-download-icon-color;
+        }
+      }
+    }
+    .e-attached-file {
+      .e-image-wrapper,
+      .e-video-wrapper {
+        .e-progress-wrapper {
+          background-color: $progress-wrapper-bg;
+          .e-chat-progress-ring {
+            .e-progress-bg {
+              stroke: $progress-wrapper-bg;
+            }
+          }
+          .e-chat-close {
+            color: $stop-icon-color;
+          }
+          .e-chat-upload {
+            color: $retry-icon-color;
+          }
+        }
+      }
+      .e-video-wrapper {
+        .e-play-icon-wrapper {
+          background-color: $video-play-background-color;
+        }
+        .e-chat-video-play {
+          color: $video-play-icon-color;
+        }
+      }
+      .e-progress-wrapper {
+        .e-chat-progress-ring {
+          .e-progress-bg {
+            stroke: $progress-track-color;
+          }
+          .e-progress-fill {
+            stroke: $progress-fill-color;
+          }
+        }
+      }
+      .e-show-spinner {
+        .e-image-overlay,
+        .e-video-play-overlay {
+          background-color: $video-overlay-bg-color;
+        }
+      }
+    }
+    .e-file-wrapper {
+      border: 1px solid $file-wrapper-border;
+      background-color: $file-wrapper-bg;
+      .e-chat-file-format-icon {
+        color: $file-download-icon-color;
+      }
+      .e-file-data-wrapper {
+        .e-file-name {
+          color: $file-name-text-color;
+        }
+        .e-file-size {
+          color: $file-size-text-color;
+        }
+      }
+      .e-chat-download {
+        color: $file-download-icon-color;
+      }
+      .e-progress-wrapper {
+        .e-chat-close {
+          color: $file-download-icon-color;
+        }
+        .e-chat-upload {
+          color: $file-download-icon-color;
+        }
+      }
+    }
+  }
+
+  // Mention popup related styles for @mention support in chat ui
+  .e-chat-mention .e-chat-mention-user-icon,
+  .e-chat-mention .e-chat-mention-user-icon img {
+    border-radius: 50%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+  }
+
+  .e-chat-mention.e-mention.e-popup {
+    box-shadow: unset;
+    border-radius: 4px;
+    @if ($skin-name == 'Material3' or $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'FluentUI') {
+      border: unset;
+    }
+    @else {
+      border: 1px solid $mention-popup-border-color;
+    }
+    @if ($skin-name == 'Material3') {
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .3), 0 2px 6px 2px rgba(0, 0, 0, .15);
+    }
+    @if ($skin-name == 'FluentUI') {
+      box-shadow: 0 3.2px 7.2px 0 rgba(0, 0, 0, .12), 0 .6px 1.8px 0 rgba(0, 0, 0, .12);
+    }
+  }
+
+  @if ($skin-name == 'material-dark') {
+    .e-chat-mention .e-dropdownbase .e-list-item.e-active {
+      background-color: rgba(117, 117, 117, 1);
+    }
+  }
+
+  .e-chat-mention .e-chat-mention-user-icon {
+    color: $sender-icon-color;
+    @if ($skin-name == 'Material3' or $theme-name == 'Material3-dark') {
+      background: $sender-icon-bg-color;
+    }
+    @else {
+      background-color: $sender-icon-bg-color;
     }
   }
 }

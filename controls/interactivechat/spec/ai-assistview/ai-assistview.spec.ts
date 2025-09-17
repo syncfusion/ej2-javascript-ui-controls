@@ -1,5 +1,5 @@
 
-import { createElement, EventHandler, isNullOrUndefined, L10n, remove } from "@syncfusion/ej2-base";
+import { createElement, EventHandler, isNullOrUndefined, L10n, remove, setCulture } from "@syncfusion/ej2-base";
 import { AIAssistView, PromptRequestEventArgs } from "../../src/ai-assistview/index";
 import { ToolbarItemClickedEventArgs } from '../../src/interactive-chat-base/index';
 import { InterActiveChatBase } from '../../src/interactive-chat-base/index';
@@ -2178,6 +2178,37 @@ class HelloWorld
             uploader.onSelectFiles(eventArgs);
             failureElement = aiAssistView.element.querySelector('.e-upload-failure-alert');
             expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Échec du téléchargement : La taille du fichier est trop grande');
+        });
+
+        it('should display localized failure message from its own locale setting', () => {
+            // Load localization data required for the test
+            L10n.load({
+                'nl-nl': {
+                    'aiassistview': {
+                        'fileSizeFailure': 'Bestand is te groot`e'
+                    },
+                    "uploader": {
+                        'invalidMaxFileSize': 'Bestand is te groot'
+                    }
+                }
+            });
+            setCulture('nl-nl');
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'js.syncfusion.com',
+                    maxFileSize: 0 // Force a size failure
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const uploader = (aiAssistView as any).uploaderObj;
+            let fileObj: File = new File(["Test content"], "testfile.txt", { lastModified: 0, type: "text/plain" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => {} };
+            uploader.onSelectFiles(eventArgs);
+            let failureElement = aiAssistView.element.querySelector('.e-upload-failure-alert');
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Bestand is te groot`e');
+            setCulture('en-US');
         });
 
         it('should have attached files on initial rendering', () => {

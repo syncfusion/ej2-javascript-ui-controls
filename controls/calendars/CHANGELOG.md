@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 30.1.37 (2025-06-25)
+## 31.1.20 (2025-09-10)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I761820` - Fixed an issue where the DatePicker became disabled or unresponsive when the `min` property changed from null to a date value.
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I753728` - Fixed an issue where the date range picker with the preset range popup would open behind the drawer.
+
+## 31.1.17 (2025-09-05)
 
 ### DatePicker
 

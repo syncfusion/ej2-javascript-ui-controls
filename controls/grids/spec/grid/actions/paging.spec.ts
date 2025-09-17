@@ -1137,4 +1137,52 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
             gridObj = actionBegin = null;
         });
     });
+
+    describe('EJ2-978669: Pagination Dropdown Incorrectly Switches to "All" When Filtered Result Count Equals Page Size', function () {
+        let gridObj: Grid;
+        let actionBegin: (e: PageEventArgs) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                dataSource: [
+                    { EmployeeID: 1, FirstName: 'Nancy', Country: 'USA' },
+                    { EmployeeID: 2, FirstName: 'Andrew', Country: 'USA' },
+                    { EmployeeID: 3, FirstName: 'Janet', Country: 'USA' },
+                    { EmployeeID: 4, FirstName: 'John', Country: 'UK' }
+                ],
+                allowFiltering: true,
+                filterSettings: {
+                    columns: [{ field: 'Country', matchCase: false, operator: 'startswith', predicate: 'and', value: 'USA' },]
+                },
+                allowPaging: true,
+                pageSettings: {
+                    pageCount: 5,
+                    pageSize: 3,
+                    pageSizes: [3, 5, 10, 'All'],
+                },
+                toolbar: ['Search'],
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'Country', headerText: 'Country', width: 110 }
+                ],
+                }, done);
+        });
+
+        it('Cler filtering with pageSize All', function (done: Function) {
+            expect(gridObj.currentViewData.length).toBe(3);
+            gridObj.clearFiltering();
+            done();
+        });
+
+        it ('check pagesize after clearing', () => {
+            expect(gridObj.pageSettings.pageSize).toBe(3);
+            expect(gridObj.currentViewData.length).toBe(3);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = null;
+        });
+    });
 });

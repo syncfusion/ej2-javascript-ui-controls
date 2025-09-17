@@ -4654,3 +4654,25 @@ describe('978392 - Image disappears when pressing backspace before image inside 
         done();
    });
 });
+
+describe('979095 - Bullet list element comes with font color even after removing the font from the list content in RichTextEditor', () => {
+    let editorObj: RichTextEditor;
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            },
+            value: `<ul><li style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ppppppp</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><br></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ffffffffffff</span></li></ul>`
+        });
+    });
+    afterAll(() => {
+        destroy(editorObj);
+    });
+    it('Now, the Rich Text Editor works properly by removing font color from bullet list elements when the font is cleared from the list content.', (done) => {
+        let startNode = editorObj.inputElement.querySelector('li');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, startNode.lastChild, 0, 1);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+        expect(editorObj.inputElement.innerHTML === '<p style="text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ppppppp</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><br></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ffffffffffff</span></p>').toBe(true);
+        done();
+    });
+});

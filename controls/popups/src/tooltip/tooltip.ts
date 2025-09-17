@@ -795,7 +795,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 const tempArr: Element[] = templateFunction(
                     {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
                 if (tempArr) {
-                    if (this.isAngular) {
+                    if (this.isAngular && this.animation.open.effect === 'ZoomIn') {
                         setTimeout(() => {
                             this.reposition(target);
                         }, 1);

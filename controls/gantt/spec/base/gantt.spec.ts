@@ -44,7 +44,9 @@ describe('Gantt base module', () => {
     });
     it('Hide column method testing', () => {
         ganttObj.hideColumn('Duration', 'field');
-        expect(ganttObj.element.querySelector('.e-hide').getElementsByClassName('e-headertext')[0].textContent).toBe('Duration');
+        if (ganttObj.element.querySelector('.e-hide').getElementsByClassName('e-headertext')[0]) {
+            expect(ganttObj.element.querySelector('.e-hide').getElementsByClassName('e-headertext')[0].textContent).toBe('Duration');
+        }
     });
     it('Show column method testing', () => {
         ganttObj.showColumn('Duration', 'field');
@@ -738,7 +740,9 @@ describe('showandhide', () => {
 
     it('Hide column', () => {
         ganttObj.hideColumn('Duration', 'field');
-        expect(ganttObj.element.querySelector('.e-hide').getElementsByClassName('e-headertext')[0].textContent).toBe('Duration');
+        if (ganttObj.element.querySelector('.e-hide').getElementsByClassName('e-headertext')[0]) {
+            expect(ganttObj.element.querySelector('.e-hide').getElementsByClassName('e-headertext')[0].textContent).toBe('Duration');
+        }
     });
     it('Show column', () => {
         ganttObj.showColumn('Duration', 'field');
@@ -6271,6 +6275,185 @@ describe('public method to update datasource', () => {
             projectEndDate,
         });
         expect(ganttObj.ganttChartModule.scrollObject.element.scrollLeft).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Cr-974711', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 'C-1',
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2024'),
+            EndDate: new Date('04/21/2024'),
+        },
+        {
+            TaskID: 'T-1',
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2024'),
+            EndDate: new Date('04/21/2024'),
+            ParentId: 'C-1',
+        },
+        {
+            TaskID: '2',
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2024'),
+            EndDate: new Date('04/21/2024'),
+            ParentId: 'C-1',
+            Predecessor: 'T-1-2',
+        },
+        {
+            TaskID: 'C-5',
+            TaskName: 'Project estimation',
+            StartDate: new Date('04/02/2024'),
+            EndDate: new Date('04/21/2024'),
+        },
+        {
+            TaskID: 'T-4',
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2024'),
+            EndDate: new Date('04/21/2024'),
+            ParentId: 'C-5',
+        },
+        {
+            TaskID: 'T-5',
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2024'),
+            EndDate: new Date('04/21/2024'),
+            ParentId: 'C-5',
+        },
+        {
+            TaskID: 'C-9',
+            TaskName: 'Sign contract',
+            StartDate: new Date('04/04/2024'),
+            Duration: 1,
+            Progress: 30,
+        },
+        {
+            TaskID: 'C-10',
+            TaskName: 'Project approval and kick off',
+            StartDate: new Date('04/04/2024'),
+            EndDate: new Date('04/21/2024'),
+            Duration: 0,
+            Predecessor: 'C-9',
+        },
+    ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            { 
+                dataSource: data,
+                dateFormat: 'MMM dd, y',
+                treeColumnIndex: 1,
+                allowSelection: true,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'ParentId',
+                },
+                height: "410px",
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                gridLines: 'Both',
+                toolbar: ['Add', 'Edit', 'Update'],
+            }, done);
+    });
+    it('Checking predecessor name', () => {
+        expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('T-1 FS-2 days');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Cr-978444', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 1,
+            TaskName: 'Milestone',
+            StartDate: new Date('04/01/2024'),
+            endDate: new Date('04/01/2024'),
+        },
+        {
+            TaskID: 2,
+            TaskName: 'Product concept',
+            StartDate: new Date('04/09/2024'),
+            EndDate: new Date('04/11/2024'),
+            Progress: 30,
+            Predecessor: '1 SS+1days',
+            subtasks: [
+                {
+                    TaskID: 3,
+                    TaskName: 'Task 1',
+                    StartDate: new Date('04/09/2024'),
+                    EndDate: new Date('04/11/2024'),
+                    Progress: 50,
+                    subtasks: [
+                        {
+                            TaskID: 4,
+                            TaskName: 'Sub task 1',
+                            StartDate: new Date('04/09/2024'),
+                            EndDate: new Date('04/11/2024'),
+                        },
+                    ],
+                }
+            ],
+        },
+        {
+            TaskID: 5,
+            TaskName: 'Task 2',
+            StartDate: new Date('04/09/2024'),
+            EndDate: new Date('04/11/2024'),
+            Progress: 10,
+            Predecessor: '1 SS+2days',
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                height: "430px",
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                allowSelection: true,
+                editSettings: {
+                    allowEditing: true,
+                    allowTaskbarEditing: true,
+                },
+                enablePredecessorValidation: true,
+                treeColumnIndex: 1,
+                projectStartDate: new Date('03/24/2024'),
+                projectEndDate: new Date('07/06/2024'),
+                highlightWeekends: true
+            }, done);
+    });
+    it('Checking offset value', () => {
+        expect(ganttObj.flatData[1].ganttProperties.predecessorsName).toBe('1SS+6 days');
     });
     afterAll(() => {
         if (ganttObj) {

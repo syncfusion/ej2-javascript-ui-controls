@@ -183,101 +183,46 @@ export class ConnectorLineEdit {
     private idFromPredecessor(pre: string): string[] {
         const preArray: string[] = pre.split(',');
         const preIdArray: string[] = [];
-        let values: string[] = [];
-        let match: string[] = [];
+        const guidRegex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+        /* eslint-disable */
+        const suffixRegex: RegExp = /\s*([A-Z]{1,2})([+-]\d*\.?\d+\s*(?:days|day|hours|hour|minutes|minute|[DHM])?)?$/i;
+        const lagRegex: RegExp = /([+-]\d*\.?\d+\s*(?:days|day|hours|hour|minutes|minute|[DHM])?)$/i;
+        const ids: string[] = this.parent.ids;
         for (let j: number = 0; j < preArray.length; j++) {
-            const strArray: string[] = [];
-            let firstPart: string;
-            let isAlpha: boolean = false;
-            let predecessorName: string;
-            let isGUId: boolean = false;
-            const regex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-            const elSplit: string[] = preArray[j as number].split('-');
-            let id: string;
-            if (elSplit.length === 6) {
-                elSplit[4] = elSplit[4] + '-' + elSplit[5];
-                elSplit.pop();
-            }
-            if (elSplit.length === 5 && elSplit[4].length >= 12) {
-                id = preArray[j as number].substring(0, 36);
-                if (regex.test(id)) {
-                    isGUId = true;
-                }
-            }
-            if (preArray[j as number].includes('-')) {
-                if (preArray[j as number].includes('-') && (preArray[j as number].includes('days') || preArray[j as number].includes('day'))) {
-                    const splitName: string[] = preArray[j as number].split(/-(?=\d)/);
-                    if (splitName.length > 0) {
-                        predecessorName = splitName[splitName.length - 1];
-                    }
-                }
-                if (preArray[j as number].includes('-') && /[A-Za-z]/.test(predecessorName)) {
-                    const indexFS: number = preArray[j as number].indexOf(predecessorName);
-                    if (indexFS !== -1) {
-                        firstPart = preArray[j as number].substring(0, indexFS - 1);
-                        if (firstPart.includes('-')) {
-                            isAlpha = true;
-                        }
-                    }
-                }
-            }
-            if (isGUId) {
-                let split: string[];
-                split = elSplit[4].split('+');
-                let spliceLength: number;
-                if (split.length === 1) {
-                    values[0] = preArray[j as number];
-                }
-                else {
-                    spliceLength = split[1].length;
-                    values[0] = preArray[j as number].slice(0, -(spliceLength + 1));
-                    values[1] = split[1];
-                }
-                if (elSplit[4].indexOf('-') >= 0) {
-                    split = elSplit[4].split('-');
-                    if (split.length === 1) {
-                        values[0] = preArray[j as number];
-                    }
-                    else {
-                        spliceLength = split[1].length;
-                        values[0] = preArray[j as number].slice(0, -(spliceLength + 1));
-                        values[1] = split[1];
-                    }
-                }
-            }
-            else {
-                if (isAlpha && firstPart.includes('-')) {
-                    values[0] = firstPart;
-                }
-                else{
-                    values = preArray[j as number].split('+');
-                    if (preArray[j as number].indexOf('-') >= 0) {
-                        values = preArray[j as number].split('-');
-                    }
-                }
-            }
-            if (!isNullOrUndefined(values[0])) {
-                const ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;
-                if (ids.indexOf(values[0]) === -1) {
-                    if (values[0].indexOf(' ') !== -1) {
-                        match = values[0].split(' ');
-                        if (match.length === 1) {
-                            match = values[0].match(/(\d+|[A-z]+)/g);
-                        }
-                        strArray.push(match[0]);
-                    } else {
-                        if (values[0].length === 1 || values[0].length === 2) {
-                            strArray.push(values[0]);
-                        }
-                        else {
-                            strArray.push(values[0].slice(0, -2));
-                        }
-                    }
+            const predecessor: string = preArray[j as number].trim();
+            let id: string = predecessor;
+            if (guidRegex.test(predecessor.substring(0, 36))) {
+                id = predecessor.substring(0, 36);
+            } else {
+                if (ids.indexOf(predecessor) !== -1) {
+                    id = predecessor;
                 } else {
-                    strArray.push(values[0]);
+                    const match: RegExpMatchArray | null = predecessor.match(suffixRegex);
+                    if (match) {
+                        const prefix: string = predecessor.substring(0, predecessor.length - match[0].length);
+                        if (ids.indexOf(prefix) !== -1) {
+                            id = prefix;
+                        }
+                    }
+                    if (id === predecessor) {
+                        const lagMatch: RegExpMatchArray | null = predecessor.match(lagRegex);
+                        if (lagMatch) {
+                            const prefix: string = predecessor.substring(0, predecessor.length - lagMatch[0].length);
+                            if (ids.indexOf(prefix) !== -1) {
+                                id = prefix;
+                            }
+                        }
+                    }
+                    if (id === predecessor) {
+                        const splitChar: '+' | '-' = predecessor.includes('+') ? '+' : '-';
+                        const parts: string[] = predecessor.split(splitChar);
+                        if (parts[0] && ids.indexOf(parts[0]) !== -1) {
+                            id = parts[0];
+                        }
+                    }
                 }
             }
-            preIdArray.push((strArray.join('')));
+            preIdArray.push(id);
         }
         return preIdArray;
     }
@@ -640,6 +585,7 @@ export class ConnectorLineEdit {
                 cancelCheckbox !== null && cancelCheckbox.checked;
             this.applyPredecessorOption();
         }
+        this.parent.hideSpinner();
         this.parent.validationDialogElement.hide();
     }
 
@@ -647,6 +593,7 @@ export class ConnectorLineEdit {
         this.parent.constraintViolationType = '';
         this.parent.currentEditedArgs.validateMode.respectLink = true;
         this.applyPredecessorOption();
+        this.parent.hideSpinner();
         this.parent.validationDialogElement.hide();
     }
 
@@ -655,6 +602,7 @@ export class ConnectorLineEdit {
         if (getValue('isInteracted', e)) {
             this.parent.currentEditedArgs.validateMode.respectLink = true;
             this.applyPredecessorOption();
+            this.parent.hideSpinner();
         }
     }
     /**
@@ -964,6 +912,29 @@ export class ConnectorLineEdit {
     private formatViolationType(violationType: string): string {
         return violationType.replace(/([a-z])([A-Z])/g, '$1 $2');
     }
+    private updateZIndex(ganttObj: Gantt): void {
+        if (
+            ganttObj &&
+            ganttObj.editModule &&
+            ganttObj.editModule.dialogModule &&
+            ganttObj.editModule.dialogModule.dialog &&
+            ganttObj.editModule.dialogModule.dialog.style &&
+            ganttObj.editModule.dialogModule.dialog.style.zIndex !== ''
+        ) {
+            const zIndex: number = parseInt(ganttObj.editModule.dialogModule.dialog.style.zIndex, 10);
+            const validationElement: HTMLElement =
+                ganttObj.validationDialogElement &&
+                ganttObj.validationDialogElement.element;
+
+            if (!isNaN(zIndex) && validationElement) {
+                const newZIndex: string = (zIndex + 1).toString();
+                validationElement.style.zIndex = newZIndex;
+                if (validationElement.parentElement) {
+                    validationElement.parentElement.style.zIndex = newZIndex;
+                }
+            }
+        }
+    }
 
     /**
      * To open predecessor validation dialog
@@ -973,15 +944,17 @@ export class ConnectorLineEdit {
      * @private
      */
     public openValidationDialog(args: object): void {
+        const ganttObj: Gantt = this.parent;
         const contentTemplate: HTMLElement = this.validationDialogTemplate(args);
-        this.parent.validationDialogElement.setProperties({ content: contentTemplate });
-        const contentId: string = this.parent.element.id + '_dialogValidationRule_dialog-content';
-        const contentElement: HTMLElement = this.parent.validationDialogElement.element.querySelector<HTMLElement>('#' + contentId);
+        ganttObj.validationDialogElement.setProperties({ content: contentTemplate });
+        const contentId: string = ganttObj.element.id + '_dialogValidationRule_dialog-content';
+        const contentElement: HTMLElement = ganttObj.validationDialogElement.element.querySelector<HTMLElement>('#' + contentId);
         contentElement.style.paddingTop = '10px';
-        const headerId: string = this.parent.element.id + '_dialogValidationRule_dialog-header';
-        const headerElement: HTMLElement = this.parent.validationDialogElement.element.querySelector<HTMLElement>('#' + headerId);
+        const headerId: string = ganttObj.element.id + '_dialogValidationRule_dialog-header';
+        const headerElement: HTMLElement = ganttObj.validationDialogElement.element.querySelector<HTMLElement>('#' + headerId);
         headerElement.style.padding = '8px 16px';
-        this.parent.validationDialogElement.show();
+        this.updateZIndex(ganttObj);
+        ganttObj.validationDialogElement.show();
     }
 
     /**
@@ -1106,19 +1079,21 @@ export class ConnectorLineEdit {
             predecessorLink: any
         }
     ): void {
+        const ganttObj: Gantt = this.parent;
         const contentTemplate: HTMLElement = this.constraintValidationDialogTemplate(args);
-        const constraintConflictHeader: string = this.parent.localeObj.getConstant('schedulingConflicts');
-        this.parent.validationDialogElement.setProperties({
+        const constraintConflictHeader: string = ganttObj.localeObj.getConstant('schedulingConflicts');
+        ganttObj.validationDialogElement.setProperties({
             content: contentTemplate,
             header: constraintConflictHeader
         });
-        const contentId: string = this.parent.element.id + '_dialogValidationRule_dialog-content';
-        const contentElement: HTMLElement = this.parent.validationDialogElement.element.querySelector<HTMLElement>('#' + contentId);
+        const contentId: string = ganttObj.element.id + '_dialogValidationRule_dialog-content';
+        const contentElement: HTMLElement = ganttObj.validationDialogElement.element.querySelector<HTMLElement>('#' + contentId);
         contentElement.style.paddingTop = '10px';
-        const headerId: string = this.parent.element.id + '_dialogValidationRule_dialog-header';
-        const headerElement: HTMLElement = this.parent.validationDialogElement.element.querySelector<HTMLElement>('#' + headerId);
+        const headerId: string = ganttObj.element.id + '_dialogValidationRule_dialog-header';
+        const headerElement: HTMLElement = ganttObj.validationDialogElement.element.querySelector<HTMLElement>('#' + headerId);
         headerElement.style.padding = '8px 16px';
-        this.parent.validationDialogElement.show();
+        this.updateZIndex(ganttObj);
+        ganttObj.validationDialogElement.show();
     }
     /**
      * Constraint validation dialog template
@@ -1224,7 +1199,7 @@ export class ConnectorLineEdit {
         let violatedParent: IGanttData;
         let ganttTaskData: ITaskData;
         let violateType: string;
-        const startDate: Date = this.parent.predecessorModule.getPredecessorDate(ganttRecord, predecessor, null, true);
+        const startDate: Date = this.parent.predecessorModule.getPredecessorDate(ganttRecord, predecessor, null);
         if (data) {
             ganttTaskData  = data.ganttProperties;
         } else {
@@ -1324,6 +1299,29 @@ export class ConnectorLineEdit {
             if (!isNullOrUndefined(violationType) && isNullOrUndefined(violateType)) {
                 violatedParent = parentGanttRecord;
                 violateType = violationType;
+            }
+        }
+        if (!violateType && this.parent.constraintViolationType) {
+            violateType = this.parent.constraintViolationType;
+            const predecessorsCollection: IPredecessor[] = ganttRecord.ganttProperties.predecessor;
+            const currentTaskId: string = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId.toString()
+                : ganttRecord.ganttProperties.rowUniqueID.toString();
+            const predecessors: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor): IPredecessor => {
+                if (data.to === currentTaskId) { return data; } else { return null; }
+            });
+            let maxViolation: number = -Infinity;
+            if (predecessors.length > 0) {
+                for (let i: number = 0; i < predecessors.length; i++) {
+                    const fromId: string = predecessors[i as number].from;
+                    const predecessorRecord: IGanttData = this.parent.getRecordByID(fromId);
+                    if (predecessorRecord && predecessorRecord.ganttProperties.endDate && ganttRecord.ganttProperties.startDate) {
+                        const violation: number = predecessorRecord.ganttProperties.endDate.getTime() - ganttRecord.ganttProperties.startDate.getTime();
+                        if (violation > maxViolation) {
+                            maxViolation = violation;
+                            violatedParent = predecessorRecord;
+                        }
+                    }
+                }
             }
         }
         const validateArgs: object = {

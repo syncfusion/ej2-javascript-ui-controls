@@ -4,6 +4,7 @@ import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _checkReview, _isNullOrUndefined } from './../utils';
 import { PdfAnnotation, PdfLineAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfAngleMeasurementAnnotation, PdfRectangleAnnotation, PdfSquareAnnotation, PdfPolyLineAnnotation, PdfPolygonAnnotation, PdfInkAnnotation, PdfPopupAnnotation, PdfAttachmentAnnotation, Pdf3DAnnotation, PdfFileLinkAnnotation, PdfWatermarkAnnotation, PdfRubberStampAnnotation, PdfSoundAnnotation, PdfFreeTextAnnotation, PdfRedactionAnnotation, PdfRichMediaAnnotation, PdfTextMarkupAnnotation, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfComment } from './annotation';
 import { PdfAnnotationFlag } from './../enumerator';
+import { PdfTemplate } from '../graphics/pdf-template';
 /**
  * The class provides methods and properties to handle the collection of `PdfAnnotation`.
  * ```typescript
@@ -161,6 +162,11 @@ export class PdfAnnotationCollection {
             this._addCommentsAndReview(annotation, annotation._dictionary.get('F'));
         }
         this._updateCustomAppearanceResource(annotation);
+        if (annotation._customTemplate && annotation._customTemplate.size > 0) {
+            annotation._customTemplate.forEach((template: PdfTemplate, key: string) => {// eslint-disable-line
+                template._updatePendingResource(this._crossReference);
+            });
+        }
         return index;
     }
     /**

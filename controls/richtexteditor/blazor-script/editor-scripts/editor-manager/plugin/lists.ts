@@ -1750,6 +1750,9 @@ export class Lists {
                         }
                     }
                     const wrapperTag: string = isNullOrUndefined(e.enterAction) ? CONSTANT.DEFAULT_TAG : e.enterAction;
+                    if ((element as HTMLElement).style.color) {
+                        (element as HTMLElement).style.removeProperty('color');
+                    }
                     const wrapper: string = '<' + wrapperTag + wrapperclass + this.domNode.attributes(element) + '></' + wrapperTag + '>';
                     const tempElement: HTMLElement = document.createElement('div');
                     tempElement.innerHTML = wrapper;

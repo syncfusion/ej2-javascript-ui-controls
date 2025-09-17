@@ -126,6 +126,12 @@ describe("checkModuleInjection", function() {
             documenteditor.fitPage('FitPageWidth');
             expect(documenteditor.zoomFactor).not.toBe(1);
         });
+        it('getRevisionData API', () => {
+            console.log('getRevisionData API');
+            documenteditor.enableCollaborativeEditing = true;
+            documenteditor.getRevisionData(1,'10/10/2020');
+            documenteditor.enableCollaborativeEditing = false;
+        });
     });
     describe('ContentControl API', () => {
         let documenteditor: DocumentEditor;
