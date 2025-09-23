@@ -308,6 +308,9 @@ export class ToolbarModule {
         case 'getToolbarHeight':
             args.value['obj']['toolbarHeight'] = this.toolbarHeight;
             break;
+        case 'getcurrentImageQuality':
+            args.value['obj']['currentImageQuality'] = this.currentQuality;
+            break;
         case 'setToolbarHeight':
             if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.length > 0 && parent.toolbar.indexOf('Open') > -1)) {
                 this.toolbarHeight = args.value['height'];

@@ -37,17 +37,20 @@ export class Resize extends ActionBase {
     }
 
     public resizeStart(e: MouseEvent & TouchEvent): void {
-        if (e && e.type === 'touchstart' && (!this.parent.uiStateValues.isTapHold ||
-            !closest(e.target as Element, '.' + cls.APPOINTMENT_BORDER))) {
+        if ((e && e.type === 'touchstart' && (!this.parent.uiStateValues.isTapHold ||
+            !closest(e.target as Element, '.' + cls.APPOINTMENT_BORDER))) || closest(e.target as Element, '.' + cls.INLINE_EDIT_CLASS)) {
+            return;
+        }
+        const resizeTarget: HTMLElement = closest(e.target as Element, '.' + cls.EVENT_RESIZE_CLASS) as HTMLElement;
+        this.actionObj.element = closest(resizeTarget, '.' + cls.APPOINTMENT_CLASS) as HTMLElement;
+        this.actionObj.event = this.parent.eventBase.getEventByGuid(this.actionObj.element.getAttribute('data-guid')) as Record<string, any>;
+        if (isNullOrUndefined(this.actionObj.event)) {
             return;
         }
         this.parent.eventBase.removeSelectedAppointmentClass();
         this.actionObj.action = 'resize';
         this.actionObj.slotInterval = this.parent.activeViewOptions.timeScale.interval / this.parent.activeViewOptions.timeScale.slotCount;
         this.actionObj.interval = this.actionObj.slotInterval;
-        const resizeTarget: HTMLElement = closest(e.target as Element, '.' + cls.EVENT_RESIZE_CLASS) as HTMLElement;
-        this.actionObj.element = closest(resizeTarget, '.' + cls.APPOINTMENT_CLASS) as HTMLElement;
-        this.actionObj.event = this.parent.eventBase.getEventByGuid(this.actionObj.element.getAttribute('data-guid')) as Record<string, any>;
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
         const resizeArgs: ResizeEventArgs = {
             cancel: false,
@@ -554,6 +557,7 @@ export class Resize extends ActionBase {
                     (Math.ceil((targetWidth - cloneWidth) / this.actionObj.cellWidth) * this.actionObj.cellWidth) : offsetLeft);
             }
         }
+        width = Math.floor(width);
         styles.width = formatUnit(width);
         return styles;
     }

@@ -465,6 +465,20 @@
       border-width: 0;
       float: left;
 
+      &.sf-grid {
+        .e-headercell.e-fe-grid-icon .e-headercelldiv {
+          @if $fm-skin-name !='Material3' {
+            margin-right: 1px;
+          }
+        }
+
+        .e-gridheader .e-fe-grid-icon,
+        .e-gridcontent .e-fe-grid-icon  {
+          @if $fm-skin-name !='Material3' {
+            padding: 0 2px 0 9px;
+          }
+        }
+      }
       .e-gridcontent tr.e-emptyrow td.e-lastrowcell:first-child:empty {
         height: 0;
         padding: 0;
@@ -1359,5 +1373,17 @@
 
   .e-filemanager .e-empty.e-view-container {
     margin: auto;
+  }
+
+  .e-filemanager.e-fe-no-toolbar .e-fe-splitter {
+    height: 100%;
+  }
+
+  .e-filemanager .e-fe-splitter {
+    height: calc(100% - #{if($fm-skin-name == 'Material3' or $fm-skin-name == 'fluent2', $fe-tb-height + 1px, $fe-tb-height)});
+  }
+
+  .e-filemanager .e-view-container .e-fe-grid-container {
+    height: calc(100% - $fe-address-height);
   }
 }

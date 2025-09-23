@@ -372,6 +372,32 @@ export class DropDownButtons {
                     }
                 }
                 break;
+            case 'numberFormatList':
+                if (this.numberFormatListDropDown) {
+                    for (const numberFormatList of Object.keys(newProp.numberFormatList)) {
+                        switch (numberFormatList) {
+                        case 'types':
+                            this.numberFormatListDropDown.setProperties({
+                                items: this.getUpdateItems(newProp.numberFormatList.types, 'NumberFormatList')
+                            });
+                            break;
+                        }
+                    }
+                }
+                break;
+            case 'bulletFormatList':
+                if (this.bulletFormatListDropDown) {
+                    for (const bulletFormatList of Object.keys(newProp.bulletFormatList)) {
+                        switch (bulletFormatList) {
+                        case 'types':
+                            this.bulletFormatListDropDown.setProperties({
+                                items: this.getUpdateItems(newProp.bulletFormatList.types, 'BulletFormatList')
+                            });
+                            break;
+                        }
+                    }
+                }
+                break;
             }
         }
     }

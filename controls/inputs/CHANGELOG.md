@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.21 (2025-09-23)
+
+### TextBox
+
+#### Bug Fixes
+
+- `#I762701` - Fixed an issue where the float label text was overlapping with the icon of the textbox when long text was entered.
+
 ## 31.1.20 (2025-09-10)
 
 ### ColorPicker

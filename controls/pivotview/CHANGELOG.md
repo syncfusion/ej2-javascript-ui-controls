@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 31.1.21 (2025-09-23)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I758017` - The pivot chart now renders correctly with the tabular layout when subtotals and grand totals are disabled.
+- `#I757830` - The pivot table now updates correctly when culture settings are changed dynamically.  
+- `#I747426` - The pivot table now renders properly when a calculated field is added to the value axis in the server-side engine.
+
 ## 31.1.17 (2025-09-05)
 
 ### Pivot Table

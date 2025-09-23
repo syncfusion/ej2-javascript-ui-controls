@@ -401,6 +401,33 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('982952: Dynamic Property changes for maxWidth is not being reflected in the insertImageSetting.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image'],
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Should insert image with the dynamic maxWidth', (done: Function) => {
+            (rteObj as any).insertImageSettings.maxWidth = '400';
+            rteObj.dataBind();
+            (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: any = rteObj.contentModule.getDocument().body.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+            setTimeout(() => {
+                expect((rteObj.element.querySelector('.e-rte-image') as HTMLElement).style.maxWidth).toEqual('400px');
+                done();
+            }, 1000);
+        });
+    });
+
     describe('mobile resize', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

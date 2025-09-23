@@ -441,7 +441,10 @@ export class DataLabel {
                         totalValue = positiveValue;
                         currentPoint = points[pointXValueAsKey as string];
                     }
-                    if (currentPoint && currentPoint.symbolLocations[0]) {
+                    if (currentPoint && currentPoint.symbolLocations[0] &&
+                        withInBounds(currentPoint.symbolLocations[0].x + (currentPoint.series as Series).clipRect.x,
+                                     currentPoint.symbolLocations[0].y + (currentPoint.series as Series).clipRect.y,
+                                     (currentPoint.series as Series).clipRect)) {
                         const series: Series = currentPoint.series as Series;
                         const symbolLocation: ChartLocation = currentPoint.symbolLocations[0];
                         const labelFormat: string = this.chart.stackLabels.format;

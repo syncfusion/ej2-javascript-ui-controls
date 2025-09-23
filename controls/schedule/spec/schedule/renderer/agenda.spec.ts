@@ -1922,6 +1922,58 @@ describe('Agenda View', () => {
         });
     });
 
+    describe('Date header template with groupIndex in Agenda view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const eventData = [
+                {
+                    Id: 1,
+                    Subject: 'Nancy\'s Appointment',
+                    StartTime: new Date(2018, 3, 1, 9, 30),
+                    EndTime: new Date(2018, 3, 1, 11, 0),
+                    OwnerId: 1
+                },
+                {
+                    Id: 2,
+                    Subject: 'Steven\'s Appointment',
+                    StartTime: new Date(2018, 3, 2, 10, 0),
+                    EndTime: new Date(2018, 3, 2, 11, 30),
+                    OwnerId: 2
+                }
+            ];
+
+            const model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Agenda',
+                selectedDate: new Date(2018, 3, 1),
+                group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }],
+                dateHeaderTemplate: '<div class="custom-date-header" data-group="${groupIndex}">Group</div>'
+            };
+            schObj = createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Should render dateHeaderTemplate with correct groupIndex values in Agenda view', () => {
+            const dateHeaders = schObj.element.querySelectorAll('.custom-date-header');
+            expect(dateHeaders.length).toBe(2);
+
+            const firstHeader = dateHeaders[0] as HTMLElement;
+            expect(firstHeader.getAttribute('data-group')).toBe('0');
+
+            const secondHeader = dateHeaders[1] as HTMLElement;
+            expect(secondHeader.getAttribute('data-group')).toBe('1');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -1522,6 +1522,421 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('Testing the TimelineYear view With enableMaxHeight=true and enableIndicator=false', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const yearData: Record<string, any>[] = [
+                {
+                    Id: 1,
+                    Subject: 'Event 1',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 2,
+                    Subject: 'Event 2',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 3,
+                    Subject: 'Event 3',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 4,
+                    Subject: 'Event 4',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 5,
+                    Subject: 'Event 5',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                }
+            ];
+            const model: ScheduleModel = {
+                width: '800px',
+                height: '550px',
+                selectedDate: new Date(2017, 3, 1),
+                views: [
+                    { option: 'Year', isSelected: true },
+                    { option: 'TimelineYear', displayName: 'Horizontal Year' },
+                    { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' }
+                ],
+                eventSettings: {
+                    dataSource: yearData,
+                    enableMaxHeight: true,
+                    enableIndicator: false
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Check enableMaxHeight=true and enableIndicator=false in Horizontal TimelineYear view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventSettings.enableMaxHeight).toBe(true);
+                expect(schObj.eventSettings.enableIndicator).toBe(false);
+                const appointments = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointments.length).toBe(1);
+                const moreIndicators = schObj.element.querySelectorAll('.e-more-indicator');
+                expect(moreIndicators.length).toBe(0);
+                done();
+            };
+            const timelineYearButton: HTMLElement = schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[0] as HTMLElement;
+            util.triggerMouseEvent(timelineYearButton, 'click');
+        });
+
+        it('Check enableMaxHeight=true and enableIndicator=false in Vertical TimelineYear view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventSettings.enableMaxHeight).toBe(true);
+                expect(schObj.eventSettings.enableIndicator).toBe(false);
+                const appointments = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointments.length).toBe(1);
+                const moreIndicators = schObj.element.querySelectorAll('.e-more-indicator');
+                expect(moreIndicators.length).toBe(0);
+                done();
+            };
+            const verticalTimelineButton: HTMLElement = schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement;
+            util.triggerMouseEvent(verticalTimelineButton, 'click');
+        });
+    });
+
+    describe('Testing the TimelineYear view With enableMaxHeight=true and enableIndicator=true', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const yearData: Record<string, any>[] = [
+                {
+                    Id: 1,
+                    Subject: 'Event 1',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 2,
+                    Subject: 'Event 2',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 3,
+                    Subject: 'Event 3',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 4,
+                    Subject: 'Event 4',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 5,
+                    Subject: 'Event 5',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                }
+            ];
+            const model: ScheduleModel = {
+                width: '800px',
+                height: '550px',
+                selectedDate: new Date(2017, 3, 1),
+                views: [
+                    { option: 'Year', isSelected: true },
+                    { option: 'TimelineYear', displayName: 'Horizontal Year' },
+                    { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' }
+                ],
+                eventSettings: {
+                    dataSource: yearData,
+                    enableMaxHeight: true,
+                    enableIndicator: true
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Check enableMaxHeight=true and enableIndicator=true in Horizontal TimelineYear view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventSettings.enableMaxHeight).toBe(true);
+                expect(schObj.eventSettings.enableIndicator).toBe(true);
+                const appointments = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointments.length).toBe(1);
+                const moreIndicators = schObj.element.querySelectorAll('.e-more-indicator');
+                expect(moreIndicators.length).toBe(1);
+                if (moreIndicators.length > 0) {
+                    util.triggerMouseEvent(moreIndicators[0] as HTMLElement, 'click');
+                    expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toBe(true);
+                    const popupEvents = schObj.element.querySelectorAll('.e-more-popup-wrapper .e-appointment');
+                    expect(popupEvents.length).toBe(5);
+                    util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+                    expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-close')).toBe(true);
+                }
+                done();
+            };
+            const timelineYearButton: HTMLElement = schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[0] as HTMLElement;
+            util.triggerMouseEvent(timelineYearButton, 'click');
+        });
+
+        it('Check enableMaxHeight=true and enableIndicator=true in Vertical TimelineYear view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventSettings.enableMaxHeight).toBe(true);
+                expect(schObj.eventSettings.enableIndicator).toBe(true);
+                const appointments = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointments.length).toBe(1);
+                const moreIndicators = schObj.element.querySelectorAll('.e-more-indicator');
+                expect(moreIndicators.length).toBe(1);
+                if (moreIndicators.length > 0) {
+                    util.triggerMouseEvent(moreIndicators[0] as HTMLElement, 'click');
+                    expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toBe(true);
+                    const popupEvents = schObj.element.querySelectorAll('.e-more-popup-wrapper .e-appointment');
+                    expect(popupEvents.length).toBe(5);
+                    util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+                    expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-close')).toBe(true);
+                }
+                done();
+            };
+            const verticalTimelineButton: HTMLElement = schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement;
+            util.triggerMouseEvent(verticalTimelineButton, 'click');
+        });
+    });
+
+    describe('Testing the TimelineYear view With enableMaxHeight=true and enableIndicator=false with resources', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const resourceData: Record<string, any>[] = [
+                {
+                    Id: 1,
+                    Subject: 'Resource Event 1',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2),
+                    ResourceId: 1
+                },
+                {
+                    Id: 2,
+                    Subject: 'Resource Event 2',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2),
+                    ResourceId: 1
+                },
+                {
+                    Id: 3,
+                    Subject: 'Resource Event 3',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2),
+                    ResourceId: 2
+                },
+                {
+                    Id: 4,
+                    Subject: 'Resource Event 4',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2),
+                    ResourceId: 2
+                },
+                {
+                    Id: 5,
+                    Subject: 'Resource Event 5',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2),
+                    ResourceId: 3
+                }
+            ];
+            const model: ScheduleModel = {
+                width: '800px',
+                height: '550px',
+                selectedDate: new Date(2017, 3, 1),
+                views: [
+                    { option: 'TimelineYear', displayName: 'Horizontal Year' },
+                    { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' }
+                ],
+                group: {
+                    resources: ['Resources']
+                },
+                resources: [{
+                    field: 'ResourceId',
+                    title: 'Resource',
+                    name: 'Resources',
+                    dataSource: [
+                        { text: 'Resource 1', id: 1, color: '#1aaa55' },
+                        { text: 'Resource 2', id: 2, color: '#7fa900' },
+                        { text: 'Resource 3', id: 3, color: '#ea7a57' }
+                    ],
+                    textField: 'text',
+                    idField: 'id',
+                    colorField: 'color'
+                }],
+                eventSettings: {
+                    dataSource: resourceData,
+                    enableMaxHeight: true,
+                    enableIndicator: false
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Check enableMaxHeight=true and enableIndicator=false in Horizontal TimelineYear view with resources', (done: DoneFn) => {
+            expect(schObj.eventSettings.enableMaxHeight).toBe(true);
+            expect(schObj.eventSettings.enableIndicator).toBe(false);
+            const appointments = schObj.element.querySelectorAll('.e-appointment');
+            expect(appointments.length).toBe(3);
+            const resourceElements = schObj.element.querySelectorAll('.e-resource-cells');
+            expect(resourceElements.length).toBeGreaterThan(0);
+            const moreIndicators = schObj.element.querySelectorAll('.e-more-indicator');
+            expect(moreIndicators.length).toBe(0);
+            done();
+        });
+
+        it('Check enableMaxHeight=true and enableIndicator=false in Vertical TimelineYear view with resources', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventSettings.enableMaxHeight).toBe(true);
+                expect(schObj.eventSettings.enableIndicator).toBe(false);
+                const appointments = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointments.length).toBe(3);
+                const resourceColumn = schObj.element.querySelector('.e-resource-column-wrap');
+                expect(resourceColumn).not.toBeNull();
+                const moreIndicators = schObj.element.querySelectorAll('.e-more-indicator');
+                expect(moreIndicators.length).toBe(0);
+                done();
+            };
+
+            const verticalTimelineButton: HTMLElement = schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement;
+            util.triggerMouseEvent(verticalTimelineButton, 'click');
+        });
+    });
+
+    describe('Testing the TimelineYear view With enableMaxHeight=true and enableIndicator=true with resources', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const resourceData: Record<string, any>[] = [
+                {
+                    Id: 1,
+                    Subject: 'Resource Event 1',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2),
+                    ResourceId: 1
+                },
+                {
+                    Id: 2,
+                    Subject: 'Resource Event 2',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2),
+                    ResourceId: 1
+                },
+                {
+                    Id: 3,
+                    Subject: 'Resource Event 3',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2),
+                    ResourceId: 2
+                },
+                {
+                    Id: 4,
+                    Subject: 'Resource Event 4',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2),
+                    ResourceId: 2
+                },
+                {
+                    Id: 5,
+                    Subject: 'Resource Event 5',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2),
+                    ResourceId: 3
+                }
+            ];
+            const model: ScheduleModel = {
+                width: '800px',
+                height: '550px',
+                selectedDate: new Date(2017, 3, 1),
+                views: [
+                    { option: 'TimelineYear', displayName: 'Horizontal Year' },
+                    { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' }
+                ],
+                group: {
+                    resources: ['Resources']
+                },
+                resources: [{
+                    field: 'ResourceId',
+                    title: 'Resource',
+                    name: 'Resources',
+                    dataSource: [
+                        { text: 'Resource 1', id: 1, color: '#1aaa55' },
+                        { text: 'Resource 2', id: 2, color: '#7fa900' },
+                        { text: 'Resource 3', id: 3, color: '#ea7a57' }
+                    ],
+                    textField: 'text',
+                    idField: 'id',
+                    colorField: 'color'
+                }],
+                eventSettings: {
+                    dataSource: resourceData,
+                    enableMaxHeight: true,
+                    enableIndicator: true
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Check enableMaxHeight=true and enableIndicator=true in Horizontal TimelineYear view with resources', (done: DoneFn) => {
+            expect(schObj.eventSettings.enableMaxHeight).toBe(true);
+            expect(schObj.eventSettings.enableIndicator).toBe(true);
+            const appointments = schObj.element.querySelectorAll('.e-appointment');
+            expect(appointments.length).toBe(3);
+            const moreIndicators = schObj.element.querySelectorAll('.e-more-indicator');
+            expect(moreIndicators.length).toBe(2);
+            if (moreIndicators.length > 0) {
+                util.triggerMouseEvent(moreIndicators[0] as HTMLElement, 'click');
+                expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toBe(true);
+                const groupIndex = moreIndicators[0].getAttribute('data-group-index');
+                expect(groupIndex).not.toBeNull();
+                const popupEvents = schObj.element.querySelectorAll('.e-more-popup-wrapper .e-appointment');
+                expect(popupEvents.length).toBe(2);
+                util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+                expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-close')).toBe(true);
+            }
+            done();
+        });
+
+        it('Check enableMaxHeight=true and enableIndicator=true in Vertical TimelineYear view with resources', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventSettings.enableMaxHeight).toBe(true);
+                expect(schObj.eventSettings.enableIndicator).toBe(true);
+                const appointments = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointments.length).toBe(3);
+                const moreIndicators = schObj.element.querySelectorAll('.e-more-indicator');
+                expect(moreIndicators.length).toBe(2);
+                if (moreIndicators.length > 0) {
+                    util.triggerMouseEvent(moreIndicators[0] as HTMLElement, 'click');
+                    expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toBe(true);
+                    const popupEvents = schObj.element.querySelectorAll('.e-more-popup-wrapper .e-appointment');
+                    expect(popupEvents.length).toBe(2);
+                    util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+                    expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-close')).toBe(true);
+                }
+                done();
+            };
+            const verticalTimelineButton: HTMLElement = schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement;
+            util.triggerMouseEvent(verticalTimelineButton, 'click');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -3799,6 +3799,9 @@ export class Gantt extends Component<HTMLElement>
             case 'columns':
                 this.treeGridModule.treeGridColumns = [];
                 this.treeGridModule.validateGanttColumns();
+                if (this.editModule) {
+                    this.editModule['updateDefaultColumnEditors']();
+                }
                 this.treeGrid.columns = this.treeGridModule.treeGridColumns;
                 this.treeGrid.refreshColumns();
                 this.chartRowsModule.initiateTemplates();

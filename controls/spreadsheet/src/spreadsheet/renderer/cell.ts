@@ -91,7 +91,7 @@ export class CellRenderer implements ICellRenderer {
             args.row.appendChild(args.td);
         }
         if (this.parent.enableRtl &&
-            (!args.cell.style || !args.cell.style.borderRight || args.cell.style.borderRight !== 'none')) {
+            (!args.cell || !args.cell.style || !args.cell.style.borderRight || args.cell.style.borderRight !== 'none')) {
             const prevCellModel: CellModel = getCell(args.rowIdx, args.colIdx - 1, sheet);
             if (prevCellModel && prevCellModel.style && prevCellModel.style.borderLeft) {
                 const prevEle: HTMLTableCellElement = this.parent.getCell(args.rowIdx, args.colIdx - 1) as HTMLTableCellElement;

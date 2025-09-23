@@ -2208,6 +2208,10 @@ export class TableWidget extends BlockWidget {
                 let cellWidth: number = cellWidget.width;
                 if (cellWidth === 0) {
                     cellWidth = cellWidget.cellFormat.cellWidth;
+                    if (this.tableFormat.tableAlignment === 'Center' && !this.tableFormat.allowAutoFit && this.tableFormat.preferredWidthType !== 'Percent' &&
+                        this.tableFormat.preferredWidth !== 0 && this.tableFormat.preferredWidth === cellWidth) {
+                        width = HelperMethods.convertPointToPixel(this.tableFormat.preferredWidth);
+                    }
                     if (cellWidth > cellWidget.cellFormat.preferredWidth &&
                         cellWidget.cellFormat.preferredWidth !== 0 && cellWidget.cellFormat.preferredWidthType !== 'Percent') {
                         cellWidth = cellWidget.cellFormat.preferredWidth;
@@ -5409,7 +5413,7 @@ export abstract class ElementBox {
      */
     get nextValidNodeForTracking(): ElementBox {
         let elementBox: ElementBox = this;
-        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof ContentControl)) {
+        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox)) {
             elementBox = elementBox.nextNode;
         }
         return elementBox;
@@ -5419,7 +5423,7 @@ export abstract class ElementBox {
      */
     get previousValidNodeForTracking(): ElementBox {
         let elementBox: ElementBox = this;
-        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof ContentControl)) {
+        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox)) {
             elementBox = elementBox.previousNode;
         }
         return elementBox;

@@ -392,7 +392,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         case 'dateHeader':
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
                 templateName = 'dateHeaderTemplate';
-                const args: CellTemplateArgs = { date: date, type: type };
+                const args: CellTemplateArgs = { date: date, type: type, groupIndex: groupIndex };
                 const viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
                 cntEle = [].slice.call(this.parent.getDateHeaderTemplate()(args, this.parent, templateName,
                                                                            templateId + viewName + templateName,

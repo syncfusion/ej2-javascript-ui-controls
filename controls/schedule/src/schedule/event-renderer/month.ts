@@ -135,13 +135,15 @@ export class MonthEvent extends EventBase {
             if (this.parent.currentView === 'Month' && this.parent.showWeekNumber) {
                 const totalCells: HTMLElement[] =
                     [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
-                const weekNumberCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.WEEK_NUMBER_CLASS));
+                const weekNumberCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('td' + '.' + cls.WEEK_NUMBER_CLASS));
                 weekNumberCells.forEach((cell: HTMLElement, i: number) => {
                     const height: number = totalCells[parseInt(i.toString(), 10)].offsetHeight;
                     setStyleAttribute(cell, { 'height': height + 'px' });
                 });
-                this.parent.element.querySelector('.' + cls.WEEK_NUMBER_WRAPPER_CLASS).scrollTop =
-                    this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS).scrollTop;
+                const weekNumberWrapper: HTMLElement = this.parent.element.querySelector('.' + cls.WEEK_NUMBER_WRAPPER_CLASS) as HTMLElement;
+                if (!isNullOrUndefined(weekNumberWrapper)) {
+                    weekNumberWrapper.scrollTop = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS).scrollTop;
+                }
             }
         }
         this.parent.renderTemplates();

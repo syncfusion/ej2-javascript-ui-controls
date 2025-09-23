@@ -1042,7 +1042,7 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
                     && element.previousNode.scriptType === element.scriptType
                     && element.revisionLength === 0 && element.previousNode.revisionLength === 0
                     && (element.previousNode.text.length > 0 && element.previousNode.text[element.previousNode.text.length - 1] !== '-' 
-                    && element.previousNode.text[element.previousNode.text.length - 1] !== '/') && inlines.length > 0) {
+                    && element.previousNode.text[element.previousNode.text.length - 1] !== '/') && inlines.length > 0 && !isNullOrUndefined(inlines[inlines.length - 1][textProperty[this.keywordIndex]])) {
                     let elementText: string = element.text;
                     if (!this.isWriteEndFootNote && (isNullOrUndefined(this.owner.editorModule) || !this.owner.editorModule.isPaste)) {
                         elementText = HelperMethods.removeInvalidXmlChars(elementText);

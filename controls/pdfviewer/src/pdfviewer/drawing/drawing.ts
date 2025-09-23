@@ -3133,10 +3133,11 @@ export class Drawing {
      * @param {Rect} nodeBounds - Specified the node bounds value.
      * @param {boolean} isStamp - Specified the annotation is stamp or not.
      * @param {boolean} isSkip - Specified the annotaion is skip or not.
+     * @param {IElement} obj - Specified the annotation object.
      * @returns {boolean} - Returns true or false.
      */
     public checkBoundaryConstraints(tx: number, ty: number, pageIndex: number, nodeBounds?: Rect,
-                                    isStamp?: boolean, isSkip?: boolean): boolean {
+                                    isStamp?: boolean, isSkip?: boolean, obj?: IElement): boolean {
         const selectorBounds: Rect = !nodeBounds ? this.pdfViewer.selectedItems.wrapper.bounds : undefined;
         const bounds: Rect = nodeBounds;
         const canvas: any = this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
@@ -3144,6 +3145,22 @@ export class Drawing {
         if (canvas) {
             const width: number = canvas.clientWidth / this.pdfViewer.viewerBase.getZoomFactor();
             const height: number = canvas.clientHeight / this.pdfViewer.viewerBase.getZoomFactor();
+            const lineAnnotation: any = obj;
+            if (lineAnnotation && (lineAnnotation.shapeAnnotationType === 'Line' || lineAnnotation.shapeAnnotationType === 'Distance' ||
+                lineAnnotation.shapeAnnotationType === 'Polygon' || lineAnnotation.measureType === 'Perimeter' ||
+                lineAnnotation.shapeAnnotationType === 'LineWidthArrowHead')) {
+                if (lineAnnotation.vertexPoints) {
+                    for (let i: number = 0; i < lineAnnotation.vertexPoints.length; i++) {
+                        const point: any = lineAnnotation.vertexPoints[i as number];
+                        const x: number = point.x + (tx || 0);
+                        const y: number = point.y + (ty || 0);
+                        if (x > width - 3 || x < 1 || y > height - 3 || y < 1) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
             const right: number = (nodeBounds ? bounds.right : selectorBounds.right) + (tx || 0);
             const left: number = (nodeBounds ? bounds.left : selectorBounds.left) + (tx || 0);
             const top: number = (nodeBounds ? bounds.top : selectorBounds.top) + (ty || 0);
@@ -3306,7 +3323,7 @@ export class Drawing {
             connector = obj;
         }
         point = { x: point.x / this.pdfViewer.viewerBase.getZoomFactor(), y: point.y / this.pdfViewer.viewerBase.getZoomFactor() };
-        if (this.checkBoundaryConstraints(undefined, undefined, connector.pageIndex, connector.wrapper.bounds)) {
+        if (this.checkBoundaryConstraints(undefined, undefined, connector.pageIndex, connector.wrapper.bounds, null, null, obj)) {
             if (connector.shapeAnnotationType === 'Distance') {
                 const leader: Leader = isLeader(connector, endPoint);
                 if (endPoint === 'Leader0') {

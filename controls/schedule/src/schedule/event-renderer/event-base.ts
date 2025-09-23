@@ -924,7 +924,7 @@ export class EventBase {
         }
         const args: EventClickArgs = <EventClickArgs>extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
         this.parent.trigger(event.eventDoubleClick, args, (eventDoubleClickArgs: EventClickArgs) => {
-            if (!eventDoubleClickArgs.cancel) {
+            if (!eventDoubleClickArgs.cancel && this.parent.eventSettings.allowEditing) {
                 if (!isNullOrUndefined(this.parent.activeEventData.event) &&
                     isNullOrUndefined((<Record<string, any>>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceID])) {
                     this.parent.eventWindow.openEditor(this.parent.activeEventData.event as Record<string, any>, 'Save');

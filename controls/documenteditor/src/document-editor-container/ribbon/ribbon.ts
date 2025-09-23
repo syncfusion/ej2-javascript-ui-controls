@@ -107,6 +107,9 @@ export class Ribbon implements IToolbarHandler {
     }
 
     private initializeInternal(): void {
+        if (!this.container.ribbonContainer) {
+            return;
+        }
         this.createRibbonElement();
         this.renderRibbon();
         if (this.tabManager.homeTab) {

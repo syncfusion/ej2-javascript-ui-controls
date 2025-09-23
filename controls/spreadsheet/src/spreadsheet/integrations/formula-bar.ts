@@ -373,7 +373,7 @@ export class FormulaBar {
         const isCellLocked: boolean = isLocked(cell, getColumn(sheet, range[1]));
         if (target.classList.contains('e-drop-icon') && target.parentElement.classList.contains('e-formula-bar-panel')) {
             this.toggleFormulaBar(target);
-        } else if (target.classList.contains('e-formula-bar')) {
+        } else if (target.classList.contains('e-formula-bar') || document.activeElement.classList.contains('e-formula-bar')) {
             if (isReadOnly(cell, getColumn(sheet, range[1]), getRow(sheet, range[0]))) {
                 this.parent.notify(readonlyAlert, null);
                 return;

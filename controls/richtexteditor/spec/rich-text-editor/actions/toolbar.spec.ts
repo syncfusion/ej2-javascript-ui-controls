@@ -2514,6 +2514,33 @@ describe('865043 - In toolbar settings, enable floating set to false the tooltip
     });
 });
 
+describe('982113 - Dynamic Property changes for tooltip and Enable Floating Toolbar Offset', () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['NumberFormatList', 'BulletFormatList'
+                ]
+            },
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('check the tooltip', () => {
+        expect(document.querySelectorAll('.e-toolbar-item.e-template').length).toEqual(2);
+        expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Number Format List (Ctrl+Shift+O)');
+        expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List (Ctrl+Alt+O)');
+        expect(document.querySelector(".e-richtexteditor .e-toolbar").parentElement.style.top).toBe('0px');
+        rteObj.showTooltip = false;
+        rteObj.floatingToolbarOffset = 200;
+        rteObj.dataBind();
+        expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Number Format List');
+        expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List');
+        expect(document.querySelector(".e-richtexteditor .e-toolbar").parentElement.style.top).toBe('200px');
+    });
+});
+
 describe('821312: Bullet list does not reverted after click on the bullet list icon', () => {
     let rteObj: RichTextEditor;
     beforeAll((done) => {

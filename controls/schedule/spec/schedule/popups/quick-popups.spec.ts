@@ -3225,6 +3225,69 @@ describe('Quick Popups', () => {
         });
     });
 
+    describe('More popup and quick popup interaction', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                currentView: 'Month',
+                selectedDate: new Date(2017, 10, 1)
+            };
+            schObj = util.createSchedule(model, defaultData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('should not close the more popup when quick popup is closed', () => {
+            const moreIndicator = schObj.element.querySelector('.e-more-indicator');
+            expect(moreIndicator).toBeTruthy();
+            util.triggerMouseEvent(moreIndicator as HTMLElement, 'click');
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            expect(morePopup.classList.contains('e-popup-open')).toBeTruthy();
+            const eventInMorePopup = morePopup.querySelector('.e-appointment');
+            expect(eventInMorePopup).toBeTruthy();
+            util.triggerMouseEvent(eventInMorePopup as HTMLElement, 'click');
+            const quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(quickPopup.classList.contains('e-popup-open')).toBeTruthy();
+            const closeButton = quickPopup.querySelector('.e-close');
+            expect(closeButton).toBeTruthy();
+            util.triggerMouseEvent(closeButton as HTMLElement, 'click');
+            expect(quickPopup.classList.contains('e-popup-open')).toBeFalsy();
+            expect(morePopup.classList.contains('e-popup-open')).toBeTruthy();
+            const moreCloseButton = morePopup.querySelector('.e-more-event-close');
+            util.triggerMouseEvent(moreCloseButton as HTMLElement, 'click');
+            expect(morePopup.classList.contains('e-popup-open')).toBeFalsy();
+        });
+        it('should keep the more popup open when delete button in quick popup is clicked', () => {
+            const moreIndicator = schObj.element.querySelector('.e-more-indicator');
+            expect(moreIndicator).toBeTruthy();
+            util.triggerMouseEvent(moreIndicator as HTMLElement, 'click');
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            expect(morePopup.classList.contains('e-popup-open')).toBeTruthy();
+            const eventInMorePopup = morePopup.querySelector('.e-appointment');
+            expect(eventInMorePopup).toBeTruthy();
+            util.triggerMouseEvent(eventInMorePopup as HTMLElement, 'click');
+            const quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(quickPopup.classList.contains('e-popup-open')).toBeTruthy();
+            const deleteButton = quickPopup.querySelector('.e-delete');
+            expect(deleteButton).toBeTruthy();
+            util.triggerMouseEvent(deleteButton as HTMLElement, 'click');
+            expect(morePopup.classList.contains('e-popup-open')).toBeTruthy();
+            const deleteDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const cancelButton = deleteDialog.querySelector('.e-quick-dialog-cancel') as HTMLElement;
+            if (cancelButton) {
+                util.triggerMouseEvent(cancelButton, 'click');
+            }
+            expect(morePopup.classList.contains('e-popup-open')).toBeTruthy();
+            const moreCloseButton = morePopup.querySelector('.e-more-event-close');
+            if (moreCloseButton) {
+                util.triggerMouseEvent(moreCloseButton as HTMLElement, 'click');
+            }
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

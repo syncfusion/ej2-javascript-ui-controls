@@ -344,6 +344,9 @@ export class ActionBase {
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             query = query.concat('[data-group-index = "' + cloneElement.getAttribute('data-group-index') + '"]');
         }
+        if (cloneElement.hasAttribute('data-guid')) {
+            query += '[data-guid="' + cloneElement.getAttribute('data-guid') + '"]';
+        }
         const elements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(query));
         addClass(elements, cls.EVENT_ACTION_CLASS);
         const eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));

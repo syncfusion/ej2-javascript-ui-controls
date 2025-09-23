@@ -425,7 +425,7 @@ export class DetailsView {
         showSpinner(this.parent.element);
         const nameColumn: ColumnModel =
         this.parent.detailsViewSettings.columns.find((column: ColumnModel) => column.field === this.parent.sortBy);
-        if (nameColumn && !('sortComparer' in nameColumn)) {
+        if (nameColumn && !('sortComparer' in nameColumn) || this.parent.sortOrder === 'None') {
             const items: Object[] = getSortedData(
                 this.parent, (this.parent.enableVirtualization)
                     ? args.result
@@ -505,6 +505,12 @@ export class DetailsView {
         this.checkEmptyDiv(this.emptyArgs);
         this.isInteracted = this.isLoaded ? true : this.isInteracted;
         this.isLoaded = false;
+        if (this.parent.sortOrder === 'None' && !isNOU(this.gridObj.element)) {
+            const sortIconElement: HTMLElement = this.gridObj.element.querySelector('.e-ascending, .e-descending');
+            if (sortIconElement && sortIconElement.classList) {
+                sortIconElement.classList.remove('e-icon-ascending', 'e-ascending', 'e-icon-descending', 'e-descending');
+            }
+        }
     }
 
     private selectRecords(nodes: string[]): void {
@@ -1042,7 +1048,7 @@ export class DetailsView {
     private onDetailsResize(): void {
         if (this.parent.view === 'Details' && !this.parent.isMobile && !isNOU(this.gridObj)) {
             const gridHeader: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent().querySelector('.e-headercontent');
-            const gridHeaderColGroup: HTMLElement = <HTMLElement>gridHeader.firstChild.childNodes[0];
+            const gridHeaderColGroup: HTMLElement = gridHeader.querySelector('colgroup');
             const gridContentColGroup: HTMLElement =
                 <HTMLElement>this.gridObj.getContent().querySelector('.e-content .e-table').children[0];
             const gridHeaderColNames: ColumnModel[] = this.gridObj.getColumns();

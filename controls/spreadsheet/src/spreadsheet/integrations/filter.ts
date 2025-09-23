@@ -1483,6 +1483,18 @@ export class Filter {
             }
         };
         const setDate: () => void = (): void => {
+            if (this.parent.locale !== 'en-US') {
+                const dependables: { months?: object } = IntlBase.getDependables(cldrData, this.parent.locale, null).dateObject;
+                if (dependables.months && dependables.months['stand-alone'] && dependables.months['stand-alone'].wide) {
+                    const keys: string[] = Object.keys(dependables.months['stand-alone'].wide);
+                    for (let i: number = 0; i < keys.length; i++) {
+                        if (dependables.months['stand-alone'].wide[keys[i as number]] === valArr[1]) {
+                            months[valArr[1]] = Number(keys[i as number]) - 1;
+                            break;
+                        }
+                    }
+                }
+            }
             date = new Date(Number(valArr[0]), months[valArr[1]], Number(valArr[2]));
             if (date.getDate()) {
                 predicates.push(Object.assign({ value: date, type: type }, predicate));

@@ -4443,7 +4443,7 @@ describe('Chart ->', () => {
         });
     });
 
-    describe('EJ2-970453, EJ2-972832, EJ2-972870, EJ2-972920 ->', () => {
+    describe('EJ2-970453, EJ2-972832, EJ2-972870, EJ2-972920, EJ2-981368 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: dateData }] }] }, done);
         });
@@ -4556,6 +4556,28 @@ describe('Chart ->', () => {
             expect(chartObj.primaryXAxis.valueType).toBe('Category');
             expect(document.getElementById('chart_40_AxisLabel_0').textContent).toBe('2/14/2014');
             done();
+        });
+        it('Insert scatter chart and check switch row column cases', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Scatter', range: 'J1:K11', id: 'chart_7' }]]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_7');
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+                expect(document.getElementById('chart_70_AxisLabel_0').textContent).toBe('2/4/2014 0:00');
+                expect(document.getElementById('chart_70_AxisLabel_1').textContent).toBe('4/4/2014 0:00');
+                const target: HTMLElement = document.getElementById('chart_7_Series_0_Point_7');
+                helper.triggerMouseAction('mousemove', { x: target.getBoundingClientRect().left, y: target.getBoundingClientRect().top }, chart, target);
+                helper.switchRibbonTab(6);
+                helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
+                expect(chartObj.primaryXAxis.valueType).toBe('Category');
+                helper.switchRibbonTab(6);
+                helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
+                expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+                expect(document.getElementById('chart_70_AxisLabel_0').textContent).toBe('2/4/2014 0:00');
+                expect(document.getElementById('chart_70_AxisLabel_1').textContent).toBe('4/4/2014 0:00');
+                helper.invoke('deleteChart');
+                done();
+            });
         });
     });
 

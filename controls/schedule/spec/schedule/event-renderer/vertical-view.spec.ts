@@ -2418,7 +2418,7 @@ describe('Vertical View Event Render Module', () => {
             const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'workWeek';
-            const inLineEdited: HTMLInputElement = eventElement.children[1].firstElementChild as HTMLInputElement;
+            const inLineEdited: HTMLInputElement = eventElement.children[1].childNodes[1] as HTMLInputElement;
             expect(inLineEdited.value).toBe('workWeek');
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
             done();
@@ -2440,7 +2440,7 @@ describe('Vertical View Event Render Module', () => {
             const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'month';
-            const inLineEdited: HTMLInputElement = eventElement.children[1].firstElementChild as HTMLInputElement;
+            const inLineEdited: HTMLInputElement = eventElement.children[1].childNodes[1] as HTMLInputElement;
             expect(inLineEdited.value).toBe('month');
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
             done();
@@ -2462,7 +2462,7 @@ describe('Vertical View Event Render Module', () => {
             const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'day';
-            const inLineEdited: HTMLInputElement = eventElement.children[1].firstElementChild as HTMLInputElement;
+            const inLineEdited: HTMLInputElement = eventElement.children[1].childNodes[1] as HTMLInputElement;
             expect(inLineEdited.value).toBe('day');
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
             done();
@@ -2745,6 +2745,232 @@ describe('Vertical View Event Render Module', () => {
             };
             schObj.currentView = 'Agenda';
             schObj.dataBind();
+        });
+    });
+
+    describe('Inline edit drag prevention', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                selectedDate: new Date(2017, 10, 2),
+                allowInline: true,
+                allowDragAndDrop: true
+            };
+            schObj = util.createSchedule(model, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Should add INLINE_EDIT_CLASS when inline editing is active', () => {
+            const eventElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
+            expect(eventElement).toBeTruthy();
+            util.triggerMouseEvent(eventElement, 'click');
+            expect(eventElement.classList.contains(cls.INLINE_EDIT_CLASS)).toBeTruthy();
+            expect(schObj.element.querySelector('.e-inline-subject')).toBeTruthy();
+            util.triggerMouseEvent(document.body, 'mousedown');
+            expect(eventElement.classList.contains(cls.INLINE_EDIT_CLASS)).toBeFalsy();
+        });
+        it('Should keep event in the same position after drag is aborted during inline editing', (done: DoneFn) => {
+            const eventElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
+            expect(eventElement).toBeTruthy();
+            const initialRect = eventElement.getBoundingClientRect();
+            const initialTop = initialRect.top;
+            const initialLeft = initialRect.left;
+            util.triggerMouseEvent(eventElement, 'click');
+            expect(eventElement.classList.contains(cls.INLINE_EDIT_CLASS)).toBeTruthy();
+            const targetCell = schObj.element.querySelectorAll('.e-work-cells')[135] as HTMLElement;
+            util.triggerMouseEvent(eventElement, 'mousedown', 50, 10);
+            util.triggerMouseEvent(targetCell, 'mousemove', 250, 250);
+            util.triggerMouseEvent(targetCell, 'mousemove', 260, 260);
+            util.triggerMouseEvent(targetCell, 'mouseup', 260, 260);
+            const finalRect = eventElement.getBoundingClientRect();
+            expect(finalRect.top).toEqual(initialTop);
+            expect(finalRect.left).toEqual(initialLeft);
+            util.triggerMouseEvent(document.body, 'mousedown');
+            done();
+        });
+        it('Should be edit after drag and drop aborted', (done: DoneFn) => {
+            const eventElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
+            expect(eventElement).toBeTruthy();
+            util.triggerMouseEvent(eventElement, 'click');
+            const targetCell = schObj.element.querySelectorAll('.e-work-cells')[135] as HTMLElement;
+            util.triggerMouseEvent(eventElement, 'mousedown', 50, 10);
+            util.triggerMouseEvent(targetCell, 'mousemove', 250, 250);
+            util.triggerMouseEvent(targetCell, 'mousemove', 260, 260);
+            util.triggerMouseEvent(targetCell, 'mouseup', 260, 260);
+            const draggedEvent = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
+            expect(draggedEvent).toBeTruthy();
+            util.triggerMouseEvent(draggedEvent, 'click');
+            const inlineEle = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inlineEle).toBeTruthy();
+            inlineEle.value = 'Edited Title';
+            draggedEvent.click();
+            expect(inlineEle.value).toEqual('Edited Title');
+            done();
+        });
+    });
+
+    describe('Checking the Recurring All-Day Event with minDate/maxDate navigation scenario', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                views: ['Week'],
+                height: '550px',
+                selectedDate: new Date(2019, 6, 3),
+                minDate: new Date(2019, 6, 3),
+                maxDate: new Date(2019, 6, 10)
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('should only render All Day recurring appointments within range, not after max date', (done: DoneFn) => {
+            const eventData: Record<string, any> = {
+                Id: 1,
+                Subject: 'All-day Recurring',
+                StartTime: new Date(2019, 6, 3),
+                EndTime: new Date(2019, 6, 3),
+                IsAllDay: true,
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;'
+            };
+            schObj.addEvent(eventData);
+            setTimeout(() => {
+                const appointmentsFirst: NodeListOf<Element> = schObj.element.querySelectorAll('.e-all-day-appointment');
+                expect(appointmentsFirst.length).toBe(4);
+                const nextBtn: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement;
+                nextBtn.click();
+                setTimeout(() => {
+                    const appointmentsNext: NodeListOf<Element> = schObj.element.querySelectorAll('.e-all-day-appointment');
+                    expect(appointmentsNext.length).toBe(4);
+                    let foundJuly11: boolean = false;
+                    appointmentsNext.forEach((app: Element) => {
+                        const label: string = app.getAttribute('aria-label') || '';
+                        if (label.indexOf('July 11') !== -1) foundJuly11 = true;
+                    });
+                    expect(foundJuly11).toBe(false);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('Inline Editing with MaxHeight Scenario', () => {
+        let schObj: Schedule;
+        const testData = [
+            {
+                Id: 1,
+                Subject: 'Test Event',
+                StartTime: new Date(2023, 2, 13, 9, 0),
+                EndTime: new Date(2023, 2, 13, 10, 0)
+            }
+        ];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                currentView: 'Month',
+                selectedDate: new Date(2023, 2, 13),
+                allowInline: true,
+                eventSettings: { dataSource: testData, enableMaxHeight: true }
+            };
+            schObj = util.createSchedule(model, testData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('should render inline input before subject on inline editing', (done: DoneFn) => {
+            const appointment = schObj.element.querySelector('.e-appointment') as HTMLElement;
+            expect(appointment).toBeTruthy();
+            const subjectEle = appointment.querySelector('.e-subject') as HTMLElement;
+            expect(subjectEle).toBeTruthy();
+            subjectEle.click();
+            const inlineInput = appointment.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inlineInput).toBeTruthy();
+            expect(inlineInput.nextSibling).toBe(subjectEle);
+            const detailsContainer = appointment.querySelector('.e-appointment-details') as HTMLElement;
+            if (detailsContainer) {
+                const children = Array.from(detailsContainer.childNodes);
+                const inputIdx = children.indexOf(inlineInput);
+                const subjectIdx = children.indexOf(subjectEle);
+                expect(inputIdx).toBeLessThan(subjectIdx);
+                const timeEle = appointment.querySelector('.e-time') as HTMLElement;
+                if (timeEle) {
+                    const timeIdx = children.indexOf(timeEle);
+                    expect(inputIdx).toBeGreaterThan(timeIdx);
+                }
+            }
+            done();
+        });
+    });
+
+    describe('Inline editing with subject and location in Month view', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        const eventWithLocationData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Project Planning',
+            Location: 'Conference Room A',
+            StartTime: new Date(2017, 10, 15, 10, 0),
+            EndTime: new Date(2017, 10, 15, 12, 30)
+        }];
+        beforeAll((done: Function) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                selectedDate: new Date(2017, 10, 15),
+                currentView: 'Month',
+                views: [{ option: 'Month' }],
+                allowInline: true,
+                eventSettings: {
+                    enableTooltip: true,
+                    enableMaxHeight: true,
+                    dataSource: eventWithLocationData
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Should display only subject without location during inline editing', () => {
+            const eventElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(eventElement).toBeTruthy();
+            const subjectElement = eventElement.querySelector('.e-subject') as HTMLElement;
+            expect(subjectElement.innerHTML).toContain('Project Planning');
+            expect(subjectElement.innerHTML).toContain('Conference Room A');
+            eventElement.click();
+            const inlineInput: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inlineInput).toBeTruthy();
+            expect(inlineInput.value).toBe('Project Planning');
+            expect(inlineInput.value).not.toContain('Conference Room A');
+        });
+        it('Should update only subject while keeping location during inline editing', (done: Function) => {
+            schObj.dataBound = () => {
+                const updatedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                expect(updatedEvent).toBeTruthy();
+                const subjectElement = updatedEvent.querySelector('.e-subject') as HTMLElement;
+                expect(subjectElement.innerHTML).toContain('Team Meeting');
+                expect(subjectElement.innerHTML).toContain('Conference Room A');
+                const eventData = schObj.eventsData.find(e => e.Id === 1);
+                expect(eventData.Subject).toBe('Team Meeting');
+                expect(eventData.Location).toBe('Conference Room A');
+                done();
+            };
+            const eventElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(eventElement).toBeTruthy();
+            eventElement.click();
+            const inlineInput: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inlineInput).toBeTruthy();
+            inlineInput.value = 'Team Meeting';
+            keyModule.keyActionHandler({
+                action: 'enter',
+                target: inlineInput,
+                preventDefault: (): void => { }
+            });
         });
     });
 

@@ -495,6 +495,9 @@ export class VerticalEvent extends EventBase {
         const record: Record<string, any> = this.splitEvent(eventObj, currentDates)[0];
         const eStart: Date = new Date((record[this.parent.eventFields.startTime] as Date).getTime());
         const eEnd: Date = new Date((record[this.parent.eventFields.endTime] as Date).getTime());
+        if (eStart.getTime() < this.parent.minDate.getTime() || eEnd.getTime() > this.parent.maxDate.getTime()) {
+            return;
+        }
         let appWidth: number = 0;
         let topValue: number = 1;
         const isDateRange: boolean = currentDates[0].getTime() <= eStart.getTime() &&

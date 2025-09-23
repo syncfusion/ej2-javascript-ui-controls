@@ -777,6 +777,13 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      */
     public addIcon(position: string, icons: string | string[]): void {
         Input.addIcon(position, icons, this.textboxWrapper.container, this.respectiveElement, this.createElement);
+        const container: HTMLElement = this.textboxWrapper.container;
+        const iconSpan: HTMLElement = container.querySelector('span.e-icons');
+        const label: HTMLElement = container.querySelector('label');
+        if (iconSpan && label) {
+            const labelWidth: number = (this.element.parentElement.offsetWidth) - (iconSpan.offsetWidth);
+            label.style.width = `${labelWidth}px`;
+        }
     }
 
     /**

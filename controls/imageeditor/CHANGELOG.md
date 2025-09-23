@@ -2,38 +2,30 @@
 
 ## [Unreleased]
 
-## 31.1.20 (2025-09-10)
+## 31.1.21 (2025-09-23)
 
 ### Image Editor
 
 #### Bug Fixes
 
-- `#I753586` - The issue with "Unable to set `imageQuality` in react Image Editor via `beforeSave` Event" has been resolved.
-- `#I751257` - The issue with "Console Error when reusing FreeHand Draw after deleting an element" has been resolved.
+- `#I762246` - The issue with "Cancel argument not working for select action in 'ShapeChanging' event" has been resolved.
 
-## 30.1.38 (2025-07-02)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I736512` - The issue with "Aspect ratio selection not being maintained during bottom edge resize of the crop selection in the Image Editor" has been resolved.
-
-## 30.1.37 (2025-06-25)
+## 31.1.17 (2025-09-05)
 
 ### Image Editor
 
 #### Features
 
-- Added support to open images with specific width and height using the `imageSettings` parameter in the `Open` method. This enhancement introduces additional properties: `width`, `height`, and `isAspectRatio`, allowing precise control over image dimensions while optionally maintaining the original aspect ratio.
+- `Opening images with custom width and height` - Users can now open images with specified width and height values using the imageSettings parameter in the `Open` method. This enhancement introduces three additional properties: `width,` `height,` and `isAspectRatio.` Image dimensions can be precisely controlled while preserving the aspect ratio, if needed. This provides more control over rendering images, especially when dealing with high-resolution images or fixed canvas requirements.
 
-- Provided `Underline` and `Strikethrough` formatting options for text annotations, enhancing the text styling capabilities in the Image Editor.
+- `Underline and strikethrough support for text annotation` - `Underline` and `Strikethrough` formatting options have been added to text annotations. This feature is useful for creating instructional materials, documentation screenshots, and professional image presentations.
 
-- Added support to load BMP (Bitmap) image files via both the file uploader UI and programmatically through the `Open` method.
+- `Loading BMP images` - Users can load BMP (Bitmap) image files, expanding its file format compatibility. Users can upload BMP files via the file uploader UI or programmatically using the `Open` method. This addresses the needs of design professionals and users working with high-resolution images.
 
 #### Bug Fixes
 
 - `#I733422` - The issue with "Annotations were not returned in image data when calling the 'getImageData' method inside the 'editComplete' event" has been resolved.
+- `#I736512` - The issue with "Aspect ratio not maintained during bottom edge resize of crop selection in Image Editor" has been resolved.
 
 ## 29.2.5 (2025-05-21)
 

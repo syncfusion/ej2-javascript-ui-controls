@@ -20,7 +20,7 @@ export class ViewBase {
     public colLevels: TdData[][];
     public viewIndex: number;
     public skipPersistenceSave: boolean = false;
-    public isScrolledBottom: boolean = false
+    public isScrolledBottom: boolean = false;
 
     /**
      * Constructor

@@ -269,6 +269,8 @@ export const deleteBegin: string = 'delete-begin';
 /** @hidden */
 export const deleteComplete: string = 'delete-complete';
 /** @hidden */
+export const refreshAggregateComplete: string = 'refresh-aggregate-on-save-complete';
+/** @hidden */
 export const preventBatch: string = 'prevent-batch';
 /** @hidden */
 export const dialogDestroy: string = 'dialog-destroy';

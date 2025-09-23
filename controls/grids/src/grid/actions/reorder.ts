@@ -12,12 +12,14 @@ import * as literals from '../base/string-literals';
  */
 export class Reorder implements IAction {
     //Internal variable
-    private element: HTMLElement;
+    /** @hidden */
+    public element: HTMLElement;
     private upArrow: HTMLElement;
     private downArrow: HTMLElement;
     private x: number;
     private timer: number;
-    private destElement: Element;
+    /** @hidden */
+    public destElement: Element;
     private fromCol: string;
     private idx: number = 0;
 

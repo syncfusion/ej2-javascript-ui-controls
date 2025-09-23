@@ -607,6 +607,11 @@ export class Edit {
                 const column: ColumnModel = ganttObj.columnByField[key as string];
                 /* eslint-disable-next-line */
                 let value: any = data[key as string];
+                // Handles for both updateRecordByID() & Dialog-save update actions:
+                if (tasks.progress === key) {
+                    value = this.parent.dataOperation['formatProgressValue'](value, key);
+                    value = (100 < value) ? 100 : value;
+                }
                 if (!isNullOrUndefined(column) && (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit')) {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
                 }
@@ -1853,6 +1858,12 @@ export class Edit {
             }
             else {
                 rec = e[parseInt(i.toString(), 10)];
+            }
+            if (this.parent.timezone) {
+                rec[this.parent.taskFields.startDate] = this.parent.dateValidationModule.convert(
+                    rec[this.parent.taskFields.startDate], this.parent.timezone);
+                rec[this.parent.taskFields.endDate] = this.parent.dateValidationModule.convert(
+                    rec[this.parent.taskFields.endDate], this.parent.timezone);
             }
             const _aLength: number = Object.keys(rec).length;
             for (let j: number = 0, _a: string[] = Object.keys(rec); j < _aLength; j++) {
@@ -3893,10 +3904,23 @@ export class Edit {
      */
     public updateClientDataFromServer(e: { addedRecords: Object[], changedRecords: Object[] }, args: ITaskAddedEventArgs): void {
         const serverReturnedValue: Object = e.addedRecords[0];
-        const _aLength: number = Object.keys(serverReturnedValue).length;
-        for (let j: number = 0, _a: string[] = Object.keys(serverReturnedValue); j < _aLength; j++) {
-            const key: string = _a[parseInt(j.toString(), 10)];
-            (args.data as IGanttData)[`${key}`] = serverReturnedValue[`${key}`];
+        const convertedRecord: Object = { ...serverReturnedValue };
+        if (this.parent.timezone) {
+            convertedRecord[this.parent.taskFields.startDate] = this.parent.dateValidationModule.convert(
+                serverReturnedValue[this.parent.taskFields.startDate], this.parent.timezone);
+            convertedRecord[this.parent.taskFields.endDate] = this.parent.dateValidationModule.convert(
+                serverReturnedValue[this.parent.taskFields.endDate], this.parent.timezone);
+        }
+        const _a: string[] = Object.keys(serverReturnedValue);
+        const _aLength: number = _a.length;
+        for (let j: number = 0; j < _aLength; j++) {
+            const key: string = _a[j as number];
+            const isStartDate: boolean = key === this.parent.taskFields.startDate;
+            const isEndDate: boolean = key === this.parent.taskFields.endDate;
+
+            (args.data as IGanttData)[key as string] = isStartDate || isEndDate
+                ? convertedRecord[key as string]
+                : serverReturnedValue[key as string];
         }
         if (this.parent.taskFields.id !== null) {
             (args.data as IGanttData).ganttProperties['taskId'] = serverReturnedValue[this.parent.taskFields.id];
@@ -3905,10 +3929,10 @@ export class Edit {
             (args.data as IGanttData).ganttProperties['taskName'] = serverReturnedValue[this.parent.taskFields.name];
         }
         if (this.parent.taskFields.startDate !== null) {
-            (args.data as IGanttData).ganttProperties['startDate'] = serverReturnedValue[this.parent.taskFields.startDate];
+            (args.data as IGanttData).ganttProperties['startDate'] = convertedRecord[this.parent.taskFields.startDate];
         }
         if (this.parent.taskFields.endDate !== null) {
-            (args.data as IGanttData).ganttProperties['endDate'] = serverReturnedValue[this.parent.taskFields.endDate];
+            (args.data as IGanttData).ganttProperties['endDate'] = convertedRecord[this.parent.taskFields.endDate];
         }
         if (this.parent.taskFields.duration !== null) {
             (args.data as IGanttData).ganttProperties['duration'] = parseFloat(serverReturnedValue[this.parent.taskFields.duration]);
@@ -4053,6 +4077,12 @@ export class Edit {
                     const record: Object = {};
                     if (isRemoteData(this.parent.dataSource)) {
                         const data: DataManager = this.parent.dataSource as DataManager;
+                        if (this.parent.timezone) {
+                            args.newTaskData[this.parent.taskFields.startDate] = this.parent.dateValidationModule.remove(
+                                args.newTaskData[this.parent.taskFields.startDate], this.parent.timezone);
+                            args.newTaskData[this.parent.taskFields.endDate] = this.parent.dateValidationModule.remove(
+                                args.newTaskData[this.parent.taskFields.endDate], this.parent.timezone);
+                        }
                         const updatedData: object = {
                             addedRecords: [args.newTaskData], // to check
                             changedRecords: args.modifiedTaskData

@@ -803,8 +803,7 @@ export class CommandHandler {
                 };
             }
         }
-        this.diagram.clearSelectorLayer();
-        this.diagram.select([connector]);
+        this.updateSelector();
         this.renderHighlighter(args, undefined, endPoint === 'ConnectorSourceEnd');
         return returnargs;
     }

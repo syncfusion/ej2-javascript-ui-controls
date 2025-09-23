@@ -5036,6 +5036,58 @@ describe('Keyboard interaction', () => {
         });
     });
 
+    describe('Keyboard Delete on Event with Quick Popup', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        const eventData = [{
+            Id: 1,
+            Subject: 'Delete Me',
+            StartTime: new Date(2024, 6, 1, 9, 0),
+            EndTime: new Date(2024, 6, 1, 10, 0)
+        }];
+
+        beforeAll((done: DoneFn) => {
+            const elem = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            document.body.appendChild(elem);
+            const model: ScheduleModel = {
+                selectedDate: new Date(2024, 6, 1),
+                eventSettings: { dataSource: eventData },
+                height: '500px',
+                width: '700px'
+            };
+            schObj = util.createSchedule(model, eventData, () => {
+                keyModule = schObj.keyboardInteractionModule;
+                done();
+            }, elem);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('should delete event using keyboard Delete key after opening quick popup', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventAfter: HTMLElement = schObj.element.querySelector('.e-appointment') as HTMLElement;
+                expect(eventAfter).toBeNull();
+                done();
+            }
+            const eventEl: HTMLElement = schObj.element.querySelector('.e-appointment') as HTMLElement;
+            expect(eventEl).not.toBeNull();
+            eventEl.click();
+            const quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(quickPopup.classList).toContain('e-popup-open');
+            keyModule.keyActionHandler({ action: 'delete', target: eventEl });
+            setTimeout(() => {
+                const quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element as HTMLElement;
+                expect(quickDialog).toBeTruthy();
+                expect(quickDialog.classList.contains('e-popup-open')).toBe(true);
+                const deleteBtn: HTMLElement = quickDialog.querySelector('.e-quick-dialog-delete') as HTMLElement;
+                expect(deleteBtn).not.toBeNull();
+                deleteBtn.click();
+            }, 100);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

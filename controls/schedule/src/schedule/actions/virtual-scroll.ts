@@ -71,7 +71,7 @@ export class VirtualScroll {
             virtual.style.height = (conTable.offsetHeight + (this.parent.resourceBase.expandedResources.length - (this.renderedLength)) *
                 conTable.offsetHeight / this.renderedLength) + 'px';
             const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-            if ((conWrap.scrollHeight - conWrap.scrollTop) < conWrap.offsetHeight * this.bufferCount) {
+            if (this.bufferCount === 3 && (conWrap.scrollHeight - conWrap.scrollTop) < conWrap.offsetHeight * this.bufferCount) {
                 virtual.style.height = parseInt(virtual.style.height, 10) + (conWrap.offsetHeight * this.bufferCount) + 'px';
             }
         } else {
@@ -260,7 +260,7 @@ export class VirtualScroll {
             index = (index > firstTDIndex) ? firstTDIndex - this.bufferCount : index;
         }
         index = (index > 0) ? index : 0;
-        const prevSetCollection: TdData[] = this.getBufferCollection(index, index + this.renderedLength);
+        let prevSetCollection: TdData[] = this.getBufferCollection(index, index + this.renderedLength);
         this.parent.resourceBase.renderedResources = prevSetCollection;
         if (firstTDIndex === 0) {
             this.translateY = conWrap.scrollTop;
@@ -269,6 +269,10 @@ export class VirtualScroll {
             height = (height > 0) ? height : this.itemSize;
             this.translateY = (conWrap.scrollTop - (this.bufferCount * height) > 0) ?
                 conWrap.scrollTop - (this.bufferCount * height) : 0;
+            if (this.parent.rowAutoHeight && this.translateY === 0 && index !== 0) {
+                prevSetCollection = this.getBufferCollection(0, this.renderedLength);
+                this.parent.resourceBase.renderedResources = prevSetCollection;
+            }
         }
         return prevSetCollection;
     }
@@ -405,6 +409,9 @@ export class VirtualScroll {
         this.removeObsoleteRows(resWrapRows, currentGroupIndices);
         this.removeObsoleteRows(conWrapRows, currentGroupIndices);
         const resourceRows: Element[] = this.parent.resourceBase.getContentRows(resCollection, true);
+        if (this.parent.isReact) {
+            this.parent.renderTemplates();
+        }
         const contentRows: Element[] = this.parent.activeView.getContentRows();
         const eventRows: Element[] = this.parent.activeView.getEventRows(resCollection.length);
         for (let i: number = 0; i < newGroupIndices.length; i++) {

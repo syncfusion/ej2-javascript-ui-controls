@@ -10,6 +10,7 @@ import { TextBox } from '@syncfusion/ej2-inputs';
 import { NodeSelection } from '../../selection';
 import { EmojiPickerAction } from '../../editor-manager/plugin/emoji-picker-action';
 import { NotifyArgs, EmojiIconsSet } from '../../common/interface';
+import { RichTextEditor } from '../base/rich-text-editor';
 
 export class EmojiPicker {
     protected parent: IRichTextEditor;
@@ -895,6 +896,9 @@ export class EmojiPicker {
             (this.parent.contentModule.getPanel() as HTMLIFrameElement).contentWindow.getSelection() :
             this.parent.contentModule.getDocument().getSelection();
         if (selection.rangeCount <= 0) { return; }
+        if (!(this.parent as RichTextEditor).isSelectionInRTE()) {
+            return;
+        }
         const range: Range = selection.getRangeAt(0);
         const cursorPos: number = range.startOffset;
         // eslint-disable-next-line

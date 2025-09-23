@@ -192,7 +192,7 @@ export class ImageCommand {
     private calculateStyleValue(value: string | number): string {
         let styleValue: string;
         if (typeof(value) === 'string') {
-            if (value.indexOf('px') || value.indexOf('%') || value.indexOf('auto')) {
+            if (value.indexOf('px') !== -1 || value.indexOf('%') !== -1 || value.indexOf('auto') !== -1) {
                 styleValue = value;
             } else {
                 styleValue = value + 'px';

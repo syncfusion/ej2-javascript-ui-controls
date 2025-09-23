@@ -72,17 +72,16 @@ export class InlineEdit {
     private eventEdit(args: InlineClickArgs): void {
         let inlineSubject: HTMLInputElement = args.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS) as HTMLInputElement;
         let subject: string;
+        addClass([args.element], cls.INLINE_EDIT_CLASS);
         if (inlineSubject) {
             subject = inlineSubject.value;
         } else {
             const subEle: HTMLElement = args.element.querySelector('.' + cls.SUBJECT_CLASS);
             if (!isNullOrUndefined(subEle)) {
                 addClass([subEle], cls.DISABLE_CLASS);
-                subject = subEle.innerText;
             }
-            else {
-                subject = args.data[this.parent.eventFields.subject];
-            }
+            subject = !isNullOrUndefined(args.data) && args.data[this.parent.eventFields.subject] ||
+                this.parent.eventSettings.fields.subject.default || this.parent.localeObj.getConstant('addTitle');
             inlineSubject = this.inlineInputEle =
                 createElement('input', { className: cls.INLINE_SUBJECT_CLASS, attrs: { value: subject } }) as HTMLInputElement;
             if (closest(args.element, '.' + cls.MORE_POPUP_WRAPPER_CLASS)) {
@@ -102,7 +101,11 @@ export class InlineEdit {
                     args.element.querySelector('.e-appointment-details').prepend(inlineSubject);
                 }
                 else {
-                    innerWrapElement.prepend(inlineSubject);
+                    if (subEle && this.parent.activeViewOptions && !this.parent.activeViewOptions.eventTemplate) {
+                        innerWrapElement.insertBefore(inlineSubject, subEle);
+                    } else {
+                        innerWrapElement.prepend(inlineSubject);
+                    }
                 }
             }
             inlineSubject.focus();
@@ -235,7 +238,7 @@ export class InlineEdit {
 
     public createInlineAppointmentElement(inlineData?: Record<string, any>): HTMLElement {
         const inlineAppointmentElement: HTMLElement = createElement('div', {
-            className: cls.APPOINTMENT_CLASS + ' ' + cls.INLINE_APPOINTMENT_CLASS
+            className: cls.APPOINTMENT_CLASS + ' ' + cls.INLINE_APPOINTMENT_CLASS + ' ' + cls.INLINE_EDIT_CLASS
         });
         const inlineDetails: HTMLElement = createElement('div', { className: cls.APPOINTMENT_DETAILS });
         inlineAppointmentElement.appendChild(inlineDetails);
@@ -262,6 +265,7 @@ export class InlineEdit {
         const inlineSubject: HTMLInputElement | null = this.getInlineElement();
         if (inlineSubject) {
             const appointmentSubject: Element = closest(inlineSubject, '.' + cls.APPOINTMENT_CLASS);
+            removeClass([appointmentSubject], cls.INLINE_EDIT_CLASS);
             const subject: Element = appointmentSubject.querySelector('.' + cls.SUBJECT_CLASS);
             if (!isNullOrUndefined(subject)) {
                 removeClass([subject], cls.DISABLE_CLASS);

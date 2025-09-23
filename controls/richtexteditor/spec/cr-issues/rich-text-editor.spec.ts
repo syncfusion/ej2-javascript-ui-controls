@@ -405,6 +405,37 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('Bug 980247: Script error throws when hovering over the Table in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<table cellspacing="0" cellpadding="0"><tbody><tr><td colspan="1" width="5%" align="right" valign="top"> B </td><td colspan="11" width="95%"> B </td></tr><tr><td colspan="1" width="5%" align="right" valign="top"> C </td><td colspan="11" width="95%"> C </td></tr></tbody></table>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should create column resize icons with correct attributes', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+            setTimeout(() => {
+                const colResizeIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize');
+                expect(colResizeIcons.length).toBeGreaterThan(0);
+                // Check icon attributes
+                const resizeIcon = rteObj.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
+                expect(resizeIcon.getAttribute('data-col')).toBe('12');
+                done();
+            }, 100);
+        });
+    });
+
 
     describe('913719: Format Toolbar Becomes Empty When Focused Before the Table', ()=> {
         let editor: RichTextEditor;
@@ -1992,6 +2023,32 @@ describe('RTE CR issues ', () => {
             expect(editorObj.element.classList).toContain('e-rte-full-screen');       
             const toolbarMinimizeElement = editorObj.element.querySelector('.e-minimize');
             expect(toolbarMinimizeElement).not.toBeNull();
+        });
+        afterAll(() => {
+            destroy(editorObj);
+        });
+    });
+    describe('Bug 980252: Script error throws when calling the showInlineToolbar in RichTextEditor', () => {
+        let editorObj: RichTextEditor;
+        beforeAll(() => {
+            editorObj = renderRTE({
+                inlineMode: {
+                    enable: true,
+                    onSelection: true,
+                },
+                focus: function () {
+                    if (editorObj.value == null) {
+                        editorObj.showInlineToolbar();
+                    }
+                }
+            });
+        });
+        it('should render inline toolbar when no value is present', (done) => {
+            editorObj.focusIn();
+            setTimeout(() => {
+                expect(editorObj.element.querySelector('.e-rte-inline-popup')).not.toBeNull();
+                done();
+            }, 100);
         });
         afterAll(() => {
             destroy(editorObj);

@@ -138,6 +138,11 @@
           }
         }
       }
+      &:not(.e-rtl) {
+        .e-toolbar .e-toolbar-items .e-toolbar-item.e-popup-text .e-tbar-btn.e-btn.e-tbtn-txt.e-icon-btn .e-icons.e-btn-icon.e-fe-grid {
+          padding: 0 2px;
+        }
+      }
 
       .e-toolbar-left {
         .e-icons.e-fe-sort {
@@ -205,6 +210,16 @@
           }
           right: 13px;
         }
+      }
+
+      @if ($fm-skin-name == 'Material3' or $fm-skin-name == 'fluent2') {
+        .e-fe-splitter {
+          height: calc(100% - #{$fe-mobile-tb-height + 1px});
+        }
+      }
+
+      .e-view-container .e-fe-grid-container {
+        height: calc(100% - $fe-mobile-search-height);
       }
 
       .e-grid {
@@ -610,6 +625,14 @@
       }
     }
 
+    .e-fe-splitter {
+      height: calc(100% - #{if($fm-skin-name == 'Material3' or $fm-skin-name == 'fluent2', $fe-big-tb-height + 1px, $fe-big-tb-height)});
+    }
+
+    .e-view-container .e-fe-grid-container {
+      height: calc(100% - $fe-big-address-height);
+    }
+
     .e-grid {
       @include checkbox($fe-big-cb-line-height);
       @if $fm-skin-name == 'tailwind3' {
@@ -787,6 +810,13 @@
       @if $fm-skin-name == 'fluent2' {
         height: calc(100% - 88px);
       }
+    }
+  }
+
+  .e-filemanager.e-fe-no-toolbar.e-fe-mobile,
+  .e-bigger .e-filemanager.e-fe-no-toolbar {
+    .e-fe-splitter {
+      height: 100%;
     }
   }
   

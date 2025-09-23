@@ -1743,7 +1743,8 @@ export class DateProcessor {
             const dateObject: Date = this.parent.globalize.parseDate(date, { format: this.parent.getDateFormat(), type: 'dateTime' });
             updatedDate = isNullOrUndefined(dateObject) && !isNaN(new Date(date).getTime()) ? new Date(date) : dateObject;
         }
-        if (!isNullOrUndefined(this.parent.timezone) && toConvert) {
+        const updateTimezone: boolean = this.parent.isOnAdded ? false : true;
+        if (!isNullOrUndefined(this.parent.timezone) && toConvert && ((updateTimezone && this.parent.timezone) || this.parent.isLoad)) {
             const convertedDate: Date = this.convert(updatedDate, this.parent.timezone);
             return convertedDate;
         } else {

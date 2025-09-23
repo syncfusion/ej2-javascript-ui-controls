@@ -782,6 +782,7 @@ export class GanttTreeGrid {
         this.parent.columnMapping = {};
         this.parent.columnByField = {};
         this.parent.customColumns = [];
+        this.parent.ganttColumns = [];
         const tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
             'progress', 'baselineStartDate', 'baselineEndDate', 'baselineDuration', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone', 'segments', 'constraintType', 'constraintDate'];
         for (let i: number = 0; i < length; i++) {

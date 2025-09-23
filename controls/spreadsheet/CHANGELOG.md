@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.21 (2025-09-23)
+
+### Spreadsheet
+
+#### Bug fixes
+
+-`#I706975` - Issue with "chart axis label inconsistency while inserting a chart in `Blazor Spreadsheet` with `Javascript-ES5` packages" has been resolved.
+
 ## 30.1.37 (2025-06-25)
 
 ### Spreadsheet

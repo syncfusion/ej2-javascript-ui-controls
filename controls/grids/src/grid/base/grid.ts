@@ -7197,7 +7197,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (Browser.isDevice) {
             this.element.classList.add('e-device');
-            if (this.adaptiveUIMode === 'Desktop') {
+            if (this.adaptiveUIMode === 'Desktop' && !(this.rowRenderingMode === 'Vertical')) {
                 this.enableAdaptiveUI = false;
             }
         }
@@ -7603,6 +7603,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             return;
         }
         const args: RecordClickEventArgs = this.getRowInfo(e.target as Element) as RecordClickEventArgs;
+        args.event = e;
         const cancel: string = 'cancel';
         args[`${cancel}`] = false;
         let isDataRow: boolean = false;
@@ -7639,6 +7640,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         const args: RecordDoubleClickEventArgs = this.getRowInfo(e.target as Element) as RecordDoubleClickEventArgs;
         args.target = e.target as Element;
+        args.event = e;
         if (dataRow) {
             this.trigger(events.recordDoubleClick, args);
         }

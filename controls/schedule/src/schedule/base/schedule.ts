@@ -2850,6 +2850,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             if (newProp.allowKeyboardInteraction || newProp.allowClipboard) {
                 this.keyboardInteractionModule = new KeyboardInteraction(this);
             }
+            if (prop === 'allowClipboard') {
+                if (newProp.allowClipboard) {
+                    EventHandler.add(document, 'paste', this.onDocumentPaste, this);
+                }
+                else {
+                    EventHandler.remove(document, 'paste', this.onDocumentPaste);
+                }
+            }
             break;
         case 'timezoneDataSource':
             if (this.eventWindow) {
@@ -3806,11 +3814,17 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public paste(targetElement: HTMLElement): void {
-        if (!this.allowClipboard || !this.allowKeyboardInteraction) {
+        if (!this.allowClipboard || !this.allowKeyboardInteraction || !targetElement) {
             return;
         }
         if (!targetElement.classList.contains('e-work-cells') && !targetElement.classList.contains('e-all-day-cells')) {
             return;
+        }
+        if (!this.activeCellsData) {
+            const cellData: CellClickEventArgs = this.getCellDetails([targetElement]);
+            if (cellData) {
+                this.activeCellsData = cellData;
+            }
         }
         const clipboardData: DataTransfer = new DataTransfer();
         if (!isNullOrUndefined((navigator as any).clipboard)) {

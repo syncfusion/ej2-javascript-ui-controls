@@ -71,11 +71,12 @@ export class Agenda extends AgendaBase implements IRenderer {
         this.parent.eventsProcessed = this.processAgendaEvents(eventCollection);
         const agendaDate: Date = util.resetTime(this.parent.selectedDate);
         const tBody: Element = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
+        const contentArea: HTMLElement = closest(tBody, '.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        const scrollTop: number = contentArea.scrollTop;
         util.removeChildren(tBody);
         this.renderInitialContent(tBody, agendaDate);
         this.wireEventActions();
-        const contentArea: HTMLElement = closest(tBody, '.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        contentArea.scrollTop = 1;
+        contentArea.scrollTop = scrollTop;
         this.parent.notify(event.eventsLoaded, {});
         if (!this.parent.activeViewOptions.allowVirtualScrolling) {
             this.retainScrollPosition();

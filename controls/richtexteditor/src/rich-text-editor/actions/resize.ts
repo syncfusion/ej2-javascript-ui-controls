@@ -3,6 +3,7 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { IRichTextEditor } from '../base/interface';
 import { ResizeArgs } from '../../common/interface';
+import { RichTextEditorModel } from '../base';
 
 /**
  * `Resize` module is used to resize the editor
@@ -31,9 +32,21 @@ export class Resize {
             return;
         }
         this.parent.on(events.initialEnd, this.renderResizable, this);
+        this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         this.parent.on(events.destroy, this.destroy, this);
     }
 
+    private onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
+        for (const prop of Object.keys(e.newProp)) {
+            if (prop === 'enableResize') {
+                if (!e.newProp.enableResize) {
+                    this.destroy();
+                } else {
+                    this.renderResizable();
+                }
+            }
+        }
+    }
     private renderResizable(): void {
         const enableRtlClass : string = (this.parent.enableRtl) ? classes.CLS_RTE_RES_WEST : classes.CLS_RTE_RES_EAST;
         this.resizer = this.parent.createElement('div', {
@@ -178,6 +191,7 @@ export class Resize {
     private removeEventListener(): void {
         this.parent.off(events.initialEnd, this.renderResizable);
         this.parent.element.classList.remove(classes.CLS_RTE_RES_CNT);
+        this.parent.off(events.modelChanged, this.onPropertyChanged);
         if (this.parent && this.parent.rootContainer && this.parent.rootContainer.classList.contains('e-resize-enabled')) {
             this.parent.rootContainer.classList.remove('e-resize-enabled');
         }

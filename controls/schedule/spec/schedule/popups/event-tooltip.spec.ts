@@ -739,6 +739,54 @@ describe('Schedule event tooltip module', () => {
         });
     });
 
+    describe('Timeline resource header and event tooltip in a horizontal year-view timeline.', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2018, 3, 1),
+                height: '550px', width: '100%',
+                views: [
+                    { option: 'TimelineYear', displayName: 'Horizontal Year', isSelected: true },
+                    { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' }],
+                group: {
+                    byGroupID: false,
+                    headerTooltipTemplate: '<div class="resname">Name: ${getResourceName(data)}</div>',
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85', Expand: false }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor', expandedField: 'Expand'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }],
+                eventSettings: { enableTooltip: true }
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('tooltip on resource header', () => {
+            util.disableTooltipAnimation((schObj.eventTooltip as any).tooltipObj);
+            const target: HTMLElement = schObj.element.querySelector('.e-resource-cells');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(target, 'mouseover');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(target, 'mouseleave');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -99,6 +99,12 @@ export class RibbonEventManager {
 
         this.updateNumericTextBox(this.ribbon.ribbon.tabs[this.ribbon.ribbon.selectedTab].header);
         this.resizeEditor(this.ribbon.container.editorContainer);
+        if (this.ribbon.container.ribbonLayout === 'Simplified') {
+            this.ribbon.container.ribbonLayout = 'Classic';
+        }
+        else {
+            this.ribbon.container.ribbonLayout = 'Simplified';
+        }
     }
 
     /**

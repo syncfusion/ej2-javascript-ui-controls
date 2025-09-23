@@ -49,7 +49,7 @@ export class DragAndDrop extends ActionBase {
 
     public wireDragEvent(element: HTMLElement): void {
         new Draggable(element, {
-            abort: '.' + cls.EVENT_RESIZE_CLASS,
+            abort: '.' + cls.EVENT_RESIZE_CLASS + ', .' + cls.INLINE_EDIT_CLASS,
             clone: true,
             isDragScroll: true,
             enableTailMode: this.parent.eventDragArea ? true : false,
@@ -571,6 +571,11 @@ export class DragAndDrop extends ActionBase {
         this.actionObj.clone.style.top = formatUnit((<HTMLElement>td.offsetParent).offsetTop);
         this.actionObj.clone.style.left = formatUnit(td.offsetLeft);
         this.actionObj.clone.style.width = formatUnit(td.offsetWidth);
+        if (this.actionObj.cloneElement.length > 1) {
+            this.actionObj.cloneElement.forEach((element: HTMLElement) => {
+                element.style.width = formatUnit(td.offsetWidth);
+            });
+        }
         let eventContainer: HTMLElement = td as HTMLElement;
         let eventWrapper: HTMLElement;
         if (this.parent.activeView.isTimelineView()) {
@@ -857,6 +862,10 @@ export class DragAndDrop extends ActionBase {
                         this.verticalEvent.getTopValue(eStart) : this.actionObj.element.offsetTop;
                     if (isNullOrUndefined(index)) {
                         if (i === 0) {
+                            if (this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
+                                topValue = (<HTMLElement>this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS)).offsetTop;
+                                appHeight = this.getAllDayEventHeight();
+                            }
                             this.actionObj.clone.style.top = formatUnit(topValue);
                             this.actionObj.clone.style.height = formatUnit(appHeight);
                         } else {
@@ -864,9 +873,7 @@ export class DragAndDrop extends ActionBase {
                         }
                     } else {
                         let appWidth: number = this.actionObj.cellWidth;
-                        if (event[this.parent.eventFields.isAllDay]) {
-                            topValue = (<HTMLElement>this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS)).offsetTop;
-                            appHeight = this.getAllDayEventHeight();
+                        if (event[this.parent.eventFields.isAllDay] && this.parent.activeViewOptions.timeScale.enable) {
                             const timeDiff: number = (event[this.parent.eventFields.endTime] as Date).getTime() -
                                 (event[this.parent.eventFields.startTime] as Date).getTime();
                             const allDayDifference: number = Math.ceil(timeDiff / (1000 * 3600 * 24));

@@ -3412,6 +3412,56 @@ describe('Schedule base module', () => {
         });
     });
 
+    describe('Copy and paste feature with dynamic clipboard enabling', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        let enableClipboardButton: HTMLButtonElement;
+
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule' });
+            document.body.appendChild(elem);
+            enableClipboardButton = document.createElement('button');
+            enableClipboardButton.id = 'enableClipboard';
+            enableClipboardButton.innerText = 'Enable Clipboard';
+            document.body.appendChild(enableClipboardButton);
+            const schOptions: ScheduleModel = {
+                selectedDate: new Date(2017, 10, 2),
+                views: ['Week', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
+                allowClipboard: false
+            };
+            schObj = util.createSchedule(schOptions, defaultData, done, elem);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            enableClipboardButton.remove();
+        });
+        it('should enable clipboard via button and allow copy and paste of events', (done: DoneFn) => {
+            expect(schObj.allowClipboard).toBe(false);
+            enableClipboardButton.click();
+            schObj.allowClipboard = true;
+            schObj.dataBind();
+            expect(schObj.allowClipboard).toBe(true);
+            const target: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
+            const elementToCopy: HTMLElement = target[1] as HTMLElement;
+            elementToCopy.click();
+            keyModule = schObj.keyboardInteractionModule;
+            keyModule.keyActionHandler({ action: 'copy', shiftKey: false, ctrlKey: true, target: elementToCopy });
+            const clipboardElement: HTMLInputElement = schObj.element.querySelector('.e-clipboard');
+            const clipboardContent: string = clipboardElement.value;
+            const parsedContent: any = JSON.parse(clipboardContent);
+            expect(parsedContent[0].Id).toBe(1);
+            expect(parsedContent[0].Subject).toBe('Paris');
+            expect(parsedContent[0].StartTime).toContain('2017-10-29');
+            expect(parsedContent[0].EndTime).toContain('2017-10-29');
+            expect(parsedContent[0].IsAllDay).toBe(false);
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            schObj.paste(workCell);
+            clipboardElement.value = '';
+            done();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

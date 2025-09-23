@@ -341,7 +341,7 @@ export class ContentRender implements IRenderer {
         let tableName: freezeTable;
         let isGroupFrozenHdr: boolean = this.parent.frozenRows && this.parent.groupSettings.columns.length ? true : false;
         if (isGroupAdaptive(gObj)) {
-            if (['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder', 'save', 'delete']
+            if (['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder', 'save', 'delete', 'refresh-aggregate-on-save']
                 .some((value: string) => { return args.requestType === value; })) {
                 this.emptyVcRows();
             }

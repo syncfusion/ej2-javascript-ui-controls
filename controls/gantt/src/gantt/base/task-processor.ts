@@ -9,6 +9,8 @@ import { TaskFieldsModel, ColumnModel, ResourceFieldsModel } from '../models/mod
 import { CObject, ConstraintType, DurationUnit, TaskType, ViewType } from './enum';
 import { WeekWorkingTimeModel } from '../models/week-working-time-model';
 import { UndoRedo } from '../actions/undo-redo';
+import { ColumnModel as GanttColumnModel } from '../models/column';
+import { NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 
 /**
  * To calculate and update task related values
@@ -428,7 +430,7 @@ export class TaskProcessor extends DateProcessor {
         let progress: number = data[taskSettings.progress];
         let id: string = null; let name: string = null;
         const notes: string = data[taskSettings.notes];
-        progress = progress ? parseFloat(progress.toString()) ? parseFloat(progress.toString()) : 0 : 0;
+        progress = this.formatProgressValue(progress, taskSettings.progress);
         progress = (100 < progress) ? 100 : progress;
         const predecessors: string | number | object[] = data[taskSettings.dependency];
         const baselineStartDate: Date = this.getDateFromFormat(data[taskSettings.baselineStartDate], true);
@@ -636,6 +638,46 @@ export class TaskProcessor extends DateProcessor {
         }
         this.parent.chartRowsModule.updateSegment(ganttData.ganttProperties.segments, ganttData.ganttProperties.taskId);
         return ganttData;
+    }
+
+    // Checks if decimal progress is enabled for the given field.
+    private isDecimalProgress(progressField: string): boolean {
+        const progressColumn: GanttColumnModel = this.parent.columnByField[progressField as string];
+        const hasDecimalEdit: boolean = !isNullOrUndefined(progressColumn) &&
+            !isNullOrUndefined(progressColumn.edit) &&
+            progressColumn.hasOwnProperty('edit') &&
+            !isNullOrUndefined(progressColumn.edit.params) &&
+            progressColumn.edit.hasOwnProperty('params') &&
+            !isNullOrUndefined((progressColumn.edit.params as NumericTextBoxModel).decimals) &&
+            (progressColumn.edit.params as NumericTextBoxModel).decimals > 0;
+        return hasDecimalEdit;
+    }
+
+    // Extracts the number of decimal places from the column format.
+    private getDecimalPlaces(progressField: string): number {
+        const progressColumn: GanttColumnModel = this.parent.columnByField[progressField as string];
+        if (progressColumn && typeof progressColumn.format === 'string' &&
+            progressColumn.format.match(/^[ncp](\d*)$/i)) {
+            const match: RegExpMatchArray = progressColumn.format.match(/^[ncp](\d*)$/i);
+            if (match) {
+                return parseInt(match[1], 10);
+            }
+        }
+        return 0; // default decimal places
+    }
+
+    // Formats the progress value based on decimal settings and caps it at 100.
+    private formatProgressValue(value: number, progressField: string): number {
+        const hasDecimalEdit: boolean = this.isDecimalProgress(progressField);
+        const parsed: number = value ? parseFloat(value.toString()) || 0 : 0;
+        let formattedValue: number;
+        if (hasDecimalEdit) {
+            const decimalPlaces: number = this.getDecimalPlaces(progressField);
+            formattedValue = Number(parsed.toFixed(decimalPlaces));
+        } else {
+            formattedValue = Math.floor(parsed);
+        }
+        return (formattedValue);
     }
 
     private sortSegmentsData(segments: ITaskSegment[], onLoad: boolean, ganttProp: ITaskData): ITaskSegment[] {   // eslint-disable-line
@@ -3737,7 +3779,8 @@ export class TaskProcessor extends DateProcessor {
                     if (!isNullOrUndefined(this.parent.taskFields.type)) {
                         this.updateMappingData(parentData, 'type');
                     }
-                    this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
+                    const formattedParentProgress: number = this.formatProgressValue(parentProgress, this.parent.taskFields.progress);
+                    this.parent.setRecordValue('progress', formattedParentProgress, parentProp, true);
                     this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
                     this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
                     this.parent.setRecordValue('autoDuration', parentProp.duration,  parentProp, true);

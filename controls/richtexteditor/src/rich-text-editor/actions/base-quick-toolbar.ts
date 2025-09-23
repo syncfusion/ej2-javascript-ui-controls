@@ -129,19 +129,28 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
      */
     public showPopup(target: Element, originalEvent?: MouseEvent | KeyboardEvent): void {
         const selection: Selection = this.parent.formatter.editorManager.nodeSelection.get(this.parent.inputElement.ownerDocument);
+        let range: Range;
         if (isNOU(selection) && selection.rangeCount < 0) {
             return;
         }
+        else if (!isNOU(selection) && selection.rangeCount === 0 && isNOU(selection.focusNode)) {
+            range = this.parent.inputElement.ownerDocument.createRange();
+            range.setStart(this.parent.inputElement.firstChild, 0);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } else {
+            range = selection.getRangeAt(0);
+        }
         this.renderSubComponents(target as HTMLElement);
         const relativeElem: HTMLElement = this.getRelativeElement(selection, target as HTMLElement);
-        if (relativeElem === null) {
+        if (isNOU(relativeElem)) {
             return;
         }
         let iframeRect: DOMRect;
         if (this.parent.iframeSettings.enable) {
             iframeRect = this.parent.contentModule.getPanel().getBoundingClientRect() as DOMRect;
         }
-        const range: Range = selection.getRangeAt(0);
         const clientRects: DOMRectList = range.getClientRects() as DOMRectList;
         const direction: SelectionDirection = this.getSelectionDirection(selection);
         let triggerType: TriggerType = isNOU(originalEvent) ? 'none' : originalEvent.type as TriggerType;
@@ -461,8 +470,8 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         switch (this.type) {
         case 'Inline':
         case 'Text':
-            blockElement = this.parent.formatter.editorManager.domTree.isBlockNode(focusNode as HTMLElement) ? focusNode as HTMLElement :
-                this.parent.formatter.editorManager.domTree.getParentBlockNode(focusNode);
+            blockElement = this.parent.formatter.editorManager.domTree.isBlockNode(focusNode as HTMLElement) ?
+                focusNode as HTMLElement : this.parent.formatter.editorManager.domTree.getParentBlockNode(focusNode);
             if (blockElement.nodeName === 'TD' || blockElement.nodeName === 'TH') {
                 blockElement = closest(currentTarget, 'table') as HTMLElement;
             }

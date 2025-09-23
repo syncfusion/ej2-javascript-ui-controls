@@ -9982,6 +9982,40 @@ describe('ImageEditor', () => {
                 done();
             }, 100);
         });
+
+       it('Cancel argument for select action in ShapeChanging event', (done) => {
+           imageEditor = new ImageEditor({
+               height: '450px',
+               shapeChanging: (args: ShapeChangeEventArgs) => {
+                   if (args.action === 'select') { args.cancel = true; }
+               }
+           }, '#image-editor');
+           imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+           setTimeout(() => {
+               imageEditor.drawRectangle();
+               const shape = imageEditor.shapeColl[0];
+               if (!shape) return;
+               const { startX, endX, startY, endY } = shape.activePoint;
+               const clickX = (startX + endX) / 2;
+               const clickY = startY + endY;
+               const dispatchMouseEvent = (type: string) => {
+                   const event = new MouseEvent(type, {
+                       bubbles: true,
+                       cancelable: true,
+                       view: window,
+                       clientX: clickX,
+                       clientY: clickY
+                   });
+                   const target = document.elementFromPoint(clickX, clickY);
+                   if (target) { target.dispatchEvent(event); }
+               };
+               imageEditor.cursor = 'move';
+               dispatchMouseEvent('mousedown');
+               dispatchMouseEvent('mouseup');
+               expect(imageEditor.activeObj.shape).toBeUndefined();
+               done();
+           }, 100);
+       });
      
        it('Text area editing - outline color customizing', (done) => {
             imageEditor = new ImageEditor({

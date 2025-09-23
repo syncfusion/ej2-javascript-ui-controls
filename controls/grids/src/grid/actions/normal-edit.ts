@@ -113,6 +113,14 @@ export class NormalEdit {
             }
             this.parent.notify(events.closeEdit, { requestType: 'delete', action: e[`${action}`] });
             break;
+        case 'refresh-aggregate-on-save':
+            this.parent.trigger(events.actionComplete, extend(e, {
+                requestType: 'refresh-aggregate-on-save',
+                type: events.actionComplete
+            }));
+            this.parent.selectRow(this.rowIndex);
+            this.parent.notify(events.closeEdit, { requestType: 'refresh-aggregate-on-save', action: e[`${action}`] });
+            break;
         }
     }
 
@@ -462,9 +470,17 @@ export class NormalEdit {
                 dragRowObject.parentUid !== dropRowObject.parentUid) {
                 (this.parent['groupModule'] as Group).groupedRowReorder(dragRowObject, dropRowObject);
             }
+            else if (!this.parent.groupSettings.enableLazyLoading && this.parent.aggregates.length && (this.parent.enableVirtualization ||
+            (this.parent.allowPaging && this.parent.groupSettings.disablePageWiseAggregates))) {
+                this.parent.notify(events.modelChanged, {requestType: 'refresh-aggregate-on-save', action: 'update'});
+            }
             else if (this.parent.aggregates.length) {
                 this.parent.aggregateModule.refresh(args.data, this.parent.groupSettings.enableLazyLoading ? args.row : undefined);
             }
+        }
+        else if (!this.parent.groupSettings.enableLazyLoading && this.parent.aggregates.length && (this.parent.enableVirtualization ||
+        (this.parent.allowPaging && this.parent.groupSettings.disablePageWiseAggregates))) {
+            this.parent.notify(events.modelChanged, {requestType: 'refresh-aggregate-on-save', action: 'update'});
         }
         else if (this.parent.aggregates.length) {
             this.parent.aggregateModule.refresh(args.data, this.parent.groupSettings.enableLazyLoading ? args.row : undefined);
@@ -758,7 +774,8 @@ export class NormalEdit {
             { event: events.deleteComplete, handler: this.editComplete },
             { event: events.saveComplete, handler: this.editComplete },
             { event: events.rowModeChange, handler: this.closeEdit },
-            { event: events.closeInline, handler: this.closeForm }];
+            { event: events.closeInline, handler: this.closeForm },
+            { event: events.refreshAggregateComplete, handler: this.editComplete }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
 

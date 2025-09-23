@@ -919,7 +919,7 @@ export function getZIndexCalcualtion(args: { popup: Popup }, dialogObj: Dialog):
  * @hidden
  */
 export function toggleFilterUI(
-    operator: string, columnUid: string, column: Column, columnType: string,
+    operator: string, columnUid: string, column: Column | ColumnModel, columnType: string,
     dlgObj: Dialog, previousValue: string
 ): void {
     if (isNullOrUndefined(column.filterTemplate)) {

@@ -1123,6 +1123,41 @@ describe('Schedule day view', () => {
         });
     });
 
+    describe('Date header template with groupIndex in Day view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Day',
+                selectedDate: new Date(2018, 3, 1),
+                group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }],
+                dateHeaderTemplate: '<div class="custom-date-header" data-group="${groupIndex}">Group</div>'
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Should render dateHeaderTemplate with correct groupIndex in Day view', () => {
+            const headerElements = schObj.element.querySelectorAll('.custom-date-header');
+            expect(headerElements.length).toBe(2);
+
+            const firstHeader = headerElements[0] as HTMLElement;
+            expect(firstHeader.getAttribute('data-group')).toBe('0');
+
+            const secondHeader = headerElements[1] as HTMLElement;
+            expect(secondHeader.getAttribute('data-group')).toBe('1');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

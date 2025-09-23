@@ -411,9 +411,11 @@ export class Year extends ViewBase implements IRenderer {
         const startDate: Date = isDateColAvail ? dateCollection[0] : this.getStartDate();
         const endDate: Date = isDateColAvail ? dateCollection[dateCollection.length - 1] : this.getEndDate();
         if (startDate.getFullYear() !== endDate.getFullYear()) {
-            return this.parent.globalize.formatDate(startDate, { skeleton: 'yMMM' }) + ' - ' + this.parent.globalize.formatDate(endDate, { skeleton: 'yMMM' });
-        } else {
-            return this.parent.globalize.formatDate(isDateColAvail ? dateCollection[0] : date, { skeleton: 'y' });
+            return this.parent.globalize.formatDate(startDate, { format: 'MMM y', calendar: this.parent.getCalendarMode() })
+                + ' - ' + this.parent.globalize.formatDate(endDate, { format: 'MMM y', calendar: this.parent.getCalendarMode() });
+        }
+        else {
+            return this.parent.globalize.formatDate(isDateColAvail ? dateCollection[0] : date, { skeleton: 'y', calendar: this.parent.getCalendarMode() });
         }
     }
 

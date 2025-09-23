@@ -77,8 +77,12 @@ export class Export {
             type = type ? type : 'Png';
             parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
                 value: {x: null, y: null, isMouseDown: null}});
+            const imageQualityObj: Object = { currentImageQuality: 1 };
+            if (type.toLowerCase() === 'jpeg') {
+                parent.notify('toolbar', { prop: 'getcurrentImageQuality', onPropertyChange: false, value: { obj: imageQualityObj } });
+            }
             const beforeSave: BeforeSaveEventArgs = { cancel: false, fileName: fileName ? fileName : imageName,
-                fileType: type as FileType, imageQuality: imgQuality};
+                fileType: type as FileType, imageQuality: imgQuality || imageQualityObj['currentImageQuality'] };
             parent.trigger('beforeSave', beforeSave);
             this.beforeSaveEvent(beforeSave, type, fileName, imageName, imgQuality);
         }

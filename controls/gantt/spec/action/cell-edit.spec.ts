@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, UndoRedo, CriticalPath} from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, unscheduledData1, MT887459, actionFailureData, resourceData, Data893564, CR898960, crValidateIssue, criticalPath, editingResources3, baselinedurationdata } from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, unscheduledData1, MT887459, actionFailureData, resourceData, Data893564, CR898960, crValidateIssue, criticalPath, editingResources3, baselinedurationdata, CR979885 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input, TextBox } from '@syncfusion/ej2-inputs';
@@ -7424,3 +7424,243 @@ describe('method to calculate baseline enddate ', () => {
         }
     });
 });
+describe('CR-Task-979885: Decimal value not rendered for parent taskbar progress', () => {
+    let ganttObj: Gantt;
+    const numericParams: { params: { decimals: number } } = { params: { decimals: 2 } };
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: CR979885,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'Duration', headerText: 'Duration' },
+                { field: 'Progress', headerText: 'Progress', editType: "numericedit", format: 'n2', edit: numericParams }
+            ],
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Verifying progress value is in decimal', () => {
+        // Verifying parent progress value in decimal
+        expect(ganttObj.currentViewData[0].ganttProperties.progress).toBe(17.82);
+        // Verifying child progress value in decimal
+        expect(ganttObj.currentViewData[1].ganttProperties.progress).toBe(23.45);
+    });
+});
+describe('CR-Task-979885: Decimal value not rendered for parent taskbar progress without column format', () => {
+    let ganttObj: Gantt;
+    const numericParams: { params: { decimals: number } } = { params: { decimals: 2 } };
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: CR979885,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'Duration', headerText: 'Duration' },
+                { field: 'Progress', headerText: 'Progress', editType: "numericedit", edit: numericParams }
+            ],
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Verifying progress value is in decimal without format', () => {
+        // Verifying parent progress value in decimal
+        expect(ganttObj.currentViewData[0].ganttProperties.progress).toBe(18);
+        // Verifying child progress value in decimal
+        expect(ganttObj.currentViewData[1].ganttProperties.progress).toBe(23);
+    });
+});
+describe('CR-Task-979885: Code coverage for cell select edit toolbar open action', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: CR979885,
+            height: '450px',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            selectionSettings: {
+                mode: 'Cell',
+            },
+            columns: [
+                { field: 'TaskID', width: 120 },
+                { field: 'TaskName', width: 250 },
+                { field: 'Progress'}
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Verifying code coverage for edit toolbar open action with cell select mode', () => {
+        ganttObj.selectionModule.selectCell({ cellIndex: 1, rowIndex: 1 });
+        let editToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_edit') as HTMLElement;
+        triggerMouseEvent(editToolbar, 'click');
+        expect(ganttObj.currentViewData[1].ganttProperties.progress).toBe(23);
+    });
+});
+describe('CR-Task-979885: Code coverage for edit dialog update action', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: CR979885,
+            height: '450px',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', width: 120 },
+                { field: 'TaskName', width: 250 },
+                { field: 'Progress', headerText: 'Progress', editType: 'stringedit',
+                    edit:{
+                        read: function () {
+                            return "some value";
+                        }
+                    }
+                },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Verifying code coverage for dialog update for progress read', () => {
+        ganttObj.openEditDialog(1);
+        let dialogElement: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog') as HTMLElement;
+        ganttObj.editModule.dialogModule['updateScheduleFields'](dialogElement, ganttObj.currentViewData[1].ganttProperties, 'progress')
+        expect(ganttObj.currentViewData[1].ganttProperties.progress).toBe(23);
+    });
+});
+
+describe('CR-Task-979885: Code coverage for edit dialog null startdate', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource:  [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), Duration: 3, Progress: 30 }
+                    ]
+                }
+            ],
+            taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration' },
+            { field: 'Progress', headerText: 'Progress'},
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Verifying code coverage for null startdate case', () => {
+        ganttObj.currentViewData[1].ganttProperties.startDate = null;
+        ganttObj.editModule.dialogModule['validateStartDate'](ganttObj.currentViewData[1], false)
+        expect(ganttObj.currentViewData[1].ganttProperties.startDate).toBe(null);
+    });
+})

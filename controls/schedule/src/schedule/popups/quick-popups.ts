@@ -1350,7 +1350,11 @@ export class QuickPopups {
         if (closest(target, '.' + cls.APPOINTMENT_CLASS + ',.' + cls.HEADER_CELLS_CLASS)) {
             this.parent.removeNewEventElement();
         }
-        if (!closest(target, '.' + cls.MORE_POPUP_WRAPPER_CLASS) && (target.classList &&
+        const isQuickPopupClick: boolean | Element | null = closest(target, '.' + cls.POPUP_WRAPPER_CLASS) ||
+            closest(target, '.' + cls.QUICK_DIALOG_CLASS);
+        const isEditButton: boolean = target.classList.contains(cls.EDIT_EVENT_CLASS) ||
+            target.classList.contains(cls.EDIT_CLASS) || target.classList.contains(cls.EDIT_ICON_CLASS);
+        if (isEditButton || !isQuickPopupClick && !closest(target, '.' + cls.MORE_POPUP_WRAPPER_CLASS) && (target.classList &&
             !target.classList.contains(cls.MORE_INDICATOR_CLASS))
             && (!closest(target, '.' + cls.MORE_POPUP_WRAPPER_CLASS + '.' + cls.POPUP_OPEN))
             && !closest(target, '.' + cls.WORK_CELLS_CLASS)) {

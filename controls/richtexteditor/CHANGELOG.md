@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 31.1.21 (2025-09-23)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I764281` - Now, the inline toolbar will display correctly when triggered by the focus event, even if the Rich Text Editor contains no value.
+
+- `#I764677` - Now, column resizing functions correctly when a `colspan` attribute is applied to a table element.
+
 ## 31.1.20 (2025-09-10)
 
 ### RichTextEditor

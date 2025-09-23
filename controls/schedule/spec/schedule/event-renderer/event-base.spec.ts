@@ -891,11 +891,11 @@ describe('Event Base Module', () => {
             appEle[1].click();
             expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toBeTruthy();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(3);
-            expect(Math.floor(schObj.element.querySelector('.e-content-wrap').scrollTop)).toBe(1);
+            expect(Math.floor(schObj.element.querySelector('.e-content-wrap').scrollTop)).toBe(0);
             (schObj.element.querySelector('.e-quick-popup-wrapper .e-close') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-close')).toBeTruthy();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(3);
-            expect(Math.floor(schObj.element.querySelector('.e-content-wrap').scrollTop)).toBe(1);
+            expect(Math.floor(schObj.element.querySelector('.e-content-wrap').scrollTop)).toBe(0);
         });
     });
 
@@ -2750,6 +2750,38 @@ describe('Event Base Module', () => {
                     }, 100);
                 }, 100);
             });
+        });
+    });
+
+    describe('Allow editing false with recurrence event', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Recursive Event',
+            StartTime: new Date(2023, 10, 15, 10, 0),
+            EndTime: new Date(2023, 10, 15, 11, 0),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '550px',
+                selectedDate: new Date(2023, 10, 15),
+                eventSettings: {
+                    allowEditing: false,
+                }
+            };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Double clicking recurrence event should not open popup', () => {
+            const appElement: HTMLElement = schObj.element.querySelector('.e-appointment');
+            util.triggerMouseEvent(appElement, 'click');
+            util.triggerMouseEvent(appElement, 'dblclick');
+            const dialogElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS);
+            expect(dialogElement.firstElementChild.classList.contains('e-popup-open')).toEqual(false);
         });
     });
 

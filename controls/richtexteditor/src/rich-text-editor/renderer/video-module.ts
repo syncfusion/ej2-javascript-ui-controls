@@ -18,6 +18,7 @@ import { DialogRenderer } from './dialog-renderer';
 import { VideoCommand } from '../../editor-manager/plugin/video';
 import {MediaDropEventArgs} from '../../common/interface';
 import { PopupUploader } from './popup-uploader-renderer';
+import { RichTextEditorModel } from '../base';
 
 export class Video {
     public element: HTMLElement;
@@ -112,6 +113,7 @@ export class Video {
         this.parent.on(events.clearDialogObj, this.clearDialogObj, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
+        this.parent.on(events.modelChanged, this.onPropertyChanged, this);
     }
 
     protected removeEventListener(): void {
@@ -133,6 +135,7 @@ export class Video {
         this.parent.off(events.clearDialogObj, this.clearDialogObj);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.bindOnEnd, this.bindOnEnd);
+        this.parent.off(events.modelChanged, this.onPropertyChanged);
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
             : this.parent.inputElement;
         dropElement.removeEventListener('drop', this.drop, true);
@@ -160,6 +163,29 @@ export class Video {
         }
     }
 
+    private onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
+        for (const prop of Object.keys(e.newProp)) {
+            if (prop === 'insertVideoSettings') {
+                switch (Object.keys(e.newProp.insertVideoSettings)[0]) {
+                case 'resize':
+                    if (this.parent.insertVideoSettings.resize === false) {
+                        EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
+                        EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
+                        this.cancelResizeAction();
+                    } else {
+                        this.addresizeHandler();
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    private addresizeHandler(): void {
+        EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
+        (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick);
+        EventHandler.add(this.contentModule.getEditPanel(), 'cut', this.onCutHandler, this);
+    }
+
     private afterRender(): void {
         this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.videoClick, this);
@@ -169,9 +195,7 @@ export class Video {
         dropElement.addEventListener('dragenter', this.enter, true);
         dropElement.addEventListener('dragover', this.drag, true);
         if (this.parent.insertVideoSettings.resize) {
-            EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
-            (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick);
-            EventHandler.add(this.contentModule.getEditPanel(), 'cut', this.onCutHandler, this);
+            this.addresizeHandler();
         }
     }
 
@@ -1076,6 +1100,13 @@ export class Video {
                 this.prevSelectedVidEle.style.outline = '';
             }
         }
+        if (target.tagName !== 'VIDEO') {
+            const items: NodeListOf<HTMLElement> = this.contentModule.getEditPanel().querySelectorAll('video');
+            for (let i: number = 0; i < items.length; i++) {
+                removeClass([items[i as number]], 'e-vid-focus');
+                removeClass([items[i as number]], 'e-resize');
+            }
+        }
         if (this.parent.inlineMode.enable && target && this.dialogObj && !closest(target, '#' + this.dialogObj.element.id)) {
             this.dialogObj.hide();
         }
@@ -1498,7 +1529,7 @@ export class Video {
                             url: url, selection: save, fileName: fileName, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertVideoSettings.width, minWidth: proxy.parent.insertVideoSettings.minWidth,
-                                maxWidth: proxy.parent.getInsertImgMaxWidth()
+                                maxWidth: proxy.parent.getInsertVidMaxWidth()
                             },
                             height: {
                                 height: proxy.parent.insertVideoSettings.height, minHeight: proxy.parent.insertVideoSettings.minHeight,
@@ -1840,7 +1871,7 @@ export class Video {
                 classes.CLS_VIDEOINLINE : classes.CLS_VIDEOBREAK);
             proxy.uploadUrl.width = {
                 width: proxy.parent.insertVideoSettings.width, minWidth: proxy.parent.insertVideoSettings.minWidth,
-                maxWidth: proxy.parent.getInsertImgMaxWidth()
+                maxWidth: proxy.parent.getInsertVidMaxWidth()
             };
             proxy.uploadUrl.height = {
                 height: proxy.parent.insertVideoSettings.height, minHeight: proxy.parent.insertVideoSettings.minHeight,
@@ -1862,7 +1893,7 @@ export class Video {
                 url: url, selection: (this as IImageNotifyArgs).selection, fileName: name, isEmbedUrl: !webUrlBtn.checked,
                 selectParent: (this as IImageNotifyArgs).selectParent, width: {
                     width: proxy.parent.insertVideoSettings.width, minWidth: proxy.parent.insertVideoSettings.minWidth,
-                    maxWidth: proxy.parent.getInsertImgMaxWidth()
+                    maxWidth: proxy.parent.getInsertVidMaxWidth()
                 },
                 height: {
                     height: proxy.parent.insertVideoSettings.height, minHeight: proxy.parent.insertVideoSettings.minHeight,

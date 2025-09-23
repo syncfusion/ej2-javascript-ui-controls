@@ -4232,6 +4232,56 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('Checking with minDate and maxDate with editing window constraint', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                currentView: 'Week',
+                views: ['Week'],
+                selectedDate: new Date(2017, 10, 3),
+                minDate: new Date(2017, 10, 2),
+                maxDate: new Date(2017, 10, 10)
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Open event window and validate timing & save', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toBeGreaterThan(0);
+                const evt = schObj.eventsData[0];
+                expect(+evt.StartTime).toEqual(+expectedStart);
+                expect(+evt.EndTime).toEqual(+expectedEnd);
+                done();
+            }
+            const rightNavBtn: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
+            expect(rightNavBtn).toBeTruthy();
+            rightNavBtn.click();
+            const workCells: NodeListOf<HTMLElement> = schObj.element.querySelectorAll('.e-work-cells') as NodeListOf<HTMLElement>;
+            const cellIndex: number = 33;
+            const cell: HTMLElement = workCells[cellIndex];
+            const cellDetails = schObj.getCellDetails(cell);
+            const expectedStart: Date = cellDetails.startTime;
+            const expectedEnd: Date = cellDetails.endTime;
+            util.triggerMouseEvent(workCells[cellIndex], 'click');
+            util.triggerMouseEvent(workCells[cellIndex], 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            expect(dialogElement).toBeTruthy();
+            const startInput: HTMLInputElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_CLASS) as HTMLInputElement;
+            const endInput: HTMLInputElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS) as HTMLInputElement;
+            const startDate: Date = new Date(startInput.value);
+            const endDate: Date = new Date(endInput.value);
+            expect(+startDate).toEqual(+expectedStart);
+            expect(+endDate).toEqual(+expectedEnd);
+            const subjectInput: HTMLInputElement = dialogElement.querySelector('.' + cls.SUBJECT_CLASS) as HTMLInputElement;
+            subjectInput.value = 'Test Event';
+            const saveBtn: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            saveBtn.click();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

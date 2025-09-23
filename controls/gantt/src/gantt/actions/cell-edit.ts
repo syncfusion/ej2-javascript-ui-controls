@@ -8,6 +8,7 @@ import { TreeGrid, Edit } from '@syncfusion/ej2-treegrid';
 import { Deferred } from '@syncfusion/ej2-data';
 import { Tab } from '@syncfusion/ej2-navigations';
 import { ConstraintType } from '../base/enum';
+import { ColumnModel as GanttColumnModel } from '../models/column';
 /**
  * To handle cell edit action on default columns and custom columns
  */
@@ -695,14 +696,11 @@ export class CellEdit {
      */
     private progressEdited(args: ITaskbarEditedEventArgs): void {
         const ganttRecord: IGanttData = args.data;
-        this.parent.setRecordValue(
-            'progress',
-            (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]),
-            ganttRecord.ganttProperties, true);
-        this.parent.setRecordValue(
-            'taskData.' + this.parent.taskFields.progress,
-            (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]),
-            args.data);
+        const rawProgress: number = ganttRecord[this.parent.taskFields.progress];
+        let progressValue: number = this.parent.dataOperation['formatProgressValue'](rawProgress, this.parent.taskFields.progress);
+        progressValue = (progressValue > 100) ? 100 : progressValue;
+        this.parent.setRecordValue('progress', progressValue, ganttRecord.ganttProperties, true);
+        this.parent.setRecordValue('taskData.' + this.parent.taskFields.progress, progressValue, args.data);
         if (!ganttRecord.ganttProperties.isAutoSchedule) {
             this.parent.setRecordValue('autoWidth',
                                        this.parent.dataOperation.calculateWidth(ganttRecord, false), ganttRecord.ganttProperties, true);

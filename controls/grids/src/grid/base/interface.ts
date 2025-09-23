@@ -46,6 +46,7 @@ import { Scroll } from '../actions/scroll';
 import { Aggregate } from '../actions/aggregate';
 import { InfiniteScroll } from '../actions/infinite-scroll';
 import { Filter } from '../actions/filter';
+import { Reorder } from '../actions/reorder';
 import { ContextMenu } from '../actions/context-menu';
 import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
 import { ColumnChooser, Search } from '../..';
@@ -675,6 +676,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     filterModule?: Filter;
 
+    reorderModule?: Reorder;
+
     columnChooserModule?: ColumnChooser;
 
     requestTypeAction?: string;
@@ -1013,7 +1016,7 @@ export interface IFilterUI {
  */
 export interface IFilterBase {
     /** Defines the column. */
-    column?: Column;
+    column?: Column | ColumnModel;
     /** Defines the target. */
     target?: HTMLElement | Element;
 }
@@ -1034,6 +1037,8 @@ export interface IFilterRead extends IFilterBase {
 export interface IFilterWrite extends IFilterBase {
     /** Defines the filter value. */
     filteredValue?: string | number | boolean | Date | (string | number | boolean | Date)[];
+    /** Defines the parent instance */
+    parent?: IGrid;
 }
 
 /**
@@ -1502,6 +1507,8 @@ export interface RecordDoubleClickEventArgs {
     rowIndex?: number;
     /** Define the foreignKey row data associated with this column */
     foreignKeyData?: Object;
+    /** Specifies mouse or touch event. */
+    event?: TouchEvent | MouseEvent;
 }
 
 export interface RecordClickEventArgs {
@@ -1526,6 +1533,8 @@ export interface RecordClickEventArgs {
     rowIndex?: number;
     /** Define the foreignKey row data associated with this column */
     foreignKeyData?: Object;
+    /** Specifies mouse or touch event. */
+    event?: TouchEvent | MouseEvent;
 }
 
 export interface RowSelectingEventArgs extends RowSelectEventArgs {

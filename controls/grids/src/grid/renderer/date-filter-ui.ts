@@ -1,4 +1,4 @@
-import { IGrid, EJ2Intance, IFilterMUI, IFilterCreate } from '../base/interface';
+import { IGrid, EJ2Intance, IFilterMUI, IFilterCreate, IFilterWrite } from '../base/interface';
 import { Column } from '../models/column';
 import { FilterSettings } from '../base/grid';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -71,8 +71,7 @@ export class DateFilterUI implements IFilterMUI {
         this.datePickerObj.appendTo(this.inputElem);
     }
 
-    public write(args: { column: Column, target: Element, parent: IGrid,
-        filteredValue: number | string | Date | boolean | (string | number | boolean | Date)[] }): void {
+    public write(args: IFilterWrite): void {
         const dateuiObj: DatePicker | DateTimePicker = (<EJ2Intance>document.querySelector('#dateui-' + args.column.uid)).ej2_instances[0];
         dateuiObj.value = !isNullOrUndefined(args.filteredValue) ? new Date(args.filteredValue as string) as Date : null as Date;
     }

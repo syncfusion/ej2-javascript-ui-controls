@@ -3,7 +3,7 @@
  */
 import { Gantt, Edit, CriticalPath, ContextMenu, ContextMenuClickEventArgs, RowDD, Selection, Toolbar, DayMarkers, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ExcelExport, PdfExport, ITaskbarEditedEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection, criticalPathData, taskModeData1, taskModeData2, criticalPathData1, criticalPathData2, bwData1, bwData2, bwData3, bwData4, criticalData2, unscheduleCriticalTask,cr918186, CR933826, CR977218 } from '../base/data-source.spec';
+import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection, criticalPathData, taskModeData1, taskModeData2, criticalPathData1, criticalPathData2, bwData1, bwData2, bwData3, bwData4, criticalData2, unscheduleCriticalTask,cr918186, CR933826, CR977218, CR979664 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 Gantt.Inject(Edit, CriticalPath, ContextMenu, RowDD, Selection, Toolbar, DayMarkers, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ExcelExport, PdfExport);
@@ -3084,3 +3084,61 @@ describe('resource view with predecessor', () => {
             expect(ganttObj.flatData[4].isCritical).toBe(true);
         });
     });
+
+describe('CR:979664-Critical path validation not working when two parent tasks are connected via predecessor', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+            dataSource: CR979664,
+            height: '450px',
+            enableCriticalPath: true,
+            taskFields: {
+              id: 'TaskID',
+              name: 'TaskName',
+              startDate: 'StartDate',
+              endDate: 'EndDate',
+              duration: 'Duration',
+              progress: 'Progress',
+              dependency: 'Predecessor',
+              child: 'subtasks',
+            },
+            editSettings: {
+              allowAdding: true,
+              allowEditing: true,
+              allowDeleting: true,
+              allowTaskbarEditing: true,
+              showDeleteConfirmDialog: true,
+            },
+            treeColumnIndex: 1,
+            toolbar: ['Add', 'Edit', 'Delete', 'CriticalPath'],
+            columns: [
+              { field: 'TaskID', width: 80 },
+              { field: 'TaskName', headerText: 'Name', width: 250 },
+              { field: 'StartDate' },
+              { field: 'EndDate' },
+              { field: 'Duration' },
+              { field: 'Predecessor' },
+              { field: 'Progress' },
+            ],
+            labelSettings: {
+              leftLabel: 'TaskName',
+            },
+            projectStartDate: new Date('08/24/2025'),
+     }, done);
+    });
+    it('Validates critical path for connected parent tasks and child tasks with matching end dates', () => {
+        expect(ganttObj.flatData[0].isCritical).toBe(true);
+        expect(ganttObj.flatData[1].isCritical).toBe(true);
+        expect(ganttObj.flatData[2].isCritical).toBe(true);
+        expect(ganttObj.flatData[3].isCritical).toBe(true);
+        expect(ganttObj.flatData[4].isCritical).toBe(true);
+        expect(ganttObj.flatData[5].isCritical).toBe(true);
+        expect(ganttObj.flatData[6].isCritical).toBe(true);
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});

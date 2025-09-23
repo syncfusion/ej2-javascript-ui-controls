@@ -3885,7 +3885,7 @@ export class Editor {
                 }
                 this.setCharFormatForCollaborativeEditing(insertFormat);
 
-                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ')) && !(inline instanceof ContentControl) && !(inline instanceof CommentCharacterElementBox) && insertFormat.isSameFormat(inline.characterFormat) && inline.revisionLength <= 1 && this.canInsertRevision(inline, revisionType)
+                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ')) && text !== String.fromCharCode(14) && !(inline instanceof ContentControl) && !(inline instanceof CommentCharacterElementBox) && insertFormat.isSameFormat(inline.characterFormat) && inline.revisionLength <= 1 && this.canInsertRevision(inline, revisionType)
                     || (text.trim() === '' && !isBidi && inline.characterFormat.bidi) || isRtl && insertFormat.isSameFormat(inline.characterFormat) && isSpecialChars) {
                     this.insertTextInline(inline, selection, text, indexInInline, undefined, revisionType, isBidi);
                     this.setCharFormatForCollaborativeEditing(inline.characterFormat);
@@ -3912,7 +3912,7 @@ export class Editor {
                     let insertIndex: number = inline.indexInOwner;
                     if (indexInInline === inline.length) {
                         let index: number = -1;
-                        index = (inline instanceof CommentCharacterElementBox && inline.commentType == 0) ? insertIndex : insertIndex + 1;
+                        index = insertIndex + 1;
                         if (this.owner.enableTrackChanges && !(inline instanceof BookmarkElementBox)) {
                             isRevisionCombined = this.checkToMapRevisionWithInlineText(inline, indexInInline, tempSpan, isBidi, revisionType);
                             if (!isRevisionCombined) {
@@ -4729,7 +4729,7 @@ export class Editor {
             previousElement = previousElement.previousValidNodeForTracking;
             nextElement = nextElement.nextValidNodeForTracking;
             if (previousElement && element && !this.compareElementRevision(previousElement, element) && nextElement && this.compareElementRevision(previousElement, nextElement)
-                && !(element instanceof BookmarkElementBox || element instanceof CommentCharacterElementBox || element instanceof EditRangeStartElementBox || element instanceof EditRangeEndElementBox)) {
+                && !(element instanceof BookmarkElementBox || element instanceof EditRangeStartElementBox || element instanceof EditRangeEndElementBox)) {
                 this.updateRevisionForSpittedTextElement(previousElement as any, nextElement as any, element);
                 alreadySplitted = true;
             }
@@ -8649,24 +8649,24 @@ export class Editor {
                     this.constructRevisionsForLink(newElement, false);
                 }
                 if (!isRevisionCombined) {
-                    // As per MS word behaviour: If track changes disabled, we may need to split the insert revisions.
+                    // As per MS word behaviour: If track changes disabled, we may need to split the revisions.
                     if (element.revisionLength > 0 && !isTrackingEnabled && newElement.removedIds.length === 0) {
                         if (newElement instanceof CommentCharacterElementBox) {
-                            if (newElement.commentType === 1 && newElement.nextNode) {
+                            if (newElement.commentType === 1) {
                                 // Split the revision for split elements
-                                this.splitRevisionForSpittedElement(element, newElement.nextNode);
+                                this.checkToSplitRevisionInPrevNxt(newElement);
                             } else {
                                 // For other cases, copy the revision from the existing element to the new element
                                 this.copyElementRevision(element, newElement);
                             }
                         }
                     }
-                    // When track changes is enabled in MS Word, revisions should be split if they involve a deletion or if the revisions collection contains a delete revision
+                    // When track changes is enabled in MS Word, revisions should be split if they involve a deletion
                     else if (isTrackingEnabled) {
                         if (newElement instanceof CommentCharacterElementBox) {
-                            if (newElement.commentType === 1 && !isNullOrUndefined(this.retrieveRevisionByType(element, 'Deletion')) && newElement.nextNode) {
+                            if (newElement.commentType === 1 && !isNullOrUndefined(this.retrieveRevisionByType(element, 'Deletion'))) {
                                 // Split the revision for split elements
-                                this.splitRevisionForSpittedElement(element, newElement.nextNode);
+                                this.checkToSplitRevisionInPrevNxt(newElement);
                             } else {
                                 // For other cases, copy the revision from the existing element to the new element
                                 this.copyElementRevision(element, newElement);
@@ -8704,7 +8704,7 @@ export class Editor {
                 textElement.line = element.line;
                 isRevisionCombined = true;
                 line.children.splice(insertIndex, 0, newElement);
-                 // As per MS word behaviour: If track changes disabled, we may need to split the insert revisions.
+                 // As per MS word behaviour: If track changes disabled, we may need to split the revisions.
                 if (element.revisionLength > 0 && !isTrackingEnabled && !isUndoing && newElement.removedIds.length === 0) {
                     if (newElement instanceof CommentCharacterElementBox) {
                         this.copyElementRevision(element, textElement);
@@ -8734,7 +8734,7 @@ export class Editor {
                             this.insertRevision(newElement, revisionType);
                         }
                     } 
-                     // When track changes is enabled in MS Word, revisions should be split if they involve a deletion or if the revisions collection contains a delete revision
+                     // When track changes is enabled in MS Word, revisions should be split if they involve a deletion
                     else if (newElement instanceof CommentCharacterElementBox) {
                         this.copyElementRevision(element, textElement);
                         if (newElement.commentType === 1 && !isNullOrUndefined(this.retrieveRevisionByType(element, 'Deletion'))) {
@@ -18405,7 +18405,7 @@ export class Editor {
                     this.documentHelper.layout.combineMultiColumn(lastbody);
                 }
             }
-            this.onEnter('ColumnBreak');
+            this.insertTextInternal(String.fromCharCode(14), false);
             if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)) {
                 this.editorHistory.updateComplexHistory();
             }
@@ -18922,14 +18922,14 @@ export class Editor {
                     }
                     endBlockInfo.offset--;
                 }
-                if (startBlockInfo.paragraph === commentStartBlockInfo.paragraph) {
-                    let updateStartPosition: boolean = commentStartBlockInfo.offset < startBlockInfo.offset;
+                if (startBlockInfo.paragraph === commentStartBlockInfo.paragraph || endBlockInfo.paragraph === commentStartBlockInfo.paragraph) {
+                    let updateStartPosition: boolean = startBlockInfo.paragraph === commentStartBlockInfo.paragraph && commentStartBlockInfo.offset < startBlockInfo.offset;
                     if (commentToDelete.replyComments.length > 0) {
                         for (let m: number = 0; m < commentToDelete.replyComments.length; m++) {
                             let replyComment: CommentElementBox = commentToDelete.replyComments[m];
                             if (!isNullOrUndefined(replyComment.commentStart)) {
                                 let replyCommentStart: ParagraphInfo = this.selection.getParagraphInfoInternal(replyComment.commentStart.line, replyComment.commentStart.line.getOffset(replyComment.commentStart, 0));
-                                if (replyCommentStart.offset < startBlockInfo.offset) {
+                                if (startBlockInfo.paragraph === commentStartBlockInfo.paragraph && replyCommentStart.offset < startBlockInfo.offset) {
                                     startBlockInfo.offset--;
                                 }
                                 if (endBlockInfo.paragraph === commentStartBlockInfo.paragraph) {
@@ -20011,6 +20011,12 @@ export class Editor {
                             }
                             if (!isTrue || this.isRevisionMatched(elementBox, undefined)) {
                                 elementBox.line.children.splice(elementBox.indexInOwner, 1);
+                            } else if (isTrackingEnabled && !((elementBox.commentType === 0 && elementBox.nextElement === elementBox.comment.commentEnd) || 
+                                (elementBox.commentType === 1 && elementBox.previousElement === elementBox.comment.commentStart))) {
+                                if (!this.checkToCombineRevisionsInSides(elementBox, 'Deletion')) {
+                                    this.insertRevision(elementBox, 'Deletion');
+                                }
+                                this.updateLastDeletedRevision(elementBox);
                             }
                         }
                     }
@@ -22193,13 +22199,17 @@ export class Editor {
             (paragraph.childWidgets[0] as LineWidget).children.push(elements[0]);
             elements[0].line = (paragraph.childWidgets[0] as LineWidget);
             elements[0].linkFieldCharacter(this.documentHelper);
+            // Adding revisions for content control
+            if (this.owner.enableTrackChanges && !this.skipTracking() && !this.skipFieldDeleteTracking && !this.isInsertingTOC) {
+                if (!(elements[0] instanceof BookmarkElementBox) && !(elements[0] instanceof CommentCharacterElementBox) && !(elements[0] instanceof EditRangeStartElementBox) && !(elements[0] instanceof EditRangeEndElementBox)) {
+                    this.insertRevision(elements[0], 'Insertion');
+                }
+            }
             this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
-
             position.setPositionForSelection(elements[0].line, elements[0], elements[0].length, this.selection.start.location);
             this.selection.selectPosition(position, position);
         } else {
-
             const inlineObj: ElementInfo = this.selection.start.currentWidget.getInline(this.documentHelper.selection.start.offset, indexInInline);
             const curInline: ElementBox = inlineObj.element;
             indexInInline = inlineObj.index;

@@ -98,7 +98,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 let startIdx: number = !isNullOrUndefined(this.startIndex) && !isNaN(this.startIndex) ? this.startIndex :
                     this.getStartIndex(values[parseInt(i.toString(), 10)], data);
                 startIdx = isGroupAdaptive(this.parent) && !this.parent.vcRows.length && (e.requestType === 'sorting'
-                    || e.requestType === 'delete') ? 0 : startIdx;
+                    || e.requestType === 'delete' || e.requestType === 'refresh-aggregate-on-save') ? 0 : startIdx;
                 const rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
                     virtualInfo: info, startIndex: startIdx
                 });
@@ -188,7 +188,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 this.parent.currentViewData[`${grouping}`].indexOf(item) === index);
         }
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
-            if (['save', 'delete'].some((value: string) => { return e.requestType === value; })) {
+            if (['save', 'delete', 'refresh-aggregate-on-save'].some((value: string) => { return e.requestType === value; })) {
                 return result = this.parent.vcRows;
             }
         }
@@ -276,7 +276,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public checkAndResetCache(action: string): boolean {
         const actions: string[] = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
-            'save', 'delete'];
+            'save', 'delete', 'refresh-aggregate-on-save'];
         const clear: boolean = actions.some((value: string) => action === value);
         if (clear) {
             this.cache = {}; this.data = {}; this.groups = {};

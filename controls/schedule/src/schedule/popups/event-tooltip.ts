@@ -54,6 +54,10 @@ export class EventTooltip {
             return;
         }
         if (args.target.classList.contains(cls.RESOURCE_CELLS_CLASS) && this.parent.activeViewOptions.group.resources.length > 0) {
+            if (args.target.closest('.' + cls.LEFT_INDENT_WRAP_CLASS)) {
+                args.cancel = true;
+                return;
+            }
             let resCollection: TdData;
             if (this.parent.activeView.isTimelineView()) {
                 const index: number = parseInt(args.target.getAttribute('data-group-index') as string, 10);

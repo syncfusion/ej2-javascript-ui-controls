@@ -2070,3 +2070,74 @@ describe('Track changes - to retrieves the content of the revision as an HTML st
         expect(container.revisions.get(4).getContent()).toBe('<span class="e-de-tc-pmark">¶</span><br><span>HelloTrackchanges</span>');
     });
 });
+describe('Content control - Revisions', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Content control - Revisions', function () {
+        console.log('Content control - Revisions');
+        container.openBlank();
+        container.editor.insertText("Hello");
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;0', '0;0;5');
+        container.editorModule.insertContentControl('Text');
+        let range1 = container.revisions.revisions[0].getRange();
+        let range2 = container.revisions.revisions[1].getRange();
+        expect((range1 as any)[0].type).toBe(0);
+        expect((range1 as any)[0].revisions.length).toBe(1);
+        expect((range2 as any)[0].type).toBe(1);
+        expect((range2 as any)[0].revisions.length).toBe(1);
+    });
+});
+describe('Content control - Reject Revisions', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Content control - Reject Revisions', function () {
+        console.log('Content control - Reject Revisions');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editorModule.insertContentControl('Text');
+        container.editor.insertText("Hello");
+        container.revisions.get(0).reject();
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+});

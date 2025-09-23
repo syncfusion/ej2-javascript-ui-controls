@@ -4306,9 +4306,9 @@ describe('Schedule Timeline Week view', () => {
             schObj.dataBind();
             schObj.dataBound = () => {
                 const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
-                expect(contentWrap.scrollTop).toEqual(1);
+                expect(contentWrap.scrollTop).toEqual(0);
                 schObj.scrollTo(null, new Date(2018, 4, 3));
-                expect(contentWrap.scrollTop).toEqual(1286);
+                expect(Math.floor(contentWrap.scrollTop)).toEqual(1286);
                 done();
             };
         });
@@ -4335,11 +4335,11 @@ describe('Schedule Timeline Week view', () => {
         });
         it('Checking scrollTo with agenda virtual scroll', () => {
             const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
-            expect(contentWrap.scrollTop).toEqual(1);
+            expect(contentWrap.scrollTop).toEqual(0);
             schObj.scrollTo(null, new Date(2018, 4, 3));
             schObj.dataBound = () => {
                 const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
-                expect(contentWrap.scrollTop).toEqual(1);
+                expect(contentWrap.scrollTop).toEqual(0);
             };
         });
     });

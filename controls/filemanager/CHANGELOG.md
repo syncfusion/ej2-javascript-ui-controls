@@ -2,23 +2,15 @@
 
 ## [Unreleased]
 
-## 30.1.39 (2025-07-08)
+## 31.1.21 (2025-09-23)
 
 ### FileManager
 
 #### Bug Fixes
 
-- `#I742253` - The issue where the fileOpen event in the File Manager component was not triggered during subsequent navigation pane folder navigation has been resolved.
+- `#I756413` - The issue with the sorting icon is not updated correctly when the sort order is set to `none` in the File Manager component has been resolved.
 
-## 30.1.38 (2025-07-02)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I740738` - Resolved the inconsistent drag-and-drop issue with nested-level files in the File Manager component's flat data sample.
-
-## 30.1.37 (2025-06-25)
+## 31.1.17 (2025-09-05)
 
 ### FileManager
 

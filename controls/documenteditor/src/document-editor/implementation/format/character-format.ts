@@ -254,7 +254,7 @@ export class WCharacterFormat {
                             const element: any = (this.ownerBase as any).line.children[i];
                             if (element instanceof TextElementBox) {
                                 const text: any = element.text;
-                                if (text.startsWith('HYPERLINK')) {
+                                if (text.startsWith('HYPERLINK') || text.startsWith(' HYPERLINK')) {
                                     const index: number = text.indexOf('_Toc');
                                     if (index !== -1) {
                                         this.baseCharStyle = (this.ownerBase as TextElementBox).paragraph.paragraphFormat.baseStyle;

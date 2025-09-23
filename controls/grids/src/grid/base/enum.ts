@@ -48,6 +48,7 @@ export type Action =
     'delete' |
     'cancel' |
     'add' |
+    'refresh-aggregate-on-save' |
     'filterBeforeOpen' |
     'filterchoicerequest' |
     'filterAfterOpen' |

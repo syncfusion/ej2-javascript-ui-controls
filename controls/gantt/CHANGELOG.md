@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 31.1.21 (2025-09-23)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I764123` - Resolved an issue where parent task progress values were not displaying in decimal format, even when child tasks were configured with decimal values. Decimal rendering for both parent and child tasks is now properly handled by defining the appropriate format in columns.
+- `#I763016` - The date and time change unexpectedly when using the timezone property during cell edit or add operations issue has been resolved.
+- `#I761818` - The issue with critical path validation not working when two parent tasks are connected via a predecessor has been resolved.
+- `#I757458` - The issue where time converted unnecessarily when the timezone was set to 'UTC' at initial load has been resolved.
+- `#I767390` - The issue where the resource column was not rendering as `dropdown` when dynamically assigning the column collection has been resolved.
+
 ## 31.1.20 (2025-09-10)
 
 ### GanttChart

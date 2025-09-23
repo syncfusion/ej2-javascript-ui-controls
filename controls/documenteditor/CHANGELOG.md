@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+## 31.1.21 (2025-09-23)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I763990` - Fixed issue where footnotes were undefined during document serialization.
+- `#I763888` - Resolved script error when opening documents containing dropdown form fields.
+- `#I197369` - Fixed script error triggered while disabling the toolbar.
+- `#I748269` - Addressed content overlapping issue during document loading.
+- `#I759178` - Corrected layout change issue in the Ribbon Layout API after manual interactions.
+- `#I729357` - Fixed selection issue occurring when deleting comments.
+
+## 31.1.20 (2025-09-10)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I750552` - Fixed script error when opening a document with `enableEditor` set to False.
+- `#I757928` - Resolved issue where text overlapped with headers after content deletion.
+- `#I759161` - Corrected layout of merged column cells when inserting new rows into a table.
+- `#I760968` - Alignment option in the toolbar now updates correctly when selecting a cell.
+- `#I762616` - Ribbon now reflects current styles accurately.
+- `#I748359` - Fixed column width issues caused by Unicode characters in HTML.
+
+#### Features
+
+- `#I761744` - Added support to update the date of tracked revisions.
+- `#I754674` - Added support for "No Border" option in the border dropdown, similar to Microsoft Word.
+- `#I761530` - Added support for rendering spell check underlines during scrolling.
+
 ## 31.1.18 (2025-09-10)
 
 ### DocumentEditor

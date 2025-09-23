@@ -792,10 +792,6 @@ export class SpreadsheetChart {
             isDateFormat: boolean, minDate?: Date, maxDate?: Date
         } = this.processChartSeries(options, argsOpt.dataSheetIdx, xRange, yRange, lRange, chartRange.isDateTime);
         this.isDateFormatRange = chartOptions.isDateFormat;
-        if (this.isDateFormatRange) {
-            this.minDate = chartOptions.minDate;
-            this.maxDate = chartOptions.maxDate;
-        }
         const primaryXAxis: AxisModel = {
             majorGridLines: chart.primaryXAxis && chart.primaryXAxis.majorGridLines &&
                 !isNullOrUndefined(chart.primaryXAxis.majorGridLines.width) ?
@@ -812,11 +808,19 @@ export class SpreadsheetChart {
                 !isNullOrUndefined((chart.primaryXAxis as ExtendedAxisModel).labelStyle.size) ?
                 { size: (chart.primaryXAxis as ExtendedAxisModel).labelStyle.size } : {},
             edgeLabelPlacement: 'Shift', lineStyle: { width: 0 }, crossesAt: 0,
-            valueType: chart.type === 'Scatter' && !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Double' :
-                this.isDateFormatRange ? 'DateTime' : 'Category',
             rangePadding: chart.type === 'Scatter' && !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Round' : 'Auto',
             title: chart.primaryXAxis ? chart.primaryXAxis.title : ''
         };
+        if (this.isDateFormatRange) {
+            this.minDate = chartOptions.minDate;
+            this.maxDate = chartOptions.maxDate;
+            primaryXAxis.valueType = 'DateTime';
+            primaryXAxis.minimum = this.minDate;
+            primaryXAxis.maximum = this.maxDate;
+        } else {
+            primaryXAxis.valueType = chart.type === 'Scatter' &&
+                !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Double' : 'Category';
+        }
         if (chart.primaryXAxis && chart.primaryXAxis.visible === false) {
             delete chart.primaryXAxis.visible;
             (chart.primaryXAxis as ExtendedAxisModel).majorTickLines = { width: 0 };
@@ -857,10 +861,23 @@ export class SpreadsheetChart {
             let chartComp: Chart;
             if (chartObj) {
                 chartComp = getComponent(chartObj, 'chart');
-                if (argsOpt.isSwitchRowColumn && chart.type === 'Scatter') {
-                    chartComp.primaryXAxis.valueType = !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Double' : 'Category';
-                } else if (chart.type !== 'Pie' && chart.type !== 'Doughnut') {
-                    chartComp.primaryXAxis.valueType = this.isDateFormatRange ? 'DateTime' : 'Category';
+                const isScatterSwitch: boolean = argsOpt.isSwitchRowColumn && chart.type === 'Scatter';
+                const isNonAccChart: boolean = chart.type !== 'Pie' && chart.type !== 'Doughnut';
+                if (isScatterSwitch || isNonAccChart) {
+                    if (this.isDateFormatRange) {
+                        chartComp.primaryXAxis.valueType = 'DateTime';
+                        chartComp.primaryXAxis.minimum = this.minDate;
+                        chartComp.primaryXAxis.maximum = this.maxDate;
+                    } else {
+                        chartComp.primaryXAxis.valueType = isScatterSwitch && !chartRange.isStringSeries
+                            && !chart.isSeriesInRows ? 'Double' : 'Category';
+                        if (chartComp.primaryXAxis.minimum) {
+                            chartComp.primaryXAxis.minimum = null;
+                        }
+                        if (chartComp.primaryXAxis.maximum) {
+                            chartComp.primaryXAxis.maximum = null;
+                        }
+                    }
                 }
             }
             return chartOptions.series;
@@ -914,19 +931,6 @@ export class SpreadsheetChart {
                 enableCanvas: chart.enableCanvas ? true : false,
                 load: (args: ILoadedEventArgs) => {
                     args.chart.theme = chart.theme || 'Material';
-                    if (args.chart.primaryXAxis) {
-                        if (this.isDateFormatRange) {
-                            args.chart.primaryXAxis.minimum = this.minDate;
-                            args.chart.primaryXAxis.maximum = this.maxDate;
-                        } else {
-                            if (args.chart.primaryXAxis.minimum) {
-                                args.chart.primaryXAxis.minimum = null;
-                            }
-                            if (args.chart.primaryXAxis.maximum) {
-                                args.chart.primaryXAxis.maximum = null;
-                            }
-                        }
-                    }
                 },
                 beforeResize: (args: IBeforeResizeEventArgs) => {
                     args.cancelResizedEvent = true; // This is for cancel the resized event.

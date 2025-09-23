@@ -463,6 +463,8 @@ export const MONTH_HEADER_WRAPPER: string = 'e-month-header-wrapper';
 export const INLINE_SUBJECT_CLASS: string = 'e-inline-subject';
 /** @private */
 export const INLINE_APPOINTMENT_CLASS: string = 'e-inline-appointment';
+/** @private */
+export const INLINE_EDIT_CLASS: string = 'e-inline-edit';
 /** @hidden */
 export const SCROLL_HIDDEN: string = 'e-scroll-hidden';
 /** @private */

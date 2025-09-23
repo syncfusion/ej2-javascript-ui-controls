@@ -117,6 +117,10 @@
         padding: 0 8px 0 0;
       }
 
+      .e-recurrence-table .e-day-position {
+        margin-right: 20px;
+      }
+
       .e-recurrenceeditor {
         .e-recurrence-table {
           &.e-month-expand-wrapper td:first-child {
@@ -168,7 +172,7 @@
 
     .e-input-wrapper.e-month-expander-checkbox-wrapper.e-repeat-on-week-selector {
       min-width: 30px;
-      margin-bottom: 18px;
+      margin-bottom: $recurrence-repeat-on-week-selector-margin-bottom;
     }
 
     .e-input-wrapper-side {

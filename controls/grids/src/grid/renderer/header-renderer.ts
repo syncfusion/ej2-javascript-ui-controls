@@ -616,6 +616,10 @@ export class HeaderRender implements IRenderer {
         const tableName: freezeTable = undefined;
         if (table) {
             this.droppableDestroy();
+            if (this.parent.reorderModule) {
+                this.parent.reorderModule.element = null;
+                this.parent.reorderModule.destElement = null;
+            }
             remove(table);
             if (this.parent.editSettings.showAddNewRow && !this.parent.isAddNewRow && table.querySelector('.e-addedrow') &&
                 (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {

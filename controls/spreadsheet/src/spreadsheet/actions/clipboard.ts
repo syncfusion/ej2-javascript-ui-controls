@@ -570,7 +570,6 @@ export class Clipboard {
                         if (!isExternal && this.copiedInfo.isCut && !(inRange(selIdx, i, j) &&
                             copiedIdx === this.parent.activeSheetIndex)) {
                             let cell: CellModel = getCell(i, j, prevSheet);
-                            let isWrapApplied: boolean;
                             if (cell) {
                                 if (cell.isReadOnly) {
                                     continue;
@@ -589,11 +588,9 @@ export class Clipboard {
                                             && colValidationCollection.indexOf(j) === -1) {
                                             colValidationCollection.push(j);
                                         }
-                                        isWrapApplied = cell.wrap;
                                         cell = null;
                                     }
                                 } else if (cell.isLocked === false) {
-                                    isWrapApplied = cell.wrap;
                                     if (prevSheet.isProtected) {
                                         cell = { isLocked: false };
                                     } else {
@@ -602,9 +599,6 @@ export class Clipboard {
                                 }
                             }
                             cutSetCell(i, j, cell, j === cIdx[3]);
-                            if (isWrapApplied && !getCell(i, j, prevSheet, false, true).wrap) {
-                                this.parent.notify(wrapEvent, { range: [i, j, i, j], wrap: false, sheet: prevSheet });
-                            }
                         }
                     }
                     rowIdx++;
@@ -857,26 +851,38 @@ export class Clipboard {
                 cell.formula.indexOf('NOW(') > - 1)) {
                 args.isRandFormula = true;
             }
+            let isWrapApplied: boolean;
+            if (getCell(rIdx, cIdx, sheet, false, true).wrap) {
+                isWrapApplied = true;
+            }
             const cancel: boolean = updateCell(
                 this.parent, sheet, {
                     cell: cell, rowIdx: rIdx, colIdx: cIdx, pvtExtend: !isExtend, valChange: !isUniqueCell, lastCell: lastCell,
                     uiRefresh: uiRefresh, requestType: 'paste', skipFormatCheck: !args.isExternal, isRandomFormula: args.isRandFormula
                 }, actionData, isUndo);
-            if (!cancel && cell && cell.style && args.isExternal) {
-                let hgt: number = getTextHeightWithBorder(
-                    this.parent, rIdx, cIdx, sheet, cell.style || this.parent.cellStyle, cell.wrap ? getLines(
-                        this.parent.getDisplayText(cell), getExcludedColumnWidth(
-                            sheet, rIdx, cIdx, cell.colSpan > 1 ? cIdx + cell.colSpan - 1 : cIdx), cell.style, this.parent.cellStyle) : 1);
-                hgt = Math.round(hgt);
-                if (hgt < 20) {
-                    hgt = 20; // default height
+            if (!cancel) {
+                if (cell && cell.style && args.isExternal) {
+                    let hgt: number = getTextHeightWithBorder(
+                        this.parent, rIdx, cIdx, sheet, cell.style || this.parent.cellStyle, cell.wrap ? getLines(
+                            this.parent.getDisplayText(cell), getExcludedColumnWidth(
+                                sheet, rIdx, cIdx, cell.colSpan > 1 ? cIdx + cell.colSpan - 1 : cIdx),
+                            cell.style, this.parent.cellStyle) : 1);
+                    hgt = Math.round(hgt);
+                    if (hgt < 20) {
+                        hgt = 20; // default height
+                    }
+                    setMaxHgt(sheet, rIdx, cIdx, hgt);
+                    const prevHeight: number = getRowsHeight(sheet, rIdx);
+                    const maxHgt: number = getMaxHgt(sheet, rIdx);
+                    const heightChanged: boolean = maxHgt > prevHeight;
+                    if (heightChanged) {
+                        setRowEleHeight(this.parent, sheet, maxHgt, rIdx);
+                    }
                 }
-                setMaxHgt(sheet, rIdx, cIdx, hgt);
-                const prevHeight: number = getRowsHeight(sheet, rIdx);
-                const maxHgt: number = getMaxHgt(sheet, rIdx);
-                const heightChanged: boolean = maxHgt > prevHeight;
-                if (heightChanged) {
-                    setRowEleHeight(this.parent, sheet, maxHgt, rIdx);
+                if (isWrapApplied && !getCell(rIdx, cIdx, sheet, false, true).wrap) {
+                    this.parent.notify(wrapEvent, {
+                        range: [rIdx, cIdx, rIdx, cIdx], wrap: false, sheet: sheet, initial: true
+                    });
                 }
             }
             return cancel;

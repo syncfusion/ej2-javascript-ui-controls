@@ -659,7 +659,10 @@ export class CriticalPath {
                         record.ganttProperties.endDate, fromRecord.ganttProperties.startDate,
                         fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule, true);
                 }
-                if (durationDiff >= 0 && this.validatedids.indexOf(parseInt(fromRecord.ganttProperties.taskId, 10)) === -1 &&
+                const isValidDuration: boolean = this.parent.updateOffsetOnTaskbarEdit
+                    ? durationDiff >= 0
+                    : durationDiff === 0 && durationDiff <= record.ganttProperties.predecessor[i as number].offset;
+                if ( isValidDuration && this.validatedids.indexOf(parseInt(fromRecord.ganttProperties.taskId, 10)) === -1 &&
                 fromRecord.ganttProperties.taskId !== record.ganttProperties.taskId) {
                     fromRecord.ganttProperties.slack = record.ganttProperties.slack;
                     fromRecord.slack = record.slack;
@@ -680,6 +683,43 @@ export class CriticalPath {
             }
         }
     }
+
+    // Efficient subtree-only propagation based on nearest critical ancestor
+    private updateChildCriticalTasks(record: IGanttData, criticalPathIds: any, parentCriticalEndDate?: Date): void {
+        const childTasks: IGanttData[] = record.childRecords;
+        for (let j: number = 0; j < childTasks.length; j++) {
+            const child: IGanttData = childTasks[j as number];
+
+            // Update child slack relative to nearest critical ancestor end
+            const dateDiff: number = this.parent.dataOperation.getDuration(
+                child.ganttProperties.endDate,
+                parentCriticalEndDate,
+                child.ganttProperties.durationUnit,
+                child.ganttProperties.isAutoSchedule,
+                true
+            );
+            child.ganttProperties.slack = child.slack = dateDiff + ' ' + child.ganttProperties.durationUnit;
+            // If aligned and incomplete, mark as critical
+            if (dateDiff === 0 && child.ganttProperties.progress < 100 &&
+            this.validatedids.indexOf(parseInt(child.ganttProperties.taskId, 10)) === -1 && record.isCritical) {
+                child.isCritical = true;
+                child.ganttProperties.isCritical = true;
+                if (criticalPathIds.indexOf(child.ganttProperties.taskId) === -1) {
+                    criticalPathIds.push(child.ganttProperties.taskId);
+                }
+                this.validatedids.push(parseInt(child.ganttProperties.taskId, 10));
+                if (this.criticalTasks.indexOf(child) === -1) {
+                    this.criticalTasks.push(child);
+                }
+            }
+            // Recurse for nested children
+            if (child.hasChildRecords && child.childRecords && child.childRecords.length) {
+                const nextParentCriticalEndDate: Date = child.isCritical ? child.ganttProperties.endDate : parentCriticalEndDate;
+                this.updateChildCriticalTasks(child, criticalPathIds, nextParentCriticalEndDate);
+            }
+        }
+    }
+
     /* eslint-disable-next-line */
     private finalCriticalPath(collection: object[], taskBeyondEnddate: number[], flatRecords: IGanttData[], modelRecordIds: string[], checkEndDate: Date) {
         /* eslint-disable-next-line */
@@ -782,6 +822,12 @@ export class CriticalPath {
             if (flatRecords[index as number].ganttProperties.predecessor &&
                 flatRecords[index as number].ganttProperties.predecessor.length > 0) {
                 this.updateCriticalTasks(flatRecords[index as number], criticalPathIds);
+                // Efficiently propagate to descendants of this critical node
+                if (flatRecords[index as number].hasChildRecords) {
+                    const parentCriticalEndDate: Date = flatRecords[index as number].isCritical ?
+                        flatRecords[index as number].ganttProperties.endDate : checkEndDate;
+                    this.updateChildCriticalTasks(flatRecords[index as number], criticalPathIds, parentCriticalEndDate);
+                }
             }
         }
         if (taskBeyondEnddate.length > 0) {
@@ -793,7 +839,9 @@ export class CriticalPath {
                     index = this.resourceCollectionIds.indexOf(taskBeyondEnddate[i as number].toString());
                 }
                 if (index !== -1 && flatRecords[index as number].ganttProperties.progress < 100) {
-                    this.criticalTasks.push(flatRecords[index as number]);
+                    if (this.criticalTasks.indexOf(flatRecords[index as number]) === -1){
+                        this.criticalTasks.push(flatRecords[index as number]);
+                    }
                     if (criticalPathIds.indexOf(taskBeyondEnddate[i as number]) === -1) {
                         criticalPathIds = criticalPathIds.concat(taskBeyondEnddate[i as number]);
                     }

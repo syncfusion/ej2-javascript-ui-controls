@@ -1350,4 +1350,211 @@ describe('FileManager control Grid view', () => {
             }, 500);
         });
     });
+    describe('FileManager control Grid view - Sort Icon Behavior', () => {
+        describe('sort icon testing for None sort order', () => {
+            let mouseEventArgs: any, tapEvent: any;
+            let feObj: any;
+            let ele: HTMLElement;
+            let originalTimeout: any;
+
+            beforeEach(() => {
+                jasmine.Ajax.install();
+                ele = createElement('div', { id: 'file' });
+                document.body.appendChild(ele);
+                feObj = undefined;
+
+                mouseEventArgs = {
+                    preventDefault: (): void => { },
+                    stopImmediatePropagation: (): void => { },
+                    target: null,
+                    type: null,
+                    shiftKey: false,
+                    ctrlKey: false,
+                    originalEvent: { target: null }
+                };
+                tapEvent = {
+                    originalEvent: mouseEventArgs,
+                    tapCount: 1
+                };
+                originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            });
+
+            afterEach(() => {
+                jasmine.Ajax.uninstall();
+                if (feObj) feObj.destroy();
+                ele.remove();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            });
+
+            it('when sortOrder is None no sort icon should be shown', (done: Function) => {
+                feObj = new FileManager({
+                    view: 'Details',
+                    ajaxSettings: {
+                        url: '/FileOperations',
+                        uploadUrl: '/Upload',
+                        downloadUrl: '/Download',
+                        getImageUrl: '/GetImage'
+                    },
+                    showThumbnail: false,
+                    sortOrder: 'None',
+                    sortBy: 'name'
+                });
+                feObj.appendTo('#file');
+
+                const request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+
+                setTimeout(function () {
+                    expect(feObj.sortOrder).toBe('None');
+                    expect(feObj.sortBy).toBe('name');
+
+                    const headerCells = feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-headercell') as NodeListOf<HTMLElement>;
+
+                    let targetHeaderCell: HTMLElement | null = null;
+                    Array.from(headerCells).forEach(cell => {
+                        const textCell = cell.children[0] as HTMLElement;
+                        if (textCell && textCell.innerText &&
+                            feObj.sortBy.toLowerCase().includes(textCell.innerText.toLowerCase().trim())) {
+                            targetHeaderCell = cell;
+                        }
+                    });
+
+                    expect(targetHeaderCell).not.toBeNull();
+
+                    if (targetHeaderCell) {
+                        const potentialIcon = targetHeaderCell.children[1] as HTMLElement | undefined;
+
+                        if (potentialIcon) {
+                            expect(potentialIcon.classList.contains('e-icon-ascending')).toBe(false);
+                            expect(potentialIcon.classList.contains('e-ascending')).toBe(false);
+                            expect(potentialIcon.classList.contains('e-icon-descending')).toBe(false);
+                            expect(potentialIcon.classList.contains('e-descending')).toBe(false);
+                        }
+
+                        const anyAsc = targetHeaderCell.querySelector('.e-icon-ascending, .e-ascending');
+                        const anyDesc = targetHeaderCell.querySelector('.e-icon-descending, .e-descending');
+                        expect(anyAsc).toBeNull();
+                        expect(anyDesc).toBeNull();
+                    }
+
+                    done();
+                }, 0);
+            });
+
+            it('when switching from None to Descending, descending icon should appear', (done: Function) => {
+                feObj = new FileManager({
+                    view: 'Details',
+                    ajaxSettings: {
+                        url: '/FileOperations',
+                        uploadUrl: '/Upload',
+                        downloadUrl: '/Download',
+                        getImageUrl: '/GetImage'
+                    },
+                    showThumbnail: false,
+                    sortOrder: 'None',
+                    sortBy: 'name'
+                });
+                feObj.appendTo('#file');
+
+                const request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+
+                setTimeout(function () {
+                    let headerCells = feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-headercell') as NodeListOf<HTMLElement>;
+                    let targetHeaderCell = Array.from(headerCells).find(cell => {
+                        const textCell = cell.children[0] as HTMLElement;
+                        return textCell && textCell.innerText &&
+                            feObj.sortBy.toLowerCase().includes(textCell.innerText.toLowerCase().trim());
+                    }) as HTMLElement | undefined;
+
+                    expect(targetHeaderCell).toBeDefined();
+                    if (targetHeaderCell) {
+                        const anyAsc = targetHeaderCell.querySelector('.e-icon-ascending, .e-ascending');
+                        const anyDesc = targetHeaderCell.querySelector('.e-icon-descending, .e-descending');
+                        expect(anyAsc).toBeNull();
+                        expect(anyDesc).toBeNull();
+                    }
+
+                    feObj.sortOrder = 'Descending';
+                    feObj.dataBind();
+                    feObj.detailsviewModule.onSortColumn();
+
+                    setTimeout(function () {
+                        headerCells = feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-headercell') as NodeListOf<HTMLElement>;
+                        targetHeaderCell = Array.from(headerCells).find(cell => {
+                            const textCell = cell.children[0] as HTMLElement;
+                            return textCell && textCell.innerText &&
+                                feObj.sortBy.toLowerCase().includes(textCell.innerText.toLowerCase().trim());
+                        }) as HTMLElement | undefined;
+
+                        expect(targetHeaderCell).toBeDefined();
+
+                        if (targetHeaderCell) {
+                            const iconElement = targetHeaderCell.querySelector('.e-sortfilterdiv, .e-headercelldiv, .e-icons') as HTMLElement | null;
+                            const anyDesc = targetHeaderCell.querySelector('.e-icon-descending, .e-descending');
+                            const anyAsc = targetHeaderCell.querySelector('.e-icon-ascending, .e-ascending');
+
+                            expect(anyDesc !== null).toBe(true);
+                            expect(anyAsc).toBeNull();
+
+                            if (iconElement) {
+                                expect(iconElement.classList.contains('e-icon-descending') ||
+                                    iconElement.classList.contains('e-descending') ||
+                                    !!anyDesc).toBe(true);
+                            }
+                        }
+
+                        done();
+                    }, 0);
+                }, 0);
+            });
+
+            it('aria-sort should be none (or unset) when sortOrder is None', (done: Function) => {
+                feObj = new FileManager({
+                    view: 'Details',
+                    ajaxSettings: {
+                        url: '/FileOperations',
+                        uploadUrl: '/Upload',
+                        downloadUrl: '/Download',
+                        getImageUrl: '/GetImage'
+                    },
+                    showThumbnail: false,
+                    sortOrder: 'None',
+                    sortBy: 'name'
+                });
+                feObj.appendTo('#file');
+
+                const request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+
+                setTimeout(function () {
+                    const headerCells = feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-headercell') as NodeListOf<HTMLElement>;
+                    const targetHeaderCell = Array.from(headerCells).find(cell => {
+                        const textCell = cell.children[0] as HTMLElement;
+                        return textCell && textCell.innerText &&
+                            feObj.sortBy.toLowerCase().includes(textCell.innerText.toLowerCase().trim());
+                    }) as HTMLElement | undefined;
+
+                    expect(targetHeaderCell).toBeDefined();
+
+                    if (targetHeaderCell) {
+                        const aria = targetHeaderCell.getAttribute('aria-sort');
+                        expect(aria === 'none' || aria === null).toBe(true);
+                    }
+
+                    done();
+                }, 0);
+            });
+        });
+    });
 });

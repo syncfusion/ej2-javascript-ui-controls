@@ -1286,9 +1286,9 @@ export class EventWindow {
             const startObj: DatePicker = (startDate as EJ2Instance).ej2_instances[0] as DatePicker;
             const endObj: DatePicker = (endDate as EJ2Instance).ej2_instances[0] as DatePicker;
             startObj.min = this.parent.minDate;
-            startObj.max = this.parent.maxDate;
+            startObj.max = new Date(new Date(+this.parent.maxDate).setHours(23, 59, 59));
             endObj.min = this.parent.minDate;
-            endObj.max = this.parent.maxDate;
+            endObj.max = new Date(new Date(+this.parent.maxDate).setHours(23, 59, 59));
             startObj.dataBind();
             endObj.dataBind();
         }

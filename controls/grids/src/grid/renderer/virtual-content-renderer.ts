@@ -1424,6 +1424,14 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             startIdx = parseInt(rowCollection[0].getAttribute(literals.ariaRowIndex), 10) - 1;
         }
         let selectedRow: Element | Object = collection[index - startIdx];
+        if (isRowObject && !this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
+            && this.parent.aggregates) {
+            const row: Element = rowCollection[index - startIdx];
+            const rowObj: Row<Column> = this.parent.getRowObjectFromUID(row.getAttribute('data-uid'));
+            if (rowObj) {
+                selectedRow = rowObj.data;
+            }
+        }
         if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
             if (!isRowObject) {
                 selectedRow = index <= this.parent.frozenRows ? rowCollection[parseInt(index.toString(), 10)]

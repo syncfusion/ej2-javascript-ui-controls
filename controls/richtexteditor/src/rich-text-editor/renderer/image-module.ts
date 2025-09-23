@@ -20,6 +20,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { DialogRenderer } from './dialog-renderer';
 import { ImageCommand } from '../../editor-manager/plugin/image';
 import { PopupUploader } from './popup-uploader-renderer';
+import { RichTextEditorModel } from '../base';
 
 /**
  * `Image` module is used to handle image actions.
@@ -119,6 +120,7 @@ export class Image {
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
+        this.parent.on(events.modelChanged, this.onPropertyChanged, this);
     }
 
     protected removeEventListener(): void {
@@ -148,6 +150,7 @@ export class Image {
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.bindOnEnd, this.bindOnEnd);
+        this.parent.off(events.modelChanged, this.onPropertyChanged);
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
             : this.parent.inputElement;
         dropElement.removeEventListener('drop', this.drop, true);
@@ -177,6 +180,23 @@ export class Image {
         }
     }
 
+    private onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
+        for (const prop of Object.keys(e.newProp)) {
+            if (prop === 'insertImageSettings') {
+                switch (Object.keys(e.newProp.insertImageSettings)[0]) {
+                case 'resize':
+                    if (this.parent.insertImageSettings.resize === false) {
+                        EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
+                        EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
+                        this.cancelResizeAction();
+                    } else {
+                        this.addresizeHandler();
+                    }
+                    break;
+                }
+            }
+        }
+    }
     private updateCss(currentObj: CheckBox | TextBox | Uploader | Dialog, e: ICssClassArgs): void {
         if (currentObj && e.cssClass) {
             if (isNOU(e.oldCssClass)) {
@@ -217,13 +237,17 @@ export class Image {
             }
         }
     }
+
+    private addresizeHandler(): void {
+        EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
+        (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick);
+        EventHandler.add(this.contentModule.getEditPanel(), 'cut', this.onCutHandler, this);
+    }
     private afterRender(): void {
         this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick, this);
         if (this.parent.insertImageSettings.resize) {
-            EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
-            (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick);
-            EventHandler.add(this.contentModule.getEditPanel(), 'cut', this.onCutHandler, this);
+            this.addresizeHandler();
         }
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument :
             this.parent.inputElement;

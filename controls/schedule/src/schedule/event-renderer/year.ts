@@ -162,9 +162,10 @@ export class YearEvent extends TimelineEvent {
                             continue;
                         }
                     }
-                    const enableAppRender: boolean = this.maxOrIndicator || (overlapIndex < eventsPerRow) ||
-                        (this.cellHeight > availedHeight);
-                    if (this.parent.rowAutoHeight || enableAppRender || this.cellHeight > availedHeight) {
+                    if (this.maxHeight && this.parent.currentView.indexOf('Timeline') !== -1 && overlapIndex > 0) {
+                        continue;
+                    }
+                    if (this.parent.rowAutoHeight || this.shouldRenderAppointment(overlapIndex, availedHeight)) {
                         this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, monthStart, dayIndex);
                         if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
                             this.updateCellHeight(rowTd, availedHeight);
@@ -295,6 +296,18 @@ export class YearEvent extends TimelineEvent {
         }
     }
 
+    private shouldRenderAppointment(overlapIndex: number, availedHeight: number): boolean {
+        const eventsPerRow: number = this.parent.rowAutoHeight ? 1 : this.parent.activeViewOptions.maxEventsPerRow;
+        if (this.parent.activeViewOptions.maxEventsPerRow && !this.parent.rowAutoHeight &&
+            !this.parent.eventSettings.enableIndicator) {
+            return overlapIndex < eventsPerRow;
+        } else if (this.maxOrIndicator) {
+            return overlapIndex < 1;
+        } else {
+            return this.cellHeight > availedHeight;
+        }
+    }
+
     private renderResourceEvent(wrapper: Element, resource: TdData, month: number, index: number, monthStart: Date): void {
         const eventWrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
         wrapper.appendChild(eventWrapper);
@@ -332,7 +345,10 @@ export class YearEvent extends TimelineEvent {
                     continue;
                 }
             }
-            if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
+            if (this.maxHeight && this.parent.currentView.indexOf('Timeline') !== -1 && overlapIndex > 0) {
+                continue;
+            }
+            if (this.parent.rowAutoHeight || this.shouldRenderAppointment(overlapIndex, availedHeight)) {
                 this.renderEvent(eventWrapper, eventData, month, leftValue, leftValue, monthStart, index);
                 this.updateCellHeight(td, availedHeight);
                 isSpannedCollection.push(eventData);
@@ -348,6 +364,11 @@ export class YearEvent extends TimelineEvent {
                 break;
             }
         }
+    }
+
+    public setMaxEventHeight(event: HTMLElement, cell: HTMLElement): void {
+        const height: number = (cell.offsetHeight - this.cellHeader) - (this.maxHeight ? 0 : this.moreIndicatorHeight);
+        setStyleAttribute(event, { 'height': height + 'px', 'align-items': 'center' });
     }
 
     // eslint-disable-next-line max-len
@@ -378,6 +399,9 @@ export class YearEvent extends TimelineEvent {
         setStyleAttribute(wrap, {
             'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
         });
+        if (this.maxOrIndicator && this.parent.currentView.indexOf('Timeline') !== -1) {
+            this.setMaxEventHeight(wrap, rowTd);
+        }
         if (!this.isResource && this.parent.rowAutoHeight && this.parent.activeViewOptions.orientation === 'Vertical') {
             wrap.setAttribute('data-index', eventObj.Index.toString());
         }

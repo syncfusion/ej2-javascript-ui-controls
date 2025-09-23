@@ -189,15 +189,13 @@ export class PivotChart {
         let reductionLevel: number = 0;
         let reductionLevelCount: number = 0;
         let finalReductionLevel: number = 0;
-        let rowsInclude: boolean = false;
-        let ignoreCount: number = 0;
-        let rowReduction: number = 0;
-        let previousHeader: number = 0;
+        const rowsInclude: boolean = false;
+        const rowReduction: number = 0;
         const subTotals: (string | number)[] = [];
         for (let a: number = 0, b: number = rKeys.length; a < b; a++) {
             const rowIndex: number = Number(rKeys[a as number]);
             let drillMem: boolean;
-            let previousRow: boolean = false;
+            const previousRow: boolean = false;
             let firstRowCell: IAxisSet;
             let indexReduction: number;
             if (rowsInclude) {
@@ -210,7 +208,8 @@ export class PivotChart {
             if (this.parent.gridSettings.layout === 'Tabular' && this.parent.dataType === 'pivot') {
                 const parent: IAxisSet = firstRowCell && pivotValues[rowIndex - rowReduction][firstRowCell.level - 1];
                 const pField: IField = parent && parent.valueSort && this.engineModule.fieldList[parent.valueSort.axis as string];
-                if (pField && !pField.showSubTotals && subTotals.indexOf(parent.actualText) === -1) {
+                if (pField && (!pField.showSubTotals || !this.dataSourceSettings.showSubTotals ||
+                    !this.dataSourceSettings.showRowSubTotals) && subTotals.indexOf(parent.actualText) === -1) {
                     firstRowCell = pivotValues[rowIndex - rowReduction][0] as IAxisSet;
                     subTotals.push(parent.actualText);
                     a--;
@@ -218,47 +217,6 @@ export class PivotChart {
             }
             if (firstRowCell) {
                 indexReduction = rowReduction === firstRowCell.level ? 1 : (rowReduction + 1);
-            }
-            if (this.parent.gridSettings.layout === 'Tabular' && (!this.parent.dataSourceSettings.showSubTotals ||
-                (!this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals))) {
-                if (firstRowCell && pivotValues[rowIndex - (rowReduction === firstRowCell.level ? 1 : (rowReduction + 1))] &&
-                    pivotValues[rowIndex - indexReduction][this.parent.engineModule.rowMaxLevel]) {
-                    const previousRowCell: IAxisSet = rowsInclude ?
-                        pivotValues[rowIndex - (rowReduction + 1)][this.parent.engineModule.rowMaxLevel]
-                        : pivotValues[rowIndex - indexReduction][this.parent.engineModule.rowMaxLevel];
-                    const previousRowLevelName: string = previousRowCell.valueSort.levelName as string;
-                    const previousRowLevelNameCollection: string[] = previousRowLevelName.split(delimiter);
-                    const firstRowLevelName: string = firstRowCell.valueSort.levelName as string;
-                    const levelNameCollection: string[] = firstRowLevelName.split(delimiter);
-                    const previousRowTextCollection: string[] = previousRowCell.formattedText.split(' ');
-                    drillMem = PivotUtil.isMemberDrilled(previousRowCell, previousRowTextCollection,
-                                                         this.parent.dataSourceSettings.drilledMembers);
-                    for (let z: number = ((previousRowLevelNameCollection.length - 2) - previousHeader); z >= 0; z--) {
-                        if (previousRowLevelNameCollection[z as number] !==
-                            levelNameCollection[z as number] && !drillMem) {
-                            if (ignoreCount !== 1) {
-                                firstRowCell = rowsInclude ? pivotValues[rowIndex - (rowReduction + 1)][z as number] :
-                                    pivotValues[rowIndex - (rowReduction === firstRowCell.level ? 1 : (rowReduction + 1))][z as number];
-                                previousRow = true;
-                                rowsInclude = true;
-                                ignoreCount++;
-                                rowReduction++;
-                                const rowKeys: number = Number(rKeys[rKeys.length - 1]) + 1;
-                                rKeys[rKeys.length as number] = rowKeys.toString();
-                                if (previousRowLevelNameCollection[z - 1] && previousRowLevelNameCollection[z - 1] !==
-                                    levelNameCollection[z - 1]) {
-                                    ignoreCount = 0;
-                                    previousHeader++;
-                                } else {
-                                    previousHeader = 0;
-                                }
-                            } else {
-                                ignoreCount--;
-                            }
-                            break;
-                        }
-                    }
-                }
             }
             if (!isNullOrUndefined(pivotValues[rowIndex - rowReduction as number])) {
                 const colIndex: number = this.parent.gridSettings.layout === 'Tabular' ? this.parent.engineModule.rowMaxLevel : 0;

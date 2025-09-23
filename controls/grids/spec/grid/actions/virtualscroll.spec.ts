@@ -2207,3 +2207,79 @@ describe('EJ2-963165: Unexpected White Space Appears When Cancelling a New Row a
         gObj = null;
     });
 });
+
+describe('EJ2-977352: Issue with aggregate calculation in Grid with Virtual Scroll', () => {
+    let gObj: Grid;
+    beforeAll((done: Function) => {
+        gObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableVirtualization: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowGrouping: true,
+                groupSettings: {columns: ['ShipCountry']},
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true},
+                columns: [    
+                    {field: 'OrderID', headerText:'OrderID', width:120, isPrimaryKey:true},
+                    {field: 'CustomerID', headerText:'CustomerID', width:120},      
+                    {field: 'Freight',textAlign: 'Right',width:110 ,format:'C2',headerText:"Freight"},
+                    {field: 'ShipCountry', headerText:'ShipCountry', width:130}    
+                ],
+                aggregates: [
+                    {
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                groupFooterTemplate: 'Sum: ${Sum}',
+                            },
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                groupCaptionTemplate: 'Sum: ${Sum}',
+                            },
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                footerTemplate: 'Sum: ${Sum}',
+                            },
+                        ],
+                    },
+                ],
+            }, done);
+    });
+
+    it('Coverage for aggregates update on editing', (done: Function) => {
+        gObj.selectRow(1);
+        gObj.startEdit();
+        let dataBound = () => {
+            gObj.dataBound = null;
+            done();
+        }
+        gObj.dataBound = dataBound;
+        gObj.endEdit();
+    });
+
+    it('Coverage for aggregates update on editing with show grouped column', (done: Function) => {
+        gObj.groupSettings.showGroupedColumn = true;
+        gObj.selectRow(2);
+        gObj.startEdit();
+        let dataBound = () => {
+            gObj.dataBound = null;
+            done();
+        }
+        gObj.dataBound = dataBound;
+        gObj.endEdit();
+    });
+
+    it('editFailure method coverage', (done: Function) => {
+        (gObj.editModule as any).editModule.edFail({});
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = null;
+    });
+});

@@ -2747,6 +2747,48 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 1000);
         });
     });
+
+    describe('982952: Dynamic Property changes for maxWidth is not being reflected in the inserVideoSetting.', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: true,
+            shiftKey: true,
+            key: 'v',
+            keyCode: 86,
+            which: 86,
+            code: 86,
+            action: 'insert-video'
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video'],
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Should insert video with the dynamic maxWidth', (done: Function) => {
+            (rteObj as any).insertVideoSettings.maxWidth = '400';
+            rteObj.dataBind();
+            (rteObj as any).videoModule.onKeyDown({ args: keyboardEventArgs });
+            document.getElementById('webURL').click()
+            const inputElem: HTMLElement = document.querySelector('.e-video-url');
+            const url: string = `https://www.w3schools.com/tags/movie.mp4`;
+            (inputElem as HTMLInputElement).value = url;
+            const insertBtn: HTMLElement = document.querySelector('.e-insertVideo');
+            insertBtn.removeAttribute('disabled');
+            insertBtn.click();
+            setTimeout(() => {
+                expect((rteObj.element.querySelector('.e-rte-video') as HTMLElement).style.maxWidth).toEqual('400px');
+                done();
+            }, 1000);
+        });
+    });
+
     describe('836851 - Check the video quick toolbar hide, while click the enterkey ', () => {
         let rteEle: HTMLElement;
         let editor: RichTextEditor;

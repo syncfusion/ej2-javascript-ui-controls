@@ -2,13 +2,34 @@
 
 ## [Unreleased]
 
+## 31.1.21 (2025-09-23)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I746117`, `#I754057` - An issue where an empty content area was rendered during virtual scrolling when using `rowAutoHeight` in combination with `overscanCount` has been resolved.
+
 ## 31.1.20 (2025-09-10)
 
 ### Schedule
 
 #### Bug fixes
 
-- `#I744881` - Fixed an issue where the scroll position was not maintained when `enablePersistence` was set to true.
+- `#I760538` - The issue where the Edit Event popup was incorrectly displayed for recurring events when `allowEditing` property set to `false` has been resolved.
+
+## 31.1.17 (2025-09-05)
+
+### Schedule
+
+#### Features
+
+- `#I618429` - Added the `groupIndex` value to the `dateHeaderTemplate` when the date header is grouped by resource. This enables resource-specific customization of date headers. Applicable only for `Day`, `Week`, `WorkWeek`, and `Agenda` views when resource-specific date headers are rendered.
+
+#### Bug fixes
+
+- `#I744881` - Fixed an issue where the virtual scroll position was not preserved during date navigation when `enablePersistence` was set to true.
+- `#I753562` - Fixed an issue where appointment resizing did not work correctly when using timeline views with header rows.
 
 ## 30.1.42 (2025-07-29)
 

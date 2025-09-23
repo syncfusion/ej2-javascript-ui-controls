@@ -8,7 +8,7 @@ import { ToolbarType, DialogType } from '../../../src/common/enum';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
 import { renderRTE, destroy, dispatchKeyEvent, setCursorPoint as setCursor, clickImage, clickVideo, currentBrowserUA } from './../render.spec';
-import { ESCAPE_KEY_EVENT_INIT, SPACE_EVENT_INIT, TAB_KEY_EVENT_INIT, BACKSPACE_EVENT_INIT } from '../../constant.spec';
+import { ESCAPE_KEY_EVENT_INIT, SPACE_EVENT_INIT, TAB_KEY_EVENT_INIT, BACKSPACE_EVENT_INIT, DELETE_EVENT_INIT } from '../../constant.spec';
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
     let range: Range = curDocument.createRange();
@@ -1829,64 +1829,94 @@ describe('RTE Base module ', () => {
                 }
             });
 
-            it('backspace key press while empty content in editable element', () => {
+            it('backspace key press while empty content in editable element', (done: DoneFn) => {
                 rteObj.contentModule.getEditPanel().innerHTML = '';
-                (rteObj as any).keyUp(keyBoardEvent);
-                expect(rteObj.contentModule.getEditPanel().innerHTML !== '').toBe(true);
-                expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
-                keyboardEventArgs.ctrlKey = true;
-                (rteObj as any).keyUp(keyboardEventArgs);
+                setCursorPoint(document, rteObj.inputElement, 0);
+                const backSpaceDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+                const backSpaceUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(backSpaceDown);
+                rteObj.inputElement.dispatchEvent(backSpaceUp);
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().innerHTML !== '').toBe(true);
+                    expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
+                    done();
+                }, 100);
             });
 
-            it('delete key press while empty content in editable element', () => {
+            it('delete key press while empty content in editable element', (done: DoneFn) => {
                 rteObj.contentModule.getEditPanel().innerHTML = '';
-                keyBoardEvent.which = 46;
-                (rteObj as any).keyDown(keyBoardEvent);
-                (rteObj as any).keyUp(keyBoardEvent);
-                expect(rteObj.contentModule.getEditPanel().innerHTML !== '').toBe(true);
-                expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
+                setCursorPoint(document, rteObj.inputElement, 0);
+                const deleteKeyDown: KeyboardEvent = new KeyboardEvent('keydown',DELETE_EVENT_INIT);
+                const deleteKeyUp: KeyboardEvent = new KeyboardEvent('keyup', DELETE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(deleteKeyDown);
+                rteObj.inputElement.dispatchEvent(deleteKeyUp);
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().innerHTML !== '').toBe(true);
+                    expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
+                    done();
+                }, 100);
             });
 
-            it('backspace key press inside the pre tag', () => {
+            it('backspace key press inside the pre tag', (done: DoneFn) => {
                 rteObj.contentModule.getEditPanel().innerHTML = '<pre id="p1"><br>Paragraph 4<br>Paragraph 5<br>Para&#8203;<br><br></pre>';
                 let start: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('#p1');
                 expect(start.childNodes[5].textContent.length === 5).toBe(true);
                 setCursorPoint(document, start.childNodes[5] as Element, 5);
-                keyBoardEvent.which = 8;
-                keyBoardEvent.code = 'Backspace';
-                (rteObj as any).keyDown(keyBoardEvent);
-                expect(start.childNodes[5].textContent.length === 4).toBe(true);
+                const backSpaceDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+                const backSpaceUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(backSpaceDown);
+                rteObj.inputElement.dispatchEvent(backSpaceUp);
+                setTimeout(() => {
+                    expect(start.childNodes[5].textContent.length === 4).toBe(true);
+                    done();
+                }, 100);
             });
 
-            it('backspace key press while <BR> content in editable element - Firefox', () => {
+            it('backspace key press while <BR> content in editable element - Firefox', (done: DoneFn) => {
                 rteObj.contentModule.getEditPanel().innerHTML = '<br/>';
-                (rteObj as any).keyUp(keyBoardEvent);
-                expect(rteObj.contentModule.getEditPanel().innerHTML !== '').toBe(true);
-                expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
-                keyboardEventArgs.ctrlKey = true;
-                (rteObj as any).keyUp(keyboardEventArgs);
+                setCursorPoint(document, rteObj.inputElement, 0);
+                const backSpaceDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+                const backSpaceUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(backSpaceDown);
+                rteObj.inputElement.dispatchEvent(backSpaceUp);
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().innerHTML !== '').toBe(true);
+                    expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
+                    done();
+                }, 100);
             });
 
-            it('delete key press while <BR> content in editable element - Firefox', () => {
+            it('delete key press while <BR> content in editable element - Firefox', (done: DoneFn) => {
                 rteObj.contentModule.getEditPanel().innerHTML = '<br/>';
-                keyBoardEvent.which = 46;
-                (rteObj as any).keyDown(keyBoardEvent);
-                (rteObj as any).keyUp(keyBoardEvent);
-                expect(rteObj.contentModule.getEditPanel().innerHTML !== '').toBe(true);
-                expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
+                setCursorPoint(document, rteObj.inputElement, 0);
+                const deleteKeyDown: KeyboardEvent = new KeyboardEvent('keydown',DELETE_EVENT_INIT);
+                const deleteKeyUp: KeyboardEvent = new KeyboardEvent('keyup', DELETE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(deleteKeyDown);
+                rteObj.inputElement.dispatchEvent(deleteKeyUp);
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().innerHTML !== '').toBe(true);
+                    expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
+                    done();
+                }, 100);
             });
 
-            it('delete key press while <p> with text content in editable element - Firefox', () => {
+            it('delete key press while <p> with text content in editable element - Firefox', (done: DoneFn) => {
                 rteObj.contentModule.getEditPanel().innerHTML = '<p>test</p>';
-                keyBoardEvent.which = 46;
-                (rteObj as any).keyDown(keyBoardEvent);
-                (rteObj as any).keyUp(keyBoardEvent);
-                expect(rteObj.contentModule.getEditPanel().innerHTML === '<p>test</p>').toBe(true);
-                expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
+                setCursorPoint(document, rteObj.inputElement.firstElementChild.firstChild as HTMLElement, 3);
+                const deleteKeyDown: KeyboardEvent = new KeyboardEvent('keydown',DELETE_EVENT_INIT);
+                const deleteKeyUp: KeyboardEvent = new KeyboardEvent('keyup', DELETE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(deleteKeyDown);
+                rteObj.inputElement.dispatchEvent(deleteKeyUp);
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().innerHTML === '<p>test</p>').toBe(true);
+                    expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
+                    done();
+                }, 100);
             });
 
             it('backspace key press while <P> content in editable element - Firefox', () => {
                 rteObj.contentModule.getEditPanel().innerHTML = '<p></p>';
+                setCursorPoint(document, rteObj.inputElement, 0);
                 (rteObj as any).keyUp(keyBoardEvent);
                 expect(rteObj.contentModule.getEditPanel().innerHTML === '<p><br></p>').toBe(true);
                 expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
@@ -1896,6 +1926,7 @@ describe('RTE Base module ', () => {
 
             it('delete key press while <P> content in editable element - Firefox', () => {
                 rteObj.contentModule.getEditPanel().innerHTML = '<p></p>';
+                setCursorPoint(document, rteObj.inputElement, 0);
                 keyBoardEvent.which = 46;
                 (rteObj as any).keyDown(keyBoardEvent);
                 (rteObj as any).keyUp(keyBoardEvent);
@@ -9016,6 +9047,152 @@ describe('RTE Base module ', () => {
             });
             expect(tdElement.style.backgroundColor != '').toBe(true);
             done();
+        });
+    });
+
+    describe('981097: Dynamic media/table resize enable/disable behavior', () => {
+        let rteObj: RichTextEditor;
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Image: resizer visible initially, hides after disabling insertImageSettings.resize dynamically', (done: DoneFn) => {
+            rteObj = renderRTE({
+                value: '<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 300px;" class="e-rte-image e-imginline"></p>'
+            });
+            rteObj.focusIn();
+            const img = rteObj.inputElement.querySelector('img');
+            setTimeout(() => {
+                // Disable resize dynamically and verify no resizer appears after focusing out/in and clicking again
+                rteObj.insertImageSettings.resize = false;
+                rteObj.dataBind();
+                setTimeout(() => {
+                    clickImage(img);
+                    expect(rteObj.inputElement.querySelectorAll('.e-img-resize').length).toBe(0);
+                    done();
+                }, 100);
+            }, 100);
+        });
+        it('Image: resizer does not visible initially, visible after enabling insertImageSettings.resize dynamically', (done: DoneFn) => {
+            rteObj = renderRTE({
+                value: '<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 300px;" class="e-rte-image e-imginline"></p>',
+                insertImageSettings: {
+                    resize: false
+                }
+            });
+            rteObj.focusIn();
+            const img = rteObj.inputElement.querySelector('img');
+            setTimeout(() => {
+                // Disable resize dynamically and verify  resizer appears after focusing out/in and clicking again
+                rteObj.insertImageSettings.resize = true;
+                rteObj.dataBind();
+                setTimeout(() => {
+                    clickImage(img);
+                    expect(rteObj.inputElement.querySelectorAll('.e-img-resize').length).toBe(1);
+                    done();
+                }, 100);
+            }, 100);
+        });
+        it('Video: resizer visible initially, hides after disabling insertVideoSettings.resize dynamically', (done: DoneFn) => {
+            rteObj = renderRTE({
+                value: '<p><video controls style="width: 30%;"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4" type="video/mp4" /></video></p>'
+            });
+            rteObj.focusIn();
+            const video = rteObj.inputElement.querySelector('video');
+            setTimeout(() => {
+                // Disable resize dynamically and verify no resizer appears after focusing out/in and clicking again
+                rteObj.insertVideoSettings.resize = false;
+                rteObj.dataBind();
+                setTimeout(() => {
+                    clickVideo(video);
+                    expect(rteObj.inputElement.querySelectorAll('.e-vid-resize').length).toBe(0);
+                    done();
+                }, 100);
+            }, 100);
+        });
+        it('Video: resizer does not visible initially, visible after enabling insertVideoSettings.resize dynamically', (done: DoneFn) => {
+            rteObj = renderRTE({
+                value: '<p><video controls style="width: 30%;"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4" type="video/mp4" /></video></p>',
+                insertVideoSettings: {
+                    resize: false
+                }
+            });
+            rteObj.focusIn();
+            const video = rteObj.inputElement.querySelector('video');
+            setTimeout(() => {
+                // Disable resize dynamically and verify  resizer appears after focusing out/in and clicking again
+                rteObj.insertVideoSettings.resize = true;
+                rteObj.dataBind();
+                setTimeout(() => {
+                    clickVideo(video);
+                    expect(rteObj.inputElement.querySelectorAll('.e-vid-resize').length).toBe(1);
+                    rteObj.insertVideoSettings.resize = false;
+                    rteObj.dataBind();
+                    let event = new MouseEvent('mousedown', {
+                        bubbles: true,
+                        cancelable: true,
+                        view: window,
+                    });
+                    document.body.dispatchEvent(event);
+                    clickVideo(video);
+                    expect(video.classList.contains('e-resize')).toBe(false);
+                    done();
+                }, 100);
+            }, 100);
+        });
+        it('Table: resizer helpers visible initially, hides after disabling tableSettings.resize dynamically', (done: DoneFn) => {
+            rteObj = renderRTE({
+                value: '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>',
+                tableSettings: {
+                    resize: true
+                }
+            });
+            rteObj.focusIn();
+            rteObj.tableSettings.resize = false;
+            rteObj.dataBind();
+            const table = rteObj.inputElement.querySelector('table');
+            setCursorPoint(document, table.querySelector('td') as HTMLElement, 1);
+            const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+            table.querySelector('td').dispatchEvent(mouseOverEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('.e-table-box')).toBe(null);
+                done();
+            }, 200);
+        });
+        it('Table: resizer helpers not visible initially, visible after enabling tableSettings.resize dynamically', (done: DoneFn) => {
+            rteObj = renderRTE({
+                value: '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>',
+                tableSettings: {
+                    resize: false
+                }
+            });
+            rteObj.focusIn();
+            rteObj.tableSettings.resize = true;
+            rteObj.dataBind();
+            const table = rteObj.inputElement.querySelector('table');
+            setCursorPoint(document, table.querySelector('td') as HTMLElement, 1);
+            const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+            table.querySelector('td').dispatchEvent(mouseOverEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('.e-table-box')).not.toBe(null);
+                done();
+            }, 200);
+        });
+        it('Editor enableResize toggled dynamically adds/removes editor resizer handle', () => {
+            rteObj = renderRTE({
+                enableResize: true,
+                value: '<p>Content</p>'
+            });
+            // When enabled, editor resize handle should exist
+            expect(!!rteObj.element.querySelector('.e-icons.e-resize-handle.e-south-east')).not.toBe(null);
+            // Disable and verify removal
+            rteObj.enableResize = false;
+            rteObj.dataBind();
+            expect(rteObj.element.querySelector('.e-icons.e-resize-handle.e-south-east')).toBe(null);
+            // Enable again and verify presence
+            rteObj.enableResize = true;
+            rteObj.dataBind();
+            expect(!!rteObj.element.querySelector('.e-icons.e-resize-handle.e-south-east')).not.toBe(null);
         });
     });
 

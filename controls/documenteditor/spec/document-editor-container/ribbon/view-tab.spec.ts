@@ -170,4 +170,16 @@ describe('View Tab Tests', () => {
        expect(container.documentEditor.documentEditorSettings.showNavigationPane).toBe(true);
         
     });
+
+    it('Click the layout switcher', () => {
+        // Click and check layout switcher
+        const layoutSwitcher: HTMLElement = document.querySelector('[aria-label="Layout Switcher"]');
+        layoutSwitcher.click();
+        jasmine.clock().tick(100);
+        expect(container.ribbonLayout).toBe('Simplified');
+        jasmine.clock().tick(100);
+        layoutSwitcher.click();
+        expect(container.ribbonLayout).toBe('Classic');
+        
+    });    
 });

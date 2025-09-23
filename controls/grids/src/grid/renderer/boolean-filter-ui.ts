@@ -1,4 +1,4 @@
-import { IGrid, IFilterMUI, EJ2Intance } from '../base/interface';
+import { IGrid, IFilterMUI, EJ2Intance, IFilterCreate, IFilterWrite } from '../base/interface';
 import { Column } from '../models/column';
 import { FilterSettings } from '../base/grid';
 import { L10n } from '@syncfusion/ej2-base';
@@ -47,10 +47,7 @@ export class BooleanFilterUI implements IFilterMUI {
             this.parent.on(events.destroy, this.destroy, this);
         }
     }
-    public create(args: {
-        column: Column, target: HTMLElement,
-        getOptrInstance: FlMenuOptrUI, localizeText: L10n, dialogObj: Dialog
-    }): void {
+    public create(args: IFilterCreate): void {
         this.elem = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'bool-ui-' + args.column.uid });
         args.target.appendChild(this.elem);
         this.multiSelectElement = this.parent.createElement('input', { className: 'multiselect-input', id: 'multiselectbool-ui-' + args.column.uid });
@@ -60,7 +57,7 @@ export class BooleanFilterUI implements IFilterMUI {
         toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj, args.getOptrInstance.dropOptr['previousValue'] as string);
     }
 
-    public write(args: { column: Column, target: Element, parent: IGrid, filteredValue: number | string | Date | boolean }): void {
+    public write(args: IFilterWrite): void {
         const operatorDropdown : DropDownList = this.parent.filterModule.filterModule.getOperatorDropdown();
         const dropdownObject: DropDownList = this.getBooleanInstance(args.column.uid);
         const multiSelectObject: MultiSelect = this.getMultiSelectInstance(args.column.uid);
@@ -84,8 +81,7 @@ export class BooleanFilterUI implements IFilterMUI {
         }
     }
 
-    private createDropDownList(args: { column: Column, target: HTMLElement, getOptrInstance: FlMenuOptrUI,
-        localizeText: L10n, dialogObj: Dialog }): void {
+    private createDropDownList(args: IFilterCreate): void {
         const isForeignColumn: boolean = args.column.isForeignColumn();
         const dataSource: Object = isForeignColumn ? args.column.dataSource : this.parent.dataSource;
         const fields: string = isForeignColumn ? args.column.foreignKeyValue : args.column.field;
@@ -126,8 +122,7 @@ export class BooleanFilterUI implements IFilterMUI {
         this.dropInstance.appendTo(this.elem);
     }
 
-    private createMultiSelectDropDown(args: { column: Column, target: HTMLElement, getOptrInstance: FlMenuOptrUI,
-        localizeText: L10n, dialogObj: Dialog }): void {
+    private createMultiSelectDropDown(args: IFilterCreate): void {
         const isForeignColumn: boolean = args.column.isForeignColumn();
         const dataSource: Object = isForeignColumn ? args.column.dataSource : this.parent.dataSource;
         const fields: string = isForeignColumn ? args.column.foreignKeyValue : args.column.field;

@@ -321,6 +321,7 @@ export function searchWordHandler(parent: IFileManager, value: string, isLayoutC
                 executeLocal(new Query().where('name', parent.searchSettings.filterType, value, parent.searchSettings.ignoreCase));
             const searchValue: string = parent.searchSettings.ignoreCase ? value.toLowerCase() : value;
             parent.itemData = data;
+            parent.responseData.error = null;
             Search(parent, isLayoutChange ? events.layoutChange : events.search, parent.path, searchValue,
                    parent.showHiddenItems, !parent.searchSettings.ignoreCase);
         }

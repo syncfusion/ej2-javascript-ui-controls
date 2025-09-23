@@ -1831,4 +1831,56 @@ describe('FileManager control', () => {
             feObj.destroy();
         });
     });
+    describe('Splitter resize after view change to Details', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        beforeEach((done: Function) => {
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                success: () => {
+                    done();
+                }
+            });
+            feObj.appendTo('#file');
+            const request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+        });
+        afterEach(() => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+        });
+        it('should not throw error when resizing splitter after changing to details view', (done: Function) => {
+            const afterViewChange = () => {
+                feObj.success = null;
+                expect(() => {
+                    (feObj as any).splitterResize();
+                }).not.toThrow();
+                const gridElement = document.getElementById('file_grid');
+                expect(gridElement).not.toBeNull();
+                const gridHeader = gridElement.querySelector('.e-gridheader');
+                expect(gridHeader).not.toBeNull();
+                done();
+            };
+            feObj.success = afterViewChange;
+            feObj.view = 'Details';
+            feObj.dataBind();
+            const request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+        });
+    });
 });

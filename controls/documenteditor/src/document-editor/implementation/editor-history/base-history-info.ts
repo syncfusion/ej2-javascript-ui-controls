@@ -973,8 +973,14 @@ export class BaseHistoryInfo {
             return this.owner.selectionModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         } else if (node instanceof ParagraphWidget) {
             const splitted: Widget[] = node.getSplitWidgets();
-            const para: ParagraphWidget = splitted[splitted.length - 1] as ParagraphWidget;
-            const offset: number = this.owner.selectionModule.getParagraphLength(para) + 1;
+            let para: ParagraphWidget = splitted[splitted.length - 1] as ParagraphWidget;
+            let offset: number = this.owner.selectionModule.getParagraphLength(para) + 1;
+            let previous: ParagraphWidget = para.previousSplitWidget as ParagraphWidget;
+            while (previous instanceof ParagraphWidget) {
+                para = previous;
+                offset += this.documentHelper.selection.getParagraphLength(para);
+                previous = para.previousSplitWidget as ParagraphWidget;
+            }
             return this.owner.selectionModule.getHierarchicalIndex(para, offset.toString());
         } else {
             const splittedRowCollection: Widget[] = node.getSplitWidgets();

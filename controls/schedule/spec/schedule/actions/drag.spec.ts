@@ -1855,6 +1855,7 @@ describe('Timeline view events dragging', () => {
             }, 100);
         });
     });
+
     describe('Cancel Multiple Event Drag', () => {
         let schObj: Schedule;
         const testData = [
@@ -1944,6 +1945,97 @@ describe('Timeline view events dragging', () => {
             const singleCloneElement = schObj.element.querySelector('.e-drag-clone');
             expect(singleCloneElement).toBeTruthy();
             triggerMouseEvent(appointments[0] as HTMLElement, 'mouseup', 160, 160);
+            done();
+        });
+    });
+
+    describe('All-day appointment drag testing with clone height verification', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2018, 6, 5),
+                views: ['Week'],
+                currentView: 'Week'
+            };
+            schObj = util.createSchedule(model, dragResizeData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Should maintain original all-day appointment height when dragging to next day', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
+                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 3).getTime());
+                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 4).getTime());
+                const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+                expect(dragElement.offsetTop).toEqual(62);
+                expect(dragElement.offsetHeight).toEqual(22);
+                expect(dragElement.style.width).toEqual('93%');
+                done();
+            };
+            const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            expect(dragElement.offsetTop).toEqual(62);
+            expect(dragElement.offsetHeight).toEqual(22);
+            expect(dragElement.style.width).toEqual('93%');
+            triggerMouseEvent(dragElement, 'mousedown', 242, 126);
+            triggerMouseEvent(dragElement, 'mousemove', 252, 126);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            const allDayCell: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells').item(3) as HTMLElement;
+            triggerMouseEvent(allDayCell, 'mousemove', 300, 126);
+            triggerMouseEvent(allDayCell, 'mousemove', 300, 126);
+            expect(cloneElement.offsetTop).toEqual(60);
+            expect(cloneElement.offsetHeight).toEqual(22);
+            triggerMouseEvent(dragElement, 'mouseup');
+        });
+    });
+
+    describe('Month view recurrence event drag highlight', () => {
+        let schObj: Schedule;
+        const recurrenceData = [
+            {
+                Id: 1,
+                Subject: 'Recurrence Meeting',
+                StartTime: new Date(2024, 5, 3, 10, 0),
+                EndTime: new Date(2024, 5, 3, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;COUNT=4'
+            }
+        ];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                width: '700px',
+                selectedDate: new Date(2024, 5, 3),
+                views: ['Month']
+            };
+            schObj = util.createSchedule(model, recurrenceData, done);
+        });
+        afterAll(() => util.destroy(schObj));
+        it('Month event dragging', (done: DoneFn) => {
+            const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const element = schObj.element.querySelectorAll('.e-appointment')
+            expect(dragElement.offsetTop).toEqual(0);
+            expect(dragElement.offsetHeight).toEqual(22);
+            expect(dragElement.offsetWidth).toBeGreaterThanOrEqual(64);
+            triggerMouseEvent(dragElement, 'mousedown', 388, 280);
+            triggerMouseEvent(dragElement, 'mousemove', 388, 290);
+            let cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            expect(element[0].classList.contains('e-event-action')).toBe(true);
+            expect(element[1].classList.contains('e-event-action')).toBe(false);
+            expect(element[2].classList.contains('e-event-action')).toBe(false);
+            expect(element[3].classList.contains('e-event-action')).toBe(false);
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(7) as HTMLElement;
+            triggerMouseEvent(workCell, 'mousemove', 250, 378);
+            triggerMouseEvent(workCell, 'mousemove', 250, 378);
+            cloneElement = schObj.element.querySelector('.e-schedule-event-clone') as HTMLElement;
+            expect(cloneElement.offsetTop).toEqual(0);
+            expect(cloneElement.offsetHeight).toEqual(22);
+            expect(cloneElement.offsetWidth).toBeGreaterThanOrEqual(64);
+            triggerMouseEvent(dragElement, 'mouseup');
             done();
         });
     });

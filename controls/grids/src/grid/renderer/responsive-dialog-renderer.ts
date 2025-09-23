@@ -65,6 +65,9 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private renderCustomFilterDiv(): void {
+        if (isNullOrUndefined(this.customResponsiveDlg)) {
+            return;
+        }
         const header: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-header-content');
         const title: HTMLElement = header.querySelector('.e-dlg-custom-header');
         const closeBtn: HTMLElement = header.querySelector('.e-dlg-closeicon-btn');
@@ -81,7 +84,7 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private renderResponsiveContextMenu(args: { target: HTMLElement, header: string, isOpen: boolean, col: Column }): void {
-        if (this.action === ResponsiveDialogAction.isFilter) {
+        if (this.action === ResponsiveDialogAction.isFilter && !isNullOrUndefined(this.customResponsiveDlg)) {
             const content: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-content');
             const header: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-header-content');
             const closeBtn: HTMLElement = header.querySelector('.e-dlg-closeicon-btn');

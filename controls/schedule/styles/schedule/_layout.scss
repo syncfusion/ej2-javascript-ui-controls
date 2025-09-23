@@ -1253,7 +1253,6 @@
 
           .e-subject {
             font-weight: 500;
-            margin-left: 15px;
             margin-right: auto;
           }
 
@@ -2218,6 +2217,10 @@
 
         .e-appointment.e-schedule-event-clone .e-appointment-details .e-inner-wrap {
           text-align: right;
+        }
+
+        .e-date-header-wrap table tbody td {
+          padding: $schedule-rtl-timeline-date-header-wrap-padding;
         }
       }
     }
@@ -3454,16 +3457,6 @@
         }
       }
 
-      .e-popup-content {
-        .e-date-time-wrapper,
-        .e-location-details,
-        .e-time-zone-details,
-        .e-description-details,
-        .e-resource-details {
-          margin-right: 10px;
-        }
-      }
-
       .e-event-details,
       .e-event-edit {
         margin-left: 8px;
@@ -3673,6 +3666,14 @@
 
       .e-time {
         display: none;
+      }
+    }
+  }
+
+  .e-month-view .e-appointment.e-schedule-event-clone {
+    .e-appointment-details {
+      .e-subject {
+        line-height: $schedule-month-event-clone-line-height-subject;
       }
     }
   }

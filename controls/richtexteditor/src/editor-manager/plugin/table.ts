@@ -3016,11 +3016,25 @@ export class TableCommand {
      */
     public addResizeEventHandlers(): void {
         // Add touch event handlers for resizing on all devices
-        EventHandler.add(this.tableModel.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
+        if (this.tableModel.tableSettings.resize) {
+            EventHandler.add(this.tableModel.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
+        }
         // Add mouseover handler for non-mobile devices only
         if (!Browser.isDevice) {
             EventHandler.add(this.tableModel.getEditPanel(), 'mouseover', this.resizeHelper, this);
         }
+    }
+
+    /**
+     * removes resize-related event handlers to the editor panel.
+     * Registers touch events for all devices and mouseover for non-mobile devices.
+     *
+     * @returns {void} - This method does not return a value
+     * @private
+     */
+    public removeResizeEventHandlers(): void {
+        EventHandler.remove(this.tableModel.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
+        this.cancelResizeAction();
     }
 
     /*
@@ -3342,7 +3356,9 @@ export class TableCommand {
         const allCells: HTMLElement[][] = getCorrespondingColumns(table);
         this.createColumnResizers(columns, height, pos, allCells);
         this.createRowResizers(rows, table, width, pos, allCells);
-        this.createResizeBox(columns.length, pos, width, height);
+        if (this.tableModel.tableSettings.resize) {
+            this.createResizeBox(columns.length, pos, width, height);
+        }
     }
 
     /*
@@ -3618,26 +3634,28 @@ export class TableCommand {
      */
     private createColumnResizers(columns: HTMLTableDataCellElement[], height: number, pos: OffsetPosition,
                                  allCells: HTMLElement[][]): void {
+        const nonEmptyColumns: HTMLTableDataCellElement[] = columns.filter((col : HTMLTableDataCellElement) => col != null);
         const isRTL: boolean = this.tableModel.enableRtl;
         let leftOffset: number = pos.left;
         if (isRTL) {
-            for (let i: number = 0; i < columns.length; i++) {
-                leftOffset = leftOffset + (columns[i as number] as HTMLTableDataCellElement).getBoundingClientRect().width;
+            for (let i: number = 0; i < nonEmptyColumns.length; i++) {
+                leftOffset = leftOffset + (nonEmptyColumns[i as number] as HTMLTableDataCellElement).getBoundingClientRect().width;
             }
         }
-        for (let i: number = 0; i <= columns.length; i++) {
-            const colReEle: HTMLElement = createElement('span', {
-                attrs: { 'data-col': i.toString(), 'unselectable': 'on', 'contenteditable': 'false' }
-            });
-            colReEle.classList.add(EVENTS.CLS_RTE_TABLE_RESIZE, EVENTS.CLS_TB_COL_RES);
+        for (let i: number = 0; i <= nonEmptyColumns.length; i++) {
             if (i !== 0) {
-                const curCol: HTMLTableDataCellElement = columns[i as number - 1] as HTMLTableDataCellElement;
+                const curCol: HTMLTableDataCellElement = nonEmptyColumns[i as number - 1] as HTMLTableDataCellElement;
                 leftOffset = leftOffset + (isRTL ? -curCol.getBoundingClientRect().width : curCol.getBoundingClientRect().width);
             }
-            colReEle.style.cssText = 'height:' + height + 'px;width:4px;top:' + pos.top + 'px;left:' + (leftOffset - 1.5) + 'px;';
-            this.tableModel.getEditPanel().appendChild(colReEle);
-
-            if (i !== 0 && (i === columns.length || allCells[0][i as number] !==  allCells[0][i - 1])) {
+            if (this.tableModel.tableSettings.resize) {
+                const colReEle: HTMLElement = createElement('span', {
+                    attrs: { 'data-col': i.toString(), 'unselectable': 'on', 'contenteditable': 'false' }
+                });
+                colReEle.classList.add(EVENTS.CLS_RTE_TABLE_RESIZE, EVENTS.CLS_TB_COL_RES);
+                colReEle.style.cssText = 'height:' + height + 'px;width:4px;top:' + pos.top + 'px;left:' + (leftOffset - 1.5) + 'px;';
+                this.tableModel.getEditPanel().appendChild(colReEle);
+            }
+            if (i !== 0 && (i === nonEmptyColumns.length || allCells[0][i as number] !==  allCells[0][i - 1])) {
                 // Create insertion icon
                 this.createTableInsertIcon({
                     index: i,
@@ -3935,19 +3953,20 @@ export class TableCommand {
                               allCells: HTMLElement[][]): void {
         for (let i: number = 0; i < rows.length; i++) {
             const row: Element = rows[i as number] as HTMLElement;
-            const rowReEle: HTMLElement = createElement('span', {
-                attrs: { 'data-row': i.toString(), 'unselectable': 'on', 'contenteditable': 'false' }
-            });
-            rowReEle.classList.add(EVENTS.CLS_RTE_TABLE_RESIZE, EVENTS.CLS_TB_ROW_RES);
             const hasCellSpacing: boolean = !isNOU(table.getAttribute('cellspacing')) || table.getAttribute('cellspacing') !== '';
             const rowPosLeft: number = hasCellSpacing ? 0 : this.calcPos(row as HTMLElement).left;
             const isMultiCell: boolean = (row.classList && row.classList.contains('e-multi-cells-select')) ? true : false;
             const topPos: number = this.calcPos(row as HTMLElement).top + (isMultiCell ? 0 :
                 pos.top) + (row as HTMLElement).getBoundingClientRect().height - 1.5;
-            rowReEle.style.cssText = 'width:' + width + 'px;height:4px;top:' + topPos + 'px;left:' + (rowPosLeft + pos.left) + 'px; z-index: 2';
-            rowReEle.style.cssText = 'width:' + width + 'px;height:4px;top:' + topPos + 'px;left:' + (rowPosLeft + pos.left) + 'px;';
-            this.tableModel.getEditPanel().appendChild(rowReEle);
-
+            if (this.tableModel.tableSettings.resize) {
+                const rowReEle: HTMLElement = createElement('span', {
+                    attrs: { 'data-row': i.toString(), 'unselectable': 'on', 'contenteditable': 'false' }
+                });
+                rowReEle.classList.add(EVENTS.CLS_RTE_TABLE_RESIZE, EVENTS.CLS_TB_ROW_RES);
+                rowReEle.style.cssText = 'width:' + width + 'px;height:4px;top:' + topPos + 'px;left:' + (rowPosLeft + pos.left) + 'px; z-index: 2';
+                rowReEle.style.cssText = 'width:' + width + 'px;height:4px;top:' + topPos + 'px;left:' + (rowPosLeft + pos.left) + 'px;';
+                this.tableModel.getEditPanel().appendChild(rowReEle);
+            }
             if ((i + 1) === rows.length || allCells[i as number][0] !== allCells[i + 1][0]) {
                 // Create insertion icon
                 this.createTableInsertIcon({

@@ -1557,7 +1557,7 @@ export class GanttChart {
                 this.isEditableElement = false;
             }
         }
-        if (nextElement === 'noNextRow') {
+        if (isNullOrUndefined(nextElement) || nextElement === 'noNextRow') {
             this.manageFocus($target as HTMLElement, 'remove', true);
             return;
         }

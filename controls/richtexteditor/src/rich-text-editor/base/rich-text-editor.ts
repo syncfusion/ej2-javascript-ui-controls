@@ -3173,6 +3173,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 case 'formatPainterSettings':
                     this.formatter.editorManager.observer.notify(CONSTANT.MODEL_CHANGED, { module: 'formatPainter', newProp: newProp });
                     break;
+                case 'showTooltip':
+                case 'floatingToolbarOffset':
+                    this.notify(events.modelChanged, {  module: 'toolbar', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'keyConfig':
+                    Object.assign(this.keyboardModule.keyConfigs, newProp.keyConfig);
+                    break
                 default:
                     this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
                     break;
@@ -4651,8 +4658,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
     }
-    // Utility to check if selection is within RTE
-    private isSelectionInRTE(): boolean {
+    /**
+     * Utility to check if selection is within RTE
+     *
+     * @private
+     * @returns {boolean} `true` if the selection is within the RTE; otherwise, `false`.
+     */
+    public isSelectionInRTE(): boolean {
         const selection: Selection = this.contentModule.getDocument().getSelection();
         if (selection.rangeCount > 0) {
             const range: Range = selection.getRangeAt(0);

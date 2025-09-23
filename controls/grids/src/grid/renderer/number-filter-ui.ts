@@ -1,4 +1,4 @@
-import { IGrid, EJ2Intance, IFilterMUI, IFilterCreate } from '../base/interface';
+import { IGrid, EJ2Intance, IFilterMUI, IFilterCreate, IFilterWrite } from '../base/interface';
 import { Column } from '../models/column';
 import { FilterSettings } from '../base/grid';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -63,8 +63,7 @@ export class NumberFilterUI implements IFilterMUI {
         toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj, args.getOptrInstance.dropOptr['previousValue'] as string);
     }
 
-    public write(args: { column: Column, target: Element, parent: IGrid,
-        filteredValue: number | string | Date | boolean | (string | number | boolean | Date)[] }): void {
+    public write(args: IFilterWrite): void {
         const operatorDropdown: DropDownList = this.parent.filterModule.filterModule.getOperatorDropdown();
         const numericObject: NumericTextBox = this.getNumericInstance(args.column.uid);
         const multiSelectObject: MultiSelect = this.getMultiSelectInstance(args.column.uid);

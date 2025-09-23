@@ -1046,7 +1046,7 @@ export class DialogEdit {
             (document.querySelector('#' + ganttObj.element.id + '' + 'Resources' +
                 'TabContainer_gridcontrol') as any).ej2_instances[0].saveCell();
         }
-        else if (hasEditedOrAddedRow && dialogModule.storeDependencyTab) {
+        else if (dialogModule.storeDependencyTab && hasEditedOrAddedRow) {
             (document.querySelector('#' + ganttObj.element.id + '' + 'Dependency' +
                 'TabContainer') as any).ej2_instances[0].editModule.batchSave();
         }
@@ -1198,6 +1198,19 @@ export class DialogEdit {
                 if (taskSettings.progress === column.field) {
                     numeric.min = 0;
                     numeric.max = 100;
+                    const hasDecimalEdit: boolean = this.parent.dataOperation['isDecimalProgress'](column.field);
+                    if (hasDecimalEdit) {
+                        numeric.decimals = (column.edit.params as NumericTextBoxModel).decimals ?
+                            (column.edit.params as NumericTextBoxModel).decimals : 0;
+                        if (column.format && typeof column.format === 'string' && column.format.match(/^n(\d+)$/)) {
+                            numeric.format = column.format;
+                        }
+                    }
+                    else {
+                        numeric.decimals = 0;
+                        numeric.format = 'n0';
+                        numeric.validateDecimalOnType = true;
+                    }
                 }
                 numeric.change = (args: CObject): void => {
                     if (!this.isTriggered) {
@@ -3338,6 +3351,10 @@ export class DialogEdit {
                 }
                 else {
                     inputModel.value = ganttData[column.field];
+                    if (column.field === this.parent.taskFields.progress) {
+                        const hasDecimalEdit: boolean = this.parent.dataOperation['isDecimalProgress'](column.field);
+                        inputModel.value = hasDecimalEdit ? Number(ganttData[column.field]) : Math.floor(ganttData[column.field]);
+                    }
                 }
             }
         }
@@ -3922,7 +3939,7 @@ export class DialogEdit {
         for (let i: number = 0; i < dataSource.length; i++) {
             const preData: IPreData = dataSource[i as number];
             const splitString: string[] = this.getMatchingPrefix(preData, this.parent.ids);
-            if (isNullOrUndefined(preData.id) || (preData.id !== splitString[0] && !isNullOrUndefined(splitString[0]))) {
+            if (isNullOrUndefined(preData.id) || (!isNullOrUndefined(splitString[0]) && preData.id !== splitString[0])) {
                 preData.id = splitString[0];
             }
             if (ids.indexOf(preData.id) === -1) {

@@ -97,14 +97,14 @@ export class UndoRedo {
                 this.updateUndoRedoStack();
             }
             break;
-        case 'reset':
-            this.reset();
-            break;
         case 'preventEditComplete':
             args.value['obj']['bool'] = this.preventEditComplete;
             break;
         case 'preventApplyEditComplete':
             this.preventApplyEditComplete = args.value['bool'];
+            break;
+        case 'reset':
+            this.reset();
             break;
         }
     }

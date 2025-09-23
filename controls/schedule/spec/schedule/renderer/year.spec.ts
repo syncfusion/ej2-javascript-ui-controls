@@ -900,6 +900,26 @@ describe('Schedule year view', () => {
         });
     });
 
+    describe('ES-962172 - Islamic mode toolbar header date range not localized when firstMonthOfYear is set in year view', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {
+                calendarMode: 'Islamic',
+                firstMonthOfYear: 1,
+                views: [ { option: 'Year'}],
+                selectedDate: new Date(2021, 1, 24)
+            };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking the dateRange header text in the year view', () => {
+            expect(schObj.firstMonthOfYear).toEqual(1);
+            expect((schObj.element.querySelector('.e-date-range') as HTMLElement).innerText).toEqual('Jum. II 1442 - Jum. II 1443');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -35,6 +35,7 @@ import { DropDownButtons } from '../actions';
 import { dispatchEvent, parseHtml, hasClass } from '../base/util';
 import { removeClassWithAttr } from '../../common/util';
 import { ToolbarType } from '../../common/enum';
+import { RichTextEditorModel } from '../base';
 
 /*
  * `Table` module is used to handle table actions.
@@ -126,6 +127,9 @@ export class Table {
 
         // Lifecycle events
         this.parent.on(events.destroy, this.destroy, this);
+
+        // Model events
+        this.parent.on(events.modelChanged, this.onPropertyChanged, this);
     }
 
     /*
@@ -174,6 +178,8 @@ export class Table {
         if (this.parent.editorMode !== 'Markdown' && this.parent.formatter) {
             this.parent.formatter.editorManager.observer.off(EVENTS.hideTableQuickToolbar, this.hideTableQuickToolbar);
         }
+        // Model events
+        this.parent.off(events.modelChanged, this.onPropertyChanged);
     }
 
     /*
@@ -189,9 +195,7 @@ export class Table {
                 new TableCommand(this.parent.formatter.editorManager, tableModel, this.parent.iframeSettings);
 
             if (this.tableObj) {
-                if (this.parent.tableSettings.resize) {
-                    this.tableObj.addResizeEventHandlers();
-                }
+                this.tableObj.addResizeEventHandlers();
                 // First remove any existing mouseDown event handler to prevent duplicates
                 this.parent.off(events.mouseDown, this.tableObj.cellSelect);
                 // Then add the event handler
@@ -200,6 +204,22 @@ export class Table {
 
             if (this.parent.formatter) {
                 this.parent.formatter.editorManager.observer.on(EVENTS.hideTableQuickToolbar, this.hideTableQuickToolbar, this);
+            }
+        }
+    }
+
+    private onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
+        for (const prop of Object.keys(e.newProp)) {
+            if (prop === 'tableSettings') {
+                switch (Object.keys(e.newProp.tableSettings)[0]) {
+                case 'resize':
+                    if (this.parent.tableSettings.resize === false) {
+                        this.tableObj.removeResizeEventHandlers();
+                    } else {
+                        this.tableObj.addResizeEventHandlers();
+                    }
+                    break;
+                }
             }
         }
     }

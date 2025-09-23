@@ -4137,7 +4137,12 @@ export class Layout {
                     dropDownTextElement.skipformFieldLength = true;
                     dropDownTextElement.line = fieldBegin.line;
                     if (formFieldData.dropdownItems.length > 0) {
-                        dropDownTextElement.text = formFieldData.dropdownItems[formFieldData.selectedIndex];
+                        if (!isNullOrUndefined(formFieldData.selectedIndex)) {
+                            dropDownTextElement.text = formFieldData.dropdownItems[formFieldData.selectedIndex];
+                        }
+                        else {
+                            dropDownTextElement.text = formFieldData.dropdownItems[0];
+                        }
                     } else {
                         dropDownTextElement.text = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
                     }
@@ -9447,7 +9452,7 @@ export class Layout {
                         || (tableWidget.isInsideTable
                             && !((tableWidget.containerWidget.containerWidget as TableRowWidget).rowFormat.allowBreakAcrossPages))) {
                         splittedRow = this.getSplittedWidgetForRow(bottom, tableCollection, [rowWidget], rowWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit, count);
-                    } else if (!isNullOrUndefined(tableWidget.containerWidget.containerWidget.previousWidget)) {
+                    } else {
                         splittedRow = rowWidget;
                     }
                 }

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 31.1.21 (2025-09-23)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I759048` - Fixed aggregate calculation issue during edit and save operations in `VirtualScrolling`.
+- `#FB69913` - Fixed the script error that occurs when opening the custom filter dialog on a device in an adaptive grid with `adaptiveUIMode` set to Desktop.
+- `#FB70042` - Added native event details into the `recordClick` and `recordDoubleClick` events.
+
 ## 31.1.17 (2025-09-05)
 
 ### Grid

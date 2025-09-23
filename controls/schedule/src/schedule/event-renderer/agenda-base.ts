@@ -220,7 +220,8 @@ export class AgendaBase extends ViewBase {
                                     rowSpan: 1, type: 'dateColumn', resource: resColl[parseInt((resColl.length - 1).toString(), 10)],
                                     groupOrder: resData[parseInt(res.toString(), 10)].groupOrder,
                                     resourceData: resData[parseInt(res.toString(), 10)].resourceData,
-                                    date: agendaDate
+                                    date: agendaDate,
+                                    groupIndex: resData[parseInt(res.toString(), 10)].groupIndex
                                 };
                                 if (!lastLevelInfo[parseInt(tempIndex.toString(), 10)]) {
                                     lastLevelInfo[parseInt(tempIndex.toString(), 10)] = [];
@@ -313,7 +314,7 @@ export class AgendaBase extends ViewBase {
                         continue;
                     }
                     ntd.setAttribute('data-date', data.date.getTime().toString());
-                    ntd.appendChild(this.createDateHeaderElement(data.date));
+                    ntd.appendChild(this.createDateHeaderElement(data.date, data.groupIndex));
                     const className: string[] = [cls.AGENDA_CELLS_CLASS, cls.AGENDA_DATE_CLASS];
                     if (data.cssClass) {
                         className.push(data.cssClass);
@@ -363,11 +364,11 @@ export class AgendaBase extends ViewBase {
         }
     }
 
-    public createDateHeaderElement(date: Date): Element {
+    public createDateHeaderElement(date: Date, groupIndex?: number): Element {
         let dateHeader: Element;
         if (this.parent.activeViewOptions.dateHeaderTemplate) {
             dateHeader = createElement('div', { className: cls.AGENDA_HEADER_CLASS });
-            const args: CellTemplateArgs = { date: date, type: 'dateHeader' };
+            const args: CellTemplateArgs = { date: date, type: 'dateHeader', groupIndex: groupIndex };
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
             const templateId: string = scheduleId + viewName + 'dateHeaderTemplate';
