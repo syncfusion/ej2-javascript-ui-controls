@@ -80,3 +80,9 @@ export function getKeyUpObj(keyCode: string | number, target: Element): any {
     let preventDefault = () => { };
     return { target: target, keyCode: keyCode};
 }
+
+export function getRandom(): number {
+    const array: Uint32Array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] / (0xFFFFFFFF + 1);
+}

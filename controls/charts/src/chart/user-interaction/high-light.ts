@@ -18,7 +18,6 @@ export class Highlight extends Selection {
     /**
      * Constructor for selection module.
      *
-     * @private
      */
 
     constructor(chart: Chart) {

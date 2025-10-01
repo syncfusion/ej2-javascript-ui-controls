@@ -2,7 +2,28 @@
 
 ## [Unreleased]
 
+## 31.1.22 (2025-10-01)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I747736` - Now, the combination stacking and stacking of 100 different series renders properly.
+- `#I757693` - Now, the space on the left margin has adjusted properly after placing the axis label inside.
+
+#### Feature
+
+- `#I764441` - Support for the text render event has been added to stacking labels.
+
 ## 31.1.21 (2025-09-23)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I764449` - Now the stacking label is positioned properly when zooming is performed.
+
+## 31.1.20 (2025-09-17)
 
 ### Chart
 

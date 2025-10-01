@@ -1534,14 +1534,31 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         switch (!e.altKey && e.keyCode) {
         case 39:
             e.preventDefault();
-            selectedEle = prevSelectedEle ? tiles[this.tilePosition(tiles, prevSelectedEle, this.enableRtl ? -1 : 1)]
-                : tiles[this.enableRtl ? tiles.length - 1 : 0];
+            if (prevSelectedEle && ((!this.enableRtl && tiles.indexOf(prevSelectedEle) === tiles.length - 1)
+            || (this.enableRtl && tiles.indexOf(prevSelectedEle) === 0))){
+                idx = this.enableRtl ? tiles.length - 1 : 0;
+            }
+            else{
+                idx = prevSelectedEle ? this.tilePosition(tiles, prevSelectedEle, this.enableRtl ? -1 : 1)
+                    : (this.enableRtl ? tiles.length - 1 : 0);
+            }
+            if (tiles[idx as number]) {
+                selectedEle = tiles[idx as number];
+            }
             this.keySelectionChanges(selectedEle);
             break;
         case 37:
             e.preventDefault();
-            selectedEle = prevSelectedEle ? tiles[this.tilePosition(tiles, prevSelectedEle, this.enableRtl ? 1 : -1)]
-                : tiles[this.enableRtl ? 0 : tiles.length - 1];
+            if (prevSelectedEle && ((!this.enableRtl && tiles.indexOf(prevSelectedEle) === 0)
+            || (this.enableRtl && tiles.indexOf(prevSelectedEle) === tiles.length - 1))) {
+                idx = this.enableRtl ? 0 : tiles.length - 1;
+            } else {
+                idx = prevSelectedEle ? this.tilePosition(tiles, prevSelectedEle, this.enableRtl ? 1 : -1)
+                    : (this.enableRtl ? 0 : tiles.length - 1);
+            }
+            if (tiles[idx as number]) {
+                selectedEle = tiles[idx as number];
+            }
             this.keySelectionChanges(selectedEle);
             break;
         case 38:

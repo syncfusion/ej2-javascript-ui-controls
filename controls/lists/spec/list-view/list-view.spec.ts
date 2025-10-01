@@ -4143,7 +4143,7 @@ describe('ListView template class handling', () => {
         template.remove();
     });
 
-    it('should not have template class when template is set but checkbox is disabled', () => {
+    it('should not have listTemplate class when template is set but checkbox is disabled', () => {
         let template: Element = createElement('div', { id: 'checkboxTemplate' });
         template.innerHTML = '<div class="custom-template">${text}</div>';
         document.body.appendChild(template);

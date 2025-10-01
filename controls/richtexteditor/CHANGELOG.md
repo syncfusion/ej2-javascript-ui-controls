@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 31.1.22 (2025-10-01)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I771758` - Now, the `aria-multiline` attribute has been successfully added with the value true to the `contenteditable` element of the Rich Text Editor.
+
+- `#I771370` - Now, the `getSelectedHtml` method accurately returns the HTML content corresponding to the selection made within the editor.
+
+- `#I770551` - Now, when plain text containing multiple paragraphs is pasted into the editor, each paragraph is correctly preserved and rendered as separate blocks, maintaining the original structure.
+
+- `#I769104` - Now, consecutive image drag-and-drop operations work properly in the Rich Text Editor.
+
+- `#I769396` - Now, pasting content from Notepad into the Rich Text Editor inserts it exactly at the cursor position.
+
+- `#I768886` - Now, pasting content copied from a `span` wrapped Rich Text Editor works properly.
+
+- `#I762396` - Now, pasting multiple lines of content into bullet lists copied from Outlook works properly in the Rich Text Editor when the `enterKey` property is set to `DIV`.
+
 ## 31.1.21 (2025-09-23)
 
 ### RichTextEditor

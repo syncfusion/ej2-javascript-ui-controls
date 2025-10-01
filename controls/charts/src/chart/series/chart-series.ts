@@ -2529,6 +2529,13 @@ export class Series extends SeriesBase {
                     (series.chart.chartAreaType === 'PolarRadar'))) {
                     stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
                         (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
+                    if (series.type.indexOf('100') !== -1) {
+                        isStacking100 = true;
+                        frequencies = [];
+                        frequencies = this.findFrequencies(seriesCollection);
+                    } else {
+                        isStacking100 = false;
+                    }
                     if (!lastPositive[stackingGroup as string]) {
                         lastPositive[stackingGroup as string] = [];
                         lastNegative[stackingGroup as string] = [];

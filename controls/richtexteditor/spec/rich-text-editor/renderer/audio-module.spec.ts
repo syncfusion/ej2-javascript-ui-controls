@@ -3303,4 +3303,37 @@ describe('Audio Module', () => {
             done();
         });
     });
+    describe('981296 - Inserted audio remains on the same line even after setting the layoutOption.', function () {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        var innerHTML: string = "<p>Testing</p>";
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                insertAudioSettings: {
+                    layoutOption: 'Break'
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the audio is inserted in break style when layoutoption is in break', (done: Function) => {
+            (<any>rteObj).audioModule.uploadUrl = { url: "https://www.w3schools.com/html/mov_bbb.mp4" };
+            (rteEle.querySelectorAll('.e-toolbar-item')[0] as HTMLElement).click()
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.audioUrl .e-input.e-audio-url') as HTMLElement).click();
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
+            (document.querySelector('.e-insertAudio.e-primary') as HTMLElement).click();
+            expect(!isNullOrUndefined(rteObj.inputElement.querySelector('.e-rte-audio'))).toBe(true);
+            expect((rteObj.inputElement.querySelector('.e-audio-wrap') as HTMLElement).style.display == 'block').toBe(true);
+            done();
+        });
+    });
 });

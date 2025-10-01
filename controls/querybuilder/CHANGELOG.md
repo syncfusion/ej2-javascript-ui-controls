@@ -2,32 +2,13 @@
 
 ## [Unreleased]
 
-## 31.1.21 (2025-09-23)
+## 31.1.22 (2025-10-01)
 
 ### QueryBuilder
 
-- `#I753541` - The issue with the dropdown list positioning in QueryBuilder, which caused overflow in the React sample, has been resolved.
+- `#I764996` - Issue where the lock rule did not disable the field selector in complex data binding scenarios.
 
-## 30.1.42 (2025-07-29)
-
-### QueryBuilder
-
-- `#F68215` - Resolved the issue of an unwanted group header item appearing in the mobile mode dropdownlist of the query builder.
-
-## 30.1.40 (2025-07-15)
-
-### QueryBuilder
-
-- `#I739645` - The issue where "Validation message is not removed properly once the multi select value renders in QueryBuilder" has been resolved.
-
-## 30.1.39 (2025-07-08)
-
-### QueryBuilder
-
-- `#I731152`, `#F197031` - The issue where "Rule values were not updated properly when the operator was changed in string type columns" has been resolved.
-- `#I735162` - Resolved the issue where the "NOT" operator did not update correctly when using the setRules method in the separator sample.
-
-## 30.1.37 (2025-06-25)
+## 31.1.17 (2025-09-05)
 
 ### QueryBuilder
 

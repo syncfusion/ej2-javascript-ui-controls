@@ -833,7 +833,9 @@ export namespace ListBase {
      * @returns {string} - The generated ID string.
      */
     export function generateId(): string {
-        return Math.floor((1 + Math.random()) * 0x10000)
+        const array: Uint32Array = new Uint32Array(1);
+        window.crypto.getRandomValues(array);
+        return Math.floor((1 + array[0] / (0xFFFFFFFF + 1)) * 0x10000)
             .toString(16)
             .substring(1);
     }

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 31.1.22 (2025-10-01)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I768562` - The pivot chart now renders correctly during zoom and escape key interactions without any exceptions.
+- `#I771251` - The OLAP pivot table now exports properly as an Excel document when virtualization is disabled.
+
 ## 31.1.21 (2025-09-23)
 
 ### Pivot Table

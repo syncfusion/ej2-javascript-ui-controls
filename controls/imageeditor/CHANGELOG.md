@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.22 (2025-10-01)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I762686` - The issue with "Script error thrown and shapes not removed when 'undo' method is called programmatically" has been resolved.
+
 ## 31.1.21 (2025-09-23)
 
 ### Image Editor

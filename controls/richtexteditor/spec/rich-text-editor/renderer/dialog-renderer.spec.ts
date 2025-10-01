@@ -3,7 +3,7 @@
  */
 import { ENTERKEY_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT, BASIC_MOUSE_EVENT_INIT } from '../../constant.spec';
 import { RichTextEditor } from './../../../src/index';
-import { renderRTE, destroy, setSelection } from "./../render.spec";
+import { renderRTE, destroy, setSelection, hostURL } from "./../render.spec";
 
 
 describe('Image Dialog', () => {
@@ -320,10 +320,10 @@ describe('946028: File Manager Toolbar Opens New Folder Dialog Instead of File M
             fileManagerSettings: {
                 enable: true, path: '/Pictures/Food',
                 ajaxSettings: {
-                    url: 'https://ej2-aspcore-service.azurewebsites.net/api/FileManager/FileOperations',
-                    getImageUrl: 'https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage',
-                    uploadUrl: 'https://ej2-aspcore-service.azurewebsites.net/api/FileManager/Upload',
-                    downloadUrl: 'https://ej2-aspcore-service.azurewebsites.net/api/FileManager/Download'
+                    url: hostURL + 'api/RichTextEditor/FileOperations',
+                    getImageUrl: hostURL +  'api/RichTextEditor/GetImage',
+                    uploadUrl: hostURL +  'api/RichTextEditor/Upload',
+                    downloadUrl: hostURL +  'api/RichTextEditor/Download'
                 }
             },
             toolbarSettings: {

@@ -148,7 +148,35 @@ export class InsertHtml {
                 divNode.appendChild(insertNode as Node);
                 return divNode;
             } else {
+                if (Browser.userAgent.indexOf('Firefox') !== -1) {
+                    this.unwrapSpansAroundBlocks(insertNode as Node);
+                }
                 return insertNode as Node;
+            }
+        }
+    }
+    //Unwraps span elements that contain block-level elements within them.
+    private static unwrapSpansAroundBlocks(node: Node): void {
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+            return;
+        }
+        const element: HTMLElement = node as HTMLElement;
+        // Recursively process child nodes first (bottom-up traversal)
+        Array.from(element.childNodes).forEach((child: Node) => {
+            this.unwrapSpansAroundBlocks(child);
+        });
+        if (element.tagName.toLowerCase() === 'span' && element.hasChildNodes()) {
+            // Define a CSS selector for common block-level elements
+            const blockSelectors: string = 'address, article, aside, blockquote, canvas, dd, div, dl, dt, ' +
+                'fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, ' +
+                'header, hr, li, main, nav, noscript, ol, p, pre, section, table, tfoot, ul, video';
+            // Check if there is any block-level descendant
+            const hasBlockDescendant: boolean = element.querySelector(blockSelectors) !== null;
+            if (hasBlockDescendant && element.parentNode) {
+                while (element.firstChild) {
+                    element.parentNode.insertBefore(element.firstChild, element);
+                }
+                element.parentNode.removeChild(element);
             }
         }
     }
@@ -774,7 +802,7 @@ export class InsertHtml {
         } else if (this.isMentionChip(nodes)) {
             range.startContainer.parentElement.insertAdjacentElement('afterend', tempSpan);
         } else if (range.startOffset !== 0 && range.endOffset !== 0 && range.startOffset === range.endOffset
-            && !(insertedNode as HTMLElement).querySelector('a') && range.endOffset === range.startContainer.textContent.length) {
+            && !(insertedNode as HTMLElement).querySelector('a') && range.endOffset === range.startContainer.textContent.length && immediateBlockNode.lastChild.contains(range.startContainer)) {
             immediateBlockNode.appendChild(tempSpan);
         } else {
             range.insertNode(tempSpan);
@@ -1650,7 +1678,15 @@ export class InsertHtml {
             if (filteredChildNodes.length > 0 && insertNodes.length > 1) {
                 this.insertBlockNodesInLI(insertNodes, range);
             } else {
-                range.insertNode(insertedNode);
+                const startContainerParent: HTMLElement = range.startContainer.parentElement;
+                const nextSibling: Element =  startContainerParent.nextElementSibling;
+                if (range.startContainer.nodeName === 'DIV' && startContainerParent &&
+                    startContainerParent.nodeName === 'LI' && startContainerParent.parentNode) {
+                    startContainerParent.parentNode.insertBefore(insertedNode, nextSibling);
+                    detach(startContainerParent); // Detach the parent element after inserting
+                } else {
+                    range.insertNode(insertedNode);
+                }
             }
             this.contentsDeleted = true;
             return true; // Indicate we've fully handled this case.
@@ -1677,7 +1713,15 @@ export class InsertHtml {
             fragment.appendChild(newLi);
         }
         this.unwrapInlineWrappers(fragment);
-        range.insertNode(fragment);
+        const startContainerParent: HTMLElement = range.startContainer.parentElement;
+        const nextSibling: Element = startContainerParent.nextElementSibling;
+        if (range.startContainer.nodeName === 'DIV' && startContainerParent &&
+            startContainerParent.nodeName === 'LI' && startContainerParent.parentNode) {
+            startContainerParent.parentNode.insertBefore(fragment, nextSibling);
+            detach(startContainerParent); // Detach the parent element after inserting
+        } else {
+            range.insertNode(fragment);
+        }
     }
 
     // Processes and adjusts the child nodes before any block.
@@ -1810,6 +1854,7 @@ export class InsertHtml {
             range.setStart(startContainer, startOffset);
             range.setEnd(startContainer, startOffset);
         }
+        const startContainerparentElement: HTMLElement = range.startContainer.parentElement;
         const blockNode: Node = this.getImmediateBlockNode(currentNode, insertedNode);
         if (insertedNode.firstChild.nodeName === 'HR') {
             let parentListItem: Element = null;
@@ -1824,6 +1869,39 @@ export class InsertHtml {
             this.pasteLI(insertedNode, parentLi, mergeNode, blockNode, range, nodeCutter);
         } else if (!isCollapsed && startLi && endLi && filteredChildNodes.length > 0) {
             this.nonCollapsedInsertion(insertedNode, cloneRange, nodeCutter, endLi);
+        }
+        else if (isCollapsed && ((insertedNode.firstChild.nodeName === 'UL' ||
+            insertedNode.firstChild.nodeName === 'OL') && currentNode.parentElement && currentNode.parentElement.nodeName === 'DIV')) {
+            // Case 1: If cursor is at the start of the list item
+            if (range.startOffset === 0 && range.endOffset === 0 && startContainerparentElement) {
+                startContainerparentElement.parentNode.insertBefore(insertedNode, startContainerparentElement);
+            }
+            // Case 2: If cursor is at the end of the list item
+            else if (range.startOffset === range.startContainer.textContent.length && range.endOffset ===
+                range.startContainer.textContent.length &&
+                startContainerparentElement && startContainerparentElement.parentNode) {
+                const nextSibling: Node = startContainerparentElement.nextSibling;
+                startContainerparentElement.parentNode.insertBefore(insertedNode, nextSibling);
+            } else {
+                const liElement: HTMLElement | null = startContainerparentElement.closest('li');
+                // Use nodeCutter to split the node at the range
+                const spliceNode: Node = nodeCutter.GetSpliceNode(range, startContainerparentElement);
+                // Create a new <li> to hold the remaining content after the splice
+                const newLi: HTMLLIElement = document.createElement('li');
+                // Move all nodes after spliceNode into newLi
+                const nextNode: Node | null = spliceNode.nextSibling;
+                newLi.appendChild(nextNode);
+                // Insert the pasted list items (insertedNode) after the current <li>
+                insertedNode.appendChild(newLi);
+                liElement.parentNode.insertBefore(insertedNode, liElement.nextSibling);
+            }
+        } else if (!isCollapsed && ((range.startContainer.nodeName === '#text' && startContainerparentElement.nodeName === 'DIV') ||
+            (range.startContainer.nodeName === 'DIV' && startContainerparentElement.nodeName === 'LI'))) {
+            const startContainer: Node = (range.startContainer.nodeName === '#text' && range.startContainer.textContent.trim().length === 0) ?
+                startContainerparentElement : range.startContainer;
+            if (startContainer && startContainer.parentElement.nodeName === 'LI') {
+                startContainerparentElement.parentNode.insertBefore(insertedNode, startContainerparentElement.nextSibling);
+            }
         } else {
             range.insertNode(insertedNode);
         }
@@ -2052,7 +2130,7 @@ export class InsertHtml {
         const parentList: Node = parentLi.parentNode;
         let isCursorAtStart: boolean = true;
         let isCursorAtEnd: boolean = false;
-        if (parentLi.contains(mergeNode) && mergeNode.previousSibling) {
+        if (parentLi.contains(mergeNode) && mergeNode.previousSibling && mergeNode.previousSibling.textContent.trim().length !== 0) {
             isCursorAtStart = false;
         }
         if (parentLi.contains(mergeNode) && (isNOU(mergeNode.nextSibling) || mergeNode.nextSibling && ['LI', 'UL', 'OL'].indexOf(mergeNode.nextSibling.nodeName) !== -1) && range.startOffset === mergeNode.textContent.length) {
@@ -2371,7 +2449,8 @@ export class InsertHtml {
         if (!isNOU(element.parentElement)) {
             const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g)
                 && element.parentElement.textContent.match(/\u00a0/g).length > 0;
-            if (!hasNbsp && element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true' &&
+            const hasBr: boolean = !isNOU(element.parentElement.querySelector('br'));
+            if (!hasNbsp && !hasBr && element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true' &&
                 isNOU(element.parentElement.querySelector('img')) && element.parentElement.nodeName !== 'TD' && element.parentElement.nodeName !== 'TH' && isNOU(element.parentElement.querySelector('table td, table th'))) {
                 removableElement = ignoreBlockNodes && CONSTANT.BLOCK_TAGS.indexOf(element.parentElement.tagName.toLowerCase()) !== -1 ?
                     element as HTMLElement : this.findDetachEmptyElem(element.parentElement, ignoreBlockNodes);

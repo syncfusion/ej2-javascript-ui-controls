@@ -567,14 +567,14 @@ export class Image {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
             } else {
-                if ((parseInt(this.parent.insertImageSettings.minWidth as string, 10) >= parseInt(width, 10) ||
-                    (parseInt(this.parent.getInsertImgMaxWidth() as string, 10) <= parseInt(width, 10) &&
+                if ((parseInt(this.parent.insertImageSettings.minWidth as string, 10) > parseInt(width, 10) ||
+                    (parseInt(this.parent.getInsertImgMaxWidth() as string, 10) < parseInt(width, 10) &&
                         isNOU(this.imgEle.style.width)))) {
                     return;
                 }
                 if (!this.parent.insertImageSettings.resizeByPercent &&
-                    (parseInt(this.parent.insertImageSettings.minHeight as string, 10) >= parseInt(height, 10) ||
-                        parseInt(this.parent.insertImageSettings.maxHeight as string, 10) <= parseInt(height, 10))) {
+                    (parseInt(this.parent.insertImageSettings.minHeight as string, 10) > parseInt(height, 10) ||
+                        parseInt(this.parent.insertImageSettings.maxHeight as string, 10) < parseInt(height, 10))) {
                     return;
                 }
                 this.imgEle.parentElement.style.cursor = 'pointer';
@@ -2039,7 +2039,7 @@ export class Image {
         return false;
     }
     private dragStart(e: DragEvent): void | boolean {
-        if ((e.target as HTMLElement).nodeName === 'IMG') {
+        if ((e.target as HTMLElement).nodeName === 'IMG' && e.dataTransfer.types[0] !== 'Files') {
             e.dataTransfer.effectAllowed = 'copyMove';
             (e.target as HTMLElement).classList.add(CLS_RTE_DRAG_IMAGE);
         } else {

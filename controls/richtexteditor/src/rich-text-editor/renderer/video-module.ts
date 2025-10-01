@@ -541,8 +541,8 @@ export class Video {
         const pos: OffsetPosition = this.calcPos(e);
         const top: number = pos.top;
         const left: number = pos.left;
-        const vidWid: string | number = e.width !== 0 && e.width !== 'auto' && e.width !== 'NaN' ? e.width : e.getBoundingClientRect().width;
-        const vidHgt: string | number = e.height !== 0 && e.height !== 'auto' && e.height !== 'NaN' ? e.height : e.getBoundingClientRect().height;
+        const vidWid: string | number = e.getBoundingClientRect().width;
+        const vidHgt: string | number = e.getBoundingClientRect().height;
         const borWid: number = (Browser.isDevice) ? (4 * parseInt((e.style.outline.slice(-3)), 10)) + 2 :
             (2 * parseInt((e.style.outline.slice(-3)), 10)) + 2; //span border width + video outline width
         const devWid: number = ((Browser.isDevice) ? 0 : 2); // span border width
@@ -666,14 +666,14 @@ export class Video {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
             } else {
-                if ((parseInt(this.parent.insertVideoSettings.minWidth as string, 10) >= parseInt(width, 10) ||
-                    (parseInt(this.parent.getInsertVidMaxWidth() as string, 10) <= parseInt(width, 10) &&
+                if ((parseInt(this.parent.insertVideoSettings.minWidth as string, 10) > parseInt(width, 10) ||
+                    (parseInt(this.parent.getInsertVidMaxWidth() as string, 10) < parseInt(width, 10) &&
                     isNOU(this.videoEle.style.width)))) {
                     return;
                 }
                 if (!this.parent.insertVideoSettings.resizeByPercent &&
-                    (parseInt(this.parent.insertVideoSettings.minHeight as string, 10) >= parseInt(height, 10) ||
-                        parseInt(this.parent.insertVideoSettings.maxHeight as string, 10) <= parseInt(height, 10))) {
+                    (parseInt(this.parent.insertVideoSettings.minHeight as string, 10) > parseInt(height, 10) ||
+                        parseInt(this.parent.insertVideoSettings.maxHeight as string, 10) < parseInt(height, 10))) {
                     return;
                 }
                 this.videoEle.parentElement.style.cursor = 'pointer';

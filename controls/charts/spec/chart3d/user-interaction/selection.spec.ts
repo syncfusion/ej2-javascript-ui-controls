@@ -8,7 +8,7 @@ import { Legend3D } from '../../../src/chart3d/legend/legend';
 import { getMemoryProfile, inMB, profile } from '../../common.spec';
 import { MouseEvents } from '../base/events.spec';
 import { Chart3DSeriesModel} from '../../../src/chart3d/series/chart-series-model';
-import { firstSeries, secondSeries, thirdSeries } from '../../chart/base/data.spec';
+import { firstSeries, secondSeries, secureRandom, thirdSeries } from '../../chart/base/data.spec';
 import { Selection3D } from '../../../src/chart3d/user-interaction/selection';
 
 Chart3D.Inject(
@@ -270,7 +270,7 @@ describe('3DChart Control Selection ', () => {
     });
     it('Single Cluster selection and UnSelection', (done: Function) => {
         loaded = () => {
-            const index: number = Math.floor((Math.random() * 10) % 6);
+            const index: number = Math.floor((secureRandom() * 10) % 6);
             element = document.getElementById(id + '-svg-0-region-series-1-point-' + index);
             trigger.clickEvent(element);
             for (i = 0; i < seriesCollection.length; i++) {

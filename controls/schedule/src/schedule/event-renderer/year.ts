@@ -585,7 +585,8 @@ export class YearEvent extends TimelineEvent {
         for (const app of appointments) {
             const appStart: Date = new Date(app[this.fields.startTime].getTime());
             const appEnd: Date = new Date(app[this.fields.endTime].getTime());
-            const timeCondition: boolean = app[this.fields.isAllDay] ? util.resetTime(appEnd).getTime() > dateStart :
+            const timeCondition: boolean = app[this.fields.isAllDay] ? (util.resetTime(appEnd).getTime() > dateStart ||
+                (util.resetTime(appEnd).getTime() === dateStart && appEnd.getTime() !== util.resetTime(appEnd).getTime())) :
                 util.resetTime(appEnd).getTime() >= dateStart;
             if (((util.resetTime(appStart).getTime() <= dateStart) && (timeCondition)) ||
                 (util.resetTime(appStart).getTime() >= dateStart) && (util.resetTime(appEnd).getTime() <= dateEnd)) {

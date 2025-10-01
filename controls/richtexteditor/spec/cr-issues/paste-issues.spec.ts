@@ -391,7 +391,35 @@ describe('Paste CR issues ', ()=> {
             const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
             rteObj.onPaste(pasteEvent);
             setTimeout(() => {
-                const expectedElem: string = `<p>大帽：<br>檔名：<br>副標：<br>山谷滑索泛舟、酒莊品美酒佳餚<br>主標：<br><br>刺激、浪漫，又永續<br>此生必去最後淨土：紐西蘭<br><br><br><br>表定頁數：6p<br>實際字數：<br>前言：<br>被稱為世界上最後一塊淨土的紐西蘭，壯闊峽灣、絕美湖泊，景緻如畫。<br>搭配高空滑索、瀑布泛舟等大自然探索，與美食佳餚行程，成為此生必去的永續旅行。<br><br>文—吳雨潔<br>關鍵詞：紐西蘭,永續,森林,滑索,泛舟,步道,咖啡,酒莊<br>配件：<br>內文：<br>「紐西蘭被歐洲探險家發現的時間不到四百年，這裡沒有歐洲的城堡，也沒有亞洲的廟宇；這片土地僅擁有原始森林。」羅托魯瓦樹冠之旅（Rotorua Canopy Tours）的滑索教練帶領遊客步入森林，途中邊介紹當地。<br>紐西蘭原有八成面積被森林覆蓋，但Rotorua Canopy Tours創辦人詹姆斯●費茲傑羅（●James Fitzgerald）指出，原始林的動植物卻在老鼠、澳洲袋貂等外來種侵襲下，瀕臨絕種枯竭。他與伙伴嘗試用自然的陷阱跟誘餌，清除入侵種，期待復甦樹林裡的生命。<br></p>`;
+                const expectedElem: string = `<p>大帽：<br>檔名：<br>副標：<br>山谷滑索泛舟、酒莊品美酒佳餚<br>主標：</p><p>刺激、浪漫，又永續<br>此生必去最後淨土：紐西蘭</p><p><br></p><p>表定頁數：6p<br>實際字數：<br>前言：<br>被稱為世界上最後一塊淨土的紐西蘭，壯闊峽灣、絕美湖泊，景緻如畫。<br>搭配高空滑索、瀑布泛舟等大自然探索，與美食佳餚行程，成為此生必去的永續旅行。</p><p>文—吳雨潔<br>關鍵詞：紐西蘭,永續,森林,滑索,泛舟,步道,咖啡,酒莊<br>配件：<br>內文：<br>「紐西蘭被歐洲探險家發現的時間不到四百年，這裡沒有歐洲的城堡，也沒有亞洲的廟宇；這片土地僅擁有原始森林。」羅托魯瓦樹冠之旅（Rotorua Canopy Tours）的滑索教練帶領遊客步入森林，途中邊介紹當地。<br>紐西蘭原有八成面積被森林覆蓋，但Rotorua Canopy Tours創辦人詹姆斯●費茲傑羅（●James Fitzgerald）指出，原始林的動植物卻在老鼠、澳洲袋貂等外來種侵襲下，瀕臨絕種枯竭。他與伙伴嘗試用自然的陷阱跟誘餌，清除入侵種，期待復甦樹林裡的生命。<br></p>`;
+                expect(rteObj.inputElement.innerHTML).toBe(expectedElem);
+                done();
+            }, 100);
+          });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Bug 983910: Copy and pasting two paragraphs is pasted as one in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value:"",
+                pasteCleanupSettings: {
+                    plainText: true,
+                }
+            });
+        });
+        it('copy and paste two paragraphs text ', (done: DoneFn) => {
+            rteObj.focusIn();
+            const clipBoardData: string = 'Hello World.\n\nRich Text Editor';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/plain', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const expectedElem: string = `<p>Hello World.</p><p>Rich Text Editor</p>`;
                 expect(rteObj.inputElement.innerHTML).toBe(expectedElem);
                 done();
             }, 100);

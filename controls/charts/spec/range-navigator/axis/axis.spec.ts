@@ -3,7 +3,8 @@ import { AreaSeries } from '../../../src/chart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
+import { secureRandom } from '../../chart/base/data.spec';
 RangeNavigator.Inject(AreaSeries);
 
 /**
@@ -15,7 +16,7 @@ let data: object[] = [];
 let dateTime: object[] = [];
 
 for (let j: number = 0; j < 100; j++) {
-    value += (Math.random() * 10 - 5);
+    value += (secureRandom() * 10 - 5);
     point = { x: j, y: value, y1: value + 10 };
     data.push(point);
 }

@@ -394,6 +394,9 @@ export class HtmlEditor {
         }
         if (args.keyCode === 9 && this.parent.enableTabKey && !isCodeBlock) {
             this.parent.formatter.saveData(e);
+            if (!this.indentTab()) {
+                return;
+            }
             if (!isNOU(args.target) && isNullOrUndefined(closest(args.target as Element, '.e-rte-toolbar'))) {
                 const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
                 const parentNode: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
@@ -470,7 +473,8 @@ export class HtmlEditor {
                     event: ((e as NotifyArgs).args as KeyboardEventArgs),
                     name: 'keydown-handler',
                     enterKey: this.parent.enterKey,
-                    shiftEnterKey: this.parent.shiftEnterKey
+                    shiftEnterKey: this.parent.shiftEnterKey,
+                    maxLength: this.parent.maxLength
                 };
                 const actionBeginArgs: ActionBeginEventArgs = {
                     cancel: false,
@@ -508,6 +512,19 @@ export class HtmlEditor {
         }
         this.parent.autoResize();
     }
+    /**
+     * Checks if inserting a tab would exceed the maxLength constraint.
+     *
+     * @returns {boolean} True if allowed, false if it would exceed maxLength.
+     */
+    private indentTab(): boolean {
+        const tabSpaceLength: number = 4;
+        const maxLength: number = this.parent.maxLength;
+        const currentLength: number = this.parent.getText().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
+        const selectionLength: number = this.parent.getSelection().length;
+        return maxLength === -1 || (currentLength - selectionLength + tabSpaceLength) <= maxLength;
+    }
+
     private isOrderedList(editorValue: string): boolean {
         editorValue = editorValue.replace(/\u200B/g, '');
         const olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];

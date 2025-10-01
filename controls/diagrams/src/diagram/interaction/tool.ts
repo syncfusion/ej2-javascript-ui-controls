@@ -543,7 +543,8 @@ export class ConnectTool extends ToolBase {
      * @private
      */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
-        if (!isBlazor() && this.isConnected && (args.source as SelectorModel).connectors) {
+        //Bug 981347: Exception Occurs Randomly When Creating a Connector from a Port.
+        if (!isBlazor() && this.isConnected && args.source && (args.source as SelectorModel).connectors) {
             const connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
             const nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
             const portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';

@@ -1697,6 +1697,7 @@ export class ParagraphWidget extends BlockWidget {
                                 textElement.text = text;
                                 //Sets a script type of WTextRange.
                                 textElement.scriptType = fontScriptTypes[j];
+                                textElement.isWidthUpdated = false;
                             }
                         }
                     }

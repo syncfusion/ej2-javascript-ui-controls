@@ -290,7 +290,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 style = path.getAttribute('style');
-                expect(style ==='clip-path:url(#container_clippath)').toBe(true);
+                expect(style ==='clip-path: url("#container_clippath");').toBe(true);
             };
             progress.isIndeterminate = true;
             progress.loaded = loaded;
@@ -300,7 +300,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 style = path.getAttribute('style');
-                expect(style ==='clip-path:url(#container_clippath)').toBe(true);
+                expect(style ==='clip-path: url("#container_clippath");').toBe(true);
             };
             progress.segmentCount = 5;
             progress.gapWidth = 2;
@@ -353,7 +353,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 style = path.getAttribute('style');
-                expect(style ==='clip-path:url(#container_clippath)').toBe(true);
+                expect(style ==='clip-path: url("#container_clippath");').toBe(true);
             };
             progress.enableRtl = true;
             progress.isIndeterminate = true;
@@ -375,7 +375,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 style = path.getAttribute('style');
-                expect(style ==='clip-path:url(#container_clippath)').toBe(true);
+                expect(style ==='clip-path: url("#container_clippath");').toBe(true);
             };
             progress.enableRtl = false;
             progress.isIndeterminate = true;

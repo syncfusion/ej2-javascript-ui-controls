@@ -13,6 +13,7 @@
   }
 
   .e-multi-select-wrapper .e-close-hooker::before {
+    font-size: 12px;
     content: '\e7a7';
     cursor: pointer;
     left: $ddl-overall-close-left;

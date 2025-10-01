@@ -1,10 +1,11 @@
 import { RangeNavigator, IChangedEventArgs } from '../../../src/range-navigator/index';
-import { AreaSeries, DateTime , DateTimeCategory} from '../../../src/chart/index';
+import { AreaSeries, DateTime , DateTimeCategory } from '../../../src/chart/index';
 import { PeriodSelector } from '../../../src/common/period-selector/period-selector';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { MouseEvents } from '../../chart/base/events.spec';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
+import { secureRandom } from '../../chart/base/data.spec';
 RangeNavigator.Inject(AreaSeries, DateTime, PeriodSelector , DateTimeCategory);
 
 /**
@@ -16,7 +17,7 @@ let data: object[] = [];
 let dateTime: object[] = [];
 
 for (let j: number = 0; j < 1000; j++) {
-    value += (Math.random() * 10 - 5);
+    value += (secureRandom() * 10 - 5);
     point = { x: new Date(2018, 3, j), y: value, y1: value + 10 };
     data.push(point);
 }

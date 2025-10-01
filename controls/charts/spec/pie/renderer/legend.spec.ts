@@ -8,7 +8,7 @@ import { AccumulationChart } from '../../../src/accumulation-chart/accumulation'
 import { AccumulationLegend } from '../../../src/accumulation-chart/renderer/legend';
 import { removeElement, getElement } from '../../../src/common/utils/helper';
 import { AccumulationDataLabel } from '../../../src/accumulation-chart/renderer/dataLabel';
-import { piedata } from '../../chart/base/data.spec';
+import { piedata, secureRandom } from '../../chart/base/data.spec';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { IAccLoadedEventArgs, IAccLegendClickEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -19,7 +19,7 @@ export function generateData(count: number): Object[] {
     let currentPoint: Object;
     let value: number;
     for (let i: number = 0; i < count; i++) {
-        value = Math.round(Math.random() * 100);
+        value = Math.round(secureRandom() * 100);
         currentPoint = { x: i, y: value + 1, text: 'Point_' + i };
         pointData.push(currentPoint);
     }

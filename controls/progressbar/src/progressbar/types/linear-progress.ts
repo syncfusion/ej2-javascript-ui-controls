@@ -179,7 +179,7 @@ export class Linear {
                     thickness, progress.enableProgressSegments
                 );
                 linearProgressGroup.appendChild(progress.clipPath);
-                linearProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
+                (<SVGPathElement>linearProgress).style.clipPath = 'url(#' + progress.element.id + '_clippath)';
                 this.animation.doLinearIndeterminate(
                     ((!progress.enableProgressSegments) ? clipPathIndeterminate : linearProgress),
                     this.linearProgressWidth, thickness, progress, clipPathIndeterminate
@@ -257,7 +257,7 @@ export class Linear {
                 (progress.cornerRadius === 'Round4px' && ismaximum)
             );
             linearBufferGroup.appendChild(progress.bufferClipPath);
-            linearBuffer.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathBuffer)');
+            (<SVGPathElement>linearBufferGroup).style.clipPath = 'url(#' + progress.element.id + '_clippathBuffer)';
             this.animation.doLinearAnimation(clipPathBuffer, progress, progress.animation.delay, 0);
         }
         progress.svgObject.appendChild(linearBufferGroup);
@@ -425,7 +425,7 @@ export class Linear {
             }
         }
         const activeClip: Element = progress.createClipPath(progress.clipPath, progressWidth, null, refresh, thickness, false);
-        linearActive.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
+        (<SVGPathElement>linearActive).style.clipPath = 'url(#' + progress.element.id + '_clippath)';
         progressGroup.appendChild(linearActive);
         progressGroup.appendChild(progress.clipPath);
         this.animation.doLinearAnimation(activeClip, progress, 0, 0, linearActive);

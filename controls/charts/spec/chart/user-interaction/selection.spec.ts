@@ -15,11 +15,11 @@ import { AreaSeries } from '../../../src/chart/series/area-series';
 import { Legend } from '../../../src/chart/legend/legend';
 import { MouseEvents } from '../base/events.spec';
 import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
-import { firstSeries, secondSeries, thirdSeries } from '../base/data.spec';
+import { firstSeries, secondSeries, secureRandom, thirdSeries } from '../base/data.spec';
 import { unbindResizeEvents } from '../base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
 import { ILoadedEventArgs, IDragCompleteEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, DataEditing, StepLineSeries, ColumnSeries, AreaSeries, StackingAreaSeries, Selection, StackingColumnSeries, Legend,
     Zoom);
@@ -320,7 +320,7 @@ describe('Chart Control Selection ', () => {
     });
     it('Single Cluster selection and UnSelection', (done: Function) => {
         loaded = () => {
-            let index: number = Math.floor((Math.random() * 10) % 6);
+            let index: number = Math.floor((secureRandom() * 10) % 6);
             element = document.getElementById(id + '_Series_1_Point_' + index);
             trigger.clickEvent(element);
             for (i = 0; i < seriesCollection.length; i++) {

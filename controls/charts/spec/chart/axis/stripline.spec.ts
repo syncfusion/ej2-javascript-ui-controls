@@ -15,14 +15,14 @@ import { SeriesModel } from '../../../src/chart/series/chart-series-model';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { AreaSeries } from '../../../src/chart/series/area-series';
 import { Legend } from '../../../src/chart/legend/legend';
-import { unbindResizeEvents } from '../base/data.spec';
+import { secureRandom, unbindResizeEvents } from '../base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
 Chart.Inject(LineSeries, AreaSeries, Legend, StripLine, DateTime, Category, Logarithmic, DateTimeCategory);
 let i: number; let data: Points[] = []; let seriesCollection: SeriesModel[] = [];
 for (let j: number = 0; j < 5; j++) {
     for (i = 0; i < 10; i++) {
-        data.push({ x: i, y: Math.random() * 100 });
+        data.push({ x: i, y: secureRandom() * 100 });
     }
     seriesCollection[j] = {
         name: 'Series ' + j,

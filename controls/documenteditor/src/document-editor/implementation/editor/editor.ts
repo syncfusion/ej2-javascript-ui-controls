@@ -845,8 +845,12 @@ export class Editor {
         const newComment = new Comment(markerData.commentId, commentInfo, text);
         return newComment;
     }
-
-    private getCommentInfo(text: string): { itemData: FieldSettingsModel[]; innerText: string } {
+    /**
+     * Moves the selected content in the document editor control to clipboard.
+     *
+     * @returns {void}
+     */
+    public getCommentInfo(text: string): { itemData: FieldSettingsModel[]; innerText: string } {
         let itemData: FieldSettingsModel[] = [];
         let data: any = [];
         type MailtoResult = {
@@ -7220,7 +7224,7 @@ export class Editor {
     private pasteContentsInternal(widgets: BodyWidget[], isPaste: boolean, currentFormat?: WParagraphFormat, pasteOptions?: PasteOptions | TablePasteOptions, pastedComments?: CommentElementBox[]): void {
         this.isPaste = isPaste;
         let selection: Selection = this.documentHelper.selection;
-        if (selection.start.paragraph.isInsideTable && selection.end.paragraph.isInsideTable && !this.documentHelper.isDragging) {
+        if (selection.start.paragraph.isInsideTable && selection.end.paragraph.isInsideTable) {
             let isTablePaste: boolean = false;
             if (widgets.length === 1) {
                 let childWidgets: IWidget[] = widgets[0].childWidgets;
@@ -7237,9 +7241,9 @@ export class Editor {
                 // tslint:disable-next-line:max-line-length
                 if (isNullOrUndefined(pasteOptions) || (pasteOptions === 'MergeWithExistingFormatting') || (pasteOptions === 'KeepSourceFormatting') || (pasteOptions === 'KeepTextOnly')) {
                     if (startCell.ownerTable.equals(endCell.ownerTable)) {
-                        if (selection.start.paragraph.associatedCell.rowIndex === 0 && selection.end.paragraph.associatedCell.rowIndex === 0
+                        if (((selection.start.paragraph.associatedCell.rowIndex === 0 && selection.end.paragraph.associatedCell.rowIndex === 0) || (this.documentHelper.isDragging && this.documentHelper.dragStartParaInfo && this.documentHelper.dragStartParaInfo.paragraph.associatedCell.ownerTable.equals(startCell.ownerTable)))
                             && startCell.equals(endCell) && !this.selection.isCellSelected(startCell, selection.start, selection.end)
-                            && (!this.isInternalPaste || this.isLastParaMarkCopied)) {
+                            && (!this.isInternalPaste || this.isLastParaMarkCopied) && (this.documentHelper.isDragging ? this.isLastParaMarkCopied : true)) {
                             this.selection.currentPasteAction = 'InsertAsColumns';
                             this.pasteAsNewColumn(newTable);
                         } else {
@@ -7357,6 +7361,11 @@ export class Editor {
     }
 
     private pasteAsNewColumn(data: TableWidget): void {
+        let isDifferentTable : boolean = true;
+        let dragCell: TableCellWidget;
+        if(this.documentHelper.dragStartParaInfo){
+            dragCell = this.documentHelper.dragStartParaInfo.paragraph.associatedCell;
+        }
         if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
@@ -7370,6 +7379,10 @@ export class Editor {
                 //Clones the entire table to preserve in history.
                 let clonedTable: TableWidget = this.cloneTableToHistoryInfo(table);
             }
+            if(dragCell && startCell.ownerTable && (startCell.ownerTable.equals(dragCell.ownerTable))){
+                isDifferentTable = false;
+            }
+            const isSameTableDrag = this.owner.documentHelper.isDragging && !isDifferentTable && dragCell && startCell && dragCell.columnIndex === startCell.columnIndex;
             this.selection.owner.isLayoutEnabled = false;
             let cloneTable: TableWidget = data.clone();
             let rowWidget: TableRowWidget = cloneTable.childWidgets[0] as TableRowWidget;
@@ -7419,10 +7432,12 @@ export class Editor {
                     if (isNullOrUndefined(startParagraph)) {
                         startParagraph = this.selection.getFirstParagraph(newCell);
                     }
+                    const baseIndex = cellIndex === 0 ? i : cellIndex;
+                    const insertIndex = baseIndex + (isSameTableDrag ? 1 : 0);
                     if (cellIndex === 0) {
-                        row.childWidgets.splice(i, 0, newCell);
+                        row.childWidgets.splice(insertIndex, 0, newCell);
                     } else {
-                        this.insertSpannedCells(row, rowSpannedCells, newCell, cellIndex);
+                        this.insertSpannedCells(row, rowSpannedCells, newCell, insertIndex);
                     }
                 }
             }
@@ -11056,7 +11071,7 @@ export class Editor {
             }
             if (this.documentHelper.blockToShift) {
                 this.documentHelper.renderedLists.clear();
-                this.documentHelper.renderedLevelOverrides = [];
+                this.documentHelper.renderedLevelOverrides = [];		
                 this.documentHelper.layout.shiftLayoutedItems(false);
             }
             while (section) {
@@ -15370,6 +15385,7 @@ export class Editor {
                                     this.trackRowDeletion(tableRow, true, false);
                                 } else {
                                     this.removeFieldInBlock(tableRow, true);
+                                    this.removeFieldInBlock(tableRow, undefined, true);
                                     let prevRenderedRow: TableRowWidget = tableRow.previousRenderedWidget as TableRowWidget;
                                     while (!isNullOrUndefined(prevRenderedRow)) {
                                         for (let j: number = 0; j < prevRenderedRow.childWidgets.length; j++) {
@@ -15904,6 +15920,7 @@ export class Editor {
         // if (section.sectionFormat.isEqualFormat(nextSection.sectionFormat)) {
 
         // } else {
+        let isNewPage: boolean = section.sectionFormat.breakCode === 'NewPage';
         let bodyWidget: BodyWidget = section.getSplitWidgets()[0] as BodyWidget;
         let currentSection: BodyWidget[] = [];
         let previousY: number = bodyWidget.y;
@@ -15958,6 +15975,19 @@ export class Editor {
         }
         this.updateSectionIndex(undefined, nextSection, false);
         this.addRemovedNodes(bodyWidget);
+        if (isNewPage && nextSection.sectionFormat.breakCode === 'NoBreak' && this.viewer instanceof PageLayoutViewer && nextSection.page) {
+            let currentPage: Page = nextSection.page;
+            if (currentPage.previousPage) {
+                let previousPage: Page = currentPage.previousPage;
+                for (let i: number = 0; i < currentPage.bodyWidgets.length; i++) {
+                    let nextBodyWidget: BodyWidget = currentPage.bodyWidgets[i];
+                    currentPage.bodyWidgets.splice(currentPage.bodyWidgets.indexOf(nextBodyWidget), 1);
+                    previousPage.bodyWidgets.splice(previousPage.bodyWidgets.length, 0, nextBodyWidget);
+                    nextBodyWidget.page = previousPage;
+                    i--;
+                }
+            }
+        }
         this.documentHelper.removeEmptyPages();
         if (this.editorHistory && this.editorHistory.isUndoing && !(this.editorHistory.currentBaseHistoryInfo && (this.editorHistory.currentBaseHistoryInfo.endRevisionLogicalIndex || this.editorHistory.currentBaseHistoryInfo.lastDeletedNodeRevision))) {
             nextSection.sectionFormat = section.sectionFormat; 
@@ -22118,6 +22148,9 @@ export class Editor {
         blockInfo = this.selection.getParagraphInfo(end);
         let endIndex: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         let selectedWidgets = this.selection.selectedWidgets.keys;
+        if (this.selection.isEmpty) {
+            return { 'start': startIndex, 'end': endIndex }
+        }
         if ((!isNullOrUndefined(isBookmark) && isBookmark == true) && !this.selection.hasMergedCells()) {
             if (start.paragraph.isInsideTable) {
                 let startCell: TableCellWidget = this.selection.getCellFromSelection(0);
@@ -22453,24 +22486,45 @@ export class Editor {
         if (this.documentHelper.selection.isTableSelected()) {
             if (settings.type === 'TopBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
                 table.tableFormat.borders.top.copyFormat(border);
+                for (let i = 0; i < table.childWidgets.length; i++) {
+                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.top.clearFormat();
+                }
             }
             if (settings.type === 'BottomBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
                 table.tableFormat.borders.bottom.copyFormat(border);
+                for (let i = 0; i < table.childWidgets.length; i++) {
+                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.bottom.clearFormat();
+                }
             }
             if (settings.type === 'LeftBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
                 table.tableFormat.borders.left.copyFormat(border);
+                for (let i = 0; i < table.childWidgets.length; i++) {
+                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.left.clearFormat();
+                }
             }
             if (settings.type === 'RightBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
                 table.tableFormat.borders.right.copyFormat(border);
+                for (let i = 0; i < table.childWidgets.length; i++) {
+                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.right.clearFormat();
+                }
             }
             if (settings.type === 'InsideHorizontalBorder' || settings.type === 'AllBorders' || settings.type === 'InsideBorders') {
                 table.tableFormat.borders.horizontal.copyFormat(border);
+                for (let i = 0; i < table.childWidgets.length; i++) {
+                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.horizontal.clearFormat();
+                }
             }
             if (settings.type === 'InsideVerticalBorder' || settings.type === 'AllBorders' || settings.type === 'InsideBorders') {
                 table.tableFormat.borders.vertical.copyFormat(border);
+                for (let i = 0; i < table.childWidgets.length; i++) {
+                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.vertical.clearFormat();
+                }
             }
              if (settings.type === 'NoBorder') {
                 this.clearAllBorderValues(table.tableFormat.borders);
+                for (let i = 0; i < table.childWidgets.length; i++) {
+                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.clearFormat();
+                }
             }
         } else {
             if (this.selection.isEmpty) {

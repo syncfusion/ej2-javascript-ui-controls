@@ -4903,11 +4903,14 @@ export class Gantt extends Component<HTMLElement>
             const id: string  = ganttData.rowUniqueID;
             const task: IGanttData = this.getRecordByID(id);
             let isValid: boolean = false;
-            isValid = (isNullOrUndefined(value) ||
-            (!isNullOrUndefined(value) && !isNullOrUndefined(record[`${field}`]) &&
-            (value instanceof Date ? value.getTime() !== record[`${field}`].getTime() :
-                record[`${field}`] !== value))) ? true : isValid;
-            if (task && ((this.editedRecords.indexOf(task) === -1 && isValid) || this.editedRecords.length === 0)) {
+            isValid = ((isNullOrUndefined(value) || isNullOrUndefined(record[`${field}`])) ||
+                (!isNullOrUndefined(value) && !isNullOrUndefined(record[`${field}`]) &&
+                    (value instanceof Date
+                        ? value.getTime() !== record[`${field}`].getTime()
+                        : (Array.isArray(value) || typeof value === 'object')
+                            ? JSON.stringify(value) !== JSON.stringify(record[`${field}`])
+                            : record[`${field}`] !== value))) ? true : isValid;
+            if (task && isValid && (this.editedRecords.indexOf(task) === -1 || this.editedRecords.length === 0)) {
                 if (this.editModule['draggedRecord'] && this.editModule['draggedRecord'].ganttProperties.taskId === ganttData.taskId) {
                     this.editedRecords.splice(0, 0, task);
                 }

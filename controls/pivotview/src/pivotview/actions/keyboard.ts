@@ -330,7 +330,9 @@ export class KeyboardInteraction {
     private clearSelection(): void {
         const control: PivotView = this.parent as PivotView;
         removeClass(control.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR), [cls.SELECTED_BGCOLOR, cls.CELL_SELECTED_BGCOLOR, cls.CELL_ACTIVE_BGCOLOR]);
-        this.parent.renderModule.selected();
+        if (this.parent && this.parent.renderModule) {
+            this.parent.renderModule.selected();
+        }
     }
     private processSelection(e: KeyboardEventArgs): void {
         const target: HTMLElement = e.target as HTMLElement;

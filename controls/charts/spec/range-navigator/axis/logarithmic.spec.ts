@@ -1,7 +1,8 @@
 import { RangeNavigator } from '../../../src/range-navigator/index';
 import { Logarithmic, DateTime, LineSeries } from '../../../src/chart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
+import { secureRandom } from '../../chart/base/data.spec';
 RangeNavigator.Inject(Logarithmic, DateTime, LineSeries);
 
 let value: number = 0;
@@ -9,7 +10,7 @@ let point: object;
 let data: object[] = [];
 
 for (let j: number = 0; j < 100; j++) {
-    value += (Math.random() * 10 );
+    value += (secureRandom() * 10 );
     point = { x: j, y: value };
     data.push(point);
 }

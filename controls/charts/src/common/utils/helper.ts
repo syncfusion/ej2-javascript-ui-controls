@@ -1069,10 +1069,12 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
     let allSeriesXvalueLen: boolean = true;
     const stackingGroups: string[] = [];
     for (const series of seriesCollection) {
-        const xValues: Object[] = series.points.map((point: Points) => point.xValue);
-        if (xValues.length !== 1) {
-            allSeriesXvalueLen = false;
-            break; // No need to continue if one series fails the condition
+        if (series.visible) {
+            const xValues: Object[] = series.points.map((point: Points) => point.xValue);
+            if (xValues.length !== 1) {
+                allSeriesXvalueLen = false;
+                break; // No need to continue if one series fails the condition
+            }
         }
     }
     for (let index: number = 0; index < seriesCollection.length; index++) {

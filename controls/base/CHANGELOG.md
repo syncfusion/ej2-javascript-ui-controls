@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.22 (2025-10-01)
+
+### Common
+
+#### Bug Fixes
+
+- `#I756987` - Resolved the security issue from base library by replacing `Math.random` function with `Crypto.getRandomValues`.
+
 ## 31.1.20 (2025-09-10)
 
 ### Common

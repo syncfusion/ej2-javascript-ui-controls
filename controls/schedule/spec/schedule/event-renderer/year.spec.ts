@@ -441,7 +441,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
 
         it('Rendered appointments elements checking', () => {
             const appointments: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
-            expect(appointments.length).toEqual(8);
+            expect(appointments.length).toEqual(7);
             const recurrenceApps: NodeListOf<Element> = schObj.element.querySelectorAll('[data-id="Appointment_18"]');
             expect(recurrenceApps.length).toEqual(2);
         });
@@ -452,13 +452,13 @@ describe('Year and TimelineYear View Event Render Module', () => {
                 expect(appointments.length).toEqual(35);
                 const allDayApp: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]');
                 expect(allDayApp.offsetWidth).toEqual(100);
-                expect(allDayApp.offsetTop).toEqual(496);
+                expect(allDayApp.offsetTop).toEqual(518);
                 const allDayAppWithNonEqualDates: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]');
                 expect(allDayAppWithNonEqualDates.offsetWidth).toEqual(500);
                 expect(allDayAppWithNonEqualDates.offsetTop).toEqual(252);
                 const spannedApp: HTMLElement = schObj.element.querySelector('[data-id="Appointment_6"]');
                 expect(spannedApp.offsetWidth).toEqual(700);
-                expect(spannedApp.offsetTop).toEqual(474);
+                expect(spannedApp.offsetTop).toEqual(496);
                 done();
             };
             schObj.rowAutoHeight = true;
@@ -1934,6 +1934,51 @@ describe('Year and TimelineYear View Event Render Module', () => {
             };
             const verticalTimelineButton: HTMLElement = schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement;
             util.triggerMouseEvent(verticalTimelineButton, 'click');
+        });
+    });
+
+    describe('EJ2-976753 - Appointments are overlapped in Timelineyear view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const overlapEventsData: Record<string, any>[] = [
+                {
+                    Id: 73652,
+                    StartTime: '2025-04-03T00:00:00',
+                    EndTime: '2025-04-04T23:00:00',
+                    Subject: 'M2503 1404 - FanEnergy 16',
+                    IsAllDay: true,
+                    IsReadonly: true
+                },
+                {
+                    Id: 66893,
+                    StartTime: '2025-04-02T00:00:00',
+                    EndTime: '2025-04-03T23:00:00',
+                    Subject: 'OA09767 - 12-BXV-2',
+                    IsAllDay: true,
+                    IsReadonly: true
+                },
+            ];
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                selectedDate: new Date(2025, 4, 1),
+                views: [
+                    { option: 'TimelineYear' }
+                ],
+                rowAutoHeight: true,
+            };
+            schObj = util.createSchedule(model, overlapEventsData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Testing overlapping appointments in Timelineyear view', () => {
+            const appointmentList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(appointmentList.length).toEqual(2);
+            const firstAppointmentTop: string = appointmentList[0].style.top;
+            const secondAppointmentTop: string = appointmentList[1].style.top;
+            expect(firstAppointmentTop).not.toEqual(secondAppointmentTop);
         });
     });
 

@@ -1307,199 +1307,309 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private addRuleSuccessCallBack(
         args: ChangeEventArgs, trgt: Element, rule: RuleModel, col?: ColumnsModel, act?: string, pId?: string,
         isRlTmp?: boolean): void {
-        const height: string = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px'; let ruleID: string;
+        const isVertical: boolean = this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical';
+        const height: string = isVertical ? '250px' : '200px';
+        let ruleID: string;
         const column: ColumnsModel = (rule && rule.field) ? this.getColumn(rule.field) : col ? col : this.columns[0];
-        let operators: { [key: string]: Object }[]; let dropDownList: DropDownList; let ruleElem: Element;
+        let operators: { [key: string]: Object }[];
+        let dropDownList: DropDownList;
+        let ruleElem: Element;
         let newRule: RuleModel = { 'label': '', 'field': '', 'type': '', 'operator': '' };
+
         if (!args.cancel) {
             if (column && column.ruleTemplate && rule.field) {
-                this.selectedColumn = column; operators = this.selectedColumn.operators;
-                newRule = {'label': column.label, 'field': column.field, 'type': column.type, 'operator': operators[0].value as string};
+                this.selectedColumn = column;
+                operators = this.selectedColumn.operators;
+                newRule = {
+                    'label': column.label,
+                    'field': column.field,
+                    'type': column.type,
+                    'operator': operators[0].value as string
+                };
                 const passedRule: RuleModel = Object.keys(rule).length ? rule : newRule;
                 ruleElem = this.appendRuleElem(trgt, column, act, pId, 'field', passedRule);
-                const args: ActionEventArgs = { requestType: 'template-create', action: 'insert-rule', ruleID: ruleElem.id,
-                    fields: this.fields, rule: passedRule };
-                this.trigger('actionBegin', args);
+                const actionArgs: ActionEventArgs = {
+                    requestType: 'template-initialize',
+                    ruleID: ruleElem.id,
+                    action: 'insert-rule',
+                    fields: this.fields,
+                    rule: passedRule
+                };
+                this.trigger('actionBegin', actionArgs);
+                setTimeout(() => {
+                    const createArgs: ActionEventArgs = {
+                        requestType: 'template-create',
+                        ruleID: ruleElem.id,
+                        action: 'insert-rule',
+                        fields: this.fields,
+                        rule: passedRule
+                    };
+                    this.trigger('actionBegin', createArgs);
+                }, 0);
             } else {
                 ruleElem = this.appendRuleElem(trgt, column, act, pId, 'field');
                 ruleElem.querySelector('.e-filter-input').setAttribute('id', ruleElem.id + '_filterkey');
                 const element: Element = ruleElem.querySelector('.e-rule-delete');
                 if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
                     element.textContent = this.l10n.getConstant('Remove');
-                    addClass([element], 'e-flat'); addClass([element], 'e-primary');
+                    addClass([element], 'e-flat');
+                    addClass([element], 'e-primary');
                 } else {
-                    addClass([element], 'e-round'); addClass([element], 'e-icon-btn');
+                    addClass([element], 'e-round');
+                    addClass([element], 'e-icon-btn');
                     element.setAttribute('title', this.l10n.getConstant('DeleteRule'));
-                    const spanElement: HTMLElement = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-delete-icon' } });
-                    ruleElem.querySelector('.e-rule-delete').appendChild(spanElement);
+                    const spanElement: HTMLElement = this.createElement('span', {
+                        attrs: { class: 'e-btn-icon e-icons e-delete-icon' }
+                    });
+                    element.appendChild(spanElement);
                 }
+
                 if (!this.showButtons.ruleDelete) {
                     element.classList.add('e-button-hide');
                 }
             }
-            if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
-                ruleElem.className = 'e-rule-container e-vertical-mode';
-            } else {
-                ruleElem.className = 'e-rule-container e-horizontal-mode';
-            }
-            let previousRuleElem: Element = ruleElem.previousElementSibling;
-            if (this.enableSeparateConnector) {
-                let prevRule: RuleModel;
-                let ruleContainer: NodeListOf<Element>;
-                if (previousRuleElem && previousRuleElem.classList.contains('e-group-container')) {
-                    ruleContainer = previousRuleElem.querySelectorAll('.e-rule-container');
-                    previousRuleElem = ruleContainer[ruleContainer.length - 1];
-                }
-                if (previousRuleElem && previousRuleElem.classList.contains('e-rule-container')) {
-                    prevRule = this.getRule(previousRuleElem as HTMLElement);
-                }
-                if (this.headerTemplate && previousRuleElem && prevRule) {
-                    this.headerTemplateFn(previousRuleElem, false, prevRule.condition, prevRule, previousRuleElem.id);
-                } else if (isNullOrUndefined(previousRuleElem) && ruleElem.id !== this.element.id + '_group0_rule0') {
-                    const group: Element = ruleElem.closest('.e-group-container');
-                    if (group && group.previousElementSibling) {
-                        let prevElem: Element = group.previousElementSibling;
-                        const prevRuleContainer: NodeListOf<Element> = prevElem.querySelectorAll('.e-rule-container');
-                        if (prevElem.classList.contains('e-group-container')) {
-                            prevElem = prevRuleContainer[prevRuleContainer.length - 1];
-                        }
-                        if (prevElem.classList.contains('e-rule-container')) {
-                            const prevRule: RuleModel = this.getRule(prevElem as HTMLElement);
-                            this.headerTemplateFn(prevElem, false, prevRule.condition, prevRule, prevElem.id, true);
-                        }
-                    } else {
-                        this.headerTemplateFn(ruleElem, false, rule.condition, rule, ruleElem.id, true);
-                    }
-                }
-            } else {
-                if (previousRuleElem && previousRuleElem.className.indexOf('e-rule-container') > -1) {
-                    if (ruleElem.className.indexOf('e-joined-rule') < 0) {
-                        ruleElem.className += ' e-joined-rule';
-                    }
-                    if (previousRuleElem.className.indexOf('e-prev-joined-rule') < 0) {
-                        previousRuleElem.className += ' e-prev-joined-rule';
-                    }
-                }
-            }
-            if (previousRuleElem && previousRuleElem.className.indexOf('e-group-container') > -1 &&
-                ruleElem.className.indexOf('e-separate-rule') < 0) {
-                ruleElem.className += ' e-separate-rule';
-            }
+            ruleElem.className = 'e-rule-container ' + (isVertical ? 'e-vertical-mode' : 'e-horizontal-mode');
+            const previousRuleElem: Element = ruleElem.previousElementSibling;
+            this.processAdjacentElements(ruleElem, previousRuleElem, rule);
             if (!this.isImportRules) {
                 this.updateAddedRule(trgt, rule, newRule, isRlTmp, pId, this.enableSeparateConnector ? true : null);
             }
+            const ruleCount: number = this.rule.rules.length;
             if (!column || (column && !column.ruleTemplate) || !rule.field) {
-                if (this.fieldMode === 'Default'){
-                    let ddlField: DropDownListModel;
-                    let ddlValue: string;
-                    if (this.separator && rule.field) {
-                        ddlValue = this.GetRootColumnName(rule.field as string);
-                    } else if (this.autoSelectField) {
-                        ddlValue = this.GetRootColumnName(rule.field as string);
-                    } else {
-                        ddlValue = this.isImportRules ? this.GetRootColumnName(rule.field as string) : rule.field;
-                    }
-                    ddlField = {
-                        dataSource: this.columns as { [key: string]: Object }[], // tslint:disable-line
-                        fields: this.fields, placeholder: this.l10n.getConstant('SelectField'),
-                        popupHeight: ((this.columns.length > 5) ? height : 'auto'), close: this.fieldClose.bind(this, ruleElem.id + '_filterkey'),
-                        change: this.changeField.bind(this), value: rule ? ddlValue : null, open: this.popupOpen.bind(this, true), cssClass: 'qb-dropdownlist'
-                    };
-                    if (this.fieldModel) {
-                        ddlField = {...ddlField, ...this.fieldModel as DropDownListModel};
-                    }
-                    dropDownList = new DropDownList(ddlField); dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
-                    let ddlVal: string | number | boolean;
-                    if (this.separator && rule.field) {
-                        ddlVal = this.GetRootColumnName(rule.field as string);
-                    } else {
-                        ddlVal = this.isImportRules ? this.GetRootColumnName(rule.field as string) :
-                            dropDownList.value as string | number | boolean;
-                    }
-                    this.selectedColumn = dropDownList.getDataByValue(ddlVal) as ColumnsModel;
-                    if (Object.keys(rule).length) {
-                        this.changeRule(rule, {
-                            element: dropDownList.element, itemData: this.selectedColumn as FieldSettingsModel
-                        } as DropDownChangeEventArgs);
-                    }
-                } else {
-                    let ddlField: DropDownTreeModel;
-                    const ddlValue: string = this.isImportRules ? (rule.field as string) : rule.field;
-                    this.dummyDropdownTreeDs = extend([], this.columns, [], true) as { [key: string]: Object }[];
-                    this.updateDropdowntreeDS(this.dummyDropdownTreeDs as { [key: string]: Object }[]);
-                    ddlField = {
-                        fields: {dataSource: this.dummyDropdownTreeDs as { [key: string]: Object }[],
-                            value: 'field', text: 'label', child: 'columns', expanded: 'expanded', selectable: 'selectable'},
-                        placeholder: this.l10n.getConstant('SelectField'), showClearButton: false,
-                        popupHeight: ((this.columns.length > 5) ? height : 'auto'), changeOnBlur: false,
-                        change: this.changeField.bind(this), value: !isNullOrUndefined(ddlValue) ? [ddlValue] : null,
-                        open: this.popupOpen.bind(this, false), treeSettings: { expandOn: 'Click' },
-                        cssClass: 'e-qb-ddt', filtering: this.dropdownTreeFiltering.bind(this), close: this.dropdownTreeClose.bind(this)
-                    };
-                    if (this.fieldModel) {
-                        ddlField = {...ddlField, ...this.fieldModel as DropDownTreeModel};
-                    }
-                    const dropdowntree: DropDownTree = new DropDownTree(ddlField); dropdowntree.appendTo('#' + ruleElem.id + '_filterkey');
-                    if (!isNullOrUndefined(dropdowntree.value)) {
-                        const value: string = this.getLabelFromColumn(dropdowntree.value[0]);
-                        (dropdowntree.element as HTMLInputElement).value = value;
-                    }
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const ddlVal: string | number | boolean | any = !isNullOrUndefined(rule.field) ?
-                        this.GetRootColumnName(rule.field as string) : dropdowntree.value;
-                    this.selectedColumn = this.getColumn(ddlVal) as ColumnsModel;
-                    if (Object.keys(rule).length) {
-                        this.changeRule(rule, {
-                            element: dropdowntree.element, itemData: this.selectedColumn as FieldSettingsModel
-                        } as DropDownChangeEventArgs);
-                    }
+                if (ruleCount > 20) {
+                    setTimeout(() => {
+                        this.applyFieldComponent(ruleElem, rule, height);
+                    }, 0);
+                }
+                else {
+                    this.applyFieldComponent(ruleElem, rule, height);
                 }
             }
+
             ruleID = ruleElem.id.replace(this.element.id + '_', '');
             if (rule && rule.isLocked) {
                 const lockRuleTarget: HTMLElement = ruleElem.querySelector('.e-lock-rule-btn');
                 this.ruleLock(lockRuleTarget);
             }
+
             if (!this.isImportRules && !this.prvtEvtTgrDaD) {
-                this.trigger('change', { groupID: trgt.id.replace(this.element.id + '_', ''), ruleID: ruleID, type: 'insertRule' });
+                this.trigger('change', {
+                    groupID: trgt.id.replace(this.element.id + '_', ''),
+                    ruleID: ruleID,
+                    type: 'insertRule'
+                });
             }
         }
+
         if (this.enableSeparateConnector && isNullOrUndefined(rule.condition) && ruleID) {
             rule = this.getRule(ruleID);
         }
+
         if (this.enableSeparateConnector) {
-            let prevElem: Element = ruleElem.previousElementSibling;
-            let ruleContainer: NodeListOf<Element>;
-            while (prevElem && !prevElem.classList.contains('e-rule-container')) {
-                if (prevElem.classList.contains('e-group-container')) {
-                    ruleContainer = prevElem.querySelectorAll('.e-rule-container');
-                    prevElem = ruleContainer[ruleContainer.length - 1];
-                    break;
-                }
-                prevElem = prevElem.previousElementSibling;
+            this.processConnectorElements(ruleElem);
+        }
+    }
+
+    private processAdjacentElements(ruleElem: Element, previousRuleElem: Element, rule: RuleModel): void {
+        if (this.enableSeparateConnector) {
+            if (previousRuleElem && previousRuleElem.classList.contains('e-group-container')) {
+                const ruleContainer: NodeListOf<Element> = previousRuleElem.querySelectorAll('.e-rule-container');
+                previousRuleElem = ruleContainer[ruleContainer.length - 1];
             }
-            if (this.headerTemplate && prevElem) {
+            if (previousRuleElem && previousRuleElem.classList.contains('e-rule-container')) {
+                const prevRule: RuleModel = this.getRule(previousRuleElem as HTMLElement);
+                if (this.headerTemplate) {
+                    this.headerTemplateFn(previousRuleElem, false, prevRule.condition, prevRule, previousRuleElem.id);
+                }
+            } else if (isNullOrUndefined(previousRuleElem) && ruleElem.id !== this.element.id + '_group0_rule0') {
+                this.handleOrphanedRuleElement(ruleElem, rule);
+            }
+        } else {
+            if (previousRuleElem && previousRuleElem.className.indexOf('e-rule-container') > -1) {
+                ruleElem.classList.add('e-joined-rule');
+                previousRuleElem.classList.add('e-prev-joined-rule');
+            }
+        }
+
+        if (previousRuleElem && previousRuleElem.className.indexOf('e-group-container') > -1 &&
+            ruleElem.className.indexOf('e-separate-rule') < 0) {
+            ruleElem.className += ' e-separate-rule';
+        }
+    }
+
+    private handleOrphanedRuleElement(ruleElem: Element, rule: RuleModel): void {
+        const group: Element = ruleElem.closest('.e-group-container');
+        if (group && group.previousElementSibling) {
+            let prevElem: Element = group.previousElementSibling;
+            const prevRuleContainer: NodeListOf<Element> = prevElem.querySelectorAll('.e-rule-container');
+
+            if (prevElem.classList.contains('e-group-container')) {
+                prevElem = prevRuleContainer[prevRuleContainer.length - 1];
+            }
+
+            if (prevElem.classList.contains('e-rule-container')) {
                 const prevRule: RuleModel = this.getRule(prevElem as HTMLElement);
-                const args: ActionEventArgs = { requestType: 'rule-template-create', ruleID: prevElem.id, condition: prevRule.condition,
-                    notCondition: this.enableNotCondition ? true : undefined };
-                this.trigger('actionBegin', args);
-            } else if (isNullOrUndefined(prevElem) && ruleElem.id !== this.element.id + '_group0_rule0') {
-                const group: Element = ruleElem.closest('.e-group-container');
-                if (group && group.previousElementSibling && group.previousElementSibling.previousElementSibling) {
-                    let prevElem: Element = group.previousElementSibling.previousElementSibling;
-                    if (prevElem.classList.contains('e-group-container')) {
-                        const ruleContainer: NodeListOf<Element> = prevElem.querySelectorAll('.e-rule-container');
-                        prevElem = ruleContainer[ruleContainer.length - 1];
-                    }
-                    if (prevElem.classList.contains('e-rule-container')) {
-                        const prevRule: RuleModel = this.getRule(prevElem as HTMLElement);
-                        const args: ActionEventArgs = { requestType: 'rule-template-create', ruleID: prevElem.id,
-                            condition: prevRule.condition, notCondition: this.enableNotCondition ? true : undefined };
-                        this.trigger('actionBegin', args);
-                    }
-                }
+                this.headerTemplateFn(prevElem, false, prevRule.condition, prevRule, prevElem.id, true);
             }
-            this.setMultiConnector(ruleElem);
+        } else {
+            this.headerTemplateFn(ruleElem, false, rule.condition, rule, ruleElem.id, true);
+        }
+    }
+
+    private processConnectorElements(ruleElem: Element): void {
+        let prevElem: Element = ruleElem.previousElementSibling;
+        let ruleContainer: NodeListOf<Element>;
+        while (prevElem && !prevElem.classList.contains('e-rule-container')) {
+            if (prevElem.classList.contains('e-group-container')) {
+                ruleContainer = prevElem.querySelectorAll('.e-rule-container');
+                prevElem = ruleContainer[ruleContainer.length - 1];
+                break;
+            }
+            prevElem = prevElem.previousElementSibling;
+        }
+        if (this.headerTemplate && prevElem) {
+            const prevRule: RuleModel = this.getRule(prevElem as HTMLElement);
+            const args: {
+                requestType: string;
+                ruleID: string;
+                condition: string;
+                notCondition: boolean;
+            } = {
+                requestType: 'rule-template-create',
+                ruleID: prevElem.id,
+                condition: prevRule.condition,
+                notCondition: this.enableNotCondition ? true : undefined
+            };
+            this.trigger('actionBegin', args);
+        } else if (isNullOrUndefined(prevElem) && ruleElem.id !== this.element.id + '_group0_rule0') {
+            this.handleOrphanedConnectorElement(ruleElem);
+        }
+        this.setMultiConnector(ruleElem);
+    }
+
+    private handleOrphanedConnectorElement(ruleElem: Element): void {
+        const group: Element = ruleElem.closest('.e-group-container');
+        if (group && group.previousElementSibling && group.previousElementSibling.previousElementSibling) {
+            let prevElem: Element = group.previousElementSibling.previousElementSibling;
+            if (prevElem.classList.contains('e-group-container')) {
+                const ruleContainer: NodeListOf<Element> = prevElem.querySelectorAll('.e-rule-container');
+                prevElem = ruleContainer[ruleContainer.length - 1];
+            }
+            if (prevElem.classList.contains('e-rule-container')) {
+                const prevRule: RuleModel = this.getRule(prevElem as HTMLElement);
+                const args: {
+                    requestType: string;
+                    ruleID: string;
+                    condition: string;
+                    notCondition: boolean;
+                } = {
+                    requestType: 'rule-template-create',
+                    ruleID: prevElem.id,
+                    condition: prevRule.condition,
+                    notCondition: this.enableNotCondition ? true : undefined
+                };
+                this.trigger('actionBegin', args);
+            }
+        }
+    }
+
+    private applyFieldComponent(ruleElem: Element, rule: RuleModel, height: string): void {
+        if (this.fieldMode === 'Default') {
+            this.applyDropdownListComponent(ruleElem, rule, height);
+        } else {
+            this.applyDropdownTreeComponent(ruleElem, rule, height);
+        }
+    }
+
+    private applyDropdownListComponent(ruleElem: Element, rule: RuleModel, height: string): void {
+        let ddlField: DropDownListModel;
+        let ddlValue: string;
+        if (this.separator && rule.field) {
+            ddlValue = this.GetRootColumnName(rule.field as string);
+        } else if (this.autoSelectField) {
+            ddlValue = this.GetRootColumnName(rule.field as string);
+        } else {
+            ddlValue = this.isImportRules ? this.GetRootColumnName(rule.field as string) : rule.field;
+        }
+
+        ddlField = {
+            dataSource: this.columns as { [key: string]: Object }[],
+            fields: this.fields,
+            placeholder: this.l10n.getConstant('SelectField'),
+            popupHeight: ((this.columns.length > 5) ? height : 'auto'),
+            close: this.fieldClose.bind(this, ruleElem.id + '_filterkey'),
+            change: this.changeField.bind(this),
+            value: rule ? ddlValue : null,
+            open: this.popupOpen.bind(this, true),
+            cssClass: 'qb-dropdownlist'
+        };
+
+        if (this.fieldModel) {
+            ddlField = { ...ddlField, ...this.fieldModel as DropDownListModel };
+        }
+        const dropDownList: DropDownList = new DropDownList(ddlField);
+        dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
+        let ddlVal: string | number | boolean;
+        if (this.separator && rule.field) {
+            ddlVal = this.GetRootColumnName(rule.field as string);
+        } else {
+            ddlVal = this.isImportRules ? this.GetRootColumnName(rule.field as string) : dropDownList.value as string | number | boolean;
+        }
+        this.selectedColumn = dropDownList.getDataByValue(ddlVal) as ColumnsModel;
+        if (Object.keys(rule).length) {
+            this.changeRule(rule, {
+                element: dropDownList.element,
+                itemData: this.selectedColumn as FieldSettingsModel
+            } as DropDownChangeEventArgs);
+        }
+    }
+
+    private applyDropdownTreeComponent(ruleElem: Element, rule: RuleModel, height: string): void {
+        let ddlField: DropDownTreeModel;
+        const ddlValue: string = this.isImportRules ? (rule.field as string) : rule.field;
+
+        this.dummyDropdownTreeDs = extend([], this.columns, [], true) as { [key: string]: Object }[];
+        this.updateDropdowntreeDS(this.dummyDropdownTreeDs as { [key: string]: Object }[]);
+
+        ddlField = {
+            fields: {
+                dataSource: this.dummyDropdownTreeDs as { [key: string]: Object }[],
+                value: 'field',
+                text: 'label',
+                child: 'columns',
+                expanded: 'expanded',
+                selectable: 'selectable'
+            },
+            placeholder: this.l10n.getConstant('SelectField'),
+            showClearButton: false,
+            popupHeight: ((this.columns.length > 5) ? height : 'auto'),
+            changeOnBlur: false,
+            change: this.changeField.bind(this),
+            value: !isNullOrUndefined(ddlValue) ? [ddlValue] : null,
+            open: this.popupOpen.bind(this, false),
+            treeSettings: { expandOn: 'Click' },
+            cssClass: 'e-qb-ddt',
+            filtering: this.dropdownTreeFiltering.bind(this),
+            close: this.dropdownTreeClose.bind(this)
+        };
+        if (this.fieldModel) {
+            ddlField = { ...ddlField, ...this.fieldModel as DropDownTreeModel };
+        }
+        const dropdowntree: DropDownTree = new DropDownTree(ddlField);
+        dropdowntree.appendTo('#' + ruleElem.id + '_filterkey');
+        if (!isNullOrUndefined(dropdowntree.value)) {
+            const value: string = this.getLabelFromColumn(dropdowntree.value[0]);
+            (dropdowntree.element as HTMLInputElement).value = value;
+        }
+        const ddlVal: string | number | boolean | any = !isNullOrUndefined(rule.field) ?
+            this.GetRootColumnName(rule.field as string) : dropdowntree.value;
+
+        this.selectedColumn = this.getColumn(ddlVal) as ColumnsModel;
+        if (Object.keys(rule).length) {
+            this.changeRule(rule, {
+                element: dropdowntree.element,
+                itemData: this.selectedColumn as FieldSettingsModel
+            } as DropDownChangeEventArgs);
         }
     }
 
@@ -3254,24 +3364,49 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const ddlObj: DropDownList | DropDownTree = this.fieldMode === 'DropdownTree' ? (getComponent(filterElem, 'dropdowntree') as DropDownTree)
             : (getComponent(container.querySelector('.e-rule-filter .e-filter-input') as HTMLElement, 'dropdownlist') as DropDownList);
         const column: ColumnsModel = this.fieldMode === 'DropdownTree' ? this.getColumn(ddlObj.value[0]) : this.getColumn(ddlObj.value as string);
+        if ( target && target.nextElementSibling) {
+            (target.nextElementSibling as any).style.position = 'relative';
+            target.nextElementSibling.classList.add('e-querybuilder-spinner');
+        }
+        const onComplete: () => void = () => {
+            if (target && target.nextElementSibling && target.nextElementSibling.classList.contains('e-querybuilder-spinner')) {
+                target.nextElementSibling.classList.remove('e-querybuilder-spinner');
+            }
+        };
         if (typeof itemData.template === 'string' || (itemData.template as TemplateColumn).write === undefined) {
             const args: ActionEventArgs = {
                 rule: rule, ruleID: container.id, operator: tempRule.operator, field: column.field,
                 requestType: 'value-template-create'
             };
             this.trigger('actionBegin', args);
+            onComplete();
         } else {
             const template: TemplateColumn = itemData.template as TemplateColumn;
+            const templateArgs: {
+                elements: Element | NodeListOf<Element>;
+                values: string | number | boolean | string[] | number[];
+                operator: string;
+                field: string;
+                dataSource: string[] | boolean[] | number[];
+                onComplete: () => void;
+            } = {
+                elements: tempElements.length > 1 ? tempElements : tempElements[0],
+                values: rule.value,
+                operator: tempRule.operator,
+                field: column.field,
+                dataSource: column.values,
+                onComplete: onComplete
+            };
+            let writeResult: any;
             if (typeof template.write === 'string') {
-                getValue(template.write, window)({
-                    elements: tempElements.length > 1 ? tempElements : tempElements[0], values: rule.value,
-                    operator: tempRule.operator, field: column.field, dataSource: column.values
-                });
+                writeResult = getValue(template.write, window)(templateArgs);
             } else if (typeof itemData.template !== 'function') {
-                (itemData.template.write as Function)({
-                    elements: tempElements.length > 1 ? tempElements : tempElements[0],
-                    values: rule.value, operator: tempRule.operator, field: column.field, dataSource: column.values
-                });
+                writeResult = (itemData.template.write as Function)(templateArgs);
+            }
+            if (writeResult && typeof writeResult.then === 'function') {
+                writeResult.then(() => onComplete());
+            } else {
+                setTimeout(() => onComplete(), 100);
             }
         }
     }
@@ -7263,6 +7398,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             deleteElem: NodeListOf<HTMLButtonElement>;
             cloneElem: NodeListOf<HTMLButtonElement>;
             ruleElem: NodeListOf<HTMLButtonElement>;
+            ddTree: NodeListOf<HTMLElement>;
         } = {
             ddl: groupElem.querySelectorAll('.e-control.e-dropdownlist') as NodeListOf<HTMLElement>,
             numeric: groupElem.querySelectorAll('.e-control.e-numerictextbox') as NodeListOf<HTMLElement>,
@@ -7274,7 +7410,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             deleteElem: groupElem.querySelectorAll('.e-rule-delete') as NodeListOf<HTMLButtonElement>,
             lockElem: groupElem.querySelectorAll('.e-lock-rule') as NodeListOf<HTMLButtonElement>,
             cloneElem: groupElem.querySelectorAll('.e-clone-rule') as NodeListOf<HTMLButtonElement>,
-            ruleElem: groupElem.querySelectorAll('.e-rule-container') as NodeListOf<HTMLButtonElement>
+            ruleElem: groupElem.querySelectorAll('.e-rule-container') as NodeListOf<HTMLButtonElement>,
+            ddTree: groupElem.querySelectorAll('.e-control.e-dropdowntree') as NodeListOf<HTMLElement>
         };
 
         elements.deleteElem.forEach((elem: HTMLButtonElement, i: number) => {
@@ -7321,6 +7458,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                           isDisabled);
         disableComponents(elements.multiSelect,
                           (elem: HTMLElement) => getComponent(elem, 'multiselect') as MultiSelect,
+                          isDisabled);
+        disableComponents(elements.ddTree,
+                          (elem: HTMLElement) => getComponent(elem, 'dropdowntree') as DropDownTree,
                           isDisabled);
     }
 }

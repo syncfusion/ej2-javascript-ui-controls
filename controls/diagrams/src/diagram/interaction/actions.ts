@@ -59,7 +59,9 @@ export function findToolToActivate(
         const handle: SelectorModel = diagram.selectedItems;
         if (handle.wrapper && canShowCorner(handle.constraints, 'UserHandle')) {
             for (const obj of handle.userHandles) {
-                if (obj.visible) {
+                //981356 : UserHandle event triggers unexpectedly when either disableNodes or disableConnectors is enabled
+                if (obj.visible && !((obj.disableConnectors && diagram.selectedItems.connectors.length > 0) ||
+                    (obj.disableNodes && diagram.selectedItems.nodes.length > 0))) {
                     const paddedBounds: PointModel = getUserHandlePosition(handle, obj, diagram.scroller.transform);
                     if (contains(position, paddedBounds, obj.size / (2 * diagram.scroller.transform.scale))) { return obj.name as Actions; }
                 }

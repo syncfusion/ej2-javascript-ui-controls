@@ -2142,6 +2142,7 @@ export class PdfTextBoxField extends PdfField {
     _password: boolean;
     _scrollable: boolean;
     _autoResizeText: boolean = false;
+    _isTextChanged: boolean = false;
     /**
      * Represents a text box field of the PDF document.
      *
@@ -2271,6 +2272,7 @@ export class PdfTextBoxField extends PdfField {
                     widget._dictionary.update('V', value);
                 }
                 this._text = value;
+                this._isTextChanged = true;
             }
         } else if (this._text !== value) {
             this._dictionary.update('V', value);

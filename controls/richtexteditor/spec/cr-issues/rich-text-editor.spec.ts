@@ -295,8 +295,7 @@ describe('RTE CR issues ', () => {
             ((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
             ((document.querySelector('.e-font-size-tbar-btn ul') as HTMLElement).childNodes[5] as HTMLElement).click();
             ((rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
-            expect(rteObj.inputElement.innerHTML === '<ol><li class="startnode" style="font-size: 24pt;"><span style="font-size: 24pt;">list 1</span></li><li style="font-size: 24pt;"><span style="font-size: 24pt;">list 2</span></li><li class="endnode" style="font-size: 24pt;"><span style="font-size: 24pt;">list 3</span></li></ol>').toBe(true);
-        });
+            expect(rteObj.inputElement.innerHTML === '<ol><li class="startNode" style="font-size: 24pt;"><span style="font-size: 24pt;">list 1</span></li><li style="font-size: 24pt;"><span style="font-size: 24pt;">list 2</span></li><li class="endNode" style="font-size: 24pt;"><span style="font-size: 24pt;">list 3</span></li></ol>').toBe(true);        });
     });
     describe("966215 - Maximize Shortcut Does Not Work When Code View Is Enabled", () => {
             let rteObj: RichTextEditor;
@@ -436,6 +435,37 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('Bug 983283: Text pasted at the last position instead of the cursor position in RichTextEditor', () => {
+            let rteObj: RichTextEditor;
+            const clipboardHtml: string = `<span>This is a paragraph.</span>`;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    value: `<p id="start">Syncfusion</p>`
+                });
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+            it(' should paste content where the cursor is placed', (done: DoneFn) => {
+                const startNode: HTMLElement = document.getElementById('start');
+                const selection = new NodeSelection();
+                if (startNode && startNode.firstChild) {
+                    selection.setCursorPoint(document, startNode.firstChild as Element, 5);
+                }
+                const dataTransfer = new DataTransfer();
+                dataTransfer.setData('text/html', clipboardHtml);
+                const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                    clipboardData: dataTransfer
+                } as ClipboardEventInit);
+                rteObj.onPaste(pasteEvent);
+                const pastedElm: string = (rteObj as any).inputElement.innerHTML;
+                const expectedElem: string =
+                    `<p id="start">Syncf<span>This is a paragraph.</span>usion</p>`;
+                const expected: boolean = pastedElm.replace(/\s/g, '') === expectedElem.replace(/\s/g, '');
+                expect(expected).toBe(true);
+                done();
+            });
+        });
 
     describe('913719: Format Toolbar Becomes Empty When Focused Before the Table', ()=> {
         let editor: RichTextEditor;
@@ -956,6 +986,51 @@ describe('RTE CR issues ', () => {
         afterEach((done) => {
             destroy(rteObj);
             done();
+        });
+    });
+
+    describe('Bug 983508: Images are not properly dropped after 1st time in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+        };
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    saveFormat: 'Base64',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(" Drag and dropping image multiple times ino the editor ", function (done: DoneFn) {
+            rteObj.value = '<p>21</p>';
+            rteObj.dataBind();
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            rteObj.focusIn();
+            (rteObj.imageModule as any).insertDragImage(event);
+            setTimeout(() => {
+                let fileObj: File = new File(["Nice Two"], "sample.png", { lastModified: 0, type: "image/png" });
+                let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+                rteObj.focusIn();
+                (rteObj.imageModule as any).insertDragImage(event);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelectorAll('img').length === 2).toBe(true);
+                    done();
+                }, 100);
+            }, 200);
         });
     });
 
@@ -1674,7 +1749,60 @@ describe('RTE CR issues ', () => {
             expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Insert Video');
         });
     });
-  
+
+    describe('Bug 984409: Need to add the aria multiline as true attribute to the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: false,
+                locale: 'en'
+            });
+        });
+        it('should have aria-multiline attribute for div', () => {
+            const contentDiv = rteObj.contentModule.getPanel().querySelector('.e-content');
+            expect(contentDiv.getAttribute('aria-multiline')).toBe('true');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Bug 984409: Need to add the aria multiline as true attribute to the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: false,
+                locale: 'en',
+                iframeSettings: { enable: true }
+            });
+        });
+        it('should have aria-multiline attribute for iframe', () => {
+            const contentDiv = rteObj.element.querySelector('iframe').contentDocument.body;
+            expect(contentDiv.getAttribute('aria-multiline')).toBe('true');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Bug 984409: Need to add the aria multiline as true attribute to the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: false,
+                locale: 'en',
+                editorMode: 'Markdown'
+            });
+        });
+        it('should have aria-multiline attribute for markdown editor', () => {
+            const contentDiv = rteObj.contentModule.getPanel().querySelector('.e-content');
+            expect(contentDiv.getAttribute('aria-multiline')).toBe('true');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('917630 - Error on Empty fontFamily and fontSize Items in Syncfusion Rich Text Editor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -2193,6 +2321,28 @@ describe('RTE CR issues ', () => {
                     done();
                 }, 100);
             }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Bug 984023: The getSelectedHtml function does not return the proper HTML for links in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><a class="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank" aria-label="Open in new window">link</a></p>`,
+            });
+        });
+        it('getSelectedHtml method should return the anchor tag properly', (done: Function) => {
+            const anchorTag: HTMLElement = rteObj.element.querySelector('a.e-rte-anchor');
+            let range: Range = rteObj.contentModule.getDocument().createRange();
+            range.setStart(anchorTag.childNodes[0], 0);
+            range.setEnd(anchorTag.childNodes[0], anchorTag.childNodes[0].textContent.length);
+            rteObj.selectRange(range);
+            let str = rteObj.getSelectedHtml();
+            expect((rteObj.contentModule.getEditPanel().firstChild as HTMLElement).innerHTML === str).toBe(true);
+            done();
         });
         afterAll(() => {
             destroy(rteObj);

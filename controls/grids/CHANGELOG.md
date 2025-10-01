@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 31.1.22 (2025-10-01)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I766660` - Resolved a script error that occurred when grouping with frozen columns enabled and column width not specified.
+- `#I766004` - Fixed an issue where the first visible column displayed a thicker left border when the actual first column was hidden.
+
 ## 31.1.21 (2025-09-23)
 
 ### Grid

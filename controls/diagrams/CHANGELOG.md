@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 31.1.22 (2025-10-01)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I765689` - Events associated with `UserHandle` will no longer be triggered for disabled user handles.
+- `#I761841` - Exceptions will no longer be thrown when creating connectors from a port.
+- `#I765993` - Exceptions will no longer be thrown while rendering large datasets in the layout.
+
 ## 31.1.20 (2025-09-10)
 
 ### Diagram

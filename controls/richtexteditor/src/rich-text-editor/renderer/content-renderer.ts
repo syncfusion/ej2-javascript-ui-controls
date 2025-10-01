@@ -40,6 +40,7 @@ export class ContentRender implements IRenderer {
             attrs: {
                 'contenteditable': 'true',
                 'aria-label': 'Rich Text Editor',
+                'aria-multiline': 'true',
                 'role': 'textbox',
                 'lang': rteObj.locale.slice(0, 2),
                 'dir': rteObj.enableRtl ? 'rtl' : 'ltr'

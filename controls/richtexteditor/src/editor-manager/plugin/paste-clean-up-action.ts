@@ -70,7 +70,7 @@ export class PasteCleanupAction {
      * @hidden
      */
     public splitBreakLine(value: string): string {
-        const enterSplitText: string[] = Browser.userAgent.indexOf('Firefox') !== -1 ? value.split(/\r\n\r\n|\n\n/g) : value.split('\r\n\r\n');
+        const enterSplitText: string[] = value.split(/\r\n\r\n|\n\n/g);
         let finalText: string = '';
         const startNode: string = this.getHtmlNode(true);
         const endNode: string = this.getHtmlNode(false);
@@ -547,7 +547,8 @@ export class PasteCleanupAction {
         const hasText: boolean = (clipBoardElem.textContent !== '') && (clipBoardElem.textContent.replace(/\u200B/g, '').trim() !== '');
         const hasImg: boolean = clipBoardElem.getElementsByTagName('img').length > 0;
         const hasTable: boolean = clipBoardElem.getElementsByTagName('table').length > 0;
-        return hasText || hasImg || hasTable;
+        const hasBr: boolean = clipBoardElem.getElementsByTagName('br').length > 0;
+        return hasText || hasImg || hasTable || hasBr;
     }
 
     /**

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.1.21 (2025-09-23)
+## 31.1.22 (2025-10-01)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#763935` - Fixed an issue where the child records position were wrong when expanding parent record in remote data case.
+
+## 31.1.20 (2025-09-10)
 
 ### Tree Grid
 

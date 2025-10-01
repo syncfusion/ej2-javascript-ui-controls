@@ -1805,6 +1805,11 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private tempQuery: Query;
     private tempValues: string[] | number[] | boolean[] | object[];
+    private secureRandom(): number {
+        const array: Uint32Array = new Uint32Array(1);
+        window.crypto.getRandomValues(array);
+        return array[0] / (0xFFFFFFFF + 1);
+    }
     private checkForCustomValue(query?: Query, fields?: FieldSettingsModel): void {
         const dataChecks: boolean = !this.getValueByText(this.inputElement.value, this.ignoreCase);
         const field: FieldSettingsModel = fields ? fields : this.fields;
@@ -1818,7 +1823,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 setValue(field.text, value, dataItem);
                 if (typeof getValue((this.fields.value ? this.fields.value : 'value'), customData as { [key: string]: Object })
                 === 'number' && this.fields.value !== this.fields.text) {
-                    setValue(field.value, Math.random(), dataItem);
+                    setValue(field.value, this.secureRandom(), dataItem);
                 } else {
                     setValue(field.value, value, dataItem);
                 }
@@ -1939,6 +1944,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             e.preventDefault();
         }
         this.checkAndScrollParent();
+        if (this.maximumSelectionLength === 0) {
+            this.checkMaxSelection();
+        }
     }
     private checkAndScrollParent(): void {
         let scrollElement: HTMLElement = this.overAllWrapper ? (this.overAllWrapper.parentElement as HTMLElement | null) : null;
@@ -3564,8 +3572,22 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.updateChipStatus();
         this.checkMaxSelection();
     }
+    private updateListItemsState(list: HTMLElement): void {
+        const activeItems: NodeListOf<Element> = list.querySelectorAll('li.' + dropDownBaseClasses.li + '.e-active') as NodeListOf<HTMLElement>;
+        removeClass(activeItems, 'e-disable');
+
+        const inactiveItems: NodeListOf<Element> = list.querySelectorAll('li.' + dropDownBaseClasses.li + ':not(.e-active)') as NodeListOf<HTMLElement>;
+        addClass(inactiveItems, 'e-disable');
+    }
     private checkMaxSelection(): void {
         const limit: number = this.value && this.value.length ? this.value.length : 0;
+        if (this.maximumSelectionLength === 0) {
+            this.updateListItemsState(this.list);
+            if (this.mainList) {
+                this.updateListItemsState(this.mainList);
+            }
+            return;
+        }
         if (limit === this.maximumSelectionLength) {
             const activeItems: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
                 + dropDownBaseClasses.li + '.e-active');
@@ -6802,7 +6824,21 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             this.list.parentElement.style.boxSizing = 'border-box'; // Ensures padding doesn't affect element size
             const paddingBottom: number = this.mode === 'CheckBox' && this.searchBoxHeight ? this.searchBoxHeight + resizePaddingBottom + (this.showSelectAll ? this.storedSelectAllHeight : 0) : resizePaddingBottom;
-            this.list.parentElement.style.paddingBottom = `${paddingBottom}px`;
+            if (this.footer) {
+                let listMaxHeight: any = this.list.style.maxHeight;
+                const listParentElementMaxHeight: any = this.list.parentElement.style.maxHeight;
+                setTimeout(() => {
+                    const height: number = Math.round(this.footer.getBoundingClientRect().height);
+                    const containerHeight: string = (parseInt(listParentElementMaxHeight, 10) - height).toString() + 'px';
+                    listMaxHeight = (parseInt(containerHeight, 10) - 2).toString() + 'px';
+                    if (height > 0) {
+                        this.list.parentElement.style.paddingBottom = ((parseInt(listParentElementMaxHeight, 10) - parseInt(listMaxHeight, 10)) + paddingBottom).toString() + 'px';
+                    }
+                }, 1);
+            }
+            else {
+                this.list.parentElement.style.paddingBottom = `${paddingBottom}px`;
+            }
             this.list.parentElement.appendChild(this.resizer);
             this.list.parentElement.style.width = this.resizeWidth + 'px';
             this.list.parentElement.style.height = this.resizeHeight + 'px';

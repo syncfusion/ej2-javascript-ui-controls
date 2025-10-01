@@ -946,8 +946,11 @@ export class EventBase {
     }
 
     public generateGuid(): string {
+        const randomNumbers: Uint8Array = new Uint8Array(32);
+        window.crypto.getRandomValues(randomNumbers);
+        let index: number = 0;
         return 'xyxxxxyx-xxxy-yxxx-xyxx-xxyxxxxyyxxx'.replace(/[xy]/g, (c: string) => {
-            const r: number = Math.random() * 16 | 0;
+            const r: number = randomNumbers[index++] & 0xf;
             const v: number = (c === 'x') ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });

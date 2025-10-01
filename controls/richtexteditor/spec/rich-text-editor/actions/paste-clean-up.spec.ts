@@ -2717,7 +2717,7 @@ describe("852026 - pasting plain text when DIV is configured in enterkey", () =>
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        const expectedElem: string = '<div>dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv</div>';
+        const expectedElem: string = '<div><div>dsvsdv<br>sdvsdv<br>sdvdsv</div><div>sdvsdv<br>sdvdsv</div><div><br></div><div>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv</div></div>';
         const pastedElem: string = rteObj.inputElement.innerHTML;
         expect(expectedElem === pastedElem).toBe(true);
         done();
@@ -2777,7 +2777,7 @@ describe("852026 - pasting plain text when P is configured in enterkey", () => {
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        const expectedElem: string = '<p>dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv</p>';
+        const expectedElem: string = '<p>dsvsdv<br>sdvsdv<br>sdvdsv</p><p>sdvsdv<br>sdvdsv</p><p><br></p><p>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv</p>';
         const pastedElem: string = rteObj.inputElement.innerHTML;
         expect(expectedElem === pastedElem).toBe(true);
         done();
@@ -4989,7 +4989,7 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
             setTimeout(() => {
                 let pastedElm: any = (rteObj as any).inputElement.innerHTML;
                 let expected: boolean = false;
-                let expectedElem: string = '<p><b>Description:</b></p><p class="custom">Description:<br><br>The Rich Text Editor (RTE)&nbsp;The Rich Text Editor (RTE) control is an easy to render in client side.</p>';
+                let expectedElem: string = '<p><b>Description:</b>Description:</p><p>The Rich Text Editor (RTE)&nbsp;</p><p class="custom">The Rich Text Editor (RTE) control is an easy to render in client side.</p>';
                 if (pastedElm === expectedElem) {
                     expected = true;
                 }
@@ -5225,6 +5225,63 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
         });
     });
 
+    describe("980885 - Fails to paste empty content from note pad.", () => {
+            let rteObj: RichTextEditor;
+            beforeAll((done: Function) => {
+                rteObj = renderRTE({
+                    pasteCleanupSettings: {
+                        prompt: false,
+                        keepFormat: true,
+                    },
+                });
+                done();
+            });
+            it("When pasting the empty P tag with BR, it should not be removed from the editor.", (done) => {
+                const clipboardHtml: string =  `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+    <html>
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <title></title>
+    <meta name="Generator" content="Cocoa HTML Writer">
+    <meta name="CocoaVersion" content="2575.7">
+    <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 20.0px 'Helvetica Neue'; min-height: 25.0px}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; min-height: 15.0px}
+    </style>
+    </head>
+    <body>
+    <p class="p1"><b></b><br></p>
+    <p class="p2"><br></p>
+    <p class="p2"><br></p>
+    <p class="p2"><br></p>
+    <p class="p2"><br></p>
+    <p class="p2"><br></p>
+    <p class="p2"><br></p>
+    <p class="p2"><br></p>
+    <p class="p2"><br></p>
+    </body>
+    </html>`;
+                const focusNode: Element = rteObj.inputElement.querySelector('p');
+                setCursorPoint(focusNode, 0);
+                const dataTransfer = new DataTransfer();
+                dataTransfer.setData('text/html', clipboardHtml);
+                const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                    clipboardData: dataTransfer
+                } as ClipboardEventInit);
+                rteObj.onPaste(pasteEvent);
+                setTimeout(() => {
+                    debugger
+                    expect(rteObj.inputElement.querySelectorAll('p').length === 9).toBe(true);
+                    done();
+                }, 100);
+            });
+            afterAll((done: DoneFn) => {
+                destroy(rteObj);
+                done();
+            });
+        });
+
     describe('Should not merge inline span with existing anchor during paste', () => {
         let rteObj: RichTextEditor;
         const clipboardHtml: string = `<span style="font-size: 15px;">This is a paragraph.</span>`;
@@ -5303,6 +5360,124 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
             expect(expected).toBe(true);
             done();
 
+        });
+    });
+    describe("979944: List corruption when enterKey is set to 'div' and pasting multiple lines in RichTextEditor", () => {
+        let rteObj: RichTextEditor;
+        const pasteContent = `<div>First line</div><div>Second Line</div>`;
+        const listContent = `<ul style="list-style-type: disc;">
+                            <li>List one</li>
+                            <li>List two</li>
+                        </ul>`;
+        const rtecontent = `<div>First line</div>
+                    <div>Second Line</div>
+                    <div>
+                        <ul style="list-style-type: disc;">
+                            <li>List one</li>
+                            <li>List two</li>
+                        </ul>
+                    </div>`;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                pasteCleanupSettings: {},
+                value: rtecontent
+            });
+            done();
+        });
+        it("Should paste content after list item and maintain structure (First Paste)", (done: DoneFn) => {
+            const firstLi: HTMLElement = rteObj.inputElement.querySelectorAll('li')[0];
+            setCursorPoint(firstLi.firstChild, firstLi.firstChild.textContent.length);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', pasteContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                clipboardData: dataTransfer
+            } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === `<div>First line</div><div>Second Line</div><div> <ul style="list-style-type: disc;"><li>List oneFirst line</li><li><div>Second Line</div></li><li>List two</li></ul> </div>`).toBe(true);
+                done();
+            }, 200);
+        });
+        it("Should maintain structure after Enter key and second paste", (done: DoneFn) => {
+            const keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 13,
+                keyCode: 13,
+                which: 13,
+                code: 'Enter',
+                action: 'enter',
+                type: 'keydown'
+            };
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            setTimeout(() => {
+                const dataTransfer2 = new DataTransfer();
+                dataTransfer2.setData('text/html', pasteContent);
+                const pasteEvent2: ClipboardEvent = new ClipboardEvent('paste', {
+                    clipboardData: dataTransfer2
+                } as ClipboardEventInit);
+                rteObj.onPaste(pasteEvent2);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.innerHTML === "<div>First line</div><div>Second Line</div><div> <ul style=\"list-style-type: disc;\"><li>List oneFirst line</li><li><div>Second Line</div></li><li><div>First line</div></li><li><div>Second Line</div></li><li>List two</li></ul> </div>").toBe(true);
+                    done();
+                }, 200);
+            }, 200);
+        });
+        it("Should paste list after list item and maintain structure (First Paste)", (done: DoneFn) => {
+            rteObj.value = rtecontent;
+            rteObj.dataBind();
+            const firstLi: HTMLElement = rteObj.inputElement.querySelectorAll('li')[0];
+            setCursorPoint(firstLi.firstChild, firstLi.firstChild.textContent.length);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', listContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                clipboardData: dataTransfer
+            } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === `<div>First line</div><div>Second Line</div><div> <ul style="list-style-type: disc;"><li>List one<ul style="list-style-type: disc;">   </ul></li><li>List one</li><li>List two</li><li>List two</li></ul> </div>`).toBe(true);
+                done();
+            }, 200);
+        });
+        it("Should paste list in first position of list item and maintain structure ", (done: DoneFn) => {
+            rteObj.value = rtecontent;
+            rteObj.dataBind();
+            const firstLi: HTMLElement = rteObj.inputElement.querySelectorAll('li')[0];
+            setCursorPoint(firstLi.firstChild, firstLi.firstChild.textContent.length);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', listContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                clipboardData: dataTransfer
+            } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === `<div>First line</div><div>Second Line</div><div> <ul style="list-style-type: disc;"><li>List one<ul style="list-style-type: disc;">   </ul></li><li>List one</li><li>List two</li><li>List two</li></ul> </div>`).toBe(true);
+                done();
+            }, 200);
+        });
+        it("Should paste list in mid position of list item and maintain structure ", (done: DoneFn) => {
+            rteObj.value = rtecontent;
+            rteObj.dataBind();
+            const firstLi: HTMLElement = rteObj.inputElement.querySelectorAll('li')[0];
+            setCursorPoint(firstLi.firstChild, 5);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', listContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                clipboardData: dataTransfer
+            } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === `<div>First line</div><div>Second Line</div><div> <ul style="list-style-type: disc;"><li>List <ul style="list-style-type: disc;">   </ul></li><li>List one</li><li>List two</li><li>one</li><li>List two</li></ul> </div>`).toBe(true);
+                done();
+            }, 200);
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
         });
     });
 });// Add the spec above this.

@@ -596,9 +596,9 @@ export class DropDownList extends DropDownBase implements IInput {
     private floatLabelChange(): void {
         if (this.getModuleName() === 'dropdownlist' && this.floatLabelType === 'Auto') {
             const floatElement: HTMLElement = <HTMLElement>this.inputWrapper.container.querySelector('.e-float-text');
-            if (this.inputElement.value !== '' || this.isInteracted) {
+            if (floatElement && this.inputElement.value !== '' || this.isInteracted) {
                 classList(floatElement, ['e-label-top'], ['e-label-bottom']);
-            } else {
+            } else if (floatElement) {
                 classList(floatElement, ['e-label-bottom'], ['e-label-top']);
             }
         }
@@ -3297,8 +3297,24 @@ export class DropDownList extends DropDownBase implements IInput {
                             this.list.parentElement.style.height = '100%';
                         }
                         this.list.parentElement.style.paddingBottom = (this.getModuleName() === 'dropdownlist' && this.allowFiltering && this.searchBoxHeight) ? (this.searchBoxHeight + resizePaddingBottom).toString() + 'px' : resizePaddingBottom.toString() + 'px';
-                        if (this.header || this.footer || this.itemTemplate) {
-                            this.list.parentElement.style.paddingBottom = ((parseInt(this.list.parentElement.style.maxHeight, 10) - parseInt(this.list.style.maxHeight, 10)) + resizePaddingBottom).toString() + 'px';
+                        if ((this as any).isReact && this.footer) {
+                            let listMaxHeight : string = this.list.style.maxHeight ;
+                            const listParentElementMaxHeight: string = this.list.parentElement.style.maxHeight ;
+                            let containerHeight: string = this.listContainerHeight ;
+                            setTimeout(() => {
+                                this.footer = this.footer ? this.footer : popupEle.querySelector('.e-ddl-footer');
+                                const height: number = Math.round(this.footer.getBoundingClientRect().height);
+                                if (height > 0) {
+                                    containerHeight = (parseInt(containerHeight, 10) - height).toString() + 'px';
+                                    listMaxHeight = (parseInt(containerHeight, 10) - 2).toString() + 'px';
+                                    this.list.parentElement.style.paddingBottom = ((parseInt(listParentElementMaxHeight, 10) - parseInt(listMaxHeight, 10)) + resizePaddingBottom).toString() + 'px';
+                                }
+                            }, 1);
+                        }
+                        else {
+                            if (this.header || this.footer || this.itemTemplate) {
+                                this.list.parentElement.style.paddingBottom = ((parseInt(this.list.parentElement.style.maxHeight, 10) - parseInt(this.list.style.maxHeight, 10)) + resizePaddingBottom).toString() + 'px';
+                            }
                         }
                         this.list.parentElement.appendChild(this.resizer);
                         //hold the popup resize

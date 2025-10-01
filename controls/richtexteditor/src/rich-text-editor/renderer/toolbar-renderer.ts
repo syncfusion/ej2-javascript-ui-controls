@@ -588,7 +588,7 @@ export class ToolbarRenderer implements IRenderer {
                     args.cancel = true;
                     return;
                 }
-                if (!args.items) { return; }
+                if (isNOU(args.items) || args.items.length === 0) { return; }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((args.items[0] as any).command === 'CodeBlock') {
                     this.handleCodeBlockDropdown(args);

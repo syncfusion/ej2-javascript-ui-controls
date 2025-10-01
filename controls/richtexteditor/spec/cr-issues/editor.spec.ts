@@ -847,6 +847,42 @@ describe('Editor specs', ()=> {
         });
     });
 
+    describe('Bug 983038: Script error throws when copying and pasting in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let defaultUserAgent = navigator.userAgent;
+        let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+        let element: HTMLElement = createElement('div', {
+            id: "form-element", innerHTML:
+                    `<div id="defaultRTE">
+                    </div>
+                ` });
+        beforeAll(() => {
+            Browser.userAgent = fireFox;
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo("#defaultRTE");
+        })
+        afterAll(() => {
+            destroy(rteObj);
+            detach(element);
+            Browser.userAgent = defaultUserAgent;
+        });
+
+        it(' pasting content in firefox when rte is wrapped in span tag ', (done) => {
+            rteObj.focusIn();
+            const clipBoardData: string = '<!--StartFragment--><span><h1>Welcome </h1></span><!--EndFragment-->';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect((rteObj.inputElement.querySelector('h1') as HTMLElement)).not.toBe(null);
+                done();
+            }, 100);
+        });
+    });
+
     describe('EJ2-29347 - RTE base refresh method testing', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -2037,7 +2073,7 @@ describe('Editor specs', ()=> {
             (document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0].childNodes[1] as HTMLElement).click();
             (document.querySelector('.e-dropdown-popup').childNodes[0].childNodes[1] as HTMLElement).click();
             let result = true;
-            expect((editNode.querySelector('.first-p') as HTMLElement).innerHTML == `<li>description</li>`).toBe(true)
+            expect((editNode.querySelector('.first-p') as HTMLElement).outerHTML == '<li class="first-p">description</li>').toBe(true)
         });
 
         afterAll(() => {

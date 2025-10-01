@@ -2153,7 +2153,7 @@ describe('Gantt undoredo support', () => {
         it('Redo action for delete record record', () => {
             ganttObj.actionComplete = function (args: any): void {
                 if(args.requestType === 'delete') {
-                    expect(args.modifiedRecords.length).toBe(40);
+                    expect(args.modifiedRecords.length).toBe(3);
                 }
             };
             ganttObj.redo()

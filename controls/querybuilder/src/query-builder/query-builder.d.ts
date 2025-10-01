@@ -627,6 +627,13 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private appendRuleElem;
     private addRuleElement;
     private addRuleSuccessCallBack;
+    private processAdjacentElements;
+    private handleOrphanedRuleElement;
+    private processConnectorElements;
+    private handleOrphanedConnectorElement;
+    private applyFieldComponent;
+    private applyDropdownListComponent;
+    private applyDropdownTreeComponent;
     private dropdownTreeFiltering;
     private changeDataSource;
     private nestedChildFilter;

@@ -577,9 +577,11 @@ export class DataManipulation {
                 }
             }
             const localIdMapping: string = this.parent.idMapping;
-            datas.sort(function (firstRecord: any, secondRecord: any): number {
-                return firstRecord[`${localIdMapping}`] - secondRecord[`${localIdMapping}`];
-            });
+            if (this.parent.enableVirtualization && this.parent.loadChildOnDemand) {
+                datas.sort(function (firstRecord: any, secondRecord: any): number {
+                    return firstRecord[`${localIdMapping}`] - secondRecord[`${localIdMapping}`];
+                });
+            }
             setValue('result', datas, e); setValue('action', 'beforecontentrender', e);
             this.parent.trigger(events.actionComplete, e);
             hideSpinner(this.parent.element);

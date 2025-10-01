@@ -2805,7 +2805,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public undo(): void {
-        this.manageActiveAction();
+        this.handlePenActiveState();
         this.notify('undo-redo', { prop: 'undo', onPropertyChange: false});
         this.notify('draw', { prop: 'redrawDownScale' });
     }
@@ -2818,7 +2818,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public redo(): void {
-        this.manageActiveAction();
+        this.handlePenActiveState();
         this.notify('undo-redo', { prop: 'redo', onPropertyChange: false});
         this.notify('draw', { prop: 'redrawDownScale' });
     }
@@ -5492,5 +5492,13 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('draw', { prop: 'redrawDownScale' });
         }
         return isRedact;
+    }
+
+    private handlePenActiveState(): void {
+        const freehandDrawObj: Object = { freehandDrawSelectedId: null };
+        this.notify('freehand-draw', { prop: 'getFreehandDrawSelectedId', onPropertyChange: false, value: { obj: freehandDrawObj } });
+        if (isNullOrUndefined(freehandDrawObj['freehandDrawSelectedId'])) {
+            this.manageActiveAction();
+        }
     }
 }

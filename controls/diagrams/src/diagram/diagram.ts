@@ -108,7 +108,7 @@ import { getPortLayerSvg, getDiagramLayerSvg, applyStyleAgainstCsp } from './uti
 import { getAdornerLayerSvg, getSelectorElement, getGridLayerSvg, getBackgroundLayerSvg } from './utility/dom-util';
 import { CommandManager, ContextMenuSettings } from './diagram/keyboard-commands';
 import { CommandManagerModel, CommandModel, ContextMenuSettingsModel } from './diagram/keyboard-commands-model';
-import { canDelete, canInConnect, canOutConnect, canRotate, canVitualize, canDrawThumbs } from './utility/constraints-util';
+import { canDelete, canInConnect, canOutConnect, canRotate, canVitualize, canDrawThumbs, canBridge } from './utility/constraints-util';
 import { canPortInConnect, canPortOutConnect } from './utility/constraints-util';
 import { canResize, canSingleSelect, canZoomPan, canZoomTextEdit, canMultiSelect } from './utility/constraints-util';
 import { canDragSourceEnd, canDragTargetEnd, canDragSegmentThumb, enableReadOnly, canMove } from './utility/constraints-util';
@@ -10599,6 +10599,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.bridgingModule) {
             for (let i: number = 0; i < this.connectors.length; i++) {
                 const connector: Connector = this.connectors[parseInt(i.toString(), 10)] as Connector;
+                if (!canBridge(connector, this) && this.lineDistributionModule) {
+                    continue;
+                }
                 this.bridgingModule.updateBridging(connector, this);
                 const canvas: GroupableView = this.connectors[parseInt(i.toString(), 10)].wrapper;
                 if (canvas && canvas.children && canvas.children.length > 0) {

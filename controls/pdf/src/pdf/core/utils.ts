@@ -16,6 +16,7 @@ import { _ImageDecoder } from './graphics/images/image-decoder';
 import { _JpegDecoder } from './graphics/images/jpeg-decoder';
 import { _PngDecoder } from './graphics/images/png-decoder';
 import { CompressedStreamWriter } from '@syncfusion/ej2-compression';
+import { _PdfFontMetrics, _StandardWidthTable, _WidthTable } from './fonts/pdf-font-metrics';
 /**
  * Represents a bounding rectangle with an origin (x, y) and size (width, height).
  *
@@ -3822,6 +3823,15 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
                             }
                         }
                     }
+                    if (!hasValidFontCache && font instanceof PdfStandardFont && field instanceof PdfTextBoxField &&
+                        !field._isTextChanged && fontDictionary) {
+                        const widthTable: _WidthTable = font._metrics._widthTable;
+                        const metrics: _PdfFontMetrics = _createFontMetrics(fontDictionary, font.height, baseFont.name);
+                        if (metrics) {
+                            font._metrics = metrics;
+                        }
+                        font._metrics._widthTable = widthTable;
+                    }
                 }
             }
         }
@@ -3898,6 +3908,37 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
     return font;
 }
 /**
+ * Gets the form field font metrics.
+ *
+ * @param {_PdfDictionary} fontDictionary Form field.
+ * @param {number} height Font family.
+ * @param {string} baseFontName Font name.
+ * @returns {_PdfFontMetrics} Font metrics.
+ */
+export function _createFontMetrics(fontDictionary: _PdfDictionary, height: number, baseFontName: string): _PdfFontMetrics {
+    let fontMetrics: _PdfFontMetrics;
+    if (fontDictionary.has('FontDescriptor')) {
+        fontMetrics = new _PdfFontMetrics();
+        const fontDescriptor: _PdfDictionary = fontDictionary.get('FontDescriptor');
+        if (fontDescriptor) {
+            fontMetrics._ascent = fontDescriptor.get('Ascent');
+            fontMetrics._descent = fontDescriptor.get('Descent');
+            fontMetrics._ascent = fontDescriptor.get('Ascent');
+            fontMetrics._size = height;
+            fontMetrics._height = fontMetrics._ascent - fontMetrics._descent;
+            fontMetrics._postScriptName = baseFontName;
+        }
+    }
+    if (fontMetrics && fontDictionary.has('Widths')) {
+        const widths: number[] = fontDictionary.getArray('Widths');
+        fontMetrics._widthTable = new _StandardWidthTable(widths);
+    }
+    if (fontMetrics) {
+        fontMetrics._name = baseFontName;
+    }
+    return fontMetrics;
+}
+/**
  * Gets the form field font size.
  *
  * @param {PdfField} field Form field.
@@ -3908,141 +3949,153 @@ export function _getFontSize(field: PdfField, family: PdfFontFamily): number {
     let selectedValue: string;
     const measureValue: number[][] = [];
     let s: number = 0;
-    if (field instanceof PdfComboBoxField) {
-        const boundsWidth: number = field.bounds.width;
-        const boundsHeight: number = field.bounds.height;
-        const itemFont: PdfStandardFont = new PdfStandardFont(family, 12);
-        if (typeof field.selectedIndex === 'number') {
-            const item: PdfListFieldItem = field.itemAt(field.selectedIndex as number);
-            if (item && typeof item.text === 'string') {
-                selectedValue = item.text as string;
-                measureValue.push(itemFont.measureString(selectedValue));
-            }
-        } else if (Array.isArray(field.selectedIndex)) {
-            for (let i: number = 0; i < field.selectedIndex.length; i++) {
-                selectedValue = field.itemAt(field.selectedIndex[<number>i]).text as string;
-                measureValue.push(itemFont.measureString(selectedValue));
-            }
-        }
-        const offset: number[] = [0, 0];
-        const borderWidth: number = field.border.width;
-        const doubleBorderWidth: number = 2 * borderWidth;
-        const defaultPadding: number = 2;
-        const padding: boolean = (field.border.style === PdfBorderStyle.inset || field.border.style === PdfBorderStyle.beveled);
-        if (padding) {
-            offset[0] = 2 * doubleBorderWidth;
-            offset[1] = 2 * borderWidth;
-        } else {
-            offset[0] = doubleBorderWidth + defaultPadding;
-            offset[1] = 1 * borderWidth + (defaultPadding - 1);
-        }
-        const rect: number[] = [0, 0, boundsWidth, boundsHeight];
-        let width: number = rect[2] - doubleBorderWidth;
-        const rectangle: number[] = rect;
-        if (padding) {
-            rectangle[3] -= doubleBorderWidth;
-        } else {
-            rectangle[3] -= borderWidth;
-        }
-        if (field.rotationAngle === 0 && padding) {
-            width -= doubleBorderWidth;
-        }
-        if (measureValue.length > 0) {
-            const maxWidthSize: number = (12 * (width - offset[0])) / measureValue[measureValue.length - 1][0];
-            const maxHeightSize: number = (12 * (rect[3] - offset[1])) / measureValue[measureValue.length - 1][1];
-            s = Math.min(maxWidthSize, maxHeightSize);
-        } else {
-            s = 12;
-        }
-        if (field._obtainSelectedValue().length !== 0) {
-            let fonts: PdfStandardFont = new PdfStandardFont(family, s);
-            let text: string = field._dictionary.get('V');
-            let textSize: number[];
-            if (typeof text !== 'undefined') {
-                if (Array.isArray(text) && text.length >= 1) {
-                    textSize = fonts.measureString(text[0]);
-                } else {
-                    textSize = fonts.measureString(text);
+    try {
+        if (field instanceof PdfComboBoxField) {
+            const boundsWidth: number = field.bounds.width;
+            const boundsHeight: number = field.bounds.height;
+            const itemFont: PdfStandardFont = new PdfStandardFont(family, 12);
+            if (typeof field.selectedIndex === 'number') {
+                const item: PdfListFieldItem = field.itemAt(field.selectedIndex as number);
+                if (item && typeof item.text === 'string') {
+                    selectedValue = item.text as string;
+                    measureValue.push(itemFont.measureString(selectedValue));
+                }
+            } else if (Array.isArray(field.selectedIndex)) {
+                for (let i: number = 0; i < field.selectedIndex.length; i++) {
+                    selectedValue = field.itemAt(field.selectedIndex[<number>i]).text as string;
+                    measureValue.push(itemFont.measureString(selectedValue));
                 }
             }
-            if (typeof textSize !== 'undefined') {
-                if (textSize[0] > boundsWidth || textSize[1] > boundsHeight) {
-                    const width: number = boundsWidth - 4 * field.border.width;
-                    const heightLimit: number = boundsHeight - 4 * field.border.width;
-                    const minimumFontSize: number = 0.248;
-                    let fontSize: number = s;
-                    for (let i: number = 1; i <= boundsHeight; i++) {
-                        fonts = new PdfStandardFont(family, i);
-                        fonts._size = i;
-                        let textSize: number[];
-                        if (typeof text !== 'undefined') {
-                            if (Array.isArray(text) && text.length >= 1) {
-                                textSize = fonts.measureString(text[0]);
-                            } else {
-                                textSize = fonts.measureString(text);
-                            }
-                        }
-                        if (textSize[0] > boundsWidth || textSize[1] > heightLimit) {
-                            fontSize = i;
-                            do {
-                                fontSize -= 0.001;
-                                if (fontSize < minimumFontSize) {
-                                    fonts._size = minimumFontSize;
-                                    break;
-                                }
-                                fonts = new PdfStandardFont(family, fontSize);
-                                fonts._size = fontSize;
-                                const stringFormat: PdfStringFormat = field._getStringFormat();
+            const offset: number[] = [0, 0];
+            const borderWidth: number = field.border.width;
+            const doubleBorderWidth: number = 2 * borderWidth;
+            const defaultPadding: number = 2;
+            const padding: boolean = (field.border.style === PdfBorderStyle.inset || field.border.style === PdfBorderStyle.beveled);
+            if (padding) {
+                offset[0] = 2 * doubleBorderWidth;
+                offset[1] = 2 * borderWidth;
+            } else {
+                offset[0] = doubleBorderWidth + defaultPadding;
+                offset[1] = 1 * borderWidth + (defaultPadding - 1);
+            }
+            const rect: number[] = [0, 0, boundsWidth, boundsHeight];
+            let width: number = rect[2] - doubleBorderWidth;
+            const rectangle: number[] = rect;
+            if (padding) {
+                rectangle[3] -= doubleBorderWidth;
+            } else {
+                rectangle[3] -= borderWidth;
+            }
+            if (field.rotationAngle === 0 && padding) {
+                width -= doubleBorderWidth;
+            }
+            if (measureValue.length > 0) {
+                const maxWidthSize: number = (12 * (width - offset[0])) / measureValue[measureValue.length - 1][0];
+                const maxHeightSize: number = (12 * (rect[3] - offset[1])) / measureValue[measureValue.length - 1][1];
+                s = Math.min(maxWidthSize, maxHeightSize);
+            } else {
+                s = 12;
+            }
+            if (field._obtainSelectedValue().length !== 0) {
+                let fonts: PdfStandardFont = new PdfStandardFont(family, s);
+                let text: string = field._dictionary.get('V');
+                let textSize: number[];
+                if (typeof text !== 'undefined') {
+                    if (Array.isArray(text) && text.length >= 1) {
+                        textSize = fonts.measureString(text[0]);
+                    } else {
+                        textSize = fonts.measureString(text);
+                    }
+                }
+                if (typeof textSize !== 'undefined') {
+                    if (textSize[0] > boundsWidth || textSize[1] > boundsHeight) {
+                        const width: number = boundsWidth - 4 * field.border.width;
+                        const heightLimit: number = boundsHeight - 4 * field.border.width;
+                        const minimumFontSize: number = 0.248;
+                        let fontSize: number = s;
+                        for (let i: number = 1; i <= boundsHeight; i++) {
+                            fonts = new PdfStandardFont(family, i);
+                            fonts._size = i;
+                            let textSize: number[];
+                            if (typeof text !== 'undefined') {
                                 if (Array.isArray(text) && text.length >= 1) {
-                                    text = text[0];
+                                    textSize = fonts.measureString(text[0]);
+                                } else {
+                                    textSize = fonts.measureString(text);
                                 }
-                                const textWidth: number = fonts.getLineWidth(text, stringFormat);
-                                const newSize: number[] = fonts.measureString(text, stringFormat);
-                                if (textWidth < width && newSize[1] < heightLimit) {
+                            }
+                            if (textSize[0] > boundsWidth || textSize[1] > heightLimit) {
+                                fontSize = i;
+                                do {
+                                    fontSize -= 0.001;
+                                    if (fontSize < minimumFontSize) {
+                                        fonts._size = minimumFontSize;
+                                        break;
+                                    }
+                                    fonts = new PdfStandardFont(family, fontSize);
                                     fonts._size = fontSize;
-                                    break;
-                                }
-                            } while (fontSize > minimumFontSize);
-                            s = fontSize;
-                            break;
+                                    const stringFormat: PdfStringFormat = field._getStringFormat();
+                                    if (Array.isArray(text) && text.length >= 1) {
+                                        text = text[0];
+                                    }
+                                    const textWidth: number = fonts.getLineWidth(text, stringFormat);
+                                    const newSize: number[] = fonts.measureString(text, stringFormat);
+                                    if (textWidth < width && newSize[1] < heightLimit) {
+                                        fonts._size = fontSize;
+                                        break;
+                                    }
+                                } while (fontSize > minimumFontSize);
+                                s = fontSize;
+                                break;
+                            }
                         }
                     }
                 }
+            } else if (s > 12) {
+                s = 12;
             }
-        } else if (s > 12) {
-            s = 12;
+        } else if (field instanceof PdfTextBoxField) {
+            const boundsWidth: number = field.bounds.width;
+            const boundsHeight: number = field.bounds.height;
+            const text: string = field.text || '';
+            const offset: number[] = [0, 0];
+            const borderWidth: number = field.border.width;
+            const doubleBorderWidth: number = 2 * borderWidth;
+            const defaultPadding: number = 2;
+            const hasPadding: boolean = (field.border.style === PdfBorderStyle.inset || field.border.style === PdfBorderStyle.beveled);
+            if (hasPadding) {
+                offset[0] = 2 * doubleBorderWidth;
+                offset[1] = 2 * borderWidth;
+            } else {
+                offset[0] = doubleBorderWidth + defaultPadding;
+                offset[1] = borderWidth + defaultPadding - 1;
+            }
+            const availableWidth: number = boundsWidth - offset[0];
+            const availableHeight: number = boundsHeight - offset[1];
+            const refFontSize: number = 12;
+            const refFont: PdfStandardFont = new PdfStandardFont(family, refFontSize);
+            if (!field.multiLine) {
+                const [refWidth, refHeight] = refFont.measureString(text);
+                if (refWidth > 0 && refHeight > 0) {
+                    const sizeBasedOnWidth: number = (refFontSize * availableWidth) / refWidth;
+                    const sizeBasedOnHeight: number = (refFontSize * availableHeight) / refHeight;
+                    s = Math.min(sizeBasedOnWidth, sizeBasedOnHeight);
+                } else {
+                    s = 8;
+                }
+            } else {
+                s = 12.5;
+            }
         }
-    } else if (field instanceof PdfTextBoxField) {
-        const boundsWidth: number = field.bounds.width;
-        const boundsHeight: number = field.bounds.height;
-        const text: string = field.text || '';
-        const offset: number[] = [0, 0];
-        const borderWidth: number = field.border.width;
-        const doubleBorderWidth: number = 2 * borderWidth;
-        const defaultPadding: number = 2;
-        const hasPadding: boolean = (field.border.style === PdfBorderStyle.inset || field.border.style === PdfBorderStyle.beveled);
-        if (hasPadding) {
-            offset[0] = 2 * doubleBorderWidth;
-            offset[1] = 2 * borderWidth;
-        } else {
-            offset[0] = doubleBorderWidth + defaultPadding;
-            offset[1] = borderWidth + defaultPadding - 1;
-        }
-        const availableWidth: number = boundsWidth - offset[0];
-        const availableHeight: number = boundsHeight - offset[1];
-        const refFontSize: number = 12;
-        const refFont: PdfStandardFont = new PdfStandardFont(family, refFontSize);
-        if (!field.multiLine) {
-            const [refWidth, refHeight] = refFont.measureString(text);
-            if (refWidth > 0 && refHeight > 0) {
-                const sizeBasedOnWidth: number = (refFontSize * availableWidth) / refWidth;
-                const sizeBasedOnHeight: number = (refFontSize * availableHeight) / refHeight;
-                s = Math.min(sizeBasedOnWidth, sizeBasedOnHeight);
+    } catch (e) {
+        if (field instanceof PdfTextBoxField) {
+            if (field.multiLine) {
+                s = 12.5;
             } else {
                 s = 8;
             }
         } else {
-            s = 12.5;
+            s = 12;
         }
     }
     return s === 0 ? 12 : s;

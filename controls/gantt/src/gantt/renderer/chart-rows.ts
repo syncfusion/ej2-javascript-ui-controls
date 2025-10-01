@@ -2282,7 +2282,11 @@ export class ChartRows extends DateProcessor {
         } else if (taskbarElement) {
             if (taskbarElement.querySelector(classCollections[0]) &&
                 getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor !== args.taskbarBgColor) {
-                (taskbarElement.querySelector(classCollections[0]) as HTMLElement).style.backgroundColor = args.taskbarBgColor;
+                if (args.taskbarType === 'ChildTask') {
+                    (taskbarElement.querySelector(classCollections[0]) as HTMLElement).style.background = args.taskbarBgColor;
+                } else {
+                    (taskbarElement.querySelector(classCollections[0]) as HTMLElement).style.backgroundColor = args.taskbarBgColor;
+                }
             }
             if (taskbarElement.querySelector(classCollections[0]) &&
                 getComputedStyle(taskbarElement.querySelector(classCollections[0])).outlineColor !== args.taskbarBorderColor) {
@@ -2292,12 +2296,14 @@ export class ChartRows extends DateProcessor {
                 getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor !== args.progressBarBgColor) {
                 (taskbarElement.querySelector(classCollections[1]) as HTMLElement).style.backgroundColor = args.progressBarBgColor;
             }
-
             if (taskbarElement.classList.contains(cls.traceChildTaskBar) &&
                 getComputedStyle(taskbarElement).backgroundColor !== args.taskbarBgColor) {
-                (taskbarElement as HTMLElement).style.backgroundColor = args.taskbarBgColor;
+                if (args.taskbarType === 'ChildTask') {
+                    (taskbarElement as HTMLElement).style.background = args.taskbarBgColor;
+                } else {
+                    (taskbarElement as HTMLElement).style.backgroundColor = args.taskbarBgColor;
+                }
             }
-
             if (taskbarElement.classList.contains(cls.traceChildTaskBar) &&
                 getComputedStyle(taskbarElement).outlineColor !== args.taskbarBorderColor) {
                 (taskbarElement as HTMLElement).style.outlineColor = args.taskbarBorderColor;

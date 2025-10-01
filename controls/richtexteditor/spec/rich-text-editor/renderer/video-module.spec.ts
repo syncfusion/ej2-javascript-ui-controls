@@ -4923,4 +4923,79 @@ describe('962339: Script error and improper video selection removal after alignm
             expect(rteObj.inputElement.querySelectorAll('.e-rte-videoboxmark').length).toBe(0);
         });
     });
+
+     describe('980106 - The resize option appears in the wrong position', () => {
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        let innerHTML: string = `<p><b>Description:</b></p>
+        <p>The Rich Text Editor (RTE) control is an easy to render in
+        client side. Customer easy to edit the contents and get the HTML content for
+        <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>
+        `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML,
+                insertVideoSettings: {
+                    height: "300px",
+                    width: "300px",
+                    minHeight: "400px",
+                    minWidth: "400px"
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('The resize option appears in the wrong position', () => {
+            let trg = (rteObj.contentModule.getEditPanel().querySelector('video') as HTMLElement);
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (rteObj.videoModule as any).resizeStart(clickEvent);
+            expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-rte-videoboxmark').length).toBe(4);
+            (document.querySelector('.e-rte-botLeft') as HTMLElement).style.top = ((document.querySelector('.e-rte-video').getBoundingClientRect().height - 6 ) + parseInt(document.querySelector('.e-rte-video').getBoundingClientRect().top.toString(),10)) + 'px';
+            (document.querySelector('.e-rte-botLeft') as HTMLElement).style.left = (parseInt(document.querySelector('.e-rte-video').getBoundingClientRect().left.toString(),10) +6) + 'px';
+            (document.querySelector('.e-rte-botRight') as HTMLElement).style.top = ((document.querySelector('.e-rte-video').getBoundingClientRect().height - 6 ) + parseInt(document.querySelector('.e-rte-video').getBoundingClientRect().top.toString(),10)) + 'px';
+            (document.querySelector('.e-rte-botRight') as HTMLElement).style.left = ((document.querySelector('.e-rte-video').getBoundingClientRect().width - 4 ) + parseInt(document.querySelector('.e-rte-video').getBoundingClientRect().left.toString(),10)) + 'px';
+            (document.querySelector('.e-rte-topRight') as HTMLElement).style.top = ((document.querySelector('.e-rte-video').getBoundingClientRect().height - 6 ) + parseInt(document.querySelector('.e-rte-video').getBoundingClientRect().top.toString(),10)) + 'px';
+            (document.querySelector('.e-rte-topRight') as HTMLElement).style.left = (parseInt(document.querySelector('.e-rte-video').getBoundingClientRect().left.toString(),10) - 6) + 'px';
+            (document.querySelector('.e-rte-topLeft') as HTMLElement).style.top = (parseInt(document.querySelector('.e-rte-video').getBoundingClientRect().top.toString(), 10) + 6) + 'px';
+            (document.querySelector('.e-rte-topLeft') as HTMLElement).style.left = (parseInt(document.querySelector('.e-rte-video').getBoundingClientRect().left.toString(), 10) + 6) + 'px';
+        });
+    });
+    // Added test case for addeventlistener code coverage
+    describe('980106 -covered addeventlistener in video module', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ["Video"]
+                }
+            });
+        });
+        afterAll((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('should cover addEventListener early return when parent.isDestroyed is true in video module', (done: DoneFn) => {
+            editor.focusIn();
+            editor.isDestroyed = true;
+            (editor.videoModule as any).addEventListener();
+            editor.isDestroyed = false;
+            done();
+        });
+        it('should cover addEventListener when drop, drag, enter are null in video module', function (done) {
+            editor.focusIn();
+            (editor.videoModule as any).drop = function () { };
+            (editor.videoModule as any).drag = function () { };
+            (editor.videoModule as any).enter = function () { };
+            (editor.videoModule as any).addEventListener();
+            done();
+        });
+    })
 });

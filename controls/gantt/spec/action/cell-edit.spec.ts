@@ -5,7 +5,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  */
 import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, UndoRedo, CriticalPath} from '../../src/index';
 import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, unscheduledData1, MT887459, actionFailureData, resourceData, Data893564, CR898960, crValidateIssue, criticalPath, editingResources3, baselinedurationdata, CR979885 } from '../base/data-source.spec';
-import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
+import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj, getRandom } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input, TextBox } from '@syncfusion/ej2-inputs';
 import { RichTextEditor } from '@syncfusion/ej2-richtexteditor';
@@ -3634,7 +3634,7 @@ describe('Cr-885322 duration get deleted when start date empty', () => {
         input.value = new Date('04/02/2024');
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
-        let i = Math.floor(Math.random() * (100 - 1 + 1) + 1);
+        let i = Math.floor(getRandom() * (100 - 1 + 1) + 1);
         let dataItem = {
             id: `62ed764512fb9e8q015ae94cf${i}`,
             TaskID: `SUBITEM-0${i}`,

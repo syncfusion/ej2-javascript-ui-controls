@@ -157,7 +157,7 @@
       margin-top: $ddl-closer-margin-top-bigger;
     }
     @if $ddl-multiselect-skin-name == 'fluent2' {
-      margin-top: -2.5em;
+      margin-top: -32px;
     }
     @if $ddl-multiselect-skin-name == 'FluentUI' {
       margin-top: $ddl-bigger-clear-margin-top;
@@ -168,7 +168,7 @@
     @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
       margin-top: -2.15em;
     }
-    @if $ddl-multiselect-skin-name == 'highcontrast' or $ddl-multiselect-skin-name == 'fabric' {
+    @if $ddl-multiselect-skin-name == 'fabric' {
       margin-top: -3.2em;
     }
     @if $ddl-multiselect-skin-name == 'tailwind' {
@@ -1935,7 +1935,7 @@
   @if $skin-name == 'bootstrap4' {
     .e-bigger .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
     .e-bigger.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
-      font-size: 14px;
+      font-size: 16px;
     }
     .e-small.e-bigger .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
     .e-small.e-bigger.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
@@ -1984,7 +1984,7 @@
   @if $skin-name == 'FluentUI' {
     .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
     .e-bigger.e-multiselect.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
-      margin-top: -1.6em;
+      margin-top: -24px;
     }
   }
   @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {

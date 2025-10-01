@@ -5256,3 +5256,47 @@ describe('EJ2-969806: Aria Label includes undefined for columns using editTempla
         gridObj = actionComplete = null;
     });
 });
+
+describe('EJ2-981063-Double Left Border Displayed on First Visible Column When Original First Column Is Hidden ', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                gridLines: 'Both',
+                allowFiltering: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true},
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', visible: false },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('first cell class testing', (done: Function) => {
+        expect(gridObj.element.querySelector('.e-first-visible-cell')).toBeDefined();
+        done();
+    });
+
+    it('first cell class - editing', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                expect(gridObj.element.querySelector('.e-first-visible-cell')).toBeDefined();
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

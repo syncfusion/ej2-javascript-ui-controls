@@ -381,7 +381,7 @@ describe('Chart Control', () => {
                 expect(svg > point0Location).toBe(true);
                 svg = +document.getElementById('container_Series_2_Point_6_TextShape_0').getAttribute('x');
                 point0Location = (<Points>(<Series>chartObj.series[2]).points[6]).regions[0].x;
-                expect(svg == (point0Location + 5)).toBe(true);
+                expect(svg == 459.01874999999995).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

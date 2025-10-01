@@ -17,7 +17,7 @@ import { Legend3D } from '../../../src/chart3d/legend/legend';
 import { getMemoryProfile, inMB, profile } from '../../common.spec';
 import { MouseEvents } from '../base/events.spec';
 import { Chart3DSeriesModel } from '../../../src/chart3d/series/chart-series-model';
-import { categoryData, categoryData1 } from '../../chart/base/data.spec';
+import { categoryData, categoryData1, secureRandom } from '../../chart/base/data.spec';
 import { Selection3D } from '../../../src/chart3d/user-interaction/selection';
 import { StackingColumnSeries3D } from '../../../src/chart3d/series/stacking-column-series';
 import { DateTime3D } from '../../../src/chart3d/axis/date-time-axis';
@@ -31,7 +31,7 @@ const colors: string[] = ['#663AB6', '#EB3F79', '#F8AB1D', '#B82E3D', '#049CB1',
 let toggle: boolean = true;
 for (let j: number = 0; j < 20; j++) {
     for (i = 0; i < 10; i++) {
-        value = Math.random() * 100;
+        value = secureRandom() * 100;
         currentPoint = { x: i, y: value };
         data.push(currentPoint);
     }

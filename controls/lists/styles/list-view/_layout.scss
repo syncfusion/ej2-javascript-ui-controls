@@ -88,6 +88,15 @@
         }
       }
 
+      &.e-listview-template {
+        .e-list-item{
+          .e-checkbox{
+            display: flex;
+            align-items: baseline;
+          }
+        }
+      }
+
       & .e-list-parent {
         margin: 0;
         padding: 0;

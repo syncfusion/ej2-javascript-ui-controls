@@ -4313,6 +4313,49 @@ describe('ImageEditor', () => {
                 done();
             }, 100);
         });
+        it('To test the programmatic undo operation after selecting a freehand drawing shape', (done: () => void) => {
+            let imageEditor: ImageEditor = new ImageEditor({
+                height: '450px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                const prevCropObj: CurrentObject = extend({}, imageEditor.cropObj, {}, true) as CurrentObject;
+                const object: { currObj: CurrentObject } = { currObj: {} as CurrentObject };
+                imageEditor.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: { object: object } });
+                const prevObj: CurrentObject = object['currObj'];
+                prevObj.objColl = extend([], imageEditor.objColl, [], true) as SelectionPoint[];
+                prevObj.pointColl = extend([], imageEditor.pointColl, [], true) as Point[];
+                prevObj.afterCropActions = extend([], imageEditor.afterCropActions, [], true) as string[];
+                let points: { x: number, y: number, ratioX: number, ratioY: number, time: number }[] = [
+                    { x: 710.0539748224719, y: 25.105363438047213, ratioX: 0.8839387453519381, ratioY: 0.05938697025693696, time: 1674043575063 },
+                    { x: 713.9229403397133, y: 25.105363438047213, ratioX: 0.8993233607365535, ratioY: 0.05938697025693696, time: 1674043575090 },
+                    { x: 719.0815610293685, y: 25.105363438047213, ratioX: 0.919836181249374, ratioY: 0.05938697025693696, time: 1674043575106 },
+                    { x: 723.380411604081, y: 25.105363438047213, ratioX: 0.9369301983433911, ratioY: 0.05938697025693696, time: 1674043575123 },
+                    { x: 729.3988024086788, y: 24.675478380575946, ratioX: 0.960861822275015, ratioY: 0.05708811968222432, time: 1674043575139 },
+                    { x: 733.6976529833914, y: 24.675478380575946, ratioX: 0.9779558393690321, ratioY: 0.05708811968222432, time: 1674043575156 }
+                ];
+                (<HTMLCanvasElement>document.getElementById(imageEditor.element.id + '_upperCanvas')).dispatchEvent(mouseupEvent);
+                imageEditor.notify('undo-redo', {
+                    prop: 'updateUndoRedoColl', onPropertyChange: false,
+                    value: {
+                        operation: 'freehand-draw', previousObj: prevObj, previousObjColl: prevObj.objColl,
+                        previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
+                        previousCropObj: prevCropObj, previousText: null,
+                        currentText: null, previousFilter: null, isCircleCrop: null
+                    }
+                });
+                imageEditor.notify('freehand-draw', { prop: 'setFreehandDrawHoveredIndex', value: { index: 0 } });
+                imageEditor.freehandDraw(true);
+                imageEditor.notify('freehand-draw', { prop: 'freehandRedraw', value: { context: imageEditor.lowerCanvas.getContext('2d'), points: points } });
+                imageEditor.okBtn();
+                imageEditor.undo();
+                let lastPenDrawingId: string = 'pen_' + imageEditor.freehandCounter;
+                imageEditor.selectShape(lastPenDrawingId);
+                imageEditor.undo();
+                expect(imageEditor.pointColl.length).toBe(0);
+                done();
+            }, 100);
+        });
     });
     // describe('Screen', () => {
     //     beforeEach((): void => {

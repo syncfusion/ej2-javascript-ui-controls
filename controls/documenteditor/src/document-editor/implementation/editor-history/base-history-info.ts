@@ -618,6 +618,7 @@ export class BaseHistoryInfo {
         } else {
             this.editorHistory.undoStack.push(this);
         }
+        this.owner.editorModule.fireContentChange();
     }
     /* eslint-disable  */
     public revert(): void {
@@ -876,7 +877,7 @@ export class BaseHistoryInfo {
         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'Reject All' || this.editorHistory.currentHistoryInfo.action === 'Accept All' || this.editorHistory.currentHistoryInfo.action === 'Paste')) {
             updateSelection = true;
         }
-        if (this.action !== 'TrackingPageBreak' && ((this.editorHistory.isUndoing || this.endRevisionLogicalIndex || this.action === 'RemoveRowTrack' || updateSelection) && isNullOrUndefined(this.editorHistory.currentHistoryInfo) || updateSelection) ||
+        if (this.action !== 'TrackingPageBreak' && ((this.editorHistory.isUndoing || this.endRevisionLogicalIndex || this.action === 'RemoveRowTrack' || updateSelection) && (isNullOrUndefined(this.editorHistory.currentHistoryInfo)||this.editorHistory.currentHistoryInfo.action === 'DragAndDropContent') || updateSelection) ||
             ((this.action === 'InsertRowAbove' || this.action === 'Borders' || this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft' || this.action === 'InsertColumnRight' || this.action === 'Accept Change' || this.action === 'PasteColumn' || this.action === 'PasteRow' || this.action === 'PasteOverwrite' || this.action === 'PasteNested') && (this.editorHistory.isRedoing
                 || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
             if (this.action === 'RemoveRowTrack' && this.editorHistory.isRedoing) {
@@ -3856,7 +3857,8 @@ export class BaseHistoryInfo {
             operation.markerData = {
                 type: 'Comment',
                 commentId: commentRangeElement.commentId,
-                ownerCommentId: commentElement.isReply ? commentElement.ownerComment.commentId : undefined
+                ownerCommentId: commentElement.isReply ? commentElement.ownerComment.commentId : undefined,
+                mentions: commentElement.mentions.length > 0 ? JSON.stringify(commentElement.mentions) : undefined,
             }
         } else if (action === 'InsertCommentWidget' || action === 'DeleteCommentWidget') {
             if (isNullOrUndefined(comment)) {
@@ -3877,7 +3879,8 @@ export class BaseHistoryInfo {
                 initial: comment.initial,
                 done: comment.isResolved,
                 text: comment.text,
-                isReply: comment.isReply
+                isReply: comment.isReply,
+                mentions: comment.mentions.length > 0 ? JSON.stringify(comment.mentions) : undefined,
             }
             if (!isNullOrUndefined(comment.ownerComment)) {
                 // Get the position of the comment owner offset
@@ -3914,6 +3917,7 @@ export class BaseHistoryInfo {
             operation.markerData = {
                 type: 'Comment',
                 text: comment.text,
+                mentions: comment.mentions.length > 0 ? JSON.stringify(comment.mentions) : undefined,
             }
         }
         return operation;
@@ -4666,7 +4670,11 @@ export interface MarkerInfo {
     /**
      * Reserved for internal use only.
      */
-    revisionForFootnoteEndnoteContent?: MarkerInfo
+    revisionForFootnoteEndnoteContent?: MarkerInfo,
+    /**
+     * Reserved for internal use only.
+     */
+    mentions?: string,
 }
 /**
  * Specifies the information about the protection type.

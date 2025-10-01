@@ -324,4 +324,37 @@ describe('Mention integration tests', () => {
             done();
         });
     });
+    describe('980358:Enter key after last mention chip inside <pre>', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                value: `<pre><span contenteditable="false" class="e-mention-chip">Selma Rose</span>&ZeroWidthSpace;<span contenteditable="false" class="e-mention-chip">Selma Rose</span>&ZeroWidthSpace;<span contenteditable="false" class="e-mention-chip">Selma Rose</span>&ZeroWidthSpace;<span contenteditable="false" class="e-mention-chip">Selma Rose</span>&ZeroWidthSpace;</pre>`
+            });
+            setupMention(editor, false);
+        });
+        afterAll(() => {
+            destroyMention();
+            destroy(editor);
+        });
+        it('Should place cursor after last mention and handle Enter key correctly', (done: DoneFn) => {
+            debugger;
+            editor.focusIn();
+            const preElem: HTMLElement = editor.inputElement.querySelector('pre');
+            const mentionChips: any = preElem.querySelectorAll('.e-mention-chip');
+            const lastMention = mentionChips[mentionChips.length - 1];
+            setCursorPoint(lastMention,0);
+            // Simulate Enter key press
+            const enterKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+            document.activeElement.dispatchEvent(enterKeyDownEvent);
+            const enterKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT);
+            document.activeElement.dispatchEvent(enterKeyUpEvent);
+            setTimeout(() => {
+                // Validate that no error occurred and a new line is created
+                const html = preElem.innerHTML;
+                expect(html.includes('<br>')).toBe(true);
+                expect(preElem.querySelectorAll('.e-mention-chip').length).toBe(4);
+                done();
+            }, 200);
+        });
+    });
 });

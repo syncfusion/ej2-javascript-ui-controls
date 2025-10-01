@@ -1299,3 +1299,28 @@ describe('963682: Incorrect list style highlighted in dropdown after applying nu
     });
 });
 
+describe("NumberFormat and BulletFormat list dropdown wiith zero drop down items ", () => {
+    let rteEle: HTMLElement;
+    let rteObj: any;
+    beforeEach((done: Function) => {
+        rteObj = renderRTE({
+            numberFormatList: {types: []},
+            toolbarSettings: {
+                items: ['NumberFormatList']
+            }
+        });
+        rteEle = rteObj.element;
+        done();
+    });
+    afterEach((done: Function) => {
+        destroy(rteObj);
+        done();
+    });
+    it("Dropdown element testing", () => {
+        let dropDowButton: HTMLElement = (rteEle.querySelectorAll(".e-toolbar-item")[0].querySelector('.e-dropdown-btn')) as HTMLElement;
+        (dropDowButton as HTMLButtonElement) .click();
+        let dropDownElement: HTMLElement = document.querySelector('.e-rte-numberformatlist-dropdown.e-popup-open');
+        expect(dropDownElement.firstChild.childNodes.length).toBe(0);
+    });
+});
+

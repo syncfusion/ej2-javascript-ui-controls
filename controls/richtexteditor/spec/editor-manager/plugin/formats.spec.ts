@@ -1098,4 +1098,55 @@ describe('Formats plugin', () => {
             done();
         });
     });
+    describe("980659 - Applying Heading 1 Format to Entire Table Deletes Table Content.", () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['formats']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;">
+   <colgroup>
+      <col style="width: 33.3333%;">
+      <col style="width: 33.3333%;">
+      <col style="width: 33.3333%;">
+   </colgroup>
+   <tbody>
+      <tr>
+         <td>
+            <p class="start">RichTextEditor</p>
+         </td>
+         <td><br/></td>
+         <td><br/></td>
+      </tr>
+      <tr>
+         <td><br/></td>
+         <td><br/></td>
+         <td><br/></td>
+      </tr>
+      <tr>
+         <td><br/></td>
+         <td><br/></td>
+         <td><br/></td>
+      </tr>
+   </tbody>
+</table>
+<p class="end"><br/></p>`
+            });
+            done();
+        });
+        it('Should update all selected <p> tags inside a table to <h1> when formatBlock is applied', (done: DoneFn) => {
+            const start: HTMLElement = rteObj.element.querySelector('.start');
+            const end: HTMLElement = rteObj.element.querySelector('.end');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, start.firstChild, end, 0, 0);
+            rteObj.executeCommand('formatBlock', 'H1');
+            const h1Tag = rteObj.inputElement.querySelectorAll('h1')
+            expect(h1Tag.length === 10).toBe(true);
+            done();
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
 });

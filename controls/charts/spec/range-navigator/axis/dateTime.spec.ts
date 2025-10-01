@@ -2,7 +2,8 @@ import { RangeNavigator, ILabelRenderEventsArgs } from '../../../src/range-navig
 import { AreaSeries } from '../../../src/chart/index';
 import { Logarithmic, DateTime, LineSeries } from '../../../src/chart/index';
 import { createElement, remove, EventHandler } from '@syncfusion/ej2-base';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
+import { secureRandom } from '../../chart/base/data.spec';
 RangeNavigator.Inject(Logarithmic, DateTime, LineSeries, AreaSeries);
 /**
  * Spec for range navigator axis
@@ -13,7 +14,7 @@ let data: object[] = [];
 let dateTime: object[] = [];
 
 for (let j: number = 0; j < 1200; j++) {
-    value += (Math.random() * 10 - 5);
+    value += (secureRandom() * 10 - 5);
     value = value < 0 ? Math.abs(value) : value;
     point = { x: new Date(2000, 2, j), y: value, y1: value + 10 };
     data.push(point);

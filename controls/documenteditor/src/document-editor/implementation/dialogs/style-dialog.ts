@@ -819,6 +819,13 @@ export class StyleDialog {
                 this.style.name = style.name;
                 name = style.name;
                 style = this.style;
+                const collection: any =  this.documentHelper.stylesMap.get(style.type);
+                for (let i = 0; i < collection.length; i++) {
+                    if (collection[i].StyleName === style.name) {
+                        this.documentHelper.stylesMap.get(style.type).splice(i, 1);
+                    }
+                }
+                this.documentHelper.addToStylesMap(style);
                 let listId: number = this.style instanceof WParagraphStyle ? (this.style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
                 this.documentHelper.owner.setStyleData(name, listId);
 
@@ -827,6 +834,7 @@ export class StyleDialog {
                 this.documentHelper.layout.layoutWholeDocument();
                 this.documentHelper.owner.editorModule.isSkipOperationsBuild = false;
                 this.documentHelper.owner.isShiftingEnabled = false;
+                this.documentHelper.owner.notify(internalStyleCollectionChange, {});
             } else {
                 let tmpStyle: any = this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
                 tmpStyle.copyStyle(this.style);

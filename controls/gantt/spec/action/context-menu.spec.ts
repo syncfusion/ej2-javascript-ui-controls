@@ -1,10 +1,11 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
 import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem,  Toolbar, Filter, DayMarkers, Reorder, ColumnMenu, VirtualScroll, ExcelExport, PdfExport, UndoRedo} from '../../src/index';
-import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData, indentData, CR885011, MT889303, editingResources, coverageParentData, projectNewData1, mileStoneParentData, splitTasks, splitTasksCoverage, resourceCollection,cr898103, resourceResources} from '../base/data-source.spec';
+import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData, indentData, CR885011, MT889303, editingResources, coverageParentData, projectNewData1, mileStoneParentData, splitTasks, splitTasksCoverage, resourceCollection,cr898103, resourceResources, CR766241, CR766241Resources} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { ContextMenuItemModel } from '@syncfusion/ej2-grids';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 let contextMenuItems: (string | ContextMenuItemModel)[] = ['AutoFitAll', 'AutoFit', 'TaskInformation', 'DeleteTask', 'Save', 'Cancel',
         'SortAscending', 'SortDescending', 'Add', 'DeleteDependency', 'Convert',
         { text: 'Collapse the Row', target: '.e-content', id: 'collapserow' } as ContextMenuItemModel,
@@ -258,14 +259,15 @@ describe('Context-', () => {
          // expect(contextmenu.style.display).toBe('block');
         });
         it('Parent record', () => {
+            ganttObj.contextMenuModule.contextMenu.close();
             let eventArgs = { target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement };
             let e = {
                 event: eventArgs,
                 items: ganttObj.contextMenuModule.contextMenu.items
             };
             (ganttObj.contextMenuModule as any).contextMenuBeforeOpen(e);
-            expect((ganttObj.contextMenuModule as any).hideItems.length).toBe(6);
-            expect((ganttObj.contextMenuModule as any).disableItems.length).toBe(2);
+            expect((ganttObj.contextMenuModule as any).hideItems.length).toBe(3);
+            expect((ganttObj.contextMenuModule as any).disableItems.length).toBe(1);
         });
         it('Add record - Below', () => {
             let e: ContextMenuClickEventArgs = {
@@ -4824,5 +4826,183 @@ describe('Content menu - Child', () => {
                 element: null,
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        });
+    });
+
+    describe('CR - 982000 : Duplicate task created when using indent and outdent actions', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource:  [
+                        { TaskID: 1, TaskName: "Planning and Permits", StartDate: new Date("04/02/2025"), EndDate: new Date("04/10/2025"), Duration: 7, Progress: 100, resources: [1, 2, 3] },
+                        { TaskID: 2, TaskName: "Site Evaluation", StartDate: new Date("04/02/2025"), EndDate: new Date("04/04/2025"), Duration: 2, Progress: 100, ParentId: 1, resources: [1] },
+                        { TaskID: 3, TaskName: "Obtain Permits", StartDate: new Date("04/07/2025"), EndDate: new Date("04/09/2025"), Duration: 3, Progress: 100, ParentId: 2, Predecessor: "2", resources: [2, 4],  },
+                        { TaskID: 4, TaskName: "Finalize Planning", StartDate: new Date("04/10/2025"), EndDate: new Date("04/11/2025"), Duration: 2, Progress: 100, ParentId: 3, Predecessor: "3", resources: [3] },
+                        { TaskID: 5, TaskName: "Finalize Planning", StartDate: new Date("04/10/2025"), EndDate: new Date("04/11/2025"), Duration: 2, Progress: 100, ParentId: 4, Predecessor: "3", resources: [3] },
+   
+                    ],
+                    enableContextMenu: true,
+                    taskFields : {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        parentID:'ParentId',
+                    },
+                    editSettings : {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar : ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                    columns :  [
+                        { field: 'TaskID', width: 150 },
+                        { field: 'TaskName', headerText: 'Job Name',  },
+                        { field: 'StartDate' },
+                        { field: 'EndDate',  },
+                        { field: 'Duration', },
+                        { field: 'Progress',  },
+                        { field: 'Predecessor' }
+                    ],
+                    timelineSettings : {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'MMM dd, y',
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        },
+                    },
+                    gridLines : 'Both',
+                    labelSettings : {
+                        leftLabel: 'TaskName',
+                    },
+                    projectStartDate: new Date('03/26/2025'),
+                    projectEndDate: new Date('09/10/2025'),
+                  
+                    splitterSettings : {
+                       columnIndex: 3
+                    },
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Duplicate task created when using indent and outdent actions', () => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Child' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(isNullOrUndefined(ganttObj.flatData[4].taskData['Children'])).toBe(true);
+        });
+    });
+
+     describe('Context menu not opening on parent row in resource view', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: CR766241,
+                resources: CR766241Resources,
+                viewType: 'ResourceView',
+                enableMultiTaskbar: true,
+                enableContextMenu: true,
+                showOverAllocation: true,
+                taskType: 'FixedWork',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    dependency: 'Predecessor',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    expandState: 'isExpand',
+                    child: 'subtasks',
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                ],
+                labelSettings: {
+                    taskLabel: 'TaskName',
+                },
+                splitterSettings: {
+                    columnIndex: 2,
+                },
+                allowResizing: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '650px',
+                rowHeight: 46,
+                taskbarHeight: 25,
+                projectStartDate: new Date('03/26/2025'),
+                projectEndDate: new Date('05/18/2025'),
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+         // Add contextMenuOpen handler to always allow context menu
+        if (ganttObj) {
+            ganttObj.contextMenuOpen = function(args) {
+                args.cancel = false;
+            };
+        }
+        it('Context menu not opening on parent row in resource view', () => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1)') as HTMLElement;
+            // Simulate right-click
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            // Get the context menu element
+            let contextMenu: HTMLElement = document.querySelector('.e-contextmenu') as HTMLElement;
+            // Check if "Task Information" is present
+            let taskInfoItem = Array.from(contextMenu.querySelectorAll('.e-menu-item'))
+                .find(item => item.textContent && item.textContent.indexOf('Task Information') !== -1);
+            // For a resource group row, "Task Information" should be present
+            expect(taskInfoItem).toBeDefined();
         });
     });

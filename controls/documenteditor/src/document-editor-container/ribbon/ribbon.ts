@@ -140,6 +140,7 @@ export class Ribbon implements IToolbarHandler {
             tabs: tabs,
             selectedTab: 0,
             enableRtl: this.container.enableRtl,
+            locale: this.container.locale,
             contextualTabs: contextualTabs,
             launcherIconClick: this.eventManager.onLauncherIconClicked.bind(this.eventManager),
             enableKeyTips: true,

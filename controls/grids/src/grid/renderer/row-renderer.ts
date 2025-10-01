@@ -139,14 +139,18 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             if (row.isExpand && row.cells[parseInt(i.toString(), 10)].cellType === CellType.DetailExpand) {
                 attrs['class'] = this.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
-            const isGroupFirstCell: boolean = !this.parent.enableRtl && this.parent.groupSettings && isFirstVisibleCell &&
-                this.parent.groupSettings.columns.length && (this.parent.gridLines === 'Vertical' || this.parent.gridLines === 'Both');
+            const isFirstCell: boolean = !this.parent.enableRtl && isFirstVisibleCell &&
+                (this.parent.gridLines === 'Vertical' || this.parent.gridLines === 'Both');
             let td: Element = cellRenderer.render(row.cells[parseInt(i.toString(), 10)], row.data, attrs, row.isExpand, isEdit);
             if (row.cells[parseInt(i.toString(), 10)].cellType !== CellType.Filter) {
                 if (row.cells[parseInt(i.toString(), 10)].cellType === CellType.Data
                     || row.cells[parseInt(i.toString(), 10)].cellType === CellType.CommandColumn) {
-                    if (cell.visible && isGroupFirstCell) {
-                        td.classList.add('e-grid-group-first-cell');
+                    if (cell.visible && isFirstCell) {
+                        if (this.parent.groupSettings && this.parent.groupSettings.columns.length) {
+                            td.classList.add('e-grid-group-first-cell');
+                        } else if (!this.parent.allowRowDragAndDrop) {
+                            td.classList.add('e-first-visible-cell');
+                        }
                         isFirstVisibleCell = false;
                     }
                     const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
@@ -297,16 +301,20 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     }
                 }
                 if ((cell.cellType === CellType.Header || cell.cellType === CellType.StackedHeader) &&
-                    isGroupFirstCell && (cell.visible || cell.cellType === CellType.StackedHeader)) {
-                    const visibleColumns: Column[] = this.parent.getVisibleColumns();
-                    const field: string = 'field';
-                    const type: string = 'type';
-                    if ((cell.column[`${type}`] && cell.column[`${type}`] === 'checkbox') ||
-                        (cell.cellType === CellType.Header && cell.column[`${field}`] && visibleColumns.length &&
-                            visibleColumns[0].field === cell.column[`${field}`]) || cell.cellType === CellType.StackedHeader) {
-                        td.classList.add('e-grid-group-first-cell');
-                        isFirstVisibleCell = false;
+                    isFirstCell && (cell.visible || cell.cellType === CellType.StackedHeader)) {
+                    if (this.parent.groupSettings && this.parent.groupSettings.columns.length) {
+                        const visibleColumns: Column[] = this.parent.getVisibleColumns();
+                        const field: string = 'field';
+                        const type: string = 'type';
+                        if ((cell.column[`${type}`] && cell.column[`${type}`] === 'checkbox') ||
+                            (cell.cellType === CellType.Header && cell.column[`${field}`] && visibleColumns.length &&
+                                visibleColumns[0].field === cell.column[`${field}`]) || cell.cellType === CellType.StackedHeader) {
+                            td.classList.add('e-grid-group-first-cell');
+                        }
+                    } else if (!this.parent.allowRowDragAndDrop) {
+                        td.classList.add('e-first-visible-cell');
                     }
+                    isFirstVisibleCell = false;
                 }
                 if (cell.cellType === CellType.Header && (row.cells[parseInt(i.toString(), 10)].colSpan > 1 ||
                     row.cells[parseInt(i.toString(), 10)].rowSpan > 1)) {
@@ -349,6 +357,15 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 }
                 if (!row.cells[parseInt(i.toString(), 10)].isSpanned) {
                     tr.appendChild(td);
+                }
+            } else {
+                if (cell.visible && isFirstCell ) {
+                    if (this.parent.groupSettings && this.parent.groupSettings.columns.length) {
+                        td.classList.add('e-grid-group-first-cell');
+                    } else if (!this.parent.allowRowDragAndDrop) {
+                        td.classList.add('e-first-visible-cell');
+                    }
+                    isFirstVisibleCell = false;
                 }
             }
         }

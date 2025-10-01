@@ -258,6 +258,9 @@ export class HtmlEditor {
         }
         if (args.keyCode === 9 && this.parent.enableTabKey) {
             this.parent.formatter.saveData(e);
+            if (!this.indentTab()) {
+                return;
+            }
             if (!isNOU(args.target) && isNullOrUndefined(closest(args.target as Element, '.e-rte-toolbar'))) {
                 const range: Range = this.nodeSelectionObj.getRange(this.parent.getDocument());
                 const parentNode: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
@@ -315,7 +318,8 @@ export class HtmlEditor {
                     event: ((e as NotifyArgs).args as KeyboardEventArgs),
                     name: 'keydown-handler',
                     enterKey: this.parent.enterKey,
-                    shiftEnterKey: this.parent.shiftEnterKey
+                    shiftEnterKey: this.parent.shiftEnterKey,
+                    maxLength: this.parent.maxLength
                 };
                 (this.parent.dotNetRef.invokeMethodAsync(
                     events.actionBeginEvent, { requestType: orderedList ? 'OL' : 'UL', cancel: false }) as unknown as Promise<ActionBeginEventArgs>).then((actionBeginArgs: ActionBeginEventArgs) => {
@@ -367,7 +371,18 @@ export class HtmlEditor {
             args.preventDefault();
         }
     }
-
+    /**
+     * Checks if inserting a tab would exceed the maxLength constraint.
+     *
+     * @returns {boolean} True if allowed, false if it would exceed maxLength.
+     */
+    private indentTab(): boolean {
+        const tabSpaceLength: number = 4;
+        const maxLength: number = this.parent.maxLength;
+        const currentLength: number = this.parent.getText().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
+        const selectionLength: number = this.parent.getSelection().length;
+        return maxLength === -1 || (currentLength - selectionLength + tabSpaceLength) <= maxLength;
+    }
     private onHandleFontsizeChange(e: NotifyArgs): void {
         const keyboardArgs: KeyboardEventArgs = e.args as KeyboardEventArgs;
         const args: ActionBeginEventArgs = {

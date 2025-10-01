@@ -22,7 +22,6 @@ import { Indexes } from '../../common/model/base';
 /**
  * The `Selection` module handles the selection of chart elements.
  *
- * @private
  */
 export class Selection extends BaseSelection {
     /** @private */

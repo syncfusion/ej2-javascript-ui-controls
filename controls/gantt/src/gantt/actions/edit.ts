@@ -3699,7 +3699,7 @@ export class Edit {
                     else {
                         parentItem.taskData[child as string].push(record.taskData);
                     }
-                } else {
+                } else if (!this.parent.taskFields.parentID) {
                     parentItem.taskData[child as string] = [];
                     parentItem.taskData[child as string].push(record.taskData);
                 }

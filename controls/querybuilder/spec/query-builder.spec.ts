@@ -830,7 +830,6 @@ describe('QueryBuilder', () => {
             (<any>queryBuilder).setColumnTemplate(column2[0]);
             (<any>queryBuilder).templateParser(null);
             expect(queryBuilder.element.classList.contains('e-query-builder')).toBeTruthy();
-            (<any>queryBuilder).enableSeparateConnectorInitialRule(queryBuilder.element);
         });
         it('Coverage improvement rule', () => {
             const importRules: RuleModel = {

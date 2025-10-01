@@ -3,9 +3,10 @@ import { Logarithmic, DateTime, LineSeries, AreaSeries, DateTimeCategory } from 
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { IChangedEventArgs, IRangeLoadedEventArgs } from '../../../src/range-navigator/model/range-navigator-interface';
 import { MouseEvents } from '../../../spec/chart/base/events.spec';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
 import { PeriodSelector } from '../../../src/common/period-selector/period-selector';
 import { PeriodSelectorSettingsModel } from '../../../src/common/model/base-model';
+import { secureRandom } from '../../chart/base/data.spec';
 RangeNavigator.Inject(Logarithmic, DateTime, LineSeries, AreaSeries, DateTimeCategory, PeriodSelector);
 
 let value: number = 0;
@@ -22,7 +23,7 @@ dateTime = [{ x: new Date(2000, 3), y: 34 }, { x: new Date(2000, 6), y: 32 },
 { x: new Date(2002, 11), y: 65 }, { x: new Date(2003, 3), y: 98 },
 { x: new Date(2003, 6), y: 10 }, { x: new Date(2003, 11), y: 34 }];
 for (let j: number = 0; j < 100; j++) {
-    value += (Math.random() * 10);
+    value += (secureRandom() * 10);
     point = { x: j, y: value };
     data.push(point);
 }

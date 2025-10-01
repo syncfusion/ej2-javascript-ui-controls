@@ -1032,7 +1032,10 @@ export class DiagramEventHandler {
                     //Bug 863516: Overview is not synced with diagram content while zoom-out the diagram.
                     //Checking page bounds before and after dragging node, and updating the overview rect if the page bounds modified after the drag.
                     const preDragBounds = this.diagram.scroller.getPageBounds();
-                    this.mouseMoveExtend(e, obj);
+                    //Bug 981347: Exception Occurs Randomly When Creating a Connector from a Port.
+                    if (this.tool) {
+                        this.mouseMoveExtend(e, obj);
+                    }
                     const postDragBounds = this.diagram.scroller.getPageBounds();
                     if(obj && (preDragBounds.width !== postDragBounds.width ||
                         preDragBounds.height !== postDragBounds.height ||

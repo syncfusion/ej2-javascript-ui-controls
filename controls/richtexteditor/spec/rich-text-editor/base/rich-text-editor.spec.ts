@@ -8713,7 +8713,7 @@ describe('RTE Base module ', () => {
             trg.dispatchEvent(event);
             (document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0].childNodes[1] as HTMLElement).click();
             (document.querySelector('.e-dropdown-popup').childNodes[0].childNodes[3] as HTMLElement).click();
-            expect((editNode.querySelector('.first-p') as HTMLElement).innerHTML == `<li>description</li>`).toBe(true)
+            expect((editNode.querySelector('.first-p') as HTMLElement).outerHTML == '<li class="first-p">description</li>').toBe(true);
         });
 
         afterAll(() => {

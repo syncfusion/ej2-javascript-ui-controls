@@ -128,9 +128,13 @@ export class InlineEditRender {
                 } else if (col.commands || col.commandsTemplate) {
                     addClass([td], 'e-unboundcell');
                 }
-                if (!this.parent.enableRtl && (gObj.gridLines === 'Vertical' || gObj.gridLines === 'Both') &&
-                    gLen && isFirstVisibleCell) {
-                    td.classList.add('e-grid-group-first-cell');
+                if (!this.parent.enableRtl && (gObj.gridLines === 'Vertical' || gObj.gridLines === 'Both') && isFirstVisibleCell) {
+                    if (gLen) {
+                        td.classList.add('e-grid-group-first-cell');
+                    }
+                    else if (!this.parent.allowRowDragAndDrop) {
+                        td.classList.add('e-first-visible-cell');
+                    }
                     isFirstVisibleCell = false;
                 }
             } else {

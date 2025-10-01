@@ -233,7 +233,8 @@ export class DataBinding {
      */
     private applyNodeTemplate(mapper: DataSourceModel, item: Object, diagram: Diagram): Node {
         //const root: Object = item;
-        const id: string = randomId();
+        //Bug: 981345 - To assign unique id to the nodes based on the data source.
+        const id: string = randomId() + item[mapper.id];
         //const blazor: string = 'Blazor';
         const nodeModel: NodeModel = { id: id, data: item };
         //Task 895538: Flow-chart layout support for EJ2 diagram.

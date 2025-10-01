@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.1.21 (2025-09-23)
+## 31.1.22 (2025-10-01)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I766694` - The CSP warning message will no longer be shown when using a nonce.
+
+## 31.1.17 (2025-09-05)
 
 ### ProgressBar
 

@@ -4,7 +4,7 @@
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
 import { createElement, getValue } from '@syncfusion/ej2-base';
 import { resourceData,resourceCollection,resourceViewData, scheduleModeData,scheduleModeData1, data, data1, data2, data3, data4 } from '../base/data-source.spec';
-import { destroyGantt, triggerMouseEvent, createGantt } from '../base/gantt-util.spec';
+import { destroyGantt, triggerMouseEvent, createGantt, getRandom } from '../base/gantt-util.spec';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 
 describe('Gantt spec for tooltip', () => {
@@ -1742,7 +1742,7 @@ describe('Gantt tooltip module', () => {
         });   
         it('Predecessor Tooltip', () => {
             const simulatedMouseMove = new PointerEvent("mousemove", {
-                pointerId: Math.floor(Math.random() * 1000),
+                pointerId: Math.floor(getRandom() * 1000),
                 pointerType: "mouse",
                 clientX: 400,
                 clientY: 400,
@@ -1760,7 +1760,7 @@ describe('Gantt tooltip module', () => {
             args.target = taskbarElement;
             args.cancel = false;
             const simulatedMouse = new PointerEvent("mousemove", {
-                pointerId: Math.floor(Math.random() * 1000),
+                pointerId: Math.floor(getRandom() * 1000),
                 pointerType: "mouse",
                 clientX: 500,
                 clientY: 500,

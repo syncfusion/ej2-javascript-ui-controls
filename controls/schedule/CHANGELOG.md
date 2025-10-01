@@ -9,6 +9,7 @@
 #### Bug fixes
 
 - `#I746117`, `#I754057` - An issue where an empty content area was rendered during virtual scrolling when using `rowAutoHeight` in combination with `overscanCount` has been resolved.
+- `#F197352` - An issue that caused appointments to overlap in the `TimelineYear` view has been fixed.
 
 ## 31.1.20 (2025-09-10)
 

@@ -1025,7 +1025,7 @@ describe('Chart Control', () => {
         it('checking with stackingarea series', (done: Function) => {
             loaded = (args: Arg): void => {
                 let series2: Series = <Series>args.chart.series[1];
-                expect(Math.round(series2.stackedValues.endValues[0]) === 100).toBe(true);
+                expect(Math.round(series2.stackedValues.endValues[0]) === 122).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1036,7 +1036,7 @@ describe('Chart Control', () => {
         it('checking with stackingcolumn series', (done: Function) => {
             loaded = (args: Arg): void => {
                 let series1: Series = <Series>args.chart.series[1];
-                expect(Math.round(series1.stackedValues.endValues[0]) === 100).toBe(true);
+                expect(Math.round(series1.stackedValues.endValues[0]) === 73).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

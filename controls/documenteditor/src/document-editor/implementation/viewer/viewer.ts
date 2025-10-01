@@ -2911,10 +2911,8 @@ export class DocumentHelper {
     }
     private moveSelectedContent(): void {
         this.isDragStarted = false;
+        let isDroppedInSameCell: boolean = false;
         let info = this.owner.editor.getSelectionInfo(true);
-        if (this.owner.selection.start.paragraph.isInsideTable) {
-            info = this.owner.selection.updateSelectionInfo(info);
-        }
         let start: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(info.start);
         let end: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(info.end);
         if (!this.selection.isForward) {
@@ -2935,8 +2933,16 @@ export class DocumentHelper {
         if (dropSelectionStartParaInfo.paragraph === dragOnSelectionStartPos.paragraph) {
             isDraggedInSamePara = true;
         }
-        if (dropSelectionStartPos.isExistBefore(dragOnSelectionStartPos)
-            || dropSelectionEndPos.isExistAfter(dragOnSelectionEndPos)) {
+        if (this.owner.selection.start.paragraph.isInsideTable) {
+            let droppedCell: TableCellWidget = dropSelectionStartPos.paragraph.associatedCell;
+            if (this.selection.selectedWidgets.containsKey(droppedCell)) {
+                isDroppedInSameCell = true;
+            }
+        }
+        if ((!this.owner.selection.start.paragraph.isInsideTable &&
+            (dropSelectionStartPos.isExistBefore(dragOnSelectionStartPos) ||
+                dropSelectionEndPos.isExistAfter(dragOnSelectionEndPos))) ||
+            (this.owner.selection.start.paragraph.isInsideTable && !isDroppedInSameCell)) {
             this.owner.editorModule.initComplexHistory('DragAndDropContent');
             this.selection.start = dragOnSelectionStartPos;
             this.selection.end = dragOnSelectionEndPos;
@@ -4269,7 +4275,7 @@ export class DocumentHelper {
      * @returns {void}
      */
     public scrollToBottom(): void {
-        if (this.selection.start.paragraph && this.selection.start.paragraph.bodyWidget) {
+        if (this.selection.start.paragraph && this.selection.start.paragraph.bodyWidget && this.selection.start.paragraph.bodyWidget.page) {
             let page: Page = this.selection.start.paragraph.bodyWidget.page;
             let containerHeight: number = this.visibleBounds.height;
             this.viewerContainer.scrollTop = page.boundingRectangle.bottom - containerHeight;

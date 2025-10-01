@@ -484,11 +484,13 @@ export class ContextMenu {
             args.hideChildItems = [];
             if (!isNullOrUndefined(args.rowData) && args.rowData.level === 0 && this.parent.viewType === 'ResourceView') {
                 args.cancel = true;
-                return;
             }
             const callBackPromise: Deferred = new Deferred();
             this.parent.trigger('contextMenuOpen', args, (arg: CMenuOpenEventArgs) => {
                 callBackPromise.resolve(arg);
+                if (arg.cancel) {
+                    return;
+                }
                 this.hideItems = arg.hideItems;
                 this.disableItems = arg.disableItems;
                 if (!arg.parentItem && arg.hideItems.length === arg.items.length) {
@@ -533,6 +535,9 @@ export class ContextMenu {
                 if (!this.parent.editSettings.allowAdding || !this.parent.editModule) {
                     this.updateItemVisibility(item.text);
                 }
+                if (this.parent.viewType === 'ResourceView' && this.rowData.level === 0) {
+                    this.hideItems.push(item.text);
+                }
                 break;
             case 'Save':
             case 'Cancel':
@@ -574,6 +579,9 @@ export class ContextMenu {
                     this.updateItemVisibility(item.text);
                 }
                 if (this.parent.flatData.length === 0) {
+                    this.hideItems.push(item.text);
+                }
+                if (this.parent.viewType === 'ResourceView' && this.rowData.level === 0) {
                     this.hideItems.push(item.text);
                 }
                 break;
@@ -634,8 +642,8 @@ export class ContextMenu {
                 }
                 if (this.parent.readOnly || !taskbarElement || isNullOrUndefined(taskSettings.segments) ||
                     this.parent.updatedRecords[Number(rowIndex)].hasChildRecords ||
-                    (this.parent.updatedRecords[Number(rowIndex)].ganttProperties.duration < 2
-                     && !(isBottomTierMinute || isBottomTierHour))) {
+                    (!(isBottomTierMinute || isBottomTierHour) &&
+                    this.parent.updatedRecords[Number(rowIndex)].ganttProperties.duration < 2)) {
                     this.updateItemVisibility(item.text);
                 }
                 break;

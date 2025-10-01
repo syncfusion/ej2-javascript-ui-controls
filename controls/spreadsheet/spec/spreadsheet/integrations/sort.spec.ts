@@ -1247,10 +1247,10 @@ describe('Spreadsheet sorting module ->', () => {
     describe('Filtering - Date formate', () => {
         const datasource: Function = (count: number) => {
             const randomYear: Function = (min: number, max: number) => {
-                return Math.floor(Math.random() * (max - min + 1)) + min;
+                return Math.floor(helper.secureRandom() * (max - min + 1)) + min;
             }
             const randomPerfix: Function = (arr: string[]): string => {
-                const randomIndex = Math.floor(Math.random() * arr.length);
+                const randomIndex = Math.floor(helper.secureRandom() * arr.length);
                 return arr[randomIndex];
             }
             const result: Object[] = [];

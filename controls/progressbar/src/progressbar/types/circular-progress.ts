@@ -176,7 +176,7 @@ export class Circular {
                             this.trackEndAngle, progress.enableRtl, true)
                         );
                     }
-                    circularProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
+                    (<SVGPathElement>circularProgress).style.clipPath = 'url(#' + progress.element.id + '_clippath)';
                     this.animation.doCircularIndeterminate(
                         (!progress.enableProgressSegments) ? linearClipPath : circularProgress, progress, startAngle,
                         progressEndAngle, this.centerX, this.centerY, radius, thickness, linearClipPath
@@ -240,7 +240,7 @@ export class Circular {
         if (((progress.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && !progress.isActive) {
             bufferClipPath = progress.createClipPath(progress.bufferClipPath, null, '', false);
             circularBufferGroup.appendChild(progress.bufferClipPath);
-            circularBuffer.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathBuffer)');
+            (<SVGPathElement>circularBuffer).style.clipPath = 'url(#' + progress.element.id + '_clippathBuffer)';
             this.animation.doCircularAnimation(
                 this.centerX, this.centerY, radius, endAngle, bufferEnd, bufferClipPath, progress,
                 (progress.progressThickness || progress.themeStyle.circularProgressThickness), progress.animation.delay
@@ -335,7 +335,7 @@ export class Circular {
             circularActive.setAttribute('stroke-linecap', 'round');
         }
         const activeClip: Element = progress.createClipPath(progress.clipPath, null, '', refresh);
-        circularActive.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
+        (<SVGPathElement>circularActive).style.clipPath = 'url(#' + progress.element.id + '_clippath)';
         progressGroup.appendChild(circularActive);
         progressGroup.appendChild(progress.clipPath);
         this.animation.doCircularAnimation(

@@ -60,10 +60,21 @@ export class PivotButton implements IAction {
     private renderPivotButton(args: PivotButtonArgs): void {
         this.parentElement = this.parent.getModuleName() === 'pivotview' ? this.parent.element :
             document.getElementById(this.parent.element.id + '_Container');
-        const currentAxisElements: Element[] = Array.prototype.slice.call(this.parentElement.querySelectorAll('.e-group-' + args.axis));
+        let currentAxisElements: Element[];
+        let currentChartAxisElements: Element[];
+        if ((!(this.parent as PivotView).isTabular) || ((this.parent as PivotView).isTabular && args.axis !== 'rows')) {
+            currentAxisElements = Array.prototype.slice.call(this.parentElement.querySelectorAll('.e-group-' + args.axis));
+        } else if ((this.parent as PivotView).isTabular && args.axis === 'rows') {
+            if (!isNullOrUndefined(this.parentElement.querySelectorAll('.' + cls.GROUP_PIVOT_ROW)[0])) {
+                currentAxisElements = Array.prototype.slice.call(this.parentElement.querySelectorAll('.' + cls.GROUP_PIVOT_ROW));
+            }
+            if (!isNullOrUndefined(this.parentElement.querySelectorAll('.' + cls.GROUP_CHART_ROW)[0])) {
+                currentChartAxisElements = Array.prototype.slice.call(this.parentElement.querySelectorAll('.' + cls.GROUP_CHART_ROW));
+            }
+        }
         let axisElement: Element;
         if (args.axis === 'rows' && (this.parent as PivotView).showGroupingBar && (this.parent as PivotView).groupingBarModule
-        && isNullOrUndefined(this.parentElement.querySelector('.' + cls.GROUP_PIVOT_ROW))) {
+            && isNullOrUndefined(this.parentElement.querySelector('.' + cls.GROUP_PIVOT_ROW)) && !isNullOrUndefined(currentAxisElements)) {
             currentAxisElements.push((this.parent as PivotView).groupingBarModule.rowPanel);
             axisElement = (this.parent as PivotView).groupingBarModule.rowPanel;
         }
@@ -140,23 +151,36 @@ export class PivotButton implements IAction {
                         }
                     }
                 } else {
-                    for (let i: number = 0, cnt: number = field.length; i < cnt; i++) {
-                        const elements: Element[] | NodeListOf<HTMLElement> = this.parent.getModuleName() === 'pivotfieldlist' ?
-                            [axisElement] : currentAxisElements;
-                        const valueBtnExist: boolean = this.parent.dataSourceSettings.valueAxis === 'row' &&
-                            this.parent.dataSourceSettings.values.length > 0 && elements.length > 1;
-                        let elemIdx: number;
-                        if (valueBtnExist && showValuesButton) {
-                            elemIdx = (i === field.length - 1)
-                                ? elements.length - 1
-                                : i % (elements.length - 1);
-                        } else if (valueBtnExist && !showValuesButton) {
-                            elemIdx = i % (elements.length - 1);
-                        } else {
-                            elemIdx = i % elements.length;
+                    if (!isNullOrUndefined(currentAxisElements)) {
+                        for (let i: number = 0, cnt: number = field.length; i < cnt; i++) {
+                            const elements: Element[] | NodeListOf<HTMLElement> = this.parent.getModuleName() === 'pivotfieldlist' ?
+                                [axisElement] : currentAxisElements;
+                            const valueBtnExist: boolean = this.parent.dataSourceSettings.valueAxis === 'row' &&
+                                this.parent.dataSourceSettings.values.length > 1 && elements.length > 1;
+                            let elemIdx: number;
+                            if (valueBtnExist && showValuesButton) {
+                                elemIdx = (i === field.length - 1)
+                                    ? elements.length - 1
+                                    : i % (elements.length - 1);
+                            } else if ((valueBtnExist && !showValuesButton) || (this.parent.dataSourceSettings.alwaysShowValueHeader
+                                && this.parent.dataSourceSettings.values.length === 1)) {
+                                elemIdx = i % (elements.length - 1);
+                            } else {
+                                elemIdx = i % elements.length;
+                            }
+                            const element: HTMLElement | Element = elements[elemIdx as number];
+                            this.appendPivotButton(element, field, axis, valuePos, i, args);
                         }
-                        const element: HTMLElement | Element = elements[elemIdx as number];
-                        this.appendPivotButton(element, field, axis, valuePos, i, args);
+                    }
+                    if (!isNullOrUndefined(currentChartAxisElements)) {
+                        for (let i: number = 0, cnt: number = field.length; i < cnt; i++) {
+                            const elements: Element[] | NodeListOf<HTMLElement> = this.parent.getModuleName() === 'pivotfieldlist' ?
+                                [axisElement] : currentChartAxisElements;
+                            for (let j: number = 0; j < elements.length; j++) {
+                                const element: HTMLElement | Element = elements[j as number];
+                                this.appendPivotButton(element, field, axis, valuePos, i, args);
+                            }
+                        }
                     }
                 }
                 if (axis === 'values') {
@@ -299,7 +323,7 @@ export class PivotButton implements IAction {
                     attrs: { 'data-tag': axis + ':' + field[i as number].name }
                 });
                 if ((this.parent as PivotView).isTabular) {
-                    buttonWrapper.style.width = args.axis === 'rows' ? '100%' : 'auto';
+                    buttonWrapper.style.width = args.axis === 'rows' && element.classList.contains(cls.GROUP_PIVOT_ROW) ? '100%' : 'auto';
                 }
                 let buttonCaption: string = field[i as number].caption ? field[i as number].caption :
                     field[i as number].name;

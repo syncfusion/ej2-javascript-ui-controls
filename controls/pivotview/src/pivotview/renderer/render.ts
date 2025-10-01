@@ -79,7 +79,9 @@ export class Render {
     constructor(parent: PivotView) {
         this.parent = parent;
         this.resColWidth = !this.parent.isTabular ? (this.parent.showGroupingBar && this.parent.groupingBarModule
-            ? (this.parent.isAdaptive ? 180 : 250) : (this.parent.isAdaptive ? 140 : 200)) : 150;
+            ? (this.parent.isAdaptive ? 180 : 250) : (this.parent.isAdaptive ? 140 : 200))
+            : (this.parent.showGroupingBar && this.parent.groupingBarModule
+                ? (this.parent.isAdaptive ? 110 : 150) : this.parent.gridSettings.columnWidth);
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         this.gridSettings = this.parent.gridSettings;
         this.formatList = this.getFormatList();
@@ -97,9 +99,10 @@ export class Render {
             this.removeAllHyperlinkEventHandlers();
             this.initProperties();
         }
-        this.resColWidth = this.parent.isTabular ? this.gridSettings.columnWidth :
-            (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) :
-                (this.parent.isAdaptive ? 140 : 200);
+        this.resColWidth = !this.parent.isTabular ? (this.parent.showGroupingBar && this.parent.groupingBarModule
+            ? (this.parent.isAdaptive ? 180 : 250) : (this.parent.isAdaptive ? 140 : 200))
+            : (this.parent.showGroupingBar && this.parent.groupingBarModule
+                ? (this.parent.isAdaptive ? 110 : 150) : this.parent.gridSettings.columnWidth);
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         this.gridSettings = this.parent.gridSettings;
         this.formatList = this.getFormatList();

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.22 (2025-10-01)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- `#I766604` - Resolved a script error that occurred during keyboard navigation in the ColorPicker when using custom columns.
+
 ## 31.1.21 (2025-09-23)
 
 ### TextBox

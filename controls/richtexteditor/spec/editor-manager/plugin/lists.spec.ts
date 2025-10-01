@@ -718,7 +718,7 @@ describe ('left indent testing', () => {
                 endNode = editNode.querySelector('.endFocus');
                 editorObj.nodeSelection.setSelectionText(document, startNode, endNode.childNodes[0], 0, 16);
                 editorObj.execCommand("Lists", 'OL', null);
-                expect((editorObj.nodeSelection.range.startContainer as HTMLElement).classList.contains('startfocus')).toBe(true);
+                expect((editorObj.nodeSelection.range.startContainer as HTMLElement).classList.contains('startFocus')).toBe(true);
             });
             afterAll(() => {
                 detach(elem);
@@ -741,8 +741,7 @@ describe ('left indent testing', () => {
                 editorObj.execCommand("Lists", 'OL', null);
                 expect(editNode.querySelectorAll('blockquote')[0].closest('OL')).toBe(null);
                 expect(editNode.querySelectorAll('blockquote')[1].closest('OL')).toBe(null);
-                expect(editNode.innerHTML === `<ol><li class="startfocus">Line 1</li><li>Line 2</li></ol><blockquote><ol><li>Line 3 with quotation</li></ol></blockquote><ol><li>Line 4</li><li>Line 5</li></ol><blockquote><ol><li>Line 6&nbsp;<span style="background-color: unset; text-align: inherit;">with quotation</span></li></ol></blockquote><ol><li>Line 7</li><li class="endfocus">Line 8</li></ol>`).toBe(true);
-            });
+                expect(editNode.innerHTML === `<ol><li class="startFocus">Line 1</li><li>Line 2</li></ol><blockquote><ol><li>Line 3 with quotation</li></ol></blockquote><ol><li>Line 4</li><li>Line 5</li></ol><blockquote><ol><li>Line 6&nbsp;<span style="background-color: unset; text-align: inherit;">with quotation</span></li></ol></blockquote><ol><li>Line 7</li><li class="endFocus">Line 8</li></ol>`).toBe(true);            });
             afterAll(() => {
                 detach(elem);
             });
@@ -1475,7 +1474,7 @@ describe ('left indent testing', () => {
                 endNode = editNode.querySelector('.endFocus');
                 editorObj.nodeSelection.setSelectionText(document, startNode, endNode.childNodes[0], 0, 0);
                 editorObj.execCommand("Lists", 'OL', null);
-                expect((editorObj.nodeSelection.range.endContainer as HTMLElement).classList.contains('endfocus')).toBe(true);
+                expect((editorObj.nodeSelection.range.endContainer as HTMLElement).classList.contains('endFocus')).toBe(true);
             });
             afterAll(() => {
                 detach(elem);
@@ -1495,8 +1494,7 @@ describe ('left indent testing', () => {
                 endNode = editNode.querySelector('.endFocus');
                 editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 1, 3);
                 editorObj.execCommand("Lists", 'OL', null);
-                expect(editNode.innerHTML === `<ol style="margin-left: 120px;"><li class="startfocus" style="color: red; background-color: yellow;">sdvsdvsdv</li><li style="color: yellow; background-color: red;">sdvdsvdsvsdvsdv</li><li>sdv</li><li class="endfocus" style="">sdvsdvdsvsdv</li></ol>`).toBe(true);
-            });
+                expect(editNode.innerHTML === `<ol style="margin-left: 120px;"><li class="startFocus" style="color: red; background-color: yellow;">sdvsdvsdv</li><li style="color: yellow; background-color: red;">sdvdsvdsvsdvsdv</li><li>sdv</li><li class="endFocus" style="">sdvsdvdsvsdv</li></ol>`).toBe(true);            });
             afterAll(() => {
                 detach(elem);
             });
@@ -1790,7 +1788,7 @@ describe ('left indent testing', () => {
                 keyBoardEvent.action = 'space';
                 keyBoardEvent.event.which = 32;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.selectnode').parentElement.tagName).toBe('OL');
+                expect(editNode.querySelector('.selectNode').parentElement.tagName).toBe('OL');
             });
 
             afterAll(() => {
@@ -1893,8 +1891,8 @@ describe ('left indent testing', () => {
                 keyBoardEvent.action = 'space';
                 keyBoardEvent.event.which = 32;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.selectnode').parentElement.tagName).toBe('OL');
-                expect(editNode.querySelector('.selectnode').parentElement.childNodes[0].childNodes[0].nodeName).toBe('BR');
+                expect(editNode.querySelector('.selectNode').parentElement.tagName).toBe('OL');
+                expect(editNode.querySelector('.selectNode').parentElement.childNodes[0].childNodes[0].nodeName).toBe('BR');
             });
             afterAll(() => {
                 detach(elem);
@@ -3313,7 +3311,7 @@ describe ('left indent testing', () => {
             editorObj.execCommand("Lists", 'BulletFormatList', null, null, 'disc', execValue);
             editorObj.execCommand("Lists", 'UL', null);
             editorObj.execCommand("Lists", 'OL', null);
-            expect(elem.innerHTML === '<div id="content-edit" contenteditable="true"><ol><li class="startfocus"><h1 class="startFocus">Welcome to the Syncfusion Rich Text Editor</h1></li><li>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</li></ol></div>').toBe(true);
+            expect(elem.innerHTML === '<div id="content-edit" contenteditable="true"><ol><li class="startFocus"><h1 class="startFocus">Welcome to the Syncfusion Rich Text Editor</h1></li><li class="endFocus">The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</li></ol></div>').toBe(true);
         });
         afterAll(() => {
             detach(elem);
@@ -3884,6 +3882,33 @@ describe('965805 - Incorrect Selection After Applying List to Multiple HR Tags a
         expect(listElement.querySelector('li').contains(editNode.querySelector('p'))).toBe(false);
     });
 });
+describe('983487 - Enter at list item creates extra line break.', () => {
+    let editorObj: RichTextEditor;
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            },
+            value: `<ul><li><p>Rich Text Editor 1</p><p class='start'>Rich Text Editor 2</p><p>Rich Text Editor 3</p><p>Rich Text Editor 4</p></li></ul>`
+        });
+    });
+    afterAll(() => {
+        destroy(editorObj);
+    });
+    it('Should properly handle nested lists when splitting at parent list item', (done) => {
+        editorObj.inputElement.innerHTML = `<ol><li class="start">Rich Text Editor<ol><li>Text1</li><li>Text2</li></ol></li></ol>`;
+        let startNode = editorObj.inputElement.querySelector('.start');
+        setCursorPoint(startNode.firstChild as Element, 0);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'enter', stopPropagation: () => { }, shiftKey: false, which: 13, action: 'enter' };
+        keyBoardEvent.keyCode = 13;
+        keyBoardEvent.code = 'Enter';
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === `<ol><li class="start"><br></li><li class="start">Rich Text Editor<ol><li>Text1</li><li>Text2</li></ol></li></ol>`).toBe(true);
+            done();
+        }, 50);
+    });
+});
 describe('956982 - List item merge and incorrect cursor behavior after removing code block formatting in Rich Text Editor', () => {
     let editorObj: RichTextEditor;
     beforeAll(() => {
@@ -4024,63 +4049,63 @@ describe('968282 : Implement NumberFormatList and BulletFormatList in executeCom
             let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode1');
             setCursorPoint(targetNode, 1);
             rteObj.executeCommand("numberFormatList", "decimal", {undo : true} );
-            expect(targetNode.style.listStyleType === 'decimal').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode1').parentElement.style.listStyleType === 'decimal').toBe(true);
         });
         // case for checking lower greek for executeCommand method.
         it('Should check for list style lower greek in exexuteCommand', () => {
             let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode2');
             setCursorPoint(targetNode, 1);
             rteObj.executeCommand("numberFormatList", "lowerGreek", {undo : true} );
-            expect(targetNode.style.listStyleType === 'lower-greek').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode2').parentElement.style.listStyleType === 'lower-greek').toBe(true);
         });
         // case for checking lower roman for executeCommand method.
         it('Should check for list style lower roman in exexuteCommand', () => {
             let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode3');
             setCursorPoint(targetNode, 1);
             rteObj.executeCommand("numberFormatList", "lowerRoman", {undo : true} );
-            expect(targetNode.style.listStyleType === 'lower-roman').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode3').parentElement.style.listStyleType === 'lower-roman').toBe(true);
         });
         // case for checking upper alpha for executeCommand method.
         it('Should check for list style upper alpha in exexuteCommand', () => {
             let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode4');
             setCursorPoint(targetNode, 1);
             rteObj.executeCommand("numberFormatList", "upperAlpha", {undo : true} );
-            expect(targetNode.style.listStyleType === 'upper-alpha').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode4').parentElement.style.listStyleType === 'upper-alpha').toBe(true);
         });
         // case for checking lower alpha for executeCommand method.
         it('Should check for list style lower alpha in exexuteCommand', () => {
             let targetNode : HTMLElement = rteObj.inputElement.querySelector('#createLink');
             setCursorPoint(targetNode, 1);
             rteObj.executeCommand("numberFormatList", "lowerAlpha", {undo : true} );
-            expect(targetNode.style.listStyleType === 'lower-alpha').toBe(true);
+            expect(rteObj.inputElement.querySelector('#createLink').parentElement.style.listStyleType === 'lower-alpha').toBe(true);
         });
         // case for checking upper roman for executeCommand method.
         it('Should check for list style upper roman in exexuteCommand', () => {
             let targetNode : HTMLElement = rteObj.inputElement.querySelector('#createLink');
             setCursorPoint(targetNode, 1);
             rteObj.executeCommand("numberFormatList", "upperRoman", {undo : true} );
-            expect(targetNode.style.listStyleType === 'upper-roman').toBe(true);
+            expect(rteObj.inputElement.querySelector('#createLink').parentElement.style.listStyleType === 'upper-roman').toBe(true);
         });
         // case for checking dic list for executeCommand method.
         it('Should check for list style dic in exexuteCommand', () => {
             let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode1');
             setCursorPoint(targetNode, 1);
             rteObj.executeCommand("bulletFormatList", "disc", {undo: true});
-            expect(targetNode.style.listStyleType === 'disc').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode1').parentElement.style.listStyleType === 'disc').toBe(true);
         });
         // case for checking  circle for executeCommand method.
         it('Should check for list style lower greek in exexuteCommand', () => {
             let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode2');
             setCursorPoint(targetNode, 1);
             rteObj.executeCommand("bulletFormatList", "circle", {undo: true});
-            expect(targetNode.style.listStyleType === 'circle').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode2').parentElement.style.listStyleType === 'circle').toBe(true);
         });
         // case for checking square for executeCommand method.
         it('Should check for list style square in exexuteCommand', () => {
             let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode3');
             setCursorPoint(targetNode, 1);
             rteObj.executeCommand("bulletFormatList", "Square", {undo: true});
-            expect(targetNode.style.listStyleType === 'square').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode3').parentElement.style.listStyleType === 'square').toBe(true);
         });
 });
 
@@ -4129,7 +4154,7 @@ describe('968282 : Implement NumberFormatList in executeCommand Method - Selecti
             let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode2');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
             rteObj.executeCommand("numberFormatList", "decimal", {undo : true} );
-            expect(targetNodeTwo.style.listStyleType === 'decimal').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode2').parentElement.style.listStyleType === 'decimal').toBe(true);
             expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
             
         });
@@ -4139,7 +4164,7 @@ describe('968282 : Implement NumberFormatList in executeCommand Method - Selecti
             let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode4');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
             rteObj.executeCommand("numberFormatList", "lowergreek", {undo : true} );
-            expect(targetNodeOne.style.listStyleType === 'lower-greek').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode3').parentElement.style.listStyleType === 'lower-greek').toBe(true);
             expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
         });
         // case for checking lower roman for executeCommand method.
@@ -4148,7 +4173,7 @@ describe('968282 : Implement NumberFormatList in executeCommand Method - Selecti
             let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode6');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
             rteObj.executeCommand("numberFormatList", "lowerRoman", {undo : true} );
-            expect(targetNodeOne.style.listStyleType === 'lower-roman').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode5').parentElement.style.listStyleType === 'lower-roman').toBe(true);
             expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
         });
         // case for checking upper alpha for executeCommand method.
@@ -4157,7 +4182,7 @@ describe('968282 : Implement NumberFormatList in executeCommand Method - Selecti
             let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode8');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
             rteObj.executeCommand("numberFormatList", "upperAlpha", {undo : true} );
-            expect(targetNodeOne.style.listStyleType === 'upper-alpha').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode7').parentElement.style.listStyleType === 'upper-alpha').toBe(true);
             expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
         });
         // case for checking lower alpha for executeCommand method.
@@ -4166,7 +4191,7 @@ describe('968282 : Implement NumberFormatList in executeCommand Method - Selecti
             let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode10');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
             rteObj.executeCommand("numberFormatList", "lowerAlpha", {undo : true} );
-            expect(targetNodeOne.style.listStyleType === 'lower-alpha').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode9').parentElement.style.listStyleType === 'lower-alpha').toBe(true);
             expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
         });
         // case for checking upper roman for executeCommand method.
@@ -4175,7 +4200,7 @@ describe('968282 : Implement NumberFormatList in executeCommand Method - Selecti
             let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode12');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
             rteObj.executeCommand("numberFormatList", "upperRoman", {undo : true} );
-            expect(targetNodeOne.style.listStyleType === 'upper-roman').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode11').parentElement.style.listStyleType === 'upper-roman').toBe(true)
             expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
         });
         // case for checking dic list for executeCommand method.
@@ -4184,7 +4209,7 @@ describe('968282 : Implement NumberFormatList in executeCommand Method - Selecti
             let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode14');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
             rteObj.executeCommand("bulletFormatList", "disc", {undo: true});
-            expect(targetNodeTwo.style.listStyleType === 'disc').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode14').parentElement.style.listStyleType === 'disc').toBe(true);
             expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
         });
         // case for checking  circle for executeCommand method.
@@ -4193,7 +4218,7 @@ describe('968282 : Implement NumberFormatList in executeCommand Method - Selecti
             let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode17');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
             rteObj.executeCommand("bulletFormatList", "circle", {undo: true});
-            expect(targetNodeOne.style.listStyleType === 'circle').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode16').parentElement.style.listStyleType === 'circle').toBe(true);
             expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
         });
         // case for checking square for executeCommand method.
@@ -4202,7 +4227,7 @@ describe('968282 : Implement NumberFormatList in executeCommand Method - Selecti
             let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode19');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
             rteObj.executeCommand("bulletFormatList", "Square", {undo: true});
-            expect(targetNodeTwo.style.listStyleType === 'square').toBe(true);
+            expect(rteObj.inputElement.querySelector('#pNode19').parentElement.style.listStyleType === 'square').toBe(true);
             expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
         });
         
@@ -4250,57 +4275,57 @@ describe('968282: Nested List Formatting with executeCommand', () => {
         const targetNode: HTMLElement = rteObj.inputElement.querySelector('#item1-1');
         setSelection(targetNode, 0, 0);
         rteObj.executeCommand("bulletFormatList", "disc", {undo: true});
-        expect(targetNode.style.listStyleType).toBe('disc');
+        expect(rteObj.inputElement.querySelector('#item1-1').parentElement.style.listStyleType).toBe('disc');
     });
 
     it('Should apply circle style to nested unordered list', () => {
         const targetNode: HTMLElement = rteObj.inputElement.querySelector('#item1-1');
         setCursorPoint(targetNode, 1);
         rteObj.executeCommand("bulletFormatList", "circle", {undo: true});
-        expect(targetNode.style.listStyleType).toBe('circle');
+        expect(rteObj.inputElement.querySelector('#item1-1').parentElement.style.listStyleType).toBe('circle');
     });
     it('Should apply square style to nested unordered list', () => {
         const targetNode: HTMLElement = rteObj.inputElement.querySelector('#item1-1');
         setCursorPoint(targetNode, 1);
         rteObj.executeCommand("bulletFormatList", "Square", {undo: true});
-        expect(targetNode.style.listStyleType).toBe('square');
+        expect(rteObj.inputElement.querySelector('#item1-1').parentElement.style.listStyleType).toBe('square');
     });
 
     it('Should apply lower-roman style to nested ordered list', () => {
         const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
         setSelection(targetNode, 0, 0);
         rteObj.executeCommand("numberFormatList", "lowerRoman", {undo : true} );
-        expect(targetNode.style.listStyleType).toBe('lower-roman');
+        expect(rteObj.inputElement.querySelector('#item3-1').parentElement.style.listStyleType).toBe('lower-roman');
     });
     it('Should apply number style to nested ordered list', () => {
         const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
         setCursorPoint(targetNode, 1);
         rteObj.executeCommand("numberFormatList", "decimal", {undo : true} );
-        expect(targetNode.style.listStyleType).toBe('decimal');
+        expect(rteObj.inputElement.querySelector('#item3-1').parentElement.style.listStyleType).toBe('decimal');
     });
     it('Should apply lower alpha style to nested ordered list', () => {
         const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
         setCursorPoint(targetNode, 1);
         rteObj.executeCommand("numberFormatList", "lowerAlpha", {undo : true} );
-        expect(targetNode.style.listStyleType).toBe('lower-alpha');
+        expect(rteObj.inputElement.querySelector('#item3-1').parentElement.style.listStyleType).toBe('lower-alpha');
     });
     it('Should apply upper alpha style to nested ordered list', () => {
         const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
         setCursorPoint(targetNode, 1);
         rteObj.executeCommand("numberFormatList", "upperAlpha", {undo : true} );
-        expect(targetNode.style.listStyleType).toBe('upper-alpha');
+        expect(rteObj.inputElement.querySelector('#item3-1').parentElement.style.listStyleType).toBe('upper-alpha');
     });
     it('Should apply upper roman style to nested ordered list', () => {
         const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
         setCursorPoint(targetNode, 1);
         rteObj.executeCommand("numberFormatList", "upperRoman", {undo : true} );
-        expect(targetNode.style.listStyleType).toBe('upper-roman');
+        expect(rteObj.inputElement.querySelector('#item3-1').parentElement.style.listStyleType).toBe('upper-roman');
     });
     it('Should apply lower greek style to nested ordered list', () => {
         const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
         setCursorPoint(targetNode, 1);
         rteObj.executeCommand("numberFormatList", "lowerGreek", {undo : true} );
-        expect(targetNode.style.listStyleType).toBe('lower-greek');
+        expect(rteObj.inputElement.querySelector('#item3-1').parentElement.style.listStyleType).toBe('lower-greek');
     });
 });
 
@@ -4528,6 +4553,35 @@ describe('975503 - Unable to Create Table Inside List – Script Error Encounter
     });
 });
 
+describe('980355 - Bullet List Fails to Apply After Switching from Numbered List with Lower Greek Format', () => {
+    let editorObj: RichTextEditor;
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['BulletFormatList', 'NumberFormatList']
+            },
+            value: `<p class="start">Rich Text Editor</p>`
+        });
+    });
+    afterAll((done) => {
+        destroy(editorObj);
+        done();
+    });
+    it('Should properly update the list style for UL and OL elements', (done) => {
+        let startNode = editorObj.inputElement.querySelector('.start');
+        setCursorPoint(startNode.firstChild as Element, 0);
+        editorObj.executeCommand('numberFormatList', 'UpperAlpha');
+        expect(editorObj.inputElement.innerHTML = `<ol style="list-style-image: none; list-style-type: upper-alpha;"><li class="start">Rich Text Editor</li></ol>`);
+        editorObj.executeCommand('bulletFormatList', 'disc');
+        expect(editorObj.inputElement.innerHTML = `<ul style="list-style-image: none; list-style-type: disc;"><li class="start">Rich Text Editor</li></ul>`);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0].querySelector('button.e-rte-bulletformatlist-dropdown') as HTMLElement).click();
+        expect(editorObj.inputElement.innerHTML = `<p class="start">Rich Text Editor</p>`);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0].querySelector('button.e-rte-bulletformatlist-dropdown') as HTMLElement).click();
+        expect(editorObj.inputElement.innerHTML = `<ul><li class="start">Rich Text Editor</li></ul>`);
+        done();
+    });
+});
+
 describe('975383: Shortcut to toggle Checklist is not working.', () => {
     let editorObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
@@ -4588,7 +4642,7 @@ describe('977557 - When pressing enter key at start position of list affects the
         let endNode = editorObj.inputElement.querySelector('.endFocus');
         editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, endNode.lastChild, 0, endNode.lastChild.textContent.length);
         (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
-        expect(editorObj.inputElement.innerHTML === '<ul><li class="startfocus">Line 1</li><li class="endfocus">Line 2</li></ul>').toBe(true);
+        expect(editorObj.inputElement.innerHTML === '<ul><li class="startFocus">Line 1</li><li class="endFocus">Line 2</li></ul>').toBe(true);
         const ul = document.querySelector('ul');
         setCursorPoint(ul.childNodes[0].firstChild as Element, 0);
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 8 };
@@ -4596,10 +4650,10 @@ describe('977557 - When pressing enter key at start position of list affects the
         keyBoardEvent.action = 'enter';
         keyBoardEvent.which = 13;
         (editorObj as any).keyDown(keyBoardEvent);
-        expect(editorObj.inputElement.innerHTML === '<ul><li class="startfocus"><br></li><li class="startfocus">Line 1</li><li class="endfocus">Line 2</li></ul>').toBe(true);
+        expect(editorObj.inputElement.innerHTML === '<ul><li class="startFocus"><br></li><li class="startFocus">Line 1</li><li class="endFocus">Line 2</li></ul>').toBe(true);
         setCursorPoint(ul.childNodes[2].lastChild as Element, ul.childNodes[2].lastChild.textContent.length);
         (editorObj as any).keyDown(keyBoardEvent);
-        expect(editorObj.inputElement.innerHTML === '<ul><li class="startfocus"><br></li><li class="startfocus">Line 1</li><li class="endfocus">Line 2</li><li class="endfocus"><br></li></ul>').toBe(true);
+        expect(editorObj.inputElement.innerHTML === '<ul><li class="startFocus"><br></li><li class="startFocus">Line 1</li><li class="endFocus">Line 2</li><li class="endFocus"><br></li></ul>').toBe(true);
         done();
     });
 });
@@ -4674,5 +4728,46 @@ describe('979095 - Bullet list element comes with font color even after removing
         (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
         expect(editorObj.inputElement.innerHTML === '<p style="text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ppppppp</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><br></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ffffffffffff</span></p>').toBe(true);
         done();
+    });
+});
+
+describe('Tab key indentation with maxLength', () => {
+    let editorObj: any;
+    let editNode: HTMLElement;
+    let startNode: Node;
+    let keyBoardEvent: any;
+    beforeAll((done: Function) => {
+        editorObj = renderRTE({
+            value: '<ul><li>1234567890</li></ul>',
+            enableTabKey: true,
+            maxLength: 10
+        });
+        editNode = editorObj.inputElement;
+        done();
+    });
+    afterAll((done: Function) => {
+        destroy(editorObj);
+        done();
+    });
+    it('Should not indent list when maxLength is reached and enableTabKey is true', (done: Function) => {
+        editorObj.focusIn();
+        startNode = editNode.querySelector('li');
+        editorObj.formatter.editorManager.nodeSelection.setCursorPoint(document, startNode, 0);
+        keyBoardEvent = {
+            preventDefault: () => {},
+            stopPropagation: () => {},
+            key: 'Tab',
+            code: 'Tab',
+            keyCode: 9,
+            which: 9,
+            shiftKey: false,
+            action: 'tab'
+        };
+        editorObj.formatter.editorManager.editorKeyDown({ event: keyBoardEvent });
+        setTimeout(() => {
+            const updatedText: string = editNode.querySelector('li').textContent;
+            expect(updatedText).toBe('1234567890');
+            done();
+        }, 50);
     });
 });

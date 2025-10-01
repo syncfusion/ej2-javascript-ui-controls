@@ -244,7 +244,7 @@ export class ExcelExport {
                             cCnt = cCnt + (pivotCell.colSpan ? (pivotCell.colSpan - 1) : 0);
                         } else {
                             const pivotCell: IAxisSet = { formattedText: '', colSpan: 1, rowSpan: 1 };
-                            if (rCnt === 0 && cCnt === 0) {
+                            if (rCnt === 0 && cCnt === 0 && this.parent.dataType !== 'olap') {
                                 pivotCell.colSpan = pivotValues[0].length - this.engine.columnCount;
                                 pivotCell.rowSpan = Object.keys(pivotValues).length - this.engine.rowCount;
                             }

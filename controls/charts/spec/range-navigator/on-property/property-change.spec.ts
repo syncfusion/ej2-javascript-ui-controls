@@ -2,7 +2,8 @@ import { RangeNavigator, IChangedEventArgs, RangeTooltip } from '../../../src/ra
 import { AreaSeries, DateTime } from '../../../src/chart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
+import { secureRandom } from '../../chart/base/data.spec';
 RangeNavigator.Inject(AreaSeries, DateTime, RangeTooltip);
 
 /**
@@ -15,13 +16,13 @@ let newdata: object[] = [];
 let dateTime: object[] = [];
 
 for (let j: number = 0; j < 100; j++) {
-    value += (Math.random() * 10 - 5);
+    value += (secureRandom() * 10 - 5);
     point = { x: j, y: value, y1: value + 10 };
     dateTime.push({ date: new Date(2018, 0, j), yValue: value });
     data.push(point);
 }
 for (let k: number = 50; k < 100; k++) {
-    value += (Math.random() * 10 - 5);
+    value += (secureRandom() * 10 - 5);
     point = { x: k, y: value, y1: value + 10 };
     dateTime.push({ date: new Date(2018, 0, k), yValue: value });
     data.push(point);

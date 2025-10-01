@@ -794,6 +794,40 @@ xdescribe('DropDown Tree control Remote datasource', () => {
             (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
         });
+        it('With expand parent then select child (loadOnDemand + allowMultiSelection)', function (done: DoneFn) {
+            const ele = ddtreeObj.element;
+            let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            let li = ddtreeObj.treeObj.element.querySelectorAll('li');
+            expect(li.length).toBe(2);
+            const firstParentLi = li[0] as HTMLElement;
+            const expandIcon = firstParentLi.querySelector('.e-icon-expandable') as HTMLElement;
+            expandIcon.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            expandIcon.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+            expandIcon.click();
+            setTimeout(() => {
+                const childLis = firstParentLi.querySelectorAll('ul li');
+                const firstChildLi = childLis[0] as HTMLElement;
+                mouseEventArgs.ctrlKey = true;
+                mouseEventArgs.target = firstChildLi.querySelector('.e-list-text');
+                ddtreeObj.treeObj.touchClickObj.tap(tapEvent);
+                setTimeout(() => {
+                expect(ddtreeObj.text).toContain('Pictures');
+                expect(ddtreeObj.value).toContain('21');
+                const chipWrapper = ddtreeObj.element.parentElement!.firstElementChild as HTMLElement;
+                expect(chipWrapper.classList.contains('e-chips-wrapper')).toBe(true);
+                const chips = chipWrapper.querySelectorAll('.e-chips');
+                const lastChip = chips[chips.length - 1] as HTMLElement;
+                expect((lastChip.querySelector('.e-chipcontent') as HTMLElement).textContent).toBe('Pictures');
+                expect(document.querySelector('.e-popup')!.classList.contains('e-popup-open')).toBe(true);
+                done();
+                }, 100);
+            }, 100);
+        });
     });
 
     describe('property change testing for actionFailureTemplate', () => {

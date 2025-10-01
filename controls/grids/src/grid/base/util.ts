@@ -1431,7 +1431,7 @@ export function resetColspanGroupCaption(gObj: IGrid, idx: number): number {
         gObj.element.getBoundingClientRect().width : parseInt(gObj.width.toString(), 10)) - getScrollWidth(gObj);
     for (let i: number = 0; i < cols.length; i++) {
         if (cols[parseInt(i.toString(), 10)].visible) {
-            width += parseInt(cols[parseInt(i.toString(), 10)].width.toString(), 10);
+            width += getColumnWidth(cols[parseInt(i.toString(), 10)], gObj);
             colspan++;
         }
         if (width > gridWidth) {
@@ -1480,14 +1480,14 @@ export function groupCaptionRowLeftRightPos(tr: Element, gObj: IGrid): void {
             const cols: Column[] = gObj.getColumns();
             for (let i: number = 0; i < cols.length; i++) {
                 if ((parseInt(td.getAttribute('colspan'), 10) > 1) &&
-                    (parseInt(cols[parseInt(i.toString(), 10)].width.toString(), 10)
+                    (getColumnWidth(cols[parseInt(i.toString(), 10)], gObj)
                     + width) > (parseInt(gObj.width.toString(), 10) - getScrollWidth(gObj))) {
                     const newColspan: number = resetColspanGroupCaption(gObj, j);
                     td.setAttribute('colspan', newColspan.toString());
                     break;
                 }
                 if (cols[parseInt(i.toString(), 10)].visible) {
-                    width += parseInt(cols[parseInt(i.toString(), 10)].width.toString(), 10);
+                    width += getColumnWidth(cols[parseInt(i.toString(), 10)], gObj);
                     colspan--;
                 }
                 if (colspan === 0) { break; }
@@ -1496,8 +1496,26 @@ export function groupCaptionRowLeftRightPos(tr: Element, gObj: IGrid): void {
         if (td.classList.contains('e-summarycell')) {
             const uid: string = td.getAttribute('data-mappinguid');
             const column: Column = gObj.getColumnByUid(uid);
-            width += parseInt(column.width.toString(), 10);
+            width += getColumnWidth(column, gObj);
         }
+    }
+}
+
+/**
+ * @param {Element} column - Defines column
+ * @param {IGrid} gObj - Defines grid object
+ * @returns {number} Returns column width
+ * @hidden
+ */
+export function getColumnWidth(column: Column, gObj: IGrid): number {
+    if (!isNullOrUndefined(column.width) && column.width !== 'auto' && column.width.toString().indexOf('%') === -1) {
+        return parseInt(column.width.toString(), 10);
+    } else {
+        const headerCol: Element = gObj.getColumnHeaderByField(column.field);
+        if (!isNullOrUndefined(headerCol)) {
+            return headerCol.getBoundingClientRect().width;
+        }
+        return 0;
     }
 }
 

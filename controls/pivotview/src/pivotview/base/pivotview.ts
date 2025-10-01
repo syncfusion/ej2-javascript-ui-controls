@@ -6010,7 +6010,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 data: this.pivotValues[rowIndex as number][colIndex as number] as IAxisSet
             };
             this.trigger(events.cellSelecting, selectArgs, (observedArgs: PivotCellSelectedEventArgs) => {
-                if (this.gridSettings.allowSelection) {
+                if (this.gridSettings.allowSelection && !(this.gridSettings.selectionSettings
+                    && this.gridSettings.selectionSettings.enableSimpleMultiRowSelection)) {
                     if (this.gridSettings.selectionSettings.mode === 'Both' ? !ele.classList.contains(cls.ROW_CELL_CLASS) :
                         this.gridSettings.selectionSettings.mode !== 'Row') {
                         if (!observedArgs.cancel) {

@@ -47,6 +47,21 @@ export class Formatter {
                 || self.getPanel() === range.commonAncestorContainer)) {
             return;
         }
+        if (!isNOU(args) && self.maxLength !== -1 && !isNOU(args.item.command)) {
+            let currentInsertContentLength: number = 0;
+            if (args.item.command === 'Links') {
+                currentInsertContentLength = value.text.length === 0 ? value.url.length : value.text.length;
+            }
+            if (args.item.command === 'Images' || args.item.command === 'Videos' || args.item.command === 'Table' || args.item.command === 'Files') {
+                currentInsertContentLength = 1;
+            }
+            const currentLength: number = self.getText().trim().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
+            const selectionLength: number = self.getSelection().length;
+            const totalLength: number = (currentLength - selectionLength) + currentInsertContentLength;
+            if (!(self.maxLength === -1 || totalLength <= self.maxLength) || (self.maxLength !== -1 && currentLength > self.maxLength) && args.item.subCommand !== 'Undo' && args.item.subCommand !== 'Redo') {
+                return;
+            }
+        }
         if (isNOU(args)) {
             const action: string = (event as KeyboardEventArgs).action;
             args = {};
@@ -89,7 +104,8 @@ export class Formatter {
                         callBack: this.onSuccess.bind(this, self),
                         value: value,
                         enterAction: self.enterKey,
-                        enableTabKey: self.enableTabKey
+                        enableTabKey: self.enableTabKey,
+                        maxLength: self.maxLength
                     });
                 }
             }

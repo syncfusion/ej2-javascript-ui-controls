@@ -2985,14 +2985,67 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public getSelectedHtml(): string {
         let range: Range;
-        const wrapperElm: HTMLElement = this.createElement('div');
+        let selectedHtml: string;
         const selection: Selection = this.contentModule.getDocument().getSelection();
         if (selection.rangeCount > 0) {
             range = selection.getRangeAt(0);
-            const selectedHtml: DocumentFragment = range.cloneContents();
-            wrapperElm.appendChild(selectedHtml);
+            selectedHtml = this.extractContentFromSelection(range.cloneRange());
         }
-        return wrapperElm.innerHTML;
+        return selectedHtml;
+    }
+
+    /* Extracts both HTML and plain text content from the current selection range. */
+    private extractContentFromSelection(range: Range): string {
+        let htmlContent : string = '';
+        htmlContent = this.getHTMLFromSelectionRange(range);
+        htmlContent = this.normalizeInlineElementWrapping(range, htmlContent);
+        return htmlContent;
+    }
+
+    /* Extracts HTML content from the current selection range by wrapping it in a temporary container */
+    private getHTMLFromSelectionRange(selectionRange: Range): string {
+        const clonedSelection: DocumentFragment = selectionRange.cloneContents();
+        const temporaryContainer: HTMLElement = this.createElement('div');
+        temporaryContainer.appendChild(clonedSelection);
+        return temporaryContainer.innerHTML;
+    }
+
+    /* Extracts HTML content and ensures inline elements are properly wrapped if present in the selection.*/
+    private normalizeInlineElementWrapping(selectionRange: Range, htmlContent: string): string {
+        const startNode: Node = selectionRange.startContainer;
+        // Check if the selection starts with non-empty text
+        if (startNode.textContent.trim() !== '') {
+            const ancestorNode: Node = selectionRange.commonAncestorContainer;
+            const isTextNode: boolean = ancestorNode.nodeName === '#text';
+            const isNonBlockNode: boolean = !this.formatter.editorManager.domNode.isBlockNode(
+                (isTextNode ? ancestorNode.parentNode : ancestorNode) as HTMLElement);
+            if (isNonBlockNode) {
+                htmlContent = this.getWrappedAroundInlineElement(
+                    (isTextNode ? ancestorNode.parentNode : ancestorNode) as HTMLElement, htmlContent);
+            }
+        }
+        // Special handling for video wrapper elements
+        const isVideoWrapper: boolean = startNode.nodeName === 'SPAN' &&
+            (startNode as HTMLElement).classList.length > 0 && (startNode as HTMLElement).classList.contains('e-video-wrap');
+        if (isVideoWrapper) {
+            htmlContent = (startNode as HTMLElement).outerHTML;
+        }
+        return htmlContent;
+    }
+
+    /* Returns the outer HTML of the nearest inline-level ancestor after replacing its inner content with the provided HTML content. */
+    private getWrappedAroundInlineElement(inlineAncestor: HTMLElement, contentToWrap: string): string {
+        const contentContainer: HTMLElement = this.createElement('div');
+        contentContainer.innerHTML = contentToWrap;
+        //to retrieve only the wrapper inline element without any inner html in it
+        do {
+            const clonedInlineAncestor: HTMLElement = inlineAncestor.cloneNode(true) as HTMLElement;
+            //swapping the existing html and cloned inline wrapper
+            clonedInlineAncestor.innerHTML = contentContainer.innerHTML;
+            contentContainer.innerHTML = clonedInlineAncestor.outerHTML;
+            inlineAncestor = inlineAncestor.parentElement;
+        } while (!isNOU(inlineAncestor) && !this.formatter.editorManager.domNode.isBlockNode(inlineAncestor as HTMLElement));
+        return contentContainer.innerHTML;
     }
 
     /**
@@ -3167,7 +3220,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.inputElement.innerHTML = getStructuredHtml(cleanHTMLString(this.inputElement.innerHTML, this.element), this.enterKey, this.enableHtmlEncode);
                     break;
                 case 'quickToolbarSettings':
-                    newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
+                    if (!isNOU(newProp.quickToolbarSettings.showOnRightClick)) {
+                        newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
+                    }
                     this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
                     break;
                 case 'formatPainterSettings':

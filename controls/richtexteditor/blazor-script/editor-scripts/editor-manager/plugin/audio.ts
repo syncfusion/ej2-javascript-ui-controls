@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined as isNOU, detach, addClass, Browser } from '../../../../base'; /*externalscript*/
+import { createElement, isNullOrUndefined as isNOU, detach, addClass, Browser, removeClass } from '../../../../base'; /*externalscript*/
 import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
 import { IHtmlItem } from './../base/interface';
@@ -85,17 +85,22 @@ export class AudioCommand {
         ((e.item.selectParent[0] as HTMLElement).classList.contains(classes.CLASS_CLICK_ELEM) ||
         (e.item.selectParent[0] as HTMLElement).classList.contains(classes.CLASS_AUDIO_WRAP) || (e.item.selectParent[0] as HTMLElement).tagName === 'AUDIO')) {
             const audioEle: HTMLSourceElement = (e.item.selectParent[0] as HTMLElement).querySelector('source') as HTMLSourceElement;
-            this.setStyle(audioEle, e);
+            this.setStyle(audioEle, e, audioEle);
             isReplaced = true;
         } else {
             wrapElement = createElement('span', { className: classes.CLASS_AUDIO_WRAP, attrs: { contentEditable: 'false', title: ((!isNOU(e.item.title)) ? e.item.title : (!isNOU(e.item.fileName) ? e.item.fileName : '')) }});
             const audElement: HTMLElement = createElement('audio', { className: classes.CLASS_AUDIO + ' ' + classes.CLASS_AUDIO_INLINE, attrs: { controls: '' }});
             const sourceElement: HTMLElement = createElement('source');
             const clickElement: HTMLElement = createElement('span', { className: classes.CLASS_CLICK_ELEM});
-            this.setStyle((sourceElement as HTMLSourceElement), e);
+            this.setStyle((sourceElement as HTMLSourceElement), e, audElement);
             audElement.appendChild(sourceElement);
             clickElement.appendChild(audElement);
             wrapElement.appendChild(clickElement);
+            if (!isNOU(e.item.cssClass)) {
+                if (e.item.cssClass === classes.CLASS_AUDIO_BREAK) {
+                    wrapElement.style.display = 'block';
+                }
+            }
             if (!isNOU(e.item.selection)) {
                 e.item.selection.restore();
             }
@@ -134,7 +139,7 @@ export class AudioCommand {
         }
     }
 
-    private setStyle(sourceElement: HTMLSourceElement, e: IHtmlItem): void {
+    private setStyle(sourceElement: HTMLSourceElement, e: IHtmlItem, audioEle : HTMLElement): void {
         if (!isNOU(e.item.url)) {
             sourceElement.setAttribute('src', e.item.url);
         }
@@ -148,6 +153,16 @@ export class AudioCommand {
             sourceElement.type = e.item.fileName && e.item.fileName.split('.').length > 0 ?
                 'audio/' + e.item.fileName.split('.')[e.item.fileName.split('.').length - 1] :
                 e.item.url && e.item.url.split('.').length > 0 ? 'audio/' + e.item.url.split('.')[e.item.url.split('.').length - 1] : '';
+        }
+        if (!isNOU(e.item.cssClass) && audioEle.nodeName === 'AUDIO') {
+            if (e.item.cssClass === classes.CLASS_AUDIO_BREAK) {
+                addClass([audioEle], [classes.CLASS_AUDIO_BREAK]);
+                removeClass([audioEle], [classes.CLASS_AUDIO_INLINE]);
+            }
+            else {
+                addClass([audioEle], [classes.CLASS_AUDIO_INLINE]);
+                removeClass([audioEle], [classes.CLASS_AUDIO_BREAK]);
+            }
         }
     }
 

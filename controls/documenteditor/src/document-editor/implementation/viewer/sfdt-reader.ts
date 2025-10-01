@@ -945,8 +945,9 @@ export class SfdtReader {
                     if (block[inlinesProperty[this.keywordIndex]].length > 0) {
                         hasValidElmts = this.parseParagraph(block[inlinesProperty[this.keywordIndex]], paragraph, writeInlineFormat, line, isFootnoteEndnote && i === 0);
                     }
+                    let sourceFormat: any = block[characterFormatProperty[this.keywordIndex]];
                     if (!(isSectionBreak && block === data[data.length - 1] && block[inlinesProperty[this.keywordIndex]].length === 0 && !hasValidElmts)) {
-                        this.parseCharacterFormat(this.keywordIndex, block[characterFormatProperty[this.keywordIndex]], paragraph.characterFormat);
+                        this.parseCharacterFormat(this.keywordIndex, sourceFormat, paragraph.characterFormat);
                         this.parseParagraphFormat(this.keywordIndex, block[paragraphFormatProperty[this.keywordIndex]], paragraph.paragraphFormat);
                         let styleObj: Object;
                         let styleName: string = 'Normal';
@@ -975,11 +976,16 @@ export class SfdtReader {
                             paragraph.paragraphFormat.applyStyle(styleObj as WStyle);
                         }
                         blocks.push(paragraph);
-                    } else if (isSectionBreak && data.length === 1) {
-                        blocks.push(paragraph);
                     } else {
-                        // If section last paragraph is empty then we need to layout the paragraph in the previous widget which is handled similar to MS word.
-                        paragraph.isSectionBreak = true;
+                        if (!isNullOrUndefined(sourceFormat)) {
+                            if (!isNullOrUndefined(sourceFormat[revisionIdsProperty[this.keywordIndex]]) && sourceFormat[revisionIdsProperty[this.keywordIndex]].length > 0) {
+                                this.checkAndApplyRevision(this.keywordIndex, sourceFormat, paragraph.characterFormat, paragraph.characterFormat);
+                            }
+                        }
+                        if (!(isSectionBreak && data.length === 1)) {
+                            // If section last paragraph is empty then we need to layout the paragraph in the previous widget which is handled similar to MS word.
+                            paragraph.isSectionBreak = true;
+                        }
                         blocks.push(paragraph);
                     }
                     paragraph.index = blocks.length - 1;

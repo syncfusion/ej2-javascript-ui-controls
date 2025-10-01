@@ -2,13 +2,39 @@
 
 ## [Unreleased]
 
-## 31.1.21 (2025-09-23)
+## 31.1.22 (2025-10-01)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I764613` - The issue with the child nodes are receiving an undefined value in the input when `loadOnDemand` and `allowMultiSelection` are enabled for the remote data in the Dropdown Tree Component has been resolved.
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I770970` - Resolved the null exception possibilities while Float element processing.
+
+## 31.1.20 (2025-09-10)
 
 ### Mention
 
 #### Bug Fixes
 
 - `#I762396` - Resolved the script error that occurred when copying and pasting bullet list content from Outlook into the `RichTextEditor`.
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I762995` - Fixed an issue where the combobox did not update its value when the `ignoreAccent` property was set to true.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `I761815` - Resolved an issue where MultiSelect items remained enabled when the maximum selection length was set to zero.
 
 ## 28.2.9 (2025-03-04)
 

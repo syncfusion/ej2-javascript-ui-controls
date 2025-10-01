@@ -159,8 +159,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         numberFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[1].click();
-        expect(pEle.style.listStyleType === 'decimal').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        expect((rteObj.inputElement.querySelector('#rte') as HTMLElement).parentElement.style.listStyleType === 'decimal').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
         done();
     });
     it(' Check the numberFormatList items 2', (done) => {
@@ -173,8 +173,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         numberFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[2].click();
-        expect(pEle.style.listStyleType === 'lower-greek').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        expect((rteObj.inputElement.querySelector('#rte') as HTMLElement).parentElement.style.listStyleType === 'lower-greek').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
         done();
     });
     it(' Check the numberFormatList items 3', (done) => {
@@ -187,8 +187,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         numberFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[3].click();
-        expect(pEle.style.listStyleType === 'lower-roman').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        expect((rteObj.inputElement.querySelector('#rte') as HTMLElement).parentElement.style.listStyleType === 'lower-roman').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
         done();
     });
     it(' Check the numberFormatList items 4', (done) => {
@@ -201,8 +201,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         numberFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[4].click();
-        expect(pEle.style.listStyleType === 'upper-alpha').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        expect((rteObj.inputElement.querySelector('#rte') as HTMLElement).parentElement.style.listStyleType === 'upper-alpha').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
         done();
     });
     it(' Check the numberFormatList items 5', (done) => {
@@ -215,8 +215,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         numberFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[5].click();
-        expect(pEle.style.listStyleType === 'lower-alpha').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        expect((rteObj.inputElement.querySelector('#rte') as HTMLElement).parentElement.style.listStyleType === 'lower-alpha').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
         done();
     });
     it(' Check the numberFormatList items 6', (done) => {
@@ -229,8 +229,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         numberFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[0].click();
-        expect(pEle.style.listStyleType === 'none').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        expect((rteObj.inputElement.querySelector('#rte') as HTMLElement).parentElement.style.listStyleType === 'none').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
         done();
     });
     it(' Check the numberFormatList items 7', (done) => {
@@ -243,8 +243,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         numberFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[1].click();
-        expect(pEle.style.listStyleType === 'decimal').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        expect((rteObj.inputElement.querySelector('#rte') as HTMLElement).parentElement.style.listStyleType === 'decimal').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
         done();
     });
     afterEach((done: DoneFn) => {
@@ -278,8 +278,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         bulletFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
         items[1].click();
-        expect(pEle.style.listStyleType === 'disc').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+        expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleType === 'disc').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true);
         done();
     });
     it(' Check the bulletFormatList items 2', (done) => {
@@ -292,8 +292,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         bulletFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
         items[2].click();
-        expect(pEle.style.listStyleType === 'circle').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+        expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleType === 'circle').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true)
         done();
     });
     it(' Check the bulletFormatList items 3', (done) => {
@@ -306,8 +306,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         bulletFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
         items[3].click();
-        expect(pEle.style.listStyleType === 'square').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+        expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleType === 'square').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true);
         done();
     });
     it(' Check the bulletFormatList items 4', (done) => {
@@ -320,8 +320,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         bulletFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
         items[0].click();
-        expect(pEle.style.listStyleType === 'none').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+        expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleType === 'none').toBe(true);
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true);
         done();
     });
     afterEach((done: DoneFn) => {
@@ -438,8 +438,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             numberFormatList.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             items[6].click();
-            expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
-            expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
+            expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
             let numberFormatList1: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(numberFormatList1, 'mousedown');
             dispatchEvent(numberFormatList1, 'mouseup');
@@ -447,10 +447,10 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             let item: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             item[3].click();
             let Elem: HTMLElement = rteObj.element.querySelector('#rte');
-            expect((Elem.childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
-            expect(Elem.tagName === 'OL').toBe(true);
-            expect(Elem.style.listStyleType === 'lower-greek').toBe(true);
-            expect(Elem.style.listStyleImage === 'none').toBe(true);
+            expect((Elem).tagName === 'LI').toBe(true);
+            expect(Elem.parentElement.tagName === 'OL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleType === 'lower-greek').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleImage === 'none').toBe(true);
             done();
             });
         it(' Checking the BulletFormatList list style image to style type', (done) => {
@@ -464,8 +464,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             bulletFormatList.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             items[2].click();
-            expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
-            expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
+            expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true);
             let bulletFormatList1: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(bulletFormatList1, 'mousedown');
             dispatchEvent(bulletFormatList1, 'mouseup');
@@ -473,10 +473,10 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             let item: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             item[1].click();
             let Elem: HTMLElement = rteObj.element.querySelector('#rte');
-            expect((Elem.childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
-            expect(Elem.tagName === 'UL').toBe(true);
-            expect(Elem.style.listStyleType === 'square').toBe(true);
-            expect(Elem.style.listStyleImage === 'none').toBe(true);
+            expect(Elem.tagName === 'LI').toBe(true);
+            expect(Elem.parentElement.tagName === 'UL').toBe(true);
+            expect(Elem.parentElement.style.listStyleType === 'square').toBe(true);
+            expect(Elem.parentElement.style.listStyleImage === 'none').toBe(true);
             done();
         });
         afterEach((done: DoneFn) => {
@@ -511,9 +511,9 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             numberFormatList.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             items[3].click();
-            expect((rteObj.element.querySelector('#rte').childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
-            expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
-            expect(pEle.style.listStyleType === 'lower-roman').toBe(true);
+            expect((rteObj.element.querySelector('#rte') as HTMLElement).tagName === 'LI').toBe(true);
+            expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleType === 'lower-roman').toBe(true);
             done();
             });
         it(' Check the bulletFormatList with LI tag', (done) => {
@@ -526,9 +526,9 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             bulletFormatList.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             items[2].click();
-            expect((rteObj.element.querySelector('#rte').childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
-            expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
-            expect(pEle.style.listStyleType === 'circle').toBe(true);
+            expect((rteObj.element.querySelector('#rte') as HTMLElement).tagName === 'LI').toBe(true);
+            expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleType === 'circle').toBe(true);
             done();
         });
         afterEach((done: DoneFn) => {
@@ -581,8 +581,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             numberFormatList.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             items[6].click();
-            expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
-            expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
+            expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
             done();
             });
         it('  Check the bulletFormatList list style image', (done) => {
@@ -595,8 +595,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             bulletFormatList.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             items[2].click();
-            expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
-            expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
+            expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true);
             done();
             });
         it(' Checking the numberFormatList tag to BulletFormatList', (done) => {
@@ -609,8 +609,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             numberFormatList.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             items[6].click();
-            expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
-            expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
+            expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
             done();
             let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(bulletFormatList, 'mousedown');
@@ -619,8 +619,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             let item: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             item[2].click();
             pEle = rteObj.element.querySelector('UL');
-            expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
-            expect(rteObj.element.querySelector('UL').tagName === 'UL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
+            expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true);
             done();
             });
         it(' Checking the bulletFormatList tag to NumberFormatList', (done) => {
@@ -633,8 +633,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             bulletFormatList.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             items[2].click();
-            expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
-            expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
+            expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true);
             done();
             let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(numberFormatList, 'mousedown');
@@ -643,8 +643,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             let item: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             item[6].click();
             pEle = rteObj.element.querySelector('OL');
-            expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
-            expect(rteObj.element.querySelector('OL').tagName === 'OL').toBe(true);
+            expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
+            expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
             done();
             });
         afterEach((done: DoneFn) => {
@@ -2570,7 +2570,7 @@ describe('821312: Bullet list does not reverted after click on the bullet list i
         (document.querySelector('.e-dropdown-popup') as HTMLElement).click();
         bulletListFristChild.dispatchEvent(mouseDownEvent);
         (bulletListFristChild as HTMLElement).click();
-        expect(rteObj.inputElement.innerHTML === `<p class="pele">Description</p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML === `<p class="pEle">Description</p>`).toBe(true);
         done();
     });
     afterAll((done: DoneFn) => {

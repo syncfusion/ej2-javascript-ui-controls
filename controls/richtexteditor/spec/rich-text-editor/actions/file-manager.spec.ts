@@ -4,12 +4,11 @@
 import { detach, isNullOrUndefined, Browser } from "@syncfusion/ej2-base";
 import { IQuickToolbar, RichTextEditor, QuickToolbar, PasteCleanup } from "../../../src/rich-text-editor/index";
 import { ActionBeginEventArgs, ImageSuccessEventArgs } from "../../../src/common/interface";
-import { renderRTE, destroy, setCursorPoint } from "./../render.spec";
+import { renderRTE, destroy, setCursorPoint, hostURL } from "./../render.spec";
 import { Popup } from "@syncfusion/ej2-popups";
 import { Uploader } from "@syncfusion/ej2-inputs";
 import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
 
-let hostUrl: string = 'https://ej2-aspcore-service.azurewebsites.net/';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -29,9 +28,9 @@ describe('FileManager module', () => {
                     enable: true,
                     path: '/Pictures/Food',
                     ajaxSettings: {
-                        url: hostUrl + 'api/FileManager/FileOperations',
-                        getImageUrl: hostUrl + 'api/FileManager/GetImage',
-                        uploadUrl: hostUrl + 'api/FileManager/Upload'
+                        url: hostURL + 'api/RichTextEditor/FileOperations',
+                        getImageUrl: hostURL + 'api/RichTextEditor/GetImage',
+                        uploadUrl: hostURL + 'api/RichTextEditor/Upload'
                     }
                 }
             });
@@ -49,7 +48,7 @@ describe('FileManager module', () => {
         });
         it('image - fileSelect as true', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { filterPath: '\\Pictures', isFile: true, type: '.png' } });
-            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage?path=/Pictures');
+            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage?path=/Pictures');
         });
         it('image FileSelect as false', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { isFile: false, type: '.png' } });
@@ -93,9 +92,9 @@ describe('FileManager module', () => {
                     enable: true,
                     path: '/Pictures/Food',
                     ajaxSettings: {
-                        url: hostUrl + 'api/FileManager/FileOperations',
-                        getImageUrl: hostUrl + 'api/FileManager/GetImage',
-                        uploadUrl: hostUrl + 'api/FileManager/Upload'
+                        url: hostURL + 'api/RichTextEditor/FileOperations',
+                        getImageUrl: hostURL + 'api/RichTextEditor/GetImage',
+                        uploadUrl: hostURL + 'api/RichTextEditor/Upload'
                     }
                 }
             });
@@ -114,7 +113,7 @@ describe('FileManager module', () => {
         });
         it('image - fileSelect as true', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { filterPath: '\\Pictures', isFile: true, type: '.png' } });
-            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage?path=/Pictures');
+            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage?path=/Pictures');
         });
         it('image FileSelect as false', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { isFile: false, type: '.png' } });
@@ -201,9 +200,9 @@ describe('FileManager module', () => {
                     enable: true,
                     path: '/Pictures/Food',
                     ajaxSettings: {
-                        url: hostUrl + 'api/FileManager/FileOperations',
-                        getImageUrl: hostUrl + 'api/FileManager/GetImage',
-                        uploadUrl: hostUrl + 'api/FileManager/Upload'
+                        url: hostURL + 'api/RichTextEditor/FileOperations',
+                        getImageUrl: hostURL + 'api/RichTextEditor/GetImage',
+                        uploadUrl: hostURL + 'api/RichTextEditor/Upload'
                     }
                 }
             });
@@ -238,9 +237,9 @@ describe('FileManager module', () => {
                     enable: true,
                     path: '/Pictures/Food',
                     ajaxSettings: {
-                        url: hostUrl + 'api/FileManager/FileOperations',
-                        getImageUrl: hostUrl + 'api/FileManager/GetImage',
-                        uploadUrl: hostUrl + 'api/FileManager/Upload'
+                        url: hostURL + 'api/RichTextEditor/FileOperations',
+                        getImageUrl: hostURL + 'api/RichTextEditor/GetImage',
+                        uploadUrl: hostURL + 'api/RichTextEditor/Upload'
                     }
                 }
             });
@@ -277,9 +276,9 @@ describe('FileManager module', () => {
                     enable: true,
                     path: '/Pictures/Food',
                     ajaxSettings: {
-                        url: hostUrl + 'api/FileManager/FileOperations',
-                        getImageUrl: hostUrl + 'api/FileManager/GetImage',
-                        uploadUrl: hostUrl + 'api/FileManager/Upload'
+                        url: hostURL + 'api/RichTextEditor/FileOperations',
+                        getImageUrl: hostURL + 'api/RichTextEditor/GetImage',
+                        uploadUrl: hostURL + 'api/RichTextEditor/Upload'
                     }
                 }
             });
@@ -328,9 +327,9 @@ describe('FileManager module', () => {
                     enable: true,
                     path: '/Pictures/Food',
                     ajaxSettings: {
-                        url: hostUrl + 'api/FileManager/FileOperations',
-                        getImageUrl: hostUrl + 'api/FileManager/GetImage',
-                        uploadUrl: hostUrl + 'api/FileManager/Upload'
+                        url: hostURL + 'api/RichTextEditor/FileOperations',
+                        getImageUrl: hostURL + 'api/RichTextEditor/GetImage',
+                        uploadUrl: hostURL + 'api/RichTextEditor/Upload'
                     }
                 }
             });
@@ -370,9 +369,9 @@ describe('FileManager module', () => {
                     enable: true,
                     path: '/Pictures/Food',
                     ajaxSettings: {
-                        url: hostUrl + 'api/FileManager/FileOperations',
-                        getImageUrl: hostUrl + 'api/FileManager/GetImage',
-                        uploadUrl: hostUrl + 'api/FileManager/Upload'
+                        url: hostURL + 'api/RichTextEditor/FileOperations',
+                        getImageUrl: hostURL + 'api/RichTextEditor/GetImage',
+                        uploadUrl: hostURL + 'api/RichTextEditor/Upload'
                     }
                 }
             });
@@ -425,9 +424,9 @@ describe('FileManager module', () => {
                     enable: true,
                     path: '/Pictures/Employees',
                     ajaxSettings: {
-                        url: hostUrl + 'api/FileManager/FileOperations',
-                        getImageUrl: hostUrl + 'api/FileManager/GetImage',
-                        uploadUrl: hostUrl + 'api/FileManager/Upload'
+                        url: hostURL + 'api/RichTextEditor/FileOperations',
+                        getImageUrl: hostURL + 'api/RichTextEditor/GetImage',
+                        uploadUrl: hostURL + 'api/RichTextEditor/Upload'
                     }
                 },
                 actionBegin: onActionBegin,
@@ -446,13 +445,13 @@ describe('FileManager module', () => {
                 insertBtn.click();
                 setTimeout(() => {
                     let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
-                    expect(imageElement.src).toBe('https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/Employees/Adam.png');
+                    expect(imageElement.src).toBe('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage/Pictures/Employees/Adam.png');
                     done();
                 }, 100);
             }, 500);
         });
         it('Check the image src when replace image', (done: Function) => {
-            editor.inputElement.innerHTML = '<img src="https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/Employees/Adam.png" class="e-rte-image" />';
+            editor.inputElement.innerHTML = '<img src="https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage/Pictures/Employees/Adam.png" class="e-rte-image" />';
             let imageElement: HTMLImageElement = editor.element.querySelector('.e-content .e-rte-image') as HTMLImageElement;
             editor.formatter.editorManager.nodeSelection.setSelectionNode(document, imageElement);
             const target: HTMLElement = editor.inputElement.querySelector('img');
@@ -467,7 +466,7 @@ describe('FileManager module', () => {
                     insertBtn.click();
                     setTimeout(() => {
                         let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
-                        expect(imageElement.src).toBe('https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/Employees/Andrew.png');
+                        expect(imageElement.src).toBe('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage/Pictures/Employees/Andrew.png');
                         done();
                     }, 100);
                 }, 100);

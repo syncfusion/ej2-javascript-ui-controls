@@ -3439,11 +3439,13 @@ describe('Remote data with TotalRecords count', () => {
                     { field: 'TaskName', headerText: 'Task Name', width: 150 },
                     { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
                 ],
+                query: new Query().addParams('treegrid','true')
             },
             done
         );
     });
     it('Expand Parent Row', function (done) {
+        gridObj.dataModule.isRemote();
         rows = gridObj.getRows();
         gridObj.dataBound = () => {
             done();
@@ -4899,5 +4901,71 @@ describe('Task 969587: Testing TreeGrid Empty Record Template', () => {
         if (template) {
             template.parentNode.removeChild(template);
         }
+    });
+});
+describe('Remote data- child positions are wrong after expanding record', () => {
+    class HierarchyAdaptor extends WebApiAdaptor {
+    processQuery(dm: any, query: any, hierarchyFilters: any) {
+        const processedQuery = super.processQuery(dm, query, hierarchyFilters);
+        const url = new URL((processedQuery as any).url);
+
+        return { type: 'GET', url };
+    }
+
+    processResponse(data: any, ds: any, query: any, xhr: any, request: any, changes: any) {
+        const showCount = query && query.isCountRequired;
+        return showCount
+            ? {
+                count: data.count,
+                result: data.result.map((item: any) => ({
+                    ...item,
+                    TaskID: item.ParentItem ? item.TaskID + 1000 : item.TaskID,
+                })),
+            }
+            : data.result;
+    }
+}
+    let gridObj: TreeGrid;
+    let rows: HTMLTableRowElement[];
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new HierarchyAdaptor(),
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                height: 400,
+                allowPaging: true,
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+              
+            },
+            done
+        );
+    });
+    it('Expand Parent Row', function (done) {
+        rows = gridObj.getRows();
+        gridObj.dataBound = () => {
+     
+            done();
+        }
+        gridObj.expandRow(rows[0]);
+    });
+    it('Check Child record position', function () {
+        var cells = gridObj.grid.getRows()[1].querySelectorAll('.e-rowcell');
+            expect(cells[0].textContent === '1003').toBeTruthy();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
     });
 });

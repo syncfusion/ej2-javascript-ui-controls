@@ -14,6 +14,7 @@
   }
 
   .e-multi-select-wrapper .e-close-hooker::before {
+    font-size: 16px;
     content: '\e745';
     cursor: pointer;
     height: $ddl-overall-close-top;

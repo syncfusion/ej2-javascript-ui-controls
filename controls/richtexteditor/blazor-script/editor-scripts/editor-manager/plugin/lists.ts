@@ -299,6 +299,7 @@ export class Lists {
         if (startNode.innerHTML === '') {
             startNode.innerHTML = '<br>';
         }
+        clonedContent.normalize();
         const firstPosition: { node: Node; position: number } =
             this.parent.nodeSelection.findFirstContentNode(clonedContent);
         if (startNode.nextElementSibling) {
@@ -340,7 +341,8 @@ export class Lists {
             // Check if list item has no text content or only contains nested lists
             const hasOnlyLists: boolean = li.childNodes.length > 0 && ((li.firstChild &&
                 (li.firstChild.nodeName === 'UL' || li.firstChild.nodeName === 'OL')) ||
-                (li.firstElementChild && (li.firstElementChild.nodeName === 'UL' || li.firstElementChild.nodeName === 'OL')));
+                (li.firstElementChild && (li.firstElementChild.nodeName === 'UL' || li.firstElementChild.nodeName === 'OL'))) &&
+                !(li.firstChild && li.firstChild.nodeName === '#text' && li.firstChild.textContent.trim().length > 0);
             if (hasOnlyLists || li.innerHTML === '') {
                 const brElement: HTMLBRElement = document.createElement('br');
                 if (li.firstChild) {
@@ -753,6 +755,9 @@ export class Lists {
         if (element.nodeType === Node.TEXT_NODE) {
             return element;
         }
+        if (element.nodeName === 'BR') {
+            return element;
+        }
         for (let i: number = 0; i < element.childNodes.length; i++) {
             const firstTextNode: Node = this.getFirstTextNode(element.childNodes[i as number]);
             if (firstTextNode) {
@@ -795,7 +800,7 @@ export class Lists {
                 this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
             }
             if (e.enableTabKey) {
-                this.handleListIndentation();
+                this.handleListIndentation(e);
             }
             let blockNodes: Element[];
             const startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
@@ -831,7 +836,9 @@ export class Lists {
                     this.revertList(nodes as HTMLElement[], e);
                     this.revertClean();
                 } else if (!e.enableTabKey || (e.enableTabKey && !this.listTabIndentation)) {
-                    isNested = this.nestedList(nodes);
+                    if (this.indentTab(e)) {
+                        isNested = this.nestedList(nodes);
+                    }
                 }
                 if (isNested) {
                     this.cleanNode();
@@ -878,9 +885,12 @@ export class Lists {
         }
     }
 
-    private handleListIndentation(): void {
+    private handleListIndentation(e: IHtmlKeyboardEvent): void {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         const parentNodeList: Node[] = this.saveSelection.getParentNodeCollection(range);
+        if (!this.indentTab(e)) {
+            return;
+        }
         if ((parentNodeList[0].nodeName === 'LI' || closest(parentNodeList[0] as HTMLElement, 'li'))
             && !this.isCursorAtStartOfLI(range)) {
             const startParentNode: Element = parentNodeList[parentNodeList.length - 1] as Element;
@@ -934,6 +944,21 @@ export class Lists {
                 this.listTabIndentation = true;
             }
         }
+    }
+    /**
+     * Checks if inserting a tab would exceed the maxLength constraint.
+     *
+     * @param {IHtmlKeyboardEvent} e - The keyboard event containing the maxLength constraint
+     * @returns {boolean} True if allowed, false if it would exceed maxLength.
+     */
+    private indentTab(e: IHtmlKeyboardEvent): boolean {
+        const tabSpaceLength: number = 4;
+        const maxLength: number = (typeof e.maxLength === 'number') ? e.maxLength : -1;
+        const currentLength: number = this.parent.editableElement.textContent
+            .replace(/(\r\n|\n|\r|\t)/gm, '')
+            .replace(/\u200B/g, '').length;
+        const selectionLength: number = this.parent.currentDocument.getSelection().toString().length;
+        return maxLength === -1 || (currentLength - selectionLength + tabSpaceLength) <= maxLength;
     }
 
     private isCursorAtStartOfLI(range: Range): boolean {
@@ -1239,24 +1264,27 @@ export class Lists {
             this.removeEmptyListElements();
         } else {
             this.checkLists(elements, type, item, checkCursorPointer, e.subCommand);
-            let marginLeftAttribute: string = '';
-            if (elements[0].style.marginLeft !== '') {
-                marginLeftAttribute = ' style = "margin-left: ' + elements[0].style.marginLeft + ';"';
+            const targetEl: HTMLElement = elements[0];
+            const marginLeftAttribute: { [key: string]: string }[] = [];
+            if (targetEl.style.marginLeft !== '') {
+                marginLeftAttribute.push({ 'margin-left': targetEl.style.marginLeft });
             }
+            const listStyles: { [key: string]: string }[] = [];
             for (let i: number = 0; i < elements.length; i++) {
                 if (!isNOU(item) && !isNOU(item.listStyle) && e.subCommand !== 'Checklist') {
                     if (item.listStyle === 'listImage') {
-                        setStyleAttribute(elements[i as number], { 'list-style-image': item.listImage });
+                        listStyles.push({ 'list-style-image': item.listImage });
                     }
                     else {
-                        setStyleAttribute(elements[i as number], { 'list-style-image': 'none' });
                         const formattedStyle: string = this.formatListStyle(item.listStyle);
-                        setStyleAttribute(elements[i as number], { 'list-style-type': formattedStyle});
+                        listStyles.push({
+                            'list-style-image': 'none',
+                            'list-style-type': formattedStyle
+                        });
                     }
                 }
                 elements[i as number].style.removeProperty('margin-left');
-                const elemAtt: string = elements[i as number].tagName === 'IMG' || elements[i as number].classList.contains('e-editor-select-start') ? '' : this.domNode.attributes(elements[i as number]);
-                if (elements[i as number].getAttribute('contenteditable') === 'true'
+                const elemAtt: Record<string, string> = elements[i as number].tagName === 'IMG' || elements[i as number].classList.contains('e-editor-select-start') ? {} : this.extractAllAttributes(elements[i as number]);                if (elements[i as number].getAttribute('contenteditable') === 'true'
                     && elements[i as number].childNodes.length === 1 && elements[i as number].childNodes[0].nodeName === 'TABLE') {
                     const listEle: Element = document.createElement(type);
                     listEle.innerHTML = '<li><br/></li>';
@@ -1264,21 +1292,27 @@ export class Lists {
                 } else if ('LI' !== elements[i as number].tagName && isNOU(item) &&
                     elements[i as number].nodeName === 'BLOCKQUOTE') {
                     isReverse = false;
-                    const openTag: string = '<' + type + marginLeftAttribute + '>';
-                    const closeTag: string = '</' + type + '>';
-                    const newTag: string = 'li' + elemAtt;
+                    const tempElement: HTMLElement = this.parent.editableElement.ownerDocument.createElement('div');
+                    const ul: HTMLElement = this.parent.editableElement.ownerDocument.createElement(type);
+                    this.applyListStyles(ul, marginLeftAttribute);
+                    this.applyListStyles(ul, listStyles);
                     const replaceHTML: string = elements[i as number].innerHTML;
-                    const innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
-                    let collectionString: string = openTag + innerHTML + closeTag;
+                    const li: HTMLElement = this.parent.editableElement.ownerDocument.createElement('li');
+                    this.applyAllAttributes(li, elemAtt);
+                    li.innerHTML = replaceHTML;
+                    ul.appendChild(li);
+                    tempElement.appendChild(ul);
+                    let collectionString: string = tempElement.innerHTML;
                     if (e.subCommand === 'Checklist') {
                         collectionString = this.addCheckListClass(collectionString);
                     }
                     elements[i as number].innerHTML = collectionString;
                 } else if ('LI' !== elements[i as number].tagName && isNOU(item)) {
                     isReverse = false;
-                    const openTag: string = '<' + type + marginLeftAttribute + '>';
-                    const closeTag: string = '</' + type + '>';
-                    const newTag: string = 'li' + elemAtt;
+                    // const tempElement: HTMLElement = this.parent.editableElement.ownerDocument.createElement('div');
+                    const ul: HTMLElement = this.parent.editableElement.ownerDocument.createElement(type);
+                    this.applyListStyles(ul, marginLeftAttribute);
+                    this.applyListStyles(ul, listStyles);
                     let replaceHTML: string;
                     if (elements[i as number].tagName.toLowerCase() === CONSTANT.DEFAULT_TAG || elements[i as number].tagName === 'DIV') {
                         replaceHTML = elements[i as number].innerHTML;
@@ -1292,9 +1326,13 @@ export class Lists {
                         elements[i as number].firstElementChild.className === 'e-editor-select-start') {
                         replaceHTML = elements[i as number].firstElementChild.outerHTML + elements[i as number].outerHTML;
                     }
-                    let innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
+                    const li: HTMLElement = this.parent.editableElement.ownerDocument.createElement('li');
+                    this.applyAllAttributes(li, elemAtt);
+                    li.innerHTML = replaceHTML;
+                    let innerHTML: string = li.outerHTML;
                     innerHTML = this.setStyle(innerHTML);
-                    let collectionString: string = openTag + innerHTML + closeTag;
+                    ul.innerHTML = innerHTML;
+                    let collectionString: string = ul.outerHTML;
                     if  (e.subCommand === 'Checklist'){
                         collectionString = this.addCheckListClass(collectionString);
                     }
@@ -1303,19 +1341,23 @@ export class Lists {
                 else if (!isNOU(item) && 'LI' !== elements[i as number].tagName) {
                     // eslint-disable-next-line
                     isReverse = false;
-                    const currentElemAtt: string = elements[i as number].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i as number]);
-                    const openTag: string = '<' + type + currentElemAtt + '>';
-                    const closeTag: string = '</' + type + '>';
-                    const newTag: string = 'li';
+                    const tempElement: HTMLElement = this.parent.editableElement.ownerDocument.createElement('div');
+                    const ul: HTMLElement = this.parent.editableElement.ownerDocument.createElement(type);
+                    this.applyListStyles(ul, listStyles);
+                    tempElement.appendChild(ul);
                     let replaceHTML: string;
                     if (elements[i as number].tagName.toLowerCase() === CONSTANT.DEFAULT_TAG || elements[i as number].tagName === 'DIV') {
                         replaceHTML = elements[i as number].innerHTML;
                     } else {
                         replaceHTML = elements[i as number].outerHTML;
                     }
-                    const innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
-                    let collectionString: string = openTag + innerHTML + closeTag;
-                    if  (e.subCommand === 'Checklist'){
+                    const li: HTMLElement = this.parent.editableElement.ownerDocument.createElement('li');
+                    this.applyAllAttributes(li, elemAtt);
+                    li.innerHTML = replaceHTML;
+                    const innerHTML: string = li.outerHTML;
+                    ul.innerHTML = innerHTML;
+                    let collectionString: string = tempElement.innerHTML;
+                    if (e.subCommand === 'Checklist') {
                         collectionString = this.addCheckListClass(collectionString);
                     }
                     this.domNode.replaceWith(elements[i as number], collectionString);
@@ -1339,6 +1381,30 @@ export class Lists {
         }
         this.saveSelection = this.domNode.saveMarker(this.saveSelection);
         this.saveSelection.restore();
+    }
+    private extractAllAttributes(element: HTMLElement | null): Record<string, string> {
+        const attributes: Record<string, string> = {};
+        if (element && element.attributes) {
+            Array.from(element.attributes).forEach((attr: Attr) => {
+                attributes[attr.name] = attr.value;
+            });
+        }
+        return attributes;
+    }
+    private applyAllAttributes(element: HTMLElement, attributes: Record<string, string>): void {
+        Object.keys(attributes).forEach((key: string) => {
+            element.setAttribute(key, attributes[key as string]);
+        });
+    }
+    private applyListStyles(element: HTMLElement, listStyles: { [key: string]: string }[]): void {
+        for (let i: number = 0; i < listStyles.length; i++) {
+            const styleObj: { [key: string]: string } = listStyles[i as number];
+            for (const key in styleObj) {
+                if (Object.prototype.hasOwnProperty.call(styleObj, key)) {
+                    element.style.setProperty(key, styleObj[key as string]);
+                }
+            }
+        }
     }
     private addCheckListClass(collectionString: string): string {
         const divElement: HTMLElement = createElement('div');

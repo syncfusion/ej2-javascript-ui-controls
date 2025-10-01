@@ -3263,3 +3263,37 @@ describe('EJ2-934107: Group caption text not displayed properly when grouping wi
         gridObj = actionComplete = null;
     });
 });
+
+describe('EJ2-981209: Script Error When Grouping with Frozen Columns Enabled and Column Widths Not Set. => ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                frozenColumns: 1,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', },
+                    { field: 'Freight', format: 'C2', },
+                    { field: 'CustomerID', headerText: 'Customer ID', },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 100 }
+                ],
+                allowGrouping: true,
+                allowPaging: true,
+                actionComplete: actionComplete,
+            }, done);
+    });
+
+    it('Group the column', (done: Function) => {
+        actionComplete = (): void => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.groupColumn('CustomerID');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

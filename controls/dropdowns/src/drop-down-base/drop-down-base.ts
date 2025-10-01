@@ -618,7 +618,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 for (const item of dataSource) {
                     if (!isNullOrUndefined(item)) {
                         if (ignoreAccent) {
-                            value = this.checkingAccent(String(item), text, ignoreCase);
+                            if (ignoreCase) {
+                                if (this.checkIgnoreCase(String(item), text)) {
+                                    value = this.checkingAccent(String(item), text, ignoreCase);
+                                }
+                            }
+                            else {
+                                value = this.checkingAccent(String(item), text, ignoreCase);
+                            }
                         } else {
                             if (ignoreCase) {
                                 if (this.checkIgnoreCase(String(item), text)) {
@@ -1097,9 +1104,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         fields: FieldSettingsModel, category: string = null): void {
         for (const option of options) {
             const json: { [key: string]: {} } = {};
-            json[fields.text] = option.innerText;
+            json[fields.text] = option.innerHTML;
             json[fields.value] = !isNullOrUndefined(option.getAttribute(fields.value)) ?
-                option.getAttribute(fields.value) : option.innerText;
+                option.getAttribute(fields.value) : option.innerHTML;
             if (!isNullOrUndefined(category)) {
                 json[fields.groupBy] = category;
             }

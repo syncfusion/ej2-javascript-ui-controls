@@ -805,7 +805,7 @@ export class GanttTreeGrid {
                 if (column.field !== 'WBSCode' && column.field !== 'WBSPredecessor') {
                     this.parent.customColumns.push(column.field);
                 }
-                column.headerText = column.headerText ? column.headerText : column.field;
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : column.field;
                 column.width = column.width ? column.width : 150;
                 if (column.field === 'WBSCode') {
                     column.allowEditing = false;
@@ -871,10 +871,10 @@ export class GanttTreeGrid {
         } else if (taskSettings.name === column.field) {
             /** Name column */
             if (this.parent.isLocaleChanged && previousColumn) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('name');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('name');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('name');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('name');
             }
             column.width = column.width ? column.width : 150;
             column.editType = column.editType ? column.editType : 'stringedit';
@@ -882,10 +882,10 @@ export class GanttTreeGrid {
         } else if (taskSettings.startDate === column.field) {
             /** Name column */
             if (this.parent.isLocaleChanged && previousColumn) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('startDate');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('startDate');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('startDate');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('startDate');
             }
             column.editType = column.editType ? column.editType :
                 this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
@@ -908,20 +908,22 @@ export class GanttTreeGrid {
                 'baselineStartDate';
             column.width = column.width ? column.width : 150;
             if (this.parent.isLocaleChanged && previousColumn) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant(colName);
+                column.headerText = !isNullOrUndefined(previousColumn.headerText)
+                    ? previousColumn.headerText
+                    : this.parent.localeObj.getConstant(colName);
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant(colName);
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant(colName);
             }
             column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.editType = column.editType ? column.editType :
                 this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
         } else if (taskSettings.endDate === column.field) {
             if (this.parent.isLocaleChanged && previousColumn) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('endDate');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('endDate');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('endDate');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('endDate');
             }
             column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.editType = column.editType ? column.editType :
@@ -940,9 +942,9 @@ export class GanttTreeGrid {
             }
         } else if (taskSettings.constraintDate === column.field) {
             if (this.parent.isLocaleChanged && previousColumn) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('constraintDate');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('constraintDate');
             } else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('constraintDate');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('constraintDate');
             }
             column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.editType = column.editType ? column.editType :
@@ -960,10 +962,10 @@ export class GanttTreeGrid {
         } else if (taskSettings.duration === column.field) {
             column.width = column.width ? column.width : 150;
             if (this.parent.isLocaleChanged && previousColumn) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('duration');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('duration');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('duration');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('duration');
             }
             column.valueAccessor = column.valueAccessor ?
                 column.valueAccessor : !isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.read) ? null :
@@ -974,10 +976,10 @@ export class GanttTreeGrid {
             this.composeProgressColumn(column);
         } else if (taskSettings.dependency === column.field) {
             if (this.parent.isLocaleChanged && previousColumn) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('dependency');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('dependency');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('dependency');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('dependency');
             }
             column.width = column.width ? column.width : 150;
             column.editType = column.editType ? column.editType : 'stringedit';
@@ -1012,10 +1014,10 @@ export class GanttTreeGrid {
             this.composeResourceColumn(column);
         } else if (taskSettings.notes === column.field) {
             if (previousColumn && this.parent.isLocaleChanged) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('notes');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('notes');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('notes');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('notes');
             }
             column.width = column.width ? column.width : 150;
             column.editType = column.editType ? column.editType : 'stringedit';
@@ -1033,10 +1035,10 @@ export class GanttTreeGrid {
         else if (taskSettings.baselineDuration === column.field) {
             column.width = column.width ? column.width : 150;
             if (this.parent.isLocaleChanged && previousColumn) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('baselineDuration');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('baselineDuration');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('baselineDuration');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('baselineDuration');
             }
             column.valueAccessor = column.valueAccessor ?
                 column.valueAccessor : !isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.read) ? null :
@@ -1046,10 +1048,10 @@ export class GanttTreeGrid {
         }
         else if (taskSettings.work === column.field) {
             if (previousColumn && this.parent.isLocaleChanged) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('work');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('work');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('work');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('work');
             }
             column.width = column.width ? column.width : 150;
             column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.workValueAccessor.bind(this);
@@ -1057,10 +1059,10 @@ export class GanttTreeGrid {
 
         } else if (taskSettings.type === column.field) {
             if (previousColumn && this.parent.isLocaleChanged) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('taskType');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('taskType');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('taskType');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('taskType');
             }
             column.width = column.width ? column.width : 150;
             //column.type = 'string';
@@ -1068,10 +1070,10 @@ export class GanttTreeGrid {
             column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.taskTypeValueAccessor.bind(this);
         } else if (taskSettings.manual === column.field && this.parent.taskMode  === 'Custom') {
             if (previousColumn && this.parent.isLocaleChanged) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('taskMode');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('taskMode');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('taskMode');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('taskMode');
             }
             column.width = column.width ? column.width : 120;
             column.editType = column.editType ? column.editType : 'dropdownedit';
@@ -1089,9 +1091,9 @@ export class GanttTreeGrid {
             };
         } else if (taskSettings.constraintType === column.field) {
             if (previousColumn && this.parent.isLocaleChanged) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('constraintType');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('constraintType');
             } else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('constraintType');
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('constraintType');
             }
             column.width = column.width ? column.width : 160;
             column.editType = column.editType ? column.editType : 'dropdownedit';
@@ -1188,10 +1190,10 @@ export class GanttTreeGrid {
             return column.field === prevcolumn.field;
         })[0];
         if (previousColumn && this.parent.isLocaleChanged) {
-            column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('resourceName');
+            column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('resourceName');
         }
         else {
-            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('resourceName');
+            column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('resourceName');
         }
         column.width = column.width ? column.width : 150;
         column.type = 'string';
@@ -1231,11 +1233,11 @@ export class GanttTreeGrid {
                 return column.field === prevcolumn.field;
             })[0];
             if (previousColumn) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('id');
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('id');
             }
         }
         else {
-            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('id');
+            column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('id');
         }
         column.width = column.width ? column.width : 100;
         for (let i: number = 0; i < lengthDataSource; i++) {
@@ -1276,10 +1278,10 @@ export class GanttTreeGrid {
             return column.field === prevcolumn.field;
         })[0];
         if (this.parent.isLocaleChanged && previousColumn) {
-            column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('progress');
+            column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('progress');
         }
         else {
-            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('progress');
+            column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('progress');
         }
         column.width = column.width ? column.width : 150;
         column.editType = column.editType ? column.editType : 'numericedit';

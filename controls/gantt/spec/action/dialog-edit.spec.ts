@@ -14991,3 +14991,106 @@ describe('T:974566-readOnly property not working for hierarchy data binding', fu
            expect(name.element.classList.contains("e-disabled")).toBe(true);
    });
 });
+
+describe('actionComplete event\'s modifiedRecords property not showing data properly', () => {
+        let ganttObj: Gantt;
+        let data1: any = [
+            {
+              TaskID: 1,
+              TaskName: 'Phase 1',
+              StartDate: new Date('04/07/2024'),
+              endDate: new Date('04/07/2024'),
+            },
+            {
+              TaskID: 2,
+              TaskName: 'Phase 2',
+              StartDate: new Date('04/09/2024'),
+              EndDate: new Date('04/12/2024'),
+              Progress: 30,
+              Predecessor: '1 SS+1days',
+              subtasks: [
+                {
+                  TaskID: 3,
+                  TaskName: 'Task 1',
+                  StartDate: new Date('04/09/2024'),
+                  EndDate: new Date('04/12/2024'),
+                  Progress: 50,
+                  subtasks: [
+                    {
+                      TaskID: 4,
+                      TaskName: 'Sub task 1',
+                      StartDate: new Date('04/09/2024'),
+                      EndDate: new Date('04/12/2024'),
+                    },
+                    {
+                      TaskID: 5,
+                      TaskName: 'Sub task 2',
+                      Predecessor: '4 SS',
+                    },
+                  ],
+                },
+              ],
+            },
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: data1,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns:[ 
+                        { field: 'TaskID', width:80 },
+                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                        { field: 'StartDate' },
+                        { field: 'Duration' },
+                        { field: 'Progress' },
+                        { field: 'Predecessor' }
+                    ],
+                    labelSettings:{
+                        leftLabel: 'TaskName',
+                    },
+                    timezone: "Europe/Rome",
+                    projectStartDate: new Date('03/24/2024'),
+                    projectEndDate:  new Date('07/06/2024'),
+    
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+            ganttObj.openEditDialog(5);
+        });
+        it('Edit end date', () => {
+            ganttObj.actionComplete = function (args: any): void {
+                if(args.requestType==="save"){
+                    expect(args.modifiedTaskData.length).toBe(3);
+                }
+            };
+            let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+            ED.value = new Date('04/10/2024');
+            ED.dataBind();
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+        afterAll(() => {
+          if (ganttObj) {
+            destroyGantt(ganttObj);
+          }
+        });
+    });

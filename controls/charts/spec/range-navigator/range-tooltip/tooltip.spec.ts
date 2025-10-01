@@ -3,7 +3,8 @@ import { Logarithmic, DateTime, LineSeries, AreaSeries, getElement } from '../..
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { IChangedEventArgs, IRangeEventArgs, IRangeTooltipRenderEventArgs } from '../../../src/range-navigator/model/range-navigator-interface';
 import { MouseEvents } from '../../../spec/chart/base/events.spec';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
+import { secureRandom } from '../../chart/base/data.spec';
 RangeNavigator.Inject(Logarithmic, DateTime, LineSeries, AreaSeries, RangeTooltip);
 
 let value: number = 0;
@@ -13,7 +14,7 @@ let args: IChangedEventArgs;
 let trigger: MouseEvents = new MouseEvents();
 
 for (let j: number = 0; j < 100; j++) {
-    value += (Math.random() * 10);
+    value += (secureRandom() * 10);
     point = { x: j, y: value };
     data.push(point);
 }

@@ -19,11 +19,11 @@ import { Legend } from '../../../src/chart/legend/legend';
 import { Selection } from '../../../src/chart/user-interaction/selection';
 import { MouseEvents } from '../base/events.spec';
 import { ILegendRenderEventArgs } from '../../../src/chart/model/chart-interface';
-import { unbindResizeEvents } from '../base/data.spec';
+import { secureRandom, unbindResizeEvents } from '../base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { categoryData, categoryData1 } from '../base/data.spec';
@@ -34,7 +34,7 @@ let colors: string[] = ['#663AB6', '#EB3F79', '#F8AB1D', '#B82E3D', '#049CB1', '
 let toggle: boolean = true;
 for (let j: number = 0; j < 20; j++) {
     for (i = 0; i < 10; i++) {
-        value = Math.random() * 100;
+        value = secureRandom() * 100;
         currentPoint = { x: i, y: value };
         data.push(currentPoint);
     }

@@ -534,7 +534,6 @@ export class StripLine {
     /**
      * To destroy the `StripLine` module.
      *
-     * @private
      * @returns {void}
      */
     public destroy(): void {

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 31.1.22 (2025-10-01)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I755362` - Fixed layout issues occurring when accepting revision in Track Changes mode.
+- `#I768429` - Resolved issue where alphabetic numbering lists were not functioning correctly in toolbar mode.
+- `#I757437` - Addressed layout problems with table header rows when tables split across pages.
+- `#I744840` - Fixed table layout inconsistencies caused by drag-and-drop operations across columns.
+- `#I754153` - Ensured mention comment changes are now preserved correctly during collaborative editing.
+
 ## 31.1.21 (2025-09-23)
 
 ### DocumentEditor

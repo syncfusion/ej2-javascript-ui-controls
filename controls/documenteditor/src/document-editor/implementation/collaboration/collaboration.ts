@@ -773,6 +773,7 @@ export class CollaborativeEditingHandler {
                     let commentView: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(commentToDelete);
                     commentView.commentText.innerText = markerData.text;
                     commentToDelete.text = markerData.text;
+                    this.parseCommentMentions(markerData.text, commentToDelete);
                     return;
                 }
             }
@@ -810,6 +811,7 @@ export class CollaborativeEditingHandler {
                 let commentEnd: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsEnd, item.commentId);
                 if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentEnd)) {
                     this.documentEditor.editorModule.updateCommentElement(item, commentStart, commentEnd, markerData);
+                    this.parseCommentMentions(markerData.text, item);
                     this.documentEditor.editorModule.addCommentWidget(item, true, true, false);
                     this.commentsStart.splice(this.commentsStart.indexOf(commentStart), 1);
                     this.commentsEnd.splice(this.commentsEnd.indexOf(commentEnd), 1);
@@ -818,6 +820,9 @@ export class CollaborativeEditingHandler {
                 }
             }
         }
+    }
+    private parseCommentMentions(text: string, item: CommentElementBox): void {
+        item.mentions = this.documentEditor.editor.getCommentInfo(text).itemData;
     }
     private getComment(commentID: string): CommentElementBox {
         let collection: CommentElementBox[] = this.documentEditor.documentHelper.comments;

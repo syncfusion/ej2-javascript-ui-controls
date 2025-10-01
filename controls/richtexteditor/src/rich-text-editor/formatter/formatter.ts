@@ -79,7 +79,7 @@ export class Formatter {
             const currentLength: number = self.getText().trim().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
             const selectionLength: number = self.getSelection().length;
             const totalLength: number = (currentLength - selectionLength) + currentInsertContentLength;
-            if (!(self.maxLength === -1 || totalLength <= self.maxLength)) {
+            if (!(self.maxLength === -1 || totalLength <= self.maxLength) || (self.maxLength !== -1 && currentLength > self.maxLength) && args.item.subCommand !== 'Undo' && args.item.subCommand !== 'Redo') {
                 return;
             }
         }
@@ -124,7 +124,8 @@ export class Formatter {
                         callBack: this.onSuccess.bind(this, self),
                         value: value,
                         enterAction: self.enterKey,
-                        enableTabKey: self.enableTabKey
+                        enableTabKey: self.enableTabKey,
+                        maxLength: self.maxLength
                     });
                 }
             }

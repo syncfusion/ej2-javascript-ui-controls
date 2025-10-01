@@ -10,12 +10,12 @@ import { AreaSeries } from '../../../src/chart/series/area-series';
 import { Category } from '../../../src/chart/axis/category-axis';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { MouseEvents } from '../base/events.spec';
-import { unbindResizeEvents } from '../base/data.spec';
+import { secureRandom, unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { DateTime, Zoom, ScrollBar } from '../../../src/index' ;
 import { Logarithmic } from '../../../src/index';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs, IAxisLabelClickEventArgs } from '../../../src/chart/model/chart-interface';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
 import { categoryData } from '../base/data.spec';
 Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic, Zoom, ScrollBar, AreaSeries);
 
@@ -1615,14 +1615,14 @@ describe('Chart Control', () =>{
             numericSeriesData.push(point);
         }
         function getRndInteger(min: number, max: number) {
-            return Math.floor(Math.random() * (max - min)) + min;
+            return Math.floor(secureRandom() * (max - min)) + min;
         }
         let value: number = 80;
         for (i = 1; i < 500; i++) {
-            if (Math.random() > .5) {
-                value += Math.random();
+            if (secureRandom() > .5) {
+                value += secureRandom();
             } else {
-                value -= Math.random();
+                value -= secureRandom();
             }
             point = { x: new Date(1990, i + 2, i), y: value.toFixed(1) };
             dateTimeData.push(point);

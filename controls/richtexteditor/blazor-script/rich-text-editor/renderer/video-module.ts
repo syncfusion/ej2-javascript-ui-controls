@@ -268,8 +268,8 @@ export class Video {
         const pos: OffsetPosition = this.calcPos(e);
         const top: number = pos.top;
         const left: number = pos.left;
-        const vidWid: string | number = e.width !== 0 && !isNOU(e.width) && e.width !== 'auto' ? e.width : e.getBoundingClientRect().width;
-        const vidHgt: string | number = e.height !== 0 && !isNOU(e.height) && e.height !== 'auto' ? e.height : e.getBoundingClientRect().height;
+        const vidWid: string | number = e.getBoundingClientRect().width;
+        const vidHgt: string | number = e.getBoundingClientRect().height;
         const borWid: number = (Browser.isDevice) ? (4 * parseInt((e.style.outline.slice(-3)), 10)) + 2 :
             (2 * parseInt((e.style.outline.slice(-3)), 10)) + 2; //span border width + video outline width
         const devWid: number = ((Browser.isDevice) ? 0 : 2);   // span border width

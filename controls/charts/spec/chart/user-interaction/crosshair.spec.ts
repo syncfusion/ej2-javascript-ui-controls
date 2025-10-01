@@ -13,14 +13,14 @@ import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { Legend } from '../../../src/chart/legend/legend';
 import { MouseEvents } from '../base/events.spec';
-import { categoryData, categoryData1, tooltipData1, datetimeData, highlightData, highlightAxesData } from '../base/data.spec';
+import { categoryData, categoryData1, tooltipData1, datetimeData, highlightData, highlightAxesData, secureRandom } from '../base/data.spec';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Category } from '../../../src/chart/axis/category-axis';
 import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import  {profile , inMB, getMemoryProfile } from '../../common.spec';
 import { ILoadedEventArgs,  } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, ColumnSeries, DateTime, Category, Tooltip, DataEditing, SplineSeries, BarSeries, Legend);
 Chart.Inject(Crosshair, AreaSeries);
@@ -593,10 +593,10 @@ describe('Chart Crosshair', () => {
         let value: number = 80;
         let i: number;
         for (i = 1; i < 500; i++) {
-            if (Math.random() > .5) {
-                value += Math.random();
+            if (secureRandom() > .5) {
+                value += secureRandom();
             } else {
-                value -= Math.random();
+                value -= secureRandom();
             }
             point1 = { x: new Date(1910, i + 2, i), y: value.toFixed(1) };
             series1.push(point1);

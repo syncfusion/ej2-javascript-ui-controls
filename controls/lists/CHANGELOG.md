@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 31.1.21 (2025-09-23)
-
-### ListView
-
-#### Bug Fixes
-
-- `#I698708` - The checkbox misalignment issue while using Template support in the ListView component has been resolved.
-
-## 30.1.37 (2025-06-25)
+## 31.1.17 (2025-09-05)
 
 ### ListView
 

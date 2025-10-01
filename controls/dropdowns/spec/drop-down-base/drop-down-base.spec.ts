@@ -935,3 +935,34 @@ describe('templatecompiler Spec for empty method ', () => {
         (<any>listObj).remainingItems(datasource1 , fields);
     })
 });
+
+describe('getValueByText method', () => {
+    let listObj: any;
+    let element: HTMLElement;
+    let ds = [{ id: 'item1', name: 'First Item' }, { id: 'item2', name: 'Second Item' }];
+    beforeEach(() => {
+        element = createElement('div', { id: 'dropdownbase' });
+        document.body.appendChild(element);
+        listObj = new DropDownBase({ 
+            dataSource: ds,
+            fields: { text: 'name', value: 'id' }
+        });
+        listObj.appendTo(element);
+    });
+    afterEach(() => {
+        if (element) {
+            element.parentElement.remove();
+        }
+        document.body.innerHTML = '';
+    });
+
+    it('should return the correct value for a given text without ignoring case', () => {
+        let value = listObj.getValueByText('Second Item', false);
+        expect(value).toEqual('item2');
+    });
+
+    it('should return null for a given text with different case when ignoreCase is false', () => {
+        let value = listObj.getValueByText('second item', false);
+        expect(value).toBeNull();
+    });
+});

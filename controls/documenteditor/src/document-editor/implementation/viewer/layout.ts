@@ -5948,7 +5948,7 @@ export class Layout {
                             startBlock = previousBlock;
                             startIndex = startBlock.indexInOwner;
                         }
-                    } else if (block instanceof TableRowWidget && block.rowFormat.isHeader && previousBlock.rowFormat.isHeader && !isNullOrUndefined(previousBlock.ownerTable.previousWidget)) {
+                    } else if (block instanceof TableRowWidget && previousBlock.rowFormat.isHeader && this.documentHelper.compatibilityMode === 'Word2013' && !isNullOrUndefined(previousBlock.ownerTable.previousWidget)) {
                         if (isNullOrUndefined(this.getPreviousBlock(previousBlock as BlockWidget))) {
                             startBlock = undefined;
                         } else {

@@ -6148,7 +6148,7 @@ describe('using public method to get tasks information  ', () => {
             },
             columns: [
                 { field: 'TaskID', headerText: 'Task ID' },
-                { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                { field: 'TaskName', headerText: '', allowReordering: false  },
                 { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
                 { field: 'Duration', headerText: 'Duration', allowEditing: false },
                 { field: 'Progress', headerText: 'Progress', allowFiltering: false }, 
@@ -6185,6 +6185,12 @@ describe('using public method to get tasks information  ', () => {
             projectStartDate: new Date('03/25/2019'),
             projectEndDate: new Date('05/30/2019'),
             }, done);
+    });
+    it('Inconsistent behavior between Grid and Gantt in headerText property', () => {
+        const column = ganttObj.treeGrid.columns[1];
+        if (typeof column !== 'string') {
+            expect(column.headerText).toBe("");
+        }
     });
     it('using public method to get info of record', () => {
         const ganttProps = ganttObj.getTaskInfo('1');

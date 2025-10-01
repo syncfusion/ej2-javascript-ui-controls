@@ -258,8 +258,16 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
      */
     public initializeNumericTextBoxes(): void {
         if (this.isInitilized) {
-            return;
+            const leftIndent: HTMLElement = document.getElementById(this.container.element.id + RIBBON_ID + '_indent_left');
+            const rightIndent: HTMLElement = document.getElementById(this.container.element.id + RIBBON_ID + '_indent_right');
+            const beforeSpacing: HTMLElement = document.getElementById(this.container.element.id + RIBBON_ID + '_spacing_before');
+            const afterSpacing: HTMLElement = document.getElementById(this.container.element.id + RIBBON_ID + '_spacing_after');
+            if (leftIndent.classList.contains('e-numerictextbox') && rightIndent.classList.contains('e-numerictextbox') &&
+                beforeSpacing.classList.contains('e-numerictextbox') && afterSpacing.classList.contains('e-numerictextbox')) {
+                return;
+            }
         }
+        this.resetInitializationState();
         this.isInitilized = true;
         this.initializeIndentLeftNumericBox();
         this.initializeIndentRightNumericBox();

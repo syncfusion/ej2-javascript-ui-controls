@@ -1225,6 +1225,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             if (this.showPropertiesPane && this.tableProperties) {
                 this.tableProperties.updateTabContainerHeight();
             }
+            if (this.toolbarMode == 'Ribbon' && this.ribbon && this.ribbon.ribbon.tabs[this.ribbon.ribbon.selectedTab].header === this.ribbon.localObj.getConstant('Layout')) {
+                this.ribbon.tabManager.layoutTab.layoutParagraphGroup.initializeNumericTextBoxes();
+                this.ribbon.tabManager.layoutTab.layoutParagraphGroup.updateSelection();
+            }
         }
     }
     /**

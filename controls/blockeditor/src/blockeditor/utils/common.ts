@@ -9,7 +9,7 @@ import { StyleModel } from '../models/index';
  */
 export function generateUniqueId(prefix?: string): string {
     const timestamp: string = Date.now().toString(36); // Base36 timestamp (millisecond precision)
-    const randomPart: string = Math.random().toString(36).substring(2, 10); // 8 random characters
+    const randomPart: string = getRandomNumber().toString(36).substring(2, 10); // 8 random characters
     return `${prefix ? prefix + '-' : ''}${timestamp}${randomPart}`.toLowerCase();
 }
 
@@ -378,4 +378,14 @@ export function createBaseSvg(viewBox: string = '0 0 24 24'): SVGSVGElement {
         width: '18',
         height: '18'
     });
+}
+
+/**
+ * @returns {number} A cryptographically secure random number.
+ * @hidden
+ */
+export function getRandomNumber(): number {
+    const array: Uint32Array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] / (0xFFFFFFFF + 1);
 }

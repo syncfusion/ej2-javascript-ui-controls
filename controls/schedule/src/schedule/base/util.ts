@@ -489,4 +489,3 @@ export function getElementHeight(element: HTMLElement, isTransformed?: boolean):
 export function getElementTop(element: HTMLElement, isTransformed?: boolean): number {
     return isTransformed ? element.offsetTop : element.getBoundingClientRect().top;
 }
-

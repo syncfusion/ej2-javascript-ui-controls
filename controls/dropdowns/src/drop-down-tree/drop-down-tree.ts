@@ -1976,8 +1976,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private getOverflowVal(index: number): string {
+        let textSelected: string;
         const selectedData: { [key: string]: Object } = this.getSelectedData(this.value[parseInt(index.toString(), 10)]);
-        return getValue(this.treeSettings.loadOnDemand ? this.fields.text : 'text', selectedData);
+        const node: { [key: string]: Object } = this.treeObj.getNode(this.value[index as number]);
+        textSelected = getValue(this.treeSettings.loadOnDemand ? this.fields.text : 'text', selectedData);
+        if (isNOU(textSelected) && !isNOU(node.text)) {
+            textSelected = node.text.toString();
+        }
+        return textSelected;
     }
 
     private updateDelimMode(): void {
@@ -3308,7 +3314,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             const compiledString: Function = this.initializeValueTemplate();
             for (let i: number = 0, len: number = this.value.length; i < len; i++) {
                 selectedData = this.getSelectedData(this.value[i as number]);
+                const node: { [key: string]: Object } = this.treeObj.getNode(this.value[i as number]);
                 text = getValue(this.treeSettings.loadOnDemand ? this.fields.text : 'text', selectedData);
+                if (isNOU(text) && !isNOU(node.text)) {
+                    text = node.text.toString();
+                }
                 this.selectedText.push(text);
                 temp = this.selectedText[this.selectedText.length - 1];
                 if (this.selectedText.length > 1) {

@@ -181,9 +181,10 @@ export class StylesHelper {
 
         const characterFormat: any = documentEditor.selection.characterFormat;
         const paragraphFormat: any = documentEditor.selection.paragraphFormat;
-
+        
         if (paragraphFormat && paragraphFormat.styleName) {
-            return localObj.getConstant(paragraphFormat.styleName);
+            const localeValue: string = localObj.getConstant(paragraphFormat.styleName);
+            return (isNullOrUndefined(localeValue) || localeValue == '') ? paragraphFormat.styleName : localeValue;
         } else if (characterFormat && characterFormat.styleName &&
             characterFormat.styleName !== 'Default Paragraph Font') {
             return localObj.getConstant(characterFormat.styleName);

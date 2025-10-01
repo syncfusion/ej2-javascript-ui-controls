@@ -103,7 +103,12 @@ export class HtmlExport {
         }
         if (paragraph[inlinesProperty[this.keywordIndex]].length === 0) {
             //Handled to preserve non breaking space for empty paragraphs similar to MS Word behavior.
-            blockStyle += '<span />';
+            if (!isNullOrUndefined(section) && section[blocksProperty[this.keywordIndex]] && section[blocksProperty[this.keywordIndex]].length > 0 &&
+                section[blocksProperty[this.keywordIndex]][section[blocksProperty[this.keywordIndex]].length - 1] === paragraph) {
+                blockStyle += '<span />';
+            } else {
+                blockStyle += '&nbsp;';
+            }
         } else {
             blockStyle = this.serializeInlines(paragraph, blockStyle);
         }

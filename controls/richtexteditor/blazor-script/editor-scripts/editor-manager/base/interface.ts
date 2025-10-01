@@ -161,6 +161,10 @@ export interface IHtmlKeyboardEvent {
      * Defines tag to be used when shift enter key is pressed.
      */
     shiftEnterKey?: string
+    /**
+     * Specifies the maximum length.
+     */
+    maxLength?: number
 }
 
 /**

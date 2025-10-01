@@ -43,7 +43,7 @@ export class IframeContentRender extends ContentRender {
         const rteObj: IRichTextEditor = this.parent;
         const rteContent: string = getEditValue(rteObj.value, rteObj);
         const iFrameBodyContent: string =
-            '<body contenteditable="true" aria-label="Rich Text Editor" role="textbox" lang="' +
+            '<body contenteditable="true" aria-label="Rich Text Editor" aria-multiline="true" role="textbox" lang="' +
             this.parent.locale.slice(0, 2) +
             '" dir="' + (this.parent.enableRtl ? 'rtl' : 'ltr') +
             '">' + rteContent + '</body></html>';

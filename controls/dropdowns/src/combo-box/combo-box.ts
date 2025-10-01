@@ -866,7 +866,7 @@ export class ComboBox extends DropDownList {
     }
 
     protected getValueByText(text: string): string | number | boolean {
-        return super.getValueByText(text, true, this.ignoreAccent);
+        return super.getValueByText(text, this.ignoreCase, this.ignoreAccent);
     }
 
     protected unWireEvent(): void {

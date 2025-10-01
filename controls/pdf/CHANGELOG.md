@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.1.21 (2025-09-23)
+## 31.1.22 (2025-10-01)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where unsupported characters caused a font parsing error in a PDF form field.
+
+## 31.1.20 (2025-09-10)
 
 ### PDF Parser
 

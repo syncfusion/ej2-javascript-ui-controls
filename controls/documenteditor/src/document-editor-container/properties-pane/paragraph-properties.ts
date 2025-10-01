@@ -664,7 +664,7 @@ export class Paragraph {
         this.applyNumbering('UpRoman', 'uproman');
     }
     private numberedUpLetterClick(): void {
-        this.applyNumbering('UpRoman', 'uproman');
+        this.applyNumbering('UpLetter', 'upletter');
     }
     private numberedLowLetterClick(): void {
         this.applyNumbering('LowLetter', 'lowletter');

@@ -19,7 +19,7 @@ export function getImageFIle(): File {
 }
 
 export function getImageUniqueFIle(): File {
-    const number: number = Math.floor(100000 + Math.random() * 900000);;
+    const number: number = Math.floor(100000 + secureRandom() * 900000);;
     const base64Data = IMG_BASE64;
     const bytecharacters = atob(base64Data);
     const baseName: string = 'RTE-Feather_';
@@ -31,6 +31,12 @@ export function getImageUniqueFIle(): File {
     const blob: Blob = new Blob([byteArray], { type: 'image/png' });
     const file: File = new File([blob], baseName + number.toString() + '.png', { type: 'image/png'});
     return file;
+}
+
+export function secureRandom(): number {
+    const array: Uint32Array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] / (0xFFFFFFFF + 1);
 }
 
 

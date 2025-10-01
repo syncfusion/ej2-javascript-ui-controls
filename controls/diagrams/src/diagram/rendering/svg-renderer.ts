@@ -325,8 +325,6 @@ export class SvgRenderer implements IRenderer {
     public drawPath(
         svg: SVGElement, options: PathAttributes, diagramId: string, isSelector?: boolean,
         parentSvg?: SVGSVGElement, ariaLabel?: Object, scale?: number): void {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const x: number = Math.floor((Math.random() * 10) + 1);
         //const id: string = svg.id + '_shape' + x.toString();
         let collection: Object[] = [];
         collection = processPathData(options.data);

@@ -35,13 +35,13 @@ export function randomId(): string {
     let num: number;
     for (let i: number = 0; i < 5; i++) {
         if (typeof window !== 'undefined' && 'crypto' in window && 'getRandomValues' in crypto) {
-            const count: Uint16Array = new Uint16Array(1);
+            // Using Uint32Array for higher entropy and a wider range of secure random values.
+            const count: Uint32Array = new Uint32Array(1);
             // tslint:disable-next-line:no-any
             const intCrypto: any = (window as any).msCrypto || window.crypto;
             num = intCrypto.getRandomValues(count)[0] % (chars.length - 1);
-        } else {
-            num = Math.floor(Math.random() * chars.length);
         }
+        // Removed Math.random() due to lack of cryptographic security.
         if (i === 0 && num < 10) { i--; continue; }
         id += chars.substring(num, num + 1);
     }

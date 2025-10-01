@@ -165,7 +165,7 @@ export class ProgressAnnotationSettings extends ChildProperty<ProgressAnnotation
 }
 
 /**
- * Configures the borders .
+ * Configures the border for the tooltip of the progress bar.
  */
 export class Border extends ChildProperty<Border> {
     /**

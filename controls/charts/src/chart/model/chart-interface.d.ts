@@ -207,7 +207,7 @@ export interface ILegendClickEventArgs extends IChartEventArgs {
 export interface ITextRenderEventArgs extends IChartEventArgs {
     /** Defines the series of the label. */
     series: SeriesModel;
-    /** Defines the point of the label. */
+    /** Defines the point of the data label only not applicable for stack label. */
     point: Points;
     /** Defines the text of the label. */
     text: string;
@@ -217,14 +217,14 @@ export interface ITextRenderEventArgs extends IChartEventArgs {
     color: string;
     /** Defines the border of the label. */
     border: BorderModel;
-    /** Defines the template for the data label.
+    /** Defines the template for the data label only not applicable for stack label.
      *
      * @aspType string
      */
     template: string | Function;
     /** Defines the font used for the label. */
     font: FontModel;
-    /** Defines whether the data label position can change. */
+    /** Defines whether the data label position alone can change, not applicable for stack label. */
     location: LabelLocation;
 }
 export interface IAnnotationRenderEventArgs extends IChartEventArgs {

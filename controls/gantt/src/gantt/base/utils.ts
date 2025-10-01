@@ -232,3 +232,4 @@ let uid: number = 0;
 export function getUid(): number {
     return uid++;
 }
+

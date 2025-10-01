@@ -209,8 +209,15 @@ export class Formats {
 
     private isNotEndCursor(preElem: Element, range: Range): void {
         const nodeCutter: NodeCutter = new NodeCutter();
-        const isEnd: boolean = range.startOffset === preElem.lastChild.textContent.length &&
-            preElem.lastChild.textContent === range.startContainer.textContent;
+        let isEnd: boolean;
+        if (range.startContainer.nodeType === Node.TEXT_NODE &&
+            range.startContainer.textContent === '\u200B' && preElem.lastChild.nodeType === 3 && preElem.lastChild.textContent === '') {
+            isEnd = (range.startContainer as HTMLElement).previousElementSibling.textContent ===
+                (preElem.lastChild as HTMLElement).previousElementSibling.textContent;
+        } else {
+            isEnd = range.startOffset === preElem.lastChild.textContent.length &&
+                preElem.lastChild.textContent === range.startContainer.textContent;
+        }
         //Cursor at start point
         if (preElem.textContent.indexOf(range.startContainer.textContent) === 0 &&
             ((range.startOffset === 0 && range.endOffset === 0) || range.startContainer.nodeName === 'PRE')) {
@@ -398,6 +405,9 @@ export class Formats {
                     (e.subCommand.toLowerCase() !== 'pre' && e.subCommand.toLowerCase() !== 'blockquote' ||
                         (!isNOU(e.exeValue) && e.exeValue.name === 'dropDownSelect'))) ||
                     isNOU(parentNode.parentNode) || (parentNode.tagName === 'TABLE' && e.subCommand.toLowerCase() === 'pre')))) {
+                continue;
+            }
+            if (formatsNodes[i as number].nodeName === 'TABLE' && e.subCommand.toLowerCase() !== 'blockquote') {
                 continue;
             }
             this.cleanFormats(parentNode, e.subCommand);

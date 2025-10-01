@@ -230,7 +230,8 @@ describe('Crud Diagram', () => {
         let node: any = {
             id: randomId(),
             style: { fill: color },
-            Id: Math.floor(Math.random() * 66) + 1,
+            // Removed Math.random() due to lack of cryptographic security.
+            Id: 10,
             Description: description,
             Color: color
         };
@@ -238,7 +239,8 @@ describe('Crud Diagram', () => {
             id: randomId(),
             sourceID: selectedItem.id,
             targetID: node.id,
-            Id: Math.floor(Math.random() * 66) + 1
+            // Removed Math.random() due to lack of cryptographic security.
+            Id: 5
         };
         diagram.add(node);
         diagram.add(connector);
@@ -344,7 +346,8 @@ describe('Crud Datasource', () => {
             offsetY: 300,
             width: 100,
             height: 100,
-            Id: Math.floor(Math.random() * 66) + 1,
+            // Removed Math.random() due to lack of cryptographic security.
+            Id: 28,
             Description: description,
             Color: color
         };

@@ -161,14 +161,14 @@ export class LineDistribution {
             if (!isHorizontal) {
                 for (let key: number = 0; key < connectorObstacle.segments.length; key++) {
                     const obstacle: ObstacleSegmentValues = connectorObstacle.segments[parseInt(key.toString(), 10)];
-                    if (obstacle.orientation === 'horizontal') {
+                    if (obstacle.orientation === 'horizontal' && obstacle.distance > 1) {
                         segments.push(obstacle);
                     }
                 }
             } else {
                 for (let key: number = 0; key < connectorObstacle.segments.length; key++) {
                     const obstacle: ObstacleSegmentValues = connectorObstacle.segments[parseInt(key.toString(), 10)];
-                    if (obstacle.orientation === 'vertical') {
+                    if (obstacle.orientation === 'vertical' && obstacle.distance > 1) {
                         segments.push(obstacle);
                     }
                 }
@@ -192,6 +192,43 @@ export class LineDistribution {
             }
 
             connectorObstacles.push(connectorObstacle);
+        }
+        if (graph.length > 0) {
+            let keys: number[] = graph.map((e: GraphObject) => e.key).sort((a: number, b: number) => a - b);
+
+            let i: number = 0;
+            while (i < keys.length - 1) {
+                const key1: number = keys[parseInt(i.toString(), 10)];
+                const key2: number = keys[i + 1];
+
+                if (Math.abs(key2 - key1) < inversespacing * 0.5) {
+                    const idx1: number = graph.findIndex((e: GraphObject) => e.key === key1);
+                    const idx2: number = graph.findIndex((e: GraphObject) => e.key === key2);
+                    if (idx1 === -1 || idx2 === -1) {
+                        i++;
+                        continue;
+                    }
+
+                    const obj1: GraphObject = graph[parseInt(idx1.toString(), 10)];
+                    const obj2: GraphObject = graph[parseInt(idx2.toString(), 10)];
+
+                    const midKey: number = (key1 + key2) / 2;
+                    const combinedValues: ObstacleSegmentValues[] = obj1.value.concat(obj2.value);
+
+                    // Remove both entries (larger index first), then push the merged one
+                    const maxIdx: number = Math.max(idx1, idx2);
+                    const minIdx: number = Math.min(idx1, idx2);
+                    graph.splice(maxIdx, 1);
+                    graph.splice(minIdx, 1);
+                    graph.push({ key: midKey, value: combinedValues });
+
+                    // Recompute sorted keys after modification
+                    keys = graph.map((e: GraphObject) => e.key).sort((a: number, b: number) => a - b);
+                    // Keep i at the same position to re-check with the new neighbor
+                } else {
+                    i++;
+                }
+            }
         }
         this.sortConnectors(graph, diagram);
         const modifiedgrap: ModifiedgrapObject[] = [];
@@ -1310,6 +1347,9 @@ export class LineDistribution {
         boolean {
         for (let i: number = 0; i < list.length; i++) {
             if (list[parseInt(i.toString(), 10)] === keyValue) {
+                return true;
+            }
+            else if (list[parseInt(i.toString(), 10)] && (list[parseInt(i.toString(), 10)] as ModifiedgrapObject).key === keyValue) {
                 return true;
             }
         }

@@ -445,9 +445,6 @@ export class DialogEdit {
             this.rowIndex = ganttObj.selectedRowIndex;
         }
         this.isEdit = true;
-        if (this.parent.viewType === 'ResourceView' && this.rowData.level === 0) {
-            return;
-        }
         if (Object.keys(this.rowData).length !== 0) {
             this.editedRecord = extend({}, {}, this.rowData, true);
             this.isFromEditDialog = true;
@@ -707,7 +704,13 @@ export class DialogEdit {
     private createTab(dialogModel: DialogModel, dialog: HTMLElement): void {
         const ganttObj: Gantt = this.parent;
         const tabModel: TabModel = {}; const tabItems: TabItemModel[] = [];
-        const dialogSettings: AddDialogFieldSettingsModel[] = this.getEditFields();
+        let dialogSettings: AddDialogFieldSettingsModel[] = this.getEditFields();
+        if (this.isEdit === true && ganttObj.viewType === 'ResourceView' && this.rowData.hasChildRecords) {
+            // Filter to only keep the General tab
+            dialogSettings = dialogSettings.filter(function(tab: AddDialogFieldSettingsModel): boolean {
+                return tab.type === 'General';
+            });
+        }
         let tabElement: HTMLElement;
         const tasks: TaskFieldsModel = ganttObj.taskFields;
         const length: number = dialogSettings.length;
@@ -2780,7 +2783,7 @@ export class DialogEdit {
             }
         }
         if (this.isEdit) {
-            if (column.field === this.parent.taskFields.id) {
+            if (column.field === this.parent.taskFields.id || (this.parent.viewType === 'ResourceView' && this.rowData.hasChildRecords)) {
                 disabled = true;
             }
             if (this.editedRecord.hasChildRecords) {
@@ -3318,7 +3321,11 @@ export class DialogEdit {
                 if (typeof column.valueAccessor === 'string') {
                     const valueAccessor: Function = getObject(column.valueAccessor, window);
                     inputModel.value = valueAccessor(column.field, ganttData, column);
-                } else {
+                }
+                else if (column.editType === 'numericedit') {
+                    inputModel.value = ganttData.ganttProperties.duration;
+                }
+                else {
                     inputModel.value = (column.valueAccessor as Function)(column.field, ganttData, column);
                 }
             } else if (isNullOrUndefined(column.edit)) {

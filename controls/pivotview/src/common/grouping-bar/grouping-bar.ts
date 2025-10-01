@@ -186,15 +186,8 @@ export class GroupingBar implements IAction {
                             this.groupingChartTable.getElementsByClassName(cls.GROUP_VALUE_CLASS + ' ' +
                             cls.VALUE_AXIS_CLASS)[0] as HTMLElement;
                         if (this.parent.isAdaptive) {
-                            if (this.parent.isTabular) {
-                                chartLeftAxisPanel.style.minWidth = this.parent.dataSourceSettings.rows.length *
-                                 this.parent.gridSettings.columnWidth + 'px';
-                                chartValuePanel.style.minWidth = this.parent.dataSourceSettings.rows.length *
-                                 this.parent.gridSettings.columnWidth + 'px';
-                            } else {
-                                chartLeftAxisPanel.style.minWidth = '100px';
-                                chartValuePanel.style.minWidth = '100px';
-                            }
+                            chartLeftAxisPanel.style.minWidth = '100px';
+                            chartValuePanel.style.minWidth = '100px';
                         }
                         this.parent.element.insertBefore(
                             this.groupingChartTable, select('#' + this.parent.element.id + '_chart', this.parent.element));
@@ -214,15 +207,8 @@ export class GroupingBar implements IAction {
                 }
                 if (this.parent.displayOption.view !== 'Chart' && this.groupingTable) {
                     if (this.parent.isAdaptive) {
-                        if (this.parent.isTabular) {
-                            leftAxisPanel.style.minWidth = this.parent.dataSourceSettings.rows.length *
-                             this.parent.gridSettings.columnWidth + 'px';
-                            valuePanel.style.minWidth = this.parent.dataSourceSettings.rows.length *
-                             this.parent.gridSettings.columnWidth + 'px';
-                        } else {
-                            leftAxisPanel.style.minWidth = '100px';
-                            valuePanel.style.minWidth = '100px';
-                        }
+                        leftAxisPanel.style.minWidth = '100px';
+                        valuePanel.style.minWidth = '100px';
                     }
                     if (this.parent.firstColWidth) {
                         leftAxisPanel.style.minWidth = 'auto';
@@ -420,7 +406,7 @@ export class GroupingBar implements IAction {
                 if (!isNullOrUndefined(colGroupElement[i as number])) {
                     colGroupElementWidth += parseInt((colGroupElement[i as number] as HTMLElement).style.width, 10);
                 }
-                if (!isNullOrUndefined((this.parent.element.querySelectorAll('.e-group-row')[i as number] as HTMLElement))) {
+                if (!isNullOrUndefined((this.parent.element.querySelectorAll('.e-group-pivot-rows')[i as number] as HTMLElement))) {
                     let headerContent: number = 0;
                     const engineModule: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule
                         : this.parent.olapEngineModule;
@@ -433,10 +419,10 @@ export class GroupingBar implements IAction {
                         }
                     }
                     if (btnHeight < (headerContent * this.parent.gridSettings.rowHeight)) {
-                        (this.parent.element.querySelectorAll('.e-group-row')[i as number] as HTMLElement).style.height =
+                        (this.parent.element.querySelectorAll('.e-group-pivot-rows')[i as number] as HTMLElement).style.height =
                             (headerContent * this.parent.gridSettings.rowHeight) + 'px';
                     } else {
-                        (this.parent.element.querySelectorAll('.e-group-row')[i as number] as HTMLElement).style.height =
+                        (this.parent.element.querySelectorAll('.e-group-pivot-rows')[i as number] as HTMLElement).style.height =
                             btnHeight + 'px';
                     }
                 }

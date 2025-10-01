@@ -860,6 +860,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         return theme.replace(/['"]+/g, '');
     }
 
+    private secureRandom(): number {
+        const array: Uint32Array = new Uint32Array(1);
+        window.crypto.getRandomValues(array);
+        return array[0] / (0xFFFFFFFF + 1);
+    }
+
     /**
      * Initialize the rendering
      *
@@ -885,7 +891,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             attrs: {
                 type: 'hidden', value: (isNullOrUndefined(this.value) ? (isNullOrUndefined(this.min) ? '0' : this.min.toString()) : this.value.toString()),
                 name: this.element.getAttribute('name') || this.element.getAttribute('id') ||
-                    '_' + (Math.random() * 1000).toFixed(0) + 'slider', class: classNames.sliderHiddenInput
+                    '_' + (this.secureRandom() * 1000).toFixed(0) + 'slider', class: classNames.sliderHiddenInput
             }
         }));
         this.hiddenInput.tabIndex = -1;

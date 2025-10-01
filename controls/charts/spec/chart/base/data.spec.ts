@@ -6,6 +6,23 @@ import { Browser, EventHandler } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
 import { ChartLocation } from '../../../src/common/utils/helper';
 
+/**
+ * Generates a cryptographically secure random number in the range [0, 1).
+ *
+ * This method uses the browser's `window.crypto.getRandomValues()` to produce
+ * an unsigned 32-bit integer and scales the result to a floating-point value
+ * between 0 (inclusive) and 1 (exclusive), similar to `secureRandom()` but
+ * with cryptographic security.
+ *
+ * @returns {number} A random floating-point number greater than or equal to 0 and less than 1.
+ * @private
+ */
+export function secureRandom(): number {
+    const array: Uint32Array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] / (0xFFFFFFFF + 1);
+}
+
 export function unbindResizeEvents(chart: Chart): boolean {
     if (Browser.isTouch && chart.isOrientation()) {
         EventHandler.remove(<HTMLElement & Window>window, 'orientationchange', chart.chartResize);

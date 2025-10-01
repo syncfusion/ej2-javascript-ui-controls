@@ -2788,7 +2788,6 @@ private calculatePathBounds(data: string): Rect {
             i > 0 ? this.pageContext.lineTo(cx, cy) : this.pageContext.moveTo(cx, cy);
         }
         this.pageContext.stroke();
-        this.pageContext.restore();
     }
     /**
      * @private
