@@ -1,4 +1,4 @@
-import { _FieldFlag, _getInheritableProperty, _PdfAnnotationType, _PdfBaseStream, _PdfContentStream, _PdfDictionary, _PdfName, _PdfReference, PdfAnnotation, PdfButtonField, PdfCheckBoxField, PdfComboBoxField, PdfDocument, PdfField, PdfForm, PdfInkAnnotation, PdfLineAnnotation, PdfListBoxField, PdfPage, PdfPen, PdfPolygonAnnotation, PdfPolyLineAnnotation, PdfRadioButtonListField, PdfSignatureField, PdfTextBoxField, PdfTextMarkupAnnotation } from '@syncfusion/ej2-pdf';
+import { _FieldFlag, _getInheritableProperty, _PdfAnnotationType, _PdfBaseStream, _PdfContentStream, _PdfDictionary, _PdfName, _PdfReference, PdfAnnotation, PdfBrush, PdfButtonField, PdfCheckBoxField, PdfComboBoxField, PdfDocument, PdfField, PdfForm, PdfInkAnnotation, PdfLineAnnotation, PdfListBoxField, PdfPage, PdfPolygonAnnotation, PdfPolyLineAnnotation, PdfRadioButtonListField, PdfSignatureField, PdfTextBoxField, PdfTextMarkupAnnotation } from '@syncfusion/ej2-pdf';
 import { PdfRedactionRegion } from './pdf-redaction-region';
 export class _PdfRedactionProcessor {
     _updateContentStream(page: PdfPage, stream: _PdfContentStream, options: PdfRedactionRegion[], document: PdfDocument): void {
@@ -32,15 +32,13 @@ export class _PdfRedactionProcessor {
         this._processFormFields(page, options, document);
         for (let i: number = 0; i < options.length; i++) {
             const bounds: {x: number, y: number, width: number, height: number} = options[Number.parseInt(i.toString(), 10)].bounds;
-            if (options[Number.parseInt(i.toString(), 10)].fillColor) {
-                page.graphics.drawRectangle(bounds.x, bounds.y, bounds.width, bounds.height,
-                                            new PdfPen(options[Number.parseInt(i.toString(), 10)].fillColor, 1));
-            }
             if (options[Number.parseInt(i.toString(), 10)]._appearanceEnabled) {
                 options[Number.parseInt(i.toString(), 10)].appearance.normal._isNew = true;
-                page._parseGraphics();
                 page.graphics.drawTemplate(options[Number.parseInt(i.toString(), 10)].appearance.normal,
                                            bounds);
+            } else if (options[Number.parseInt(i.toString(), 10)].fillColor) {
+                page.graphics.drawRectangle(bounds.x, bounds.y, bounds.width, bounds.height,
+                                            new PdfBrush(options[Number.parseInt(i.toString(), 10)].fillColor));
             }
         }
     }

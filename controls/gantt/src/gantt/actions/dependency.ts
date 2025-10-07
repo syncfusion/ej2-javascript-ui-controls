@@ -256,7 +256,7 @@ export class Dependency {
         const guidRegex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
         const alphaRegex: RegExp = /[A-Za-z]/;
         const validTypes: Set<string> = new Set(['FS', 'FF', 'SF', 'SS']);
-        const predecessorParts: string[] = predecessor.split(',');
+        const predecessorParts: string[] = predecessor.replace(/\s+/g, '').split(',');
         for (const el of predecessorParts) {
             const result: {
                 match: string[];

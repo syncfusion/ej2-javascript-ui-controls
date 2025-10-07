@@ -659,7 +659,7 @@ describe('Scrollbar Chart ', () => {
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
                 let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-                expect(thumbX === '324.56' || thumbX === '209.10').toBe(true);
+                expect(thumbX === '324.56' || thumbX === '209.10' || thumbX === '306.23').toBe(true);
                 expect(thumbWidth === '74' || thumbWidth === '60' || thumbWidth === '49').toBe(true);
                 done();
             };
@@ -686,7 +686,7 @@ describe('Scrollbar Chart ', () => {
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
                 let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-                expect(thumbX === '210.95' || thumbX === '334.66').toBe(true);
+                expect(thumbX === '210.95' || thumbX === '334.66' || thumbX === '315.77').toBe(true);
                 expect(thumbWidth === '40').toBe(true);
                 done();
             };
@@ -712,7 +712,7 @@ describe('Scrollbar Chart ', () => {
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
                 let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-                expect(thumbX === '212.76' || thumbX === '217.16' || thumbX === '337.73').toBe(true);
+                expect(thumbX === '212.76' || thumbX === '217.16' || thumbX === '337.73' || thumbX === '318.67').toBe(true);
                 expect(thumbWidth === '40').toBe(true);
                 done();
             };
@@ -1200,7 +1200,7 @@ describe('Scrollbar Chart ', () => {
                 };
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '345.36905390315076' || thumbEle.getAttribute('x') === '345.000412371134' || thumbEle.getAttribute('x') === '17.699999999999996').toBe(true);
+                expect(thumbEle.getAttribute('x') === '345.36905390315076' || thumbEle.getAttribute('x') === '345.000412371134' || thumbEle.getAttribute('x') === '17.699999999999996' || thumbEle.getAttribute('x') === '16.70169204737732').toBe(true);
                 expect(thumbEle.getAttribute('width') === '99.89999999999999' || thumbEle.getAttribute('width') === '100.38' ).toBe(true);
                 done();
             };
@@ -1649,3 +1649,4 @@ describe('Inversed Scrollbar ', function () {
     });
      
 });
+

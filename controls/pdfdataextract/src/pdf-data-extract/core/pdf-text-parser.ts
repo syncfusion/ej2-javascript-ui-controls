@@ -5,6 +5,7 @@ import { _FontStructure } from './text-extraction/font-structure';
 import { TextGlyph, TextLine, TextWord } from './text-structure';
 import { _MatrixHelper } from './text-extraction/matrix-helper';
 import { _PdfContentParserHelper } from './content-parser-helper';
+import { PdfRedactionRegion } from './redaction/pdf-redaction-region';
 
 export class _PdfTextParser {
     _textGlyph: TextGlyph[] = [];
@@ -93,20 +94,20 @@ export class _PdfTextParser {
         }
         return this._transform(textState._ctm, this._transform(textState._textMatrix, tsm));
     }
-    _isFoundText(x: number, y: number, page: PdfPage, redactBounds: {x: number, y: number, width: number, height: number}[]): boolean {
+    _isFoundText(x: number, y: number, page: PdfPage, redactBounds: PdfRedactionRegion[]): boolean {
         let isFound: boolean = false;
         let location: number[] = [];
         if (y < 0) {
             y = -y;
         }
         const rectValue: {x: number, y: number, width: number, height: number} = {x: 0, y: 0, width: 0, height: 0};
-        const redactionBounds: {x: number, y: number, width: number, height: number}[] = redactBounds;
+        const redactionBounds: PdfRedactionRegion[] = redactBounds;
         location = this._getRelativeLocation(x, y, page);
         let yPosition: number = Math.floor(location[1]);
         const count: number = redactionBounds.length;
         for (let i: number = 0; i < count; i++) {
-            const bounds: {x: number, y: number, width: number, height: number} = redactionBounds[Number.parseInt(i.toString(), 10)];
-            const ypos: number = Math.floor(redactionBounds[Number.parseInt(i.toString(), 10)].y);
+            const bounds: {x: number, y: number, width: number, height: number} = redactionBounds[<number>i]._bounds;
+            const ypos: number = Math.floor(redactionBounds[Number.parseInt(i.toString(), 10)]._bounds.y);
             if (ypos === yPosition || (ypos === (yPosition - 1)) || (ypos === (yPosition + 1))) {
                 isFound = true;
                 break;
@@ -373,19 +374,21 @@ export class _PdfTextParser {
             } else {
                 y = cropOrMediaBox[2] - transform[5];
             }
-            if (!currentFont._vertical) {
-                height = Math.hypot(transform[2], transform[3]);
-            } else {
-                width = Math.hypot(transform[0], transform[1]);
-            }
-            if (transform[0] > 0) {
+            if (transform[0] > 0 && !currentFont._dictionary.has('DescendantFonts')) {
                 tempFontSize = transform[0];
+            } else if (transform[3] > 0 && currentFont._dictionary.has('DescendantFonts')) {
+                tempFontSize = transform[3];
             } else if (transform[1] !== 0 && transform[2] !== 0) {
                 if (transform[1] < 0) {
                     tempFontSize = -transform[1];
                 } else {
                     tempFontSize = transform[1];
                 }
+            }
+            if (!currentFont._vertical) {
+                height = transform[0] > 0 && transform[0] > 1 ? tempFontSize : Math.hypot(transform[2], transform[3]);
+            } else {
+                width = Math.hypot(transform[0], transform[1]);
             }
             if (glyph._unicode === ' ') {
                 if (!currentFont._vertical) {

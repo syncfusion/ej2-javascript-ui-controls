@@ -883,6 +883,42 @@ describe('Editor specs', ()=> {
         });
     });
 
+    describe('Bug 983038: Script error throws when copying and pasting in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let defaultUserAgent = navigator.userAgent;
+        let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+        let element: HTMLElement = createElement('div', {
+            id: "form-element", innerHTML:
+                `<span><div id="defaultRTE">
+                    </div></span>
+                ` });
+        beforeAll(() => {
+            Browser.userAgent = fireFox;
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo("#defaultRTE");
+        })
+        afterAll(() => {
+            destroy(rteObj);
+            detach(element);
+            Browser.userAgent = defaultUserAgent;
+        });
+
+        it(' pasting inline span content in firefox when rte is wrapped in span tag ', (done) => {
+            rteObj.focusIn();
+            const clipBoardData: string = '<!--StartFragment--><span>Welcome</span><!--EndFragment-->';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect((rteObj.inputElement.textContent.length)).not.toBe(0);
+                done();
+            }, 100);
+        });
+    });
+
     describe('EJ2-29347 - RTE base refresh method testing', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;

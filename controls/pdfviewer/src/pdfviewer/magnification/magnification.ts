@@ -589,6 +589,7 @@ export class Magnification {
                     }, 800);
             }
         }
+        this.isFormFieldPageZoomed = false;
     }
 
     private updatePageLocation(): void {
@@ -1306,6 +1307,7 @@ export class Magnification {
             this.isPagePinchZoomed = true;
             this.pinchMoveScroll();
         }
+        this.isFormFieldPageZoomed = false;
     }
 
     /**

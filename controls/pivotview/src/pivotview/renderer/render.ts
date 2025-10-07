@@ -1859,7 +1859,15 @@ export class Render {
             const parentHeight: number = gridHeight === 'auto' ? this.parent.getHeightAsNumber() : gridHeight as number;
             const headersLength: number = (this.engine && this.engine.headerContent) ? Object.keys(this.engine.headerContent).length : 1;
             const height: number = parentHeight - (this.gridSettings.rowHeight * headersLength);
-            if (this.engine && this.engine.valueContent && ((this.gridSettings.rowHeight * this.engine.valueContent.length) > height)) {
+            let rowCount: number = 0;
+            if (this.engine) {
+                if (this.engine.valueContent && this.engine.valueContent.length > 0) {
+                    rowCount = this.engine.valueContent.length;
+                } else if (this.engine.rowCount && this.engine.rowCount > 0) {
+                    rowCount = this.engine.rowCount;
+                }
+            }
+            if (rowCount > 0 && this.gridSettings.rowHeight * rowCount > height) {
                 parWidth = parWidth - getScrollBarWidth();
             }
         }

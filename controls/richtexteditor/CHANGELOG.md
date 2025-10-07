@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 31.1.23 (2025-10-07)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I768886` - Now, pasting content copied from a `span` wrapped Rich Text Editor works properly.
+
+- `#I764281` - Now, the Rich Text Editor inline toolbar position works properly when the editor content is empty.
+
 ## 31.1.22 (2025-10-01)
 
 ### RichTextEditor
@@ -17,8 +27,6 @@
 - `#I769104` - Now, consecutive image drag-and-drop operations work properly in the Rich Text Editor.
 
 - `#I769396` - Now, pasting content from Notepad into the Rich Text Editor inserts it exactly at the cursor position.
-
-- `#I768886` - Now, pasting content copied from a `span` wrapped Rich Text Editor works properly.
 
 - `#I762396` - Now, pasting multiple lines of content into bullet lists copied from Outlook works properly in the Rich Text Editor when the `enterKey` property is set to `DIV`.
 

@@ -276,8 +276,11 @@ export class QuickToolbar implements IQuickToolbar {
                     if ((isNOU(closest(startNode, 'A')) || isNOU(closest(endNode, 'A'))) && (!closest(target, 'td,th') || !range.collapsed) &&
                     (target.tagName !== 'IMG' || this.parent.getRange().startOffset !== this.parent.getRange().endOffset)) {
                         const isCursor: boolean = range.startOffset === range.endOffset && range.startContainer === range.endContainer;
+                        const isEmptyContentRange: boolean = isCursor && ((range.startContainer.nodeName === 'P' && range.startContainer.childNodes[0].nodeName === 'BR')
+                        || (range.startContainer.nodeName === 'DIV' && range.startContainer.childNodes[0].nodeName === 'BR') || (range.startContainer.nodeName === 'BR')
+                        || (range.startContainer.nodeName === 'BODY'));
                         if ((this.parent.inlineMode.onSelection && isCursor) ||
-                        (!this.parent.inlineMode.onSelection && !isCursor)) {
+                        (!this.parent.inlineMode.onSelection && !isCursor && !isEmptyContentRange)) {
                             return;
                         }
                         this.target = target;

@@ -959,6 +959,8 @@ export class PdfDataExtractor {
         return this._textLine;
     }
     _processPages(startIndex: number, endIndex: number): void {
+        const fontCache: Map<string, Map<string, _FontStructure>> = new Map();
+        const xObjectCache: Map<string, Map<string, _FontStructure>> = new Map();
         for (let pageIndex: number = startIndex; pageIndex <= endIndex; pageIndex++) {
             const page: PdfPage = this._document.getPage(pageIndex);
             if (page.rotation !== PdfRotationAngle.angle0 && !this._isLayout) {
@@ -966,12 +968,31 @@ export class PdfDataExtractor {
             }
             const graphicState: _GraphicState = new _GraphicState();
             const resource: _PdfDictionary = page._pageDictionary.get('Resources');
-            if (resource !== null && typeof(resource) !== 'undefined') {
-                const fontCollection: Map<string, _FontStructure> = _addFontResources(resource, this._crossReference);
-                const xObjectCollection: Map<string, _FontStructure> = _getXObjectResources(resource, this._crossReference);
+            if (resource !== null && typeof resource !== 'undefined') {
+                const resourceId: any = resource._reference ? resource._reference.toString() : ''; //eslint-disable-line
+                let fontCollection: Map<string, _FontStructure>;
+                if (resourceId && fontCache.has(resourceId)) {
+                    fontCollection = fontCache.get(resourceId);
+                } else {
+                    fontCollection = _addFontResources(resource, this._crossReference);
+                    if (resourceId) {
+                        fontCache.set(resourceId, fontCollection);
+                    }
+                }
+                let xObjectCollection: Map<string, _FontStructure>;
+                if (resourceId && xObjectCache.has(resourceId)) {
+                    xObjectCollection = xObjectCache.get(resourceId);
+                } else {
+                    xObjectCollection = _getXObjectResources(resource, this._crossReference);
+                    if (resourceId) {
+                        xObjectCache.set(resourceId, xObjectCollection);
+                    }
+                }
                 this._renderText(page, fontCollection, xObjectCollection, graphicState);
             }
             this._isRotatePage = false;
         }
+        fontCache.clear();
+        xObjectCache.clear();
     }
 }

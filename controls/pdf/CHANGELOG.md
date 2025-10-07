@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.23 (2025-10-07)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue where redaction annotation with bounds collection were not preserved correctly.
+
 ## 31.1.22 (2025-10-01)
 
 ### PDF Parser

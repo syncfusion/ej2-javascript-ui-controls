@@ -2660,7 +2660,8 @@ export class Layout {
         let width: number = element.width;
         if (element instanceof FieldTextElementBox && !this.isTocField(element.fieldBegin)) {
             text = this.documentHelper.getFieldResult((element as FieldTextElementBox).fieldBegin, element.paragraph.bodyWidget.page);
-            if (text !== '') {
+            // Skip update if element is empty and next node is a FieldTextElement
+            if (text !== '' && !(element.text === '' && element.nextNode instanceof FieldTextElementBox)) {
                 (element as FieldTextElementBox).text = text;
             } else {
                 text = (element as TextElementBox).text;

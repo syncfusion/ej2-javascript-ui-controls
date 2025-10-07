@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 31.1.23 (2025-10-07)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I768562` - Now, the border will not appear when chart area on pressing the ESC key.
+- `#I768561` - The axis label will no longer be hidden when the scrollbar is scrolled to the maximum.
+
+### Bullet Chart
+
+#### Bug Fixes
+
+- `#I982797` - The legend shape icon in the Bullet Chart displays correctly when the target types property is set.
+- `#I770357` - The hovering effect now applies to the measure bar upon enabling the tooltip.
+
+### 3D Chart
+
+#### Bug Fixes
+
+- `#I704555` - Now, hovering over a single 3D chart will no longer affect the other 3D charts.
+
 ## 31.1.22 (2025-10-01)
 
 ### Chart

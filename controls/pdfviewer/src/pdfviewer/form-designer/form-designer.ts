@@ -5327,9 +5327,11 @@ export class FormDesigner {
             document.getElementById(htmlElement.children[0].id).remove();
             if (className.indexOf('e-pv-formfield-textarea') !== -1) {
                 const inputElement: HTMLElement = this.createTextboxElement(textAreaId);
+                inputElement.style.backgroundColor = selectedItem.backgroundColor;
                 wrapperElement.template = htmlElement.appendChild(inputElement);
             } else {
                 const textArea: any = this.createTextAreaElement(textAreaId);
+                textArea.style.backgroundColor = selectedItem.backgroundColor;
                 textArea.value = selectedItem.value;
                 wrapperElement.template = htmlElement.appendChild(textArea);
             }
@@ -6496,8 +6498,8 @@ export class FormDesigner {
                 this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
             }
         }
-        this.setReadOnlyProperty(selectedItem, element);
         if (isReadOnlyChanged) {
+            this.setReadOnlyProperty(selectedItem, element);
             this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
             this.updateFormFieldPropertiesChanges('formFieldPropertiesChange', selectedItem, false, false, false,
                                                   false, false, false, false, false, false, isReadOnlyChanged,
@@ -6957,10 +6959,12 @@ export class FormDesigner {
     private setToolTip(tooltipContent: string, targetElement: any): void {
         //initialize tooltip component
         const tooltip: Tooltip = new Tooltip({
-            content:  initializeCSPTemplate(
+            content: initializeCSPTemplate(
                 function (): string { return tooltipContent; }
             )
         });
+        const isTextInput: boolean = targetElement && (targetElement.tagName === 'INPUT' || targetElement.tagName === 'TEXTAREA');
+        targetElement = isTextInput && targetElement.parentElement ? targetElement.parentElement : targetElement;
         // render initialized tooltip
         tooltip.appendTo(targetElement);
         tooltip.beforeOpen = this.tooltipBeforeOpen.bind(this);

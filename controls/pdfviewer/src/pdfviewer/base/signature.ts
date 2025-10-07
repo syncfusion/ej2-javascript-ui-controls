@@ -2783,14 +2783,14 @@ export class Signature {
             this.mouseY = null;
             this.imageSignatureDataUrl = '';
             this.drawSignatureDataUrl = '';
-            this.newObject = null;
+            this.newObject = [];
             this.outputString = '';
             this.drawOutputString = '';
             this.imageOutputString = '';
             this.signatureDialog = null;
             this.signaturecollection = [];
             this.outputcollection = [];
-            this.signAnnotationIndex = null;
+            this.signAnnotationIndex = [];
             this.fontName = '';
             this.fontsign = [];
             this.signfontStyle = [];

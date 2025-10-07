@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.1.22 (2025-10-01)
+## 31.1.23 (2025-10-07)
+
+### PDF Data Extract
+
+#### Bug Fixes
+
+- Resolved an issue where redaction annotation with bounds collection were not preserved correctly.
+
+## 31.1.17 (2025-09-05)
 
 ### PDF Data Extract
 

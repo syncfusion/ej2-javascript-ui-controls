@@ -129,18 +129,8 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
      */
     public showPopup(target: Element, originalEvent?: MouseEvent | KeyboardEvent): void {
         const selection: Selection = this.parent.formatter.editorManager.nodeSelection.get(this.parent.inputElement.ownerDocument);
-        let range: Range;
         if (isNOU(selection) && selection.rangeCount < 0) {
             return;
-        }
-        else if (!isNOU(selection) && selection.rangeCount === 0 && isNOU(selection.focusNode)) {
-            range = this.parent.inputElement.ownerDocument.createRange();
-            range.setStart(this.parent.inputElement.firstChild, 0);
-            range.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(range);
-        } else {
-            range = selection.getRangeAt(0);
         }
         this.renderSubComponents(target as HTMLElement);
         const relativeElem: HTMLElement = this.getRelativeElement(selection, target as HTMLElement);
@@ -151,13 +141,17 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         if (this.parent.iframeSettings.enable) {
             iframeRect = this.parent.contentModule.getPanel().getBoundingClientRect() as DOMRect;
         }
+        const range: Range = selection.getRangeAt(0);
         const clientRects: DOMRectList = range.getClientRects() as DOMRectList;
+        const isEmptyContent: boolean = clientRects.length === 0 && (range.startContainer.nodeName === 'P' || range.startContainer.nodeName === 'DIV' ||
+        (range.startContainer.nodeName === 'BR' && !range.startContainer.parentElement.closest('table')) ||
+        (this.parent.iframeSettings.enable && range.startContainer.nodeName === 'BODY'));
         const direction: SelectionDirection = this.getSelectionDirection(selection);
         let triggerType: TriggerType = isNOU(originalEvent) ? 'none' : originalEvent.type as TriggerType;
         if (triggerType === 'mouseup' && originalEvent.detail && originalEvent.detail === 3) {
             triggerType = 'trippleclick';
         }
-        const rangeDomRect: DOMRect = clientRects.length === 0 ? range.getBoundingClientRect() as DOMRect :
+        const rangeDomRect: DOMRect = clientRects.length === 0 && range.startContainer.nodeName !== '#text' ? (range.startContainer as HTMLElement).getBoundingClientRect() as DOMRect :
             direction === 'Backward' ? clientRects[0] : clientRects[clientRects.length - 1];
         const offsetCalculationParam: QuickToolbarOffsetParam = {
             blockElement: relativeElem,
@@ -173,8 +167,11 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         this.popupWidth = this.getPopupDimension(this.popupObj, 'width');
         this.popupHeight = this.getPopupDimension(this.popupObj, 'height');
         this.toolbarHeight =  this.parent.getToolbarElement().getBoundingClientRect().height;
-        const offsetX: number = this.calculateOffsetX(offsetCalculationParam);
+        const offsetX: number = isEmptyContent ? this.parent.iframeSettings.enable ? 17 : 1 : this.calculateOffsetX(offsetCalculationParam);
         const offsetY: number = this.calculateOffsetY(offsetCalculationParam);
+        if (isEmptyContent) {
+            this.currentTipPosition = 'Top-Left';
+        }
         let eventArgs: BeforeQuickToolbarOpenArgs = {
             popup: this.popupObj, cancel: false, targetElement: relativeElem,
             type: triggerType, positionX: offsetX, positionY: offsetY
@@ -470,8 +467,8 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         switch (this.type) {
         case 'Inline':
         case 'Text':
-            blockElement = this.parent.formatter.editorManager.domTree.isBlockNode(focusNode as HTMLElement) ?
-                focusNode as HTMLElement : this.parent.formatter.editorManager.domTree.getParentBlockNode(focusNode);
+            blockElement = this.parent.formatter.editorManager.domTree.isBlockNode(focusNode as HTMLElement) ? focusNode as HTMLElement :
+                this.parent.formatter.editorManager.domTree.getParentBlockNode(focusNode);
             if (blockElement.nodeName === 'TD' || blockElement.nodeName === 'TH') {
                 blockElement = closest(currentTarget, 'table') as HTMLElement;
             }

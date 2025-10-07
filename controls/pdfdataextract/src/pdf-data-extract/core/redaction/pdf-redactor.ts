@@ -1,4 +1,4 @@
-import { _PdfContentStream, _PdfCrossReference, _PdfDictionary, _PdfRecord, PdfDocument, PdfPage} from '@syncfusion/ej2-pdf';
+import { _PdfContentStream, _PdfCrossReference, _PdfDictionary, _PdfRecord, PdfAnnotation, PdfDocument, PdfPage, PdfRedactionAnnotation, PdfTemplate} from '@syncfusion/ej2-pdf';
 import { _GraphicState } from '../graphic-state';
 import { TextGlyph } from '../text-structure';
 import { _PdfContentParserHelper } from '../content-parser-helper';
@@ -17,8 +17,8 @@ import { PdfRedactionRegion } from './pdf-redaction-region';
  * let redactor: PdfRedactor = new PdfRedactor(document);
  * // Add redactions to the collection
  * let redactions: PdfRedactionRegion[] = [];
- * redactions.push(new PdfRedaction(0, {x: 10, y: 10, width: 100, height: 50}));
- * redactions.push(new PdfRedaction(2, {x: 10, y: 10, width: 100, height: 50}, true, [255, 0, 0]));
+ * redactions.push(new PdfRedactionRegion(0, {x: 10, y: 10, width: 100, height: 50}));
+ * redactions.push(new PdfRedactionRegion(2, {x: 10, y: 10, width: 100, height: 50}, true, [255, 0, 0]));
  * redactor.add(redactions);
  * // Apply redactions on the PDF document
  * redactor.redact();
@@ -31,26 +31,87 @@ import { PdfRedactionRegion } from './pdf-redaction-region';
 export class PdfRedactor {
     _document: PdfDocument;
     _isHex: boolean = false;
-    _redactionBounds: {x: number, y: number, width: number, height: number}[] = [];
+    _redactionRegion: PdfRedactionRegion[] = [];
     _redaction: Map<number, PdfRedactionRegion[]> = new Map<number, PdfRedactionRegion[]>();
     _parser: _PdfContentParserHelper;
     _crossReference: _PdfCrossReference;
     _object: _PdfRedactionProcessor = new _PdfRedactionProcessor();
-    constructor();
+    /**
+     * Initializes a new instance of the `PdfRedactor` class.
+     *
+     * @param {PdfDocument} document The PDF document to which the redactions will be applied.
+     * @throws {Error} If the document is null, undefined, or not a loaded document instance.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Initialize a new instance of the `PdfRedactor` class
+     * let redactor: PdfRedactor = new PdfRedactor(document);
+     * // Initialize a new instance of the `PdfRedactionRegion` class.
+     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x:40, y: 41.809, width: 80, height: 90});
+     * // Sets the fill color used to fill the redacted area.
+     * redaction.fillColor = [255, 0, 0];
+     * redactions.push(redaction);
+     * // Add redactions with specified options.
+     * redactor.add(redactions);
+     * // Apply redactions on the PDF document
+     * redactor.redact();
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
     constructor(document: PdfDocument)
-    constructor(document?: PdfDocument) {
-        if (document instanceof PdfDocument) {
-            this._document = document;
-            this._crossReference = document._crossReference;
+    /**
+     * Initializes a new instance of the `PdfRedactor` class with the specified redactions.
+     *
+     * @param {PdfDocument} document The PDF document to which the redactions will be applied.
+     * @param {PdfRedactionRegion[]} redactions An array of redaction objects.
+     * @throws {Error} If the document is null, undefined, or not a loaded document instance.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Add redactions to the collection
+     * let redactions: PdfRedactionRegion[] = [];
+     * // Initialize a new instance of the `PdfRedactionRegion` class.
+     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x:40, y: 41.809, width: 80, height: 90});
+     * // Sets the fill color used to fill the redacted area.
+     * redaction.fillColor = [255, 0, 0];
+     * redactions.push(redaction);
+     * // Initialize a new instance of the `PdfRedactor` class with redactions
+     * let redactor: PdfRedactor = new PdfRedactor(document, redactions);
+     * // Apply redactions on the PDF document
+     * redactor.redact();
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(document: PdfDocument, redactions: PdfRedactionRegion[])
+    constructor(document: PdfDocument, redactions?: PdfRedactionRegion[]) {
+        if (document) {
+            if (document._isLoaded) {
+                this._document = document;
+                this._crossReference = document._crossReference;
+            } else {
+                throw new Error('Redaction cannot be applied to a newly created document.');
+            }
+            this._document.fileStructure.isIncrementalUpdate = false;
+            this._parser = new _PdfContentParserHelper(_TextProcessingMode.redaction, this);
+            if (redactions && redactions.length > 0) {
+                this.add(redactions);
+            }
+        } else {
+            throw new Error('PDF document instance cannot be null or undefined');
         }
-        this._document.fileStructure.isIncrementalUpdate = false;
-        this._parser = new _PdfContentParserHelper(_TextProcessingMode.redaction, this);
     }
     /**
      * Add redactions with specified options.
      *
      * @param {PdfRedactionRegion[]} redactions An array of redaction objects to specify the page index, bounds and appearance of the redaction to be applied.
-     *
      * @returns {void} Nothing.
      *
      * ```typescript
@@ -60,8 +121,8 @@ export class PdfRedactor {
      * let redactions: PdfRedactionRegion[] = [];
      * // Initialize a new instance of the `PdfRedactor` class
      * let redactor: PdfRedactor = new PdfRedactor(document);
-     * // Initialize a new instance of the `PdfRedaction` class.
-     * let redaction: PdfRedaction = new PdfRedaction(0, {x:40, y: 41.809, width: 80, height: 90});
+     * // Initialize a new instance of the `PdfRedactionRegion` class.
+     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x:40, y: 41.809, width: 80, height: 90});
      * // Sets the fill color used to fill the redacted area.
      * redaction.fillColor = [255, 0, 0];
      * redactions.push(redaction);
@@ -100,8 +161,8 @@ export class PdfRedactor {
      * let redactions: PdfRedactionRegion[] = [];
      * // Initialize a new instance of the `PdfRedactor` class
      * let redactor: PdfRedactor = new PdfRedactor(document);
-     * // Initialize a new instance of the `PdfRedaction` class.
-     * let redaction: PdfRedaction = new PdfRedaction(0, {x:40, y: 41.809, width: 80, height: 90});
+     * // Initialize a new instance of the `PdfRedactionRegion` class.
+     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x:40, y: 41.809, width: 80, height: 90});
      * // Sets the fill color used to fill the redacted area.
      * redaction.fillColor = [255, 0, 0];
      * redactions.push(redaction);
@@ -116,8 +177,16 @@ export class PdfRedactor {
      * ```
      */
     redact(): void {
+        if (this._document && this._document.pageCount > 0) {
+            for (let i: number = 0; i < this._document.pageCount; i++) {
+                const page: PdfPage = this._document.getPage(i);
+                if (page && page.annotations.count > 0) {
+                    this._applyRedaction(page);
+                }
+            }
+        }
         this._redaction.forEach((value: PdfRedactionRegion[], key: number) => {
-            this._redactionBounds = [];
+            this._redactionRegion = [];
             this._combineBounds(value);
             const option: PdfRedactionRegion[] = value;
             const page: PdfPage = this._document.getPage(key);
@@ -131,70 +200,102 @@ export class PdfRedactor {
                 xObjectCollection = _getXObjectResources(resource, page._pageDictionary._crossReference);
             }
             let stream: any; // eslint-disable-line
-            if (this._redactionBounds.length > 0) {
+            if (this._redactionRegion.length > 0) {
                 stream = this._parser._processRecordCollection(recordCollection, page, fontCollection, xObjectCollection, graphicState);
             }
+            page._needInitializeGraphics = true;
             this._object._updateContentStream(page, stream, option, this._document);
         });
     }
+    _applyRedaction(page: PdfPage): void {
+        const redactRegions: PdfRedactionRegion[] = [];
+        for (let k: number = 0; k < page.annotations.count; k++) {
+            const annotation: PdfAnnotation = page.annotations.at(k);
+            if (annotation && annotation instanceof PdfRedactionAnnotation) {
+                const redactionAnnotation: PdfRedactionAnnotation = annotation as PdfRedactionAnnotation;
+                redactionAnnotation.flatten = true;
+                if (redactionAnnotation.boundsCollection && redactionAnnotation.boundsCollection.length > 1) {
+                    redactionAnnotation.boundsCollection.forEach((value: number[], index: number) => {
+                        const redact: PdfRedactionRegion = new PdfRedactionRegion(page._pageIndex, { x: value[0], y: value[1],
+                            width: value[2], height: value[3] });
+                        redact.appearance.normal = redactionAnnotation._createNormalAppearance(index);
+                        redactRegions.push(redact);
+                    });
+                } else {
+                    const appearance: PdfTemplate = redactionAnnotation._createNormalAppearance();
+                    const redact: PdfRedactionRegion = new PdfRedactionRegion(page._pageIndex, redactionAnnotation.bounds);
+                    redact.appearance.normal = appearance;
+                    redactRegions.push(redact);
+                }
+                page.annotations.removeAt(k);
+                k--;
+            }
+        }
+        if (redactRegions.length > 0) {
+            const existingRedactions: PdfRedactionRegion[] = this._redaction.get(page._pageIndex) || [];
+            this._redaction.set(page._pageIndex, existingRedactions.concat(redactRegions));
+        }
+    }
     _combineBounds(options: PdfRedactionRegion[]): void {
         for (let i: number = 0; i < options.length; i++) {
-            this._redactionBounds.push(options[Number.parseInt(i.toString(), 10)].bounds);
+            this._redactionRegion.push(options[Number.parseInt(i.toString(), 10)]);
         }
     }
     _optimizeContent(recordCollection: _PdfRecord[], index: number, updatedText: string, stream: _PdfContentStream): void {
         const record: _PdfRecord = recordCollection[Number.parseInt(index.toString(), 10)];
-        if (typeof(record._operands) !== 'undefined' && record._operands.length >= 1) {
-            if (record._operator === 'ID') {
-                const builder: string[] = [];
-                for (let k: number = 0; k < record._operands.length; k++) {
-                    if (k + 1 < record._operands.length && record._operands[k].indexOf("/") !== -1 && record._operands[k + 1].indexOf("/") !==-1) { // eslint-disable-line
-                        builder.push(record._operands[Number.parseInt(k.toString(), 10)], ' ', record._operands[k + 1], '\r\n');
-                        k = k + 1;
-                    } else if (k + 1 < record._operands.length && record._operands[k].indexOf("/") !== -1) { // eslint-disable-line
-                        builder.push(record._operands[Number.parseInt(k.toString(), 10)], ' ', record._operands[k + 1], '\r\n');
-                        k = k + 1;
-                    } else {
-                        builder.push(record._operands[Number.parseInt(k.toString(), 10)], ' ');
-                    }
-                }
-                let text: string = builder.join(""); // eslint-disable-line
-                const bytes: number[] = this._getBytes(text);
-                stream.write(bytes);
-            } else {
-                for (let i: number = 0; i < record._operands.length; i++) {
-                    let operand: string = record._operands[Number.parseInt(i.toString(), 10)];
-                    if (record._operator === 'Tj' || record._operator === "'" || record._operator === '\"' || record._operator === 'TJ') { // eslint-disable-line
-                        if (updatedText !== '') {
-                            operand = updatedText;
-                            if (record._operator === "'" || record._operator === '\"') { // eslint-disable-line
-                                stream.write('T*');
-                                stream.write(' ');
-                                if (record._operator === '\"') { // eslint-disable-line
-                                    i += 2;
-                                }
-                            }
-                            record._operator = 'TJ';
+        if (record) {
+            if (typeof(record._operands) !== 'undefined' && record._operands.length >= 1) {
+                if (record._operator === 'ID') {
+                    const builder: string[] = [];
+                    for (let k: number = 0; k < record._operands.length; k++) {
+                        if (k + 1 < record._operands.length && record._operands[k].indexOf("/") !== -1 && record._operands[k + 1].indexOf("/") !==-1) { // eslint-disable-line
+                            builder.push(record._operands[Number.parseInt(k.toString(), 10)], ' ', record._operands[k + 1], '\r\n');
+                            k = k + 1;
+                        } else if (k + 1 < record._operands.length && record._operands[k].indexOf("/") !== -1) { // eslint-disable-line
+                            builder.push(record._operands[Number.parseInt(k.toString(), 10)], ' ', record._operands[k + 1], '\r\n');
+                            k = k + 1;
+                        } else {
+                            builder.push(record._operands[Number.parseInt(k.toString(), 10)], ' ');
                         }
                     }
-                    const bytes: number[] = this._getBytes(operand);
+                    let text: string = builder.join(""); // eslint-disable-line
+                    const bytes: number[] = this._getBytes(text);
                     stream.write(bytes);
-                    if (record._operator !== 'Tj' && record._operator !== "'" && record._operator !== '\"' && record._operator !== 'TJ') { // eslint-disable-line
-                        stream.write(' ');
+                } else {
+                    for (let i: number = 0; i < record._operands.length; i++) {
+                        let operand: string = record._operands[Number.parseInt(i.toString(), 10)];
+                        if (record._operator === 'Tj' || record._operator === "'" || record._operator === '\"' || record._operator === 'TJ') { // eslint-disable-line
+                            if (updatedText !== '') {
+                                operand = updatedText;
+                                if (record._operator === "'" || record._operator === '\"') { // eslint-disable-line
+                                    stream.write('T*');
+                                    stream.write(' ');
+                                    if (record._operator === '\"') { // eslint-disable-line
+                                        i += 2;
+                                    }
+                                }
+                                record._operator = 'TJ';
+                            }
+                        }
+                        const bytes: number[] = this._getBytes(operand);
+                        stream.write(bytes);
+                        if (record._operator !== 'Tj' && record._operator !== "'" && record._operator !== '\"' && record._operator !== 'TJ') { // eslint-disable-line
+                            stream.write(' ');
+                        }
                     }
                 }
+            } else if (typeof(record._operands) === 'undefined' && typeof(record._inlineImageBytes) !== 'undefined') {
+                const numberArray: number[] = Array.from(record._inlineImageBytes);
+                stream.write(numberArray);
+                stream.write(' ');
             }
-        } else if (typeof(record._operands) === 'undefined' && typeof(record._inlineImageBytes) !== 'undefined') {
-            const numberArray: number[] = Array.from(record._inlineImageBytes);
-            stream.write(numberArray);
-            stream.write(' ');
+            stream.write(record._operator);
         }
-        stream.write(record._operator);
         const count: number = recordCollection.length;
-        if ((index + 1) < count) {
+        if ((index) < count) {
             if (record._operator === 'ID') {
                 stream.write('\n');
-            } else if ((index + 1) < count && (record._operator === 'W' || record._operator === 'W*') && recordCollection[index + 1]._operator === 'n') {
+            } else if ((record._operator === 'W' || record._operator === 'W*') && recordCollection[index + 1]._operator === 'n') {
                 stream.write(' ');
             } else if (record._operator === 'w' || record._operator === 'EI') {
                 stream.write(' ');
@@ -211,11 +312,11 @@ export class PdfRedactor {
         }
         return bytes;
     }
-    _isFoundBounds(values: number[], redactionBounds: {x: number, y: number, width: number, height: number}[]): boolean {
+    _isFoundBounds(values: number[], redactionBounds: PdfRedactionRegion[]): boolean {
         const rect: {x: number, y: number, width: number, height: number} = {x: values[0], y: values[1], width: values[2],
             height: values[3]};
         for (const bounds of redactionBounds) {
-            if (this._contains(bounds, [rect.x, rect.y]) || this._intersectsWith(bounds, rect)) {
+            if (this._contains(bounds._bounds, [rect.x, rect.y]) || this._intersectsWith(bounds._bounds, rect)) {
                 return true;
             }
         }
@@ -253,7 +354,7 @@ export class PdfRedactor {
         let isReplacedText: boolean = false;
         let isOtherText: boolean = false;
         for (let i: number = 0; i < glyph.length; i++) {
-            if (this._isFoundBounds(glyph[Number.parseInt(i.toString(), 10)]._bounds, this._redactionBounds)) {
+            if (this._isFoundBounds(glyph[Number.parseInt(i.toString(), 10)]._bounds, this._redactionRegion)) {
                 isReplacedText = true;
                 glyph[Number.parseInt(i.toString(), 10)]._isReplace = true;
             } else {

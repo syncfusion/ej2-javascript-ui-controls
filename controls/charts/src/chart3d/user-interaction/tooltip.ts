@@ -418,13 +418,13 @@ export class Tooltip3D extends BaseTooltip {
             const pointElements: HTMLElement[] = [];
             for (const series of visibleSeries) {
                 if (series.visible && series.index !== tooltipSeries.index) {
-                    const elements: NodeListOf<HTMLElement> = document.querySelectorAll(`[id*="region-series-${series.index}"]`);
+                    const elements: NodeListOf<HTMLElement> = document.getElementById(this.element.id).querySelectorAll(`[id*="region-series-${series.index}"]`);
                     elements.forEach((el: Element) => {
                         pointElements.push(el as HTMLElement);
                     });
                 }
                 else if (series.visible) {
-                    const tooltipElements: NodeListOf<HTMLElement> = document.querySelectorAll(`[id*="region-series-${series.index}"]`);
+                    const tooltipElements: NodeListOf<HTMLElement> = document.getElementById(this.element.id).querySelectorAll(`[id*="region-series-${series.index}"]`);
                     for (let i: number = 0; i < tooltipElements.length; i++) {
                         const element: HTMLElement = tooltipElements[i as number];
                         const elementClassName: string = element.getAttribute('class') || '';

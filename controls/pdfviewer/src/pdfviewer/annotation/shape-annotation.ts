@@ -928,7 +928,7 @@ export class ShapeAnnotation {
     public saveImportedShapeAnnotations(annotation: any, pageNumber: number): any {
         let annotationObject: IShapeAnnotation = null;
         let vertexPoints: IPoint[] = null;
-        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotation.Subject);
+        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotation.Subject, annotation);
         if (annotation.VertexPoints) {
             vertexPoints = [];
             for (let j: number = 0; j < annotation.VertexPoints.length; j++) {

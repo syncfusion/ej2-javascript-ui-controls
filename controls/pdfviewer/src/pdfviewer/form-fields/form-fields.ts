@@ -350,8 +350,9 @@ export class FormFields {
                 function (): string { return tooltipContent; }
             )
         });
+        const target: any = (targetElement && targetElement.closest && targetElement.closest('.foreign-object')) || targetElement;
         // render initialized tooltip
-        tooltip.appendTo(targetElement);
+        tooltip.appendTo(target);
     }
 
     private trim(str: string): string {

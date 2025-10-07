@@ -190,10 +190,10 @@ export class BulletTooltip {
                     defElement.innerHTML = shadow;
                     tooltipdiv.style.filter = `url(#${shadowId})`;
                 }
-                if ((targetClass === this.control.svgObject.id + '_FeatureMeasure') ||
-                    (targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
-                    document.getElementById(targetId).setAttribute('opacity', '0.6');
-                }
+            }
+            if ((targetClass === this.control.svgObject.id + '_FeatureMeasure') ||
+                (targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
+                document.getElementById(targetId).setAttribute('opacity', '0.6');
             }
             if ((this.control as any).isReact) { (this.control as any).renderReactTemplates(); }
         }

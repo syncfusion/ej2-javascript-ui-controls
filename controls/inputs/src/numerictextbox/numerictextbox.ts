@@ -77,6 +77,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private isDynamicChange: boolean = false;
     private inputValue: number;
     private clearButton: HTMLElement;
+    private storedValueString : string ;
 
     /*NumericTextBox Options */
 
@@ -1069,7 +1070,10 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private modifyText(): void {
         if (this.value || this.value === 0) {
             const value: string = this.formatNumber();
-            const elementValue: string = this.isFocused ? value : this.instance.getNumberFormat(this.cultureInfo)(this.value);
+            let elementValue: string = this.isFocused ? value : this.instance.getNumberFormat(this.cultureInfo)(this.value);
+            if (/[eE]/.test(value)) {
+                elementValue = this.formatScientificNotation(elementValue);
+            }
             this.setElementValue(elementValue);
             attributes(this.element, { 'aria-valuenow': value });
             if (!isNullOrUndefined(this.hiddenInput)) {
@@ -1102,9 +1106,17 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         const EXPREGEXP: RegExp = new RegExp('[eE][\-+]?([0-9]+)');
         let valueString: string = value.toString();
         if (EXPREGEXP.test(valueString)) {
-            const result: RegExpExecArray = EXPREGEXP.exec(valueString);
-            if (!isNullOrUndefined(result)) {
-                valueString = value.toFixed(Math.min(parseInt(result[1], 10), 20));
+            if (/[eE]/.test(valueString)) {
+                valueString = value.toFixed(20).replace(/0+$/, '');
+                if (valueString.charAt(valueString.length - 1) === '.') {
+                    valueString = valueString.slice(0, valueString.length - 1);
+                }
+            }
+            else {
+                const result: RegExpExecArray = EXPREGEXP.exec(valueString);
+                if (!isNullOrUndefined(result)) {
+                    valueString = value.toFixed(Math.min(parseInt(result[1], 10), 20));
+                }
             }
         }
         const decimalPart: string = valueString.split('.')[1];
@@ -1117,6 +1129,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
 
     private formatNumber(): string {
         const numberOfDecimals: number = this.getNumberOfDecimals(this.value);
+        this.storedValueString = this.value.toString();
         return this.instance.getNumberFormat({
             maximumFractionDigits: numberOfDecimals,
             minimumFractionDigits: numberOfDecimals, useGrouping: false
@@ -1230,7 +1243,10 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.isFocused = true;
         this.prevValue = this.value;
         if ((this.value || this.value === 0)) {
-            const formatValue: string = this.formatNumber();
+            let formatValue: string = this.formatNumber();
+            if (/[eE]/.test(this.value.toString())) {
+                formatValue = this.formatScientificNotation(formatValue);
+            }
             this.setElementValue(formatValue);
             if (!this.isPrevFocused) {
                 if (!Browser.isDevice && Browser.info.version === '11.0') {
@@ -1274,7 +1290,10 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             if (!this.element.value.length) {
                 this.setProperties({ value: null }, true);
             }
-            const parsedInput: number = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+            let parsedInput: number = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+            if (/[eE]/.test(this.element.value)) {
+                parsedInput = parseFloat(this.formatScientificNotation(this.element.value));
+            }
             this.updateValue(parsedInput);
             if (!Browser.isDevice) {
                 EventHandler.remove(this.element, 'mousewheel DOMMouseScroll', this.mouseWheel);
@@ -1380,6 +1399,37 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         }
     }
 
+    private formatScientificNotation(value: string) : string{
+        value = this.storedValueString ? this.storedValueString : value ;
+        const [base, exponentPart]: any = value.toLowerCase().split('e');
+        const exponent: number = parseInt(exponentPart, 10);
+        const match: any = this.format.match(/n(\d+)/i);
+        const requiredDigits: number = match ? parseInt(match[1], 10) : 10;
+        const baseDigits: any = base.replace('.', '');
+        let fullDecimal: any;
+        if (exponent < 0) {
+            const zerosCount: number = Math.abs(Number(exponent)) - 1 ;
+            const limitedZeros: string = '0'.repeat(Math.min(zerosCount, requiredDigits));
+            fullDecimal = '0.' + limitedZeros + baseDigits;
+        } else {
+            const [intPart, decPart = '']: any = base.split('.');
+            const shift: number = exponent - decPart.length;
+            if (shift >= 0) {
+                fullDecimal = intPart + decPart + '0'.repeat(shift);
+            } else {
+                const newDec: string = decPart.slice(0, exponent) + '.' + decPart.slice(exponent);
+                fullDecimal = intPart + newDec;
+            }
+        }
+        const [intPart, decPart = '']: any = fullDecimal.split('.');
+        if (this.isFocused) {
+            const limitedDecimal: any = decPart.slice(0, requiredDigits);
+            return `${intPart}.${decPart}`;
+        } else {
+            const formattedDecimal: any = decPart.padEnd(requiredDigits, '0').slice(0, requiredDigits);
+            return `${intPart}.${formattedDecimal}`;
+        }
+    }
     /**
      * Increments the NumericTextBox value with the specified step value.
      *

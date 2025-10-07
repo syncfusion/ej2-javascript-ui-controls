@@ -1,9 +1,10 @@
+/* eslint-disable */
 export class _PdfMetrics {
     _courier: number = 600;
     _courierBold: number = 600;
     _courierBoldOblique: number = 600;
     _courierOblique: number = 600;
-    _helveticaWidths: any = { // eslint-disable-line
+    _helveticaWidths: any = {
         space :  278,
         exclam :  278,
         quotedbl :  355,
@@ -320,7 +321,7 @@ export class _PdfMetrics {
         imacron :  278,
         Euro :  556
     };
-    _helveticaBold: any = { // eslint-disable-line
+    _helveticaBold: any = {
         space :  278,
         exclam :  333,
         quotedbl :  474,
@@ -637,7 +638,7 @@ export class _PdfMetrics {
         imacron :  278,
         Euro :  556
     };
-    _helveticaBoldOblique: any = { // eslint-disable-line
+    _helveticaBoldOblique: any = {
         space :  278,
         exclam :  333,
         quotedbl :  474,
@@ -954,7 +955,7 @@ export class _PdfMetrics {
         imacron :  278,
         Euro :  556
     };
-    _helveticaOblique: any = { // eslint-disable-line
+    _helveticaOblique: any = {
         space :  278,
         exclam :  278,
         quotedbl :  355,
@@ -1271,7 +1272,7 @@ export class _PdfMetrics {
         imacron :  278,
         Euro :  556
     };
-    _symbol: any = { // eslint-disable-line
+    _symbol: any = {
         space :  250,
         exclam :  333,
         universal :  713,
@@ -1463,7 +1464,7 @@ export class _PdfMetrics {
         bracerightbt :  494,
         apple :  790
     };
-    _timesRoman: any = { // eslint-disable-line
+    _timesRoman: any = {
         space :   250,
         exclam :   333,
         quotedbl :   408,
@@ -1780,7 +1781,7 @@ export class _PdfMetrics {
         imacron :   278,
         Euro :   500
     };
-    _timesBold: any = { // eslint-disable-line
+    _timesBold: any = {
         space :  250,
         exclam :  333,
         quotedbl :  555,
@@ -2097,7 +2098,7 @@ export class _PdfMetrics {
         imacron :  278,
         Euro :  500
     };
-    _timesBoldItalic: any = { // eslint-disable-line
+    _timesBoldItalic: any = {
         space :  250,
         exclam :  389,
         quotedbl :  555,
@@ -2414,7 +2415,7 @@ export class _PdfMetrics {
         imacron :  278,
         Euro :  500
     };
-    _timesItalic: any = { // eslint-disable-line
+    _timesItalic: any = {
         space :  250,
         exclam :  333,
         quotedbl :  420,
@@ -2731,7 +2732,7 @@ export class _PdfMetrics {
         imacron :  278,
         Euro :  500
     };
-    _zapfDingbats: any = { // eslint-disable-line
+    _zapfDingbats: any = {
         space :  278,
         a1 :  974,
         a2 :  961,
@@ -2936,3 +2937,4 @@ export class _PdfMetrics {
         a191 :  918
     };
 }
+/* eslint-enable */

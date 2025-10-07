@@ -2280,8 +2280,6 @@ export class DataUtil {
                 const arr: Uint8Array = new Uint8Array(1);
                 window.crypto.getRandomValues(arr);
                 rand = arr[0] % 16 | 0;
-            } else {
-                rand = Math.random() * 16 | 0;
             }
             return hexs[i === 19 ? rand & 0x3 | 0x8 : rand];
         });

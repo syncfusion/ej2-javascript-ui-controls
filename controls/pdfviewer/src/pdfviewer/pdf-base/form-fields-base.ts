@@ -2259,6 +2259,7 @@ export class FormFieldsBase {
                                     formFields,
                                     formFields.Rotation,
                                     pageRender.annotationOrder.length - 1,
+                                    template,
                                     true,
                                     formFields.FieldName,
                                     this.PdfRenderedFormFields,

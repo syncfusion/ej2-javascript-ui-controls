@@ -23,6 +23,7 @@ export class ContextMenu implements IContextMenu {
     private customMenuItems: MenuItemModel[] = [];
     private defaultLength: number;
     private filteredCustomItemsIds: string[] = [];
+    private mainCustomItemsIds: string[] = [];
     private defaultContextMenuItems: any[] = [];
     private defaultCopyId: string;
     private defaultCutId: string;
@@ -161,14 +162,22 @@ export class ContextMenu implements IContextMenu {
         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
         this.contextMenuObj.enableItems([this.defaultCutId, this.defaultCopyId, this.defaultPasteId, this.defaultDeleteId], true, true);
         if (!isNullOrUndefined(customItems) && this.customMenuItems.length !== 0) {
-            let commonIds: string[] = [];
-            if (args.items.length < this.defaultLength) {
-                commonIds = args.items.map((item: any) => item.id);
+            if (isNullOrUndefined(args.parentItem)) {
+                let commonIds: string[] = [];
+                if (args.items.length < this.defaultLength) {
+                    commonIds = args.items.map((item: any) => item.id);
+                } else {
+                    commonIds = this.customMenuItems.map((item: any) => item.id);
+                }
+                this.mainCustomItemsIds = commonIds.filter((id: string) => !isNullOrUndefined(id));
+                this.filteredCustomItemsIds = this.mainCustomItemsIds;
+                this.pdfViewer.firecustomContextMenuBeforeOpen(this.mainCustomItemsIds.filter((id: string) => commonIds.indexOf(id) > -1));
             } else {
-                commonIds = this.customMenuItems.map((item: any) => item.id);
+                const subMenuIds: string[] =
+                args.items.map((item: { id: string }) => item.id).filter((id: string) => !isNullOrUndefined(id));
+                this.pdfViewer.firecustomContextMenuBeforeOpen(subMenuIds);
+                this.filteredCustomItemsIds = [...(this.mainCustomItemsIds || []), ...subMenuIds];
             }
-            this.filteredCustomItemsIds = commonIds.filter((id: string) => !isNullOrUndefined(id));
-            this.pdfViewer.firecustomContextMenuBeforeOpen(this.filteredCustomItemsIds);
         }
         if (this.pdfViewer.annotationModule) {
             this.pdfViewer.annotationModule.checkContextMenuDeleteItem(this.contextMenuObj);
@@ -510,6 +519,7 @@ export class ContextMenu implements IContextMenu {
         this.customMenuItems = null;
         this.defaultLength = null;
         this.filteredCustomItemsIds = null;
+        this.mainCustomItemsIds = null;
         this.defaultContextMenuItems = null;
         this.defaultCopyId = null;
         this.defaultCutId = null;

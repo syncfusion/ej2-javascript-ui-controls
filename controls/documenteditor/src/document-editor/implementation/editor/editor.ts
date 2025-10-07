@@ -22140,7 +22140,7 @@ export class Editor {
             end = this.selection.start;
         }
         if (!(end.offset === this.selection.getLineLength(end.currentWidget) + 1
-            && this.selection.isParagraphLastLine(end.currentWidget)) && !this.owner.documentHelper.isDragging) {
+            && this.selection.isParagraphLastLine(end.currentWidget)) && !this.owner.documentHelper.isDragging && start.paragraph === end.paragraph) {
             end.offset += 1;
         }
         let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(start);

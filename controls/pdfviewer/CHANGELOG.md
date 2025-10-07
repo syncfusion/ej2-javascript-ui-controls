@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.23 (2025-10-07)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I770525` - Resolved an issue where text selection, copying, and pasting within form fields did not work when a tooltip was active.
+
 ## 31.1.20 (2025-09-10)
 
 ### PDF Viewer

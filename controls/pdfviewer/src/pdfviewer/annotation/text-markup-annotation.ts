@@ -3282,7 +3282,7 @@ export class TextMarkupAnnotation {
      */
     public saveImportedTextMarkupAnnotations(annotation: any, pageNumber: number): void {
         let annotationObject: ITextMarkupAnnotation = null;
-        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotation.Subject);
+        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotation.Subject, annotation);
         annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
         annotation.AnnotationSettings = annotation.AnnotationSettings ?
             annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);

@@ -47,9 +47,15 @@ export class DataManager {
      * @param adaptor
      * @hidden
      */
-    constructor(dataSource?: DataOptions | JSON[] | Object[], query?: Query, adaptor?: AdaptorOptions | string) {
+    constructor(dataSource?: DataOptions | JSON[] | Object[], query?: Query, adaptor?: AdaptorOptions | string, middlewares?: Middlewares) {
         this.isInitialLoad = true;
         this.isEnableCache = false;
+        if (middlewares && middlewares.applyPostRequestMiddlewares) {
+            this.applyPostRequestMiddlewares = middlewares.applyPostRequestMiddlewares;
+        }
+        if (middlewares && middlewares.applyPreRequestMiddlewares) {
+            this.applyPreRequestMiddlewares = middlewares.applyPreRequestMiddlewares
+        }
         if (!dataSource && !this.dataSource) {
             dataSource = [];
         }
@@ -1005,4 +1011,12 @@ export interface AdaptorOptions {
     remove?: Function;
     update?: Function;
     key?: string;
+}
+
+/**
+ * @hidden
+ */
+export interface Middlewares {
+    applyPostRequestMiddlewares?: (args: Object) => Promise<Object>;
+    applyPreRequestMiddlewares?: (args: Object) => Promise<Object>;
 }

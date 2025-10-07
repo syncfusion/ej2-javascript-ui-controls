@@ -812,7 +812,7 @@ export class InsertHtml {
             fragment.appendChild(insertedNode.firstChild);
         }
         return this.insertFragmentOrReplaceNode(
-            tempSpan, fragment, range, nodeSelection, document, lastSelectionNode
+            tempSpan, fragment, range, nodeSelection, document, lastSelectionNode, editNode
         );
     }
 
@@ -848,9 +848,9 @@ export class InsertHtml {
     private static insertFragmentOrReplaceNode(
         tempSpan: HTMLElement, fragment: DocumentFragment,
         range: Range, nodeSelection: NodeSelection,
-        docElement: Document, lastSelectionNode: Node
+        docElement: Document, lastSelectionNode: Node, editNode: Element
     ): Node {
-        const matchedElement: HTMLElement = this.getClosestMatchingElement(tempSpan.parentNode as HTMLElement, fragment);
+        const matchedElement: HTMLElement = this.getClosestMatchingElement(tempSpan.parentNode as HTMLElement, fragment, editNode);
         if (fragment.childNodes.length === 1 && fragment.firstChild && matchedElement) {
             return this.replaceWithMatchedContent(
                 tempSpan, matchedElement, fragment,
@@ -1220,9 +1220,10 @@ export class InsertHtml {
     }
 
     // Identifies the closest matching element in the document fragment from the current node.
-    private static getClosestMatchingElement(startNode: HTMLElement | null, fragment: DocumentFragment): HTMLElement | null {
+    private static getClosestMatchingElement(startNode: HTMLElement | null, fragment: DocumentFragment,
+                                             editNode: Element): HTMLElement | null {
         let currentNode: HTMLElement | null = startNode;
-        while (currentNode) {
+        while (currentNode && !currentNode.contains(editNode)) {
             const matchingPastedNode: HTMLElement | null = this.findMatchingChild(fragment, currentNode);
             if (matchingPastedNode) {
                 return currentNode;

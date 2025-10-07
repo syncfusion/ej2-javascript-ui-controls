@@ -327,6 +327,6 @@ describe('DataUtil', () => {
             expect(DataUtil.fnOperators.contains('hanar', '')).toBeTruthy();
             expect(DataUtil.fnOperators.doesnotcontain('hanar', '')).toBeFalsy();
         })
-    })
+    });
 
 });

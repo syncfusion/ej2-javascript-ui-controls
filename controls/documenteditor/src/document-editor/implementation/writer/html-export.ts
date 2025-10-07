@@ -482,6 +482,9 @@ export class HtmlExport {
         tagAttributes.push('width="' + width.toString() + '"');
         tagAttributes.push('height="' + height.toString() + '"');
         tagAttributes.push('src="' + imageSource + '"');
+        if (image.alternativeText !== "") {
+            tagAttributes.push('alt="' + image.alternativeText + '"');
+        }
         imageStyle += this.createAttributesTag('img', tagAttributes);
         imageStyle += (this.endTag('img'));
         return imageStyle.toString();

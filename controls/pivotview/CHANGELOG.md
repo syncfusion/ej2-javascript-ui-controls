@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.23 (2025-10-07)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I767541` - The pivot table now renders correctly without displaying an unnecessary horizontal scrollbar during pivot table resizing.
+
 ## 31.1.22 (2025-10-01)
 
 ### Pivot Table

@@ -13645,10 +13645,18 @@ export class PdfRedactionAnnotation extends PdfComment {
             }
         }
     }
-    _createNormalAppearance(): PdfTemplate {
+    _createNormalAppearance(index?: number): PdfTemplate {
         const pdfPath: PdfPath = new PdfPath();
-        for (const bounds of this.boundsCollection) {
+        let hasIndex: boolean = false;
+        let bounds: number[];
+        if (typeof index === 'number' && index >= 0 && index < this.boundsCollection.length) {
+            bounds = this.boundsCollection[<number>index];
             pdfPath.addRectangle(bounds[0], bounds[1], bounds[2], bounds[3]);
+            hasIndex = true;
+        } else {
+            for (const bounds of this.boundsCollection) {
+                pdfPath.addRectangle(bounds[0], bounds[1], bounds[2], bounds[3]);
+            }
         }
         const rect: number[] = pdfPath._getBounds();
         if (rect[2] === 0 && rect[3] === 0) {
@@ -13680,9 +13688,14 @@ export class PdfRedactionAnnotation extends PdfComment {
             graphics.setTransparency(this.opacity);
         }
         if (this.boundsCollection && this.boundsCollection.length > 0) {
-            for (const bounds of this.boundsCollection) {
+            if (hasIndex && bounds) {
                 graphics.drawRectangle(bounds[0] - rectangle.x, bounds[1] - rectangle.y, bounds[2],
                                        bounds[3], borderPen, backBrush);
+            } else {
+                for (const bounds of this.boundsCollection) {
+                    graphics.drawRectangle(bounds[0] - rectangle.x, bounds[1] - rectangle.y, bounds[2],
+                                           bounds[3], borderPen, backBrush);
+                }
             }
         } else {
             graphics.drawRectangle(nativeRectangle[0] + width, nativeRectangle[1] + width, nativeRectangle[2] -

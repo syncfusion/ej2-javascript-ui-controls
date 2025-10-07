@@ -1860,7 +1860,7 @@ export class MeasureAnnotation {
             annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
         annotation.AnnotationSettings = annotation.AnnotationSettings ?
             annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
-        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotation.Subject);
+        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotation.Subject, annotation);
         annotationObject = {
             id: 'measure', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
             note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor,

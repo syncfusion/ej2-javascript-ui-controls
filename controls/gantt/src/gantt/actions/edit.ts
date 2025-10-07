@@ -29,7 +29,6 @@ export class Edit {
     private parent: Gantt;
     private isFromDeleteMethod: boolean = false;
     private targetedRecords: IGanttData[] = [];
-    private isNewRecordAdded: boolean = false;
     private isValidatedEditedRecord: boolean = false;
     private createArray: boolean = true;
     public isFirstCall: boolean;
@@ -3703,7 +3702,6 @@ export class Edit {
                     parentItem.taskData[child as string] = [];
                     parentItem.taskData[child as string].push(record.taskData);
                 }
-                this.isNewRecordAdded = true;
             }
         }
     }
@@ -3826,10 +3824,7 @@ export class Edit {
                 if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID) && rowPosition === 'Child') {
                     dataSource.push(addedRecord[i as number].taskData);
                 } else {
-                    if (!this.isNewRecordAdded) {
-                        this.addDataInRealDataSource(dataSource, addedRecord[i as number].taskData, rowPosition);
-                    }
-                    this.isNewRecordAdded = false;
+                    this.addDataInRealDataSource(dataSource, addedRecord[i as number].taskData, rowPosition);
                 }
             }
             this.isBreakLoop = false;
@@ -3862,14 +3857,14 @@ export class Edit {
                         }
                     }
                 }
-                if (rowPosition === 'Above') {
+                if (rowPosition === 'Above' && dataCollection.indexOf(record) === -1) {
                     if (index) {
                         dataCollection.splice(index, 0, record);
                     }
                     else {
                         dataCollection.splice(i, 0, record);
                     }
-                } else if (rowPosition === 'Below') {
+                } else if (rowPosition === 'Below' && dataCollection.indexOf(record) === -1) {
                     if (index) {
                         dataCollection.splice(index + 1, 0, record);
                     }
@@ -3878,7 +3873,9 @@ export class Edit {
                     }
                 } else if (rowPosition === 'Child') {
                     if (dataCollection[i as number][child as string] && dataCollection[i as number][child as string].length > 0) {
-                        dataCollection[i as number][child as string].push(record);
+                        if (dataCollection[i as number][child as string].indexOf(record) === -1) {
+                            dataCollection[i as number][child as string].push(record);
+                        }
                     } else {
                         dataCollection[i as number][child as string] = [];
                         dataCollection[i as number][child as string].push(record);
@@ -3886,7 +3883,7 @@ export class Edit {
                 }
                 this.isBreakLoop = true;
                 break;
-            } else if (dataCollection[i as number][child as string]) {
+            } else if (dataCollection[i as number][child as string] && dataCollection.indexOf(record) === -1) {
                 const childRecords: ITaskData[] = dataCollection[i as number][child as string];
                 this.addDataInRealDataSource(childRecords, record, rowPosition);
             }

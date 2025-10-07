@@ -61,7 +61,10 @@ export class TextSearch {
     private isMatchCase: boolean = false;
     private isMultiSearch: boolean = false;
     private isSingleSearch: boolean = false;
-    private findTextDocumentCollection: any[] = [];
+    /**
+     * @private
+     */
+    public findTextDocumentCollection: any[] = [];
     private searchAutocompleteObj: AutoComplete;
     private searchRequestHandler: AjaxHandler = null;
     private textSearchHandleRequest: AjaxHandler = null;
@@ -2561,10 +2564,6 @@ export class TextSearch {
                         proxy.isTextSearched = false;
                     }
                 }
-            } else {
-                proxy.findTextDocumentCollection = this.updateDocumentCollection(proxy.findTextDocumentCollection,
-                                                                                 data.documentTextCollection);
-                proxy.pdfViewer.pdfRendererModule.documentTextCollection = [];
             }
         }
     }
@@ -3085,7 +3084,8 @@ export class TextSearch {
         }
         const requestType: string = 'pdfTextSearchRequest';
         if (this.pdfViewer.extractTextOption === ExtractTextOption.None ||
-            this.pdfViewer.extractTextOption === ExtractTextOption.TextOnly) {
+            this.pdfViewer.extractTextOption === ExtractTextOption.TextOnly ||
+            isNullOrUndefined(this.documentTextCollection[endIndex as number])) {
             return new Promise((resolve: Function, reject: Function): void => {
                 const processPage: any = (i: number, msg: string) => {
                     proxy.pdfViewerBase.pdfViewerRunner.addTask({

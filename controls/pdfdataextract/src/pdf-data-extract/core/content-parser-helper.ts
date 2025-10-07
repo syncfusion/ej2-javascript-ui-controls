@@ -6,6 +6,7 @@ import { _GraphicState, _TextState } from './graphic-state';
 import { _FontStructure } from './text-extraction';
 import { _decodeEncodedText, _getXObject } from './utils';
 import { _PdfTextParser } from './pdf-text-parser';
+import { _PdfShapeParser } from './redaction/shape-parser-helper';
 
 export class _PdfContentParserHelper {
     _document: PdfDocument;
@@ -201,6 +202,8 @@ export class _PdfContentParserHelper {
         let green: number = 0;
         let blue: number = 0;
         let updatedText: string = '';
+        let parser: _PdfShapeParser;
+        let skipUntil: number = -1;
         const stream: _PdfContentStream = new _PdfContentStream([]);
         for (let i: number = 0 ; i < recordCollection.length; i++) {
             const record: _PdfRecord = recordCollection[Number.parseInt(i.toString(), 10)];
@@ -210,6 +213,7 @@ export class _PdfContentParserHelper {
             textState = graphicState._state;
             let isChangeOperator: boolean = false;
             let currentFont: _FontStructure;
+            const currentIndex: number = i;
             switch (token) {
             case 'Tm':
                 if (this._mode !== _TextProcessingMode.textExtraction) {
@@ -218,7 +222,7 @@ export class _PdfContentParserHelper {
                 if (this._mode === _TextProcessingMode.redaction) {
                     const x: number = textState._textMatrix[4];
                     const y: number = textState._textMatrix[5];
-                    if (this._parser._isFoundText(x, y, page, this._redaction._redactionBounds)) {
+                    if (this._parser._isFoundText(x, y, page, this._redaction._redactionRegion)) {
                         this._isContainsRedactionText = true;
                     }
                     if (recordCollection.length !== i + 1 && !this._isContainsRedactionText) {
@@ -234,7 +238,7 @@ export class _PdfContentParserHelper {
                     if (this._mode === _TextProcessingMode.redaction) {
                         const x: number = parseFloat(element[4]);
                         const y: number = parseFloat(element[5]);
-                        if (this._parser._isFoundText(x, y, page, this._redaction._redactionBounds)) {
+                        if (this._parser._isFoundText(x, y, page, this._redaction._redactionRegion)) {
                             this._isContainsRedactionText = true;
                         }
                     }
@@ -284,7 +288,7 @@ export class _PdfContentParserHelper {
                 if (this._mode === _TextProcessingMode.redaction) {
                     this._xPosition = this._xPosition + parseFloat(element[0]);
                     this._yPosition = this._yPosition - parseFloat(element[1]);
-                    if (this._parser._isFoundText(this._xPosition, this._yPosition, page, this._redaction._redactionBounds)) {
+                    if (this._parser._isFoundText(this._xPosition, this._yPosition, page, this._redaction._redactionRegion)) {
                         this._isContainsRedactionText = true;
                     }
                     if (recordCollection.length !== i + 1 && !this._isContainsRedactionText) {
@@ -302,7 +306,7 @@ export class _PdfContentParserHelper {
                 if (this._mode === _TextProcessingMode.redaction) {
                     this._xPosition = this._xPosition + parseFloat(element[0]);
                     this._yPosition =  this._yPosition - parseFloat(element[1]);
-                    if (this._parser._isFoundText(this._xPosition, this._yPosition, page, this._redaction._redactionBounds)) {
+                    if (this._parser._isFoundText(this._xPosition, this._yPosition, page, this._redaction._redactionRegion)) {
                         this._isContainsRedactionText = true;
                     }
                     if (recordCollection.length !== i + 1 && !this._isContainsRedactionText) {
@@ -397,8 +401,25 @@ export class _PdfContentParserHelper {
                 green = Number(element[1]);
                 blue = Number(element[2]);
                 textState._textColor = [red, green, blue];
+                break;
+            case 're':
+            {
+                parser = new _PdfShapeParser();
+                const records: _PdfRecord[] = parser._processRectangle(recordCollection, i, element);
+                if (record && records.length > 0) {
+                    recordCollection.splice(i--, 1, ...records);
+                }
+                break;
             }
-            if (this._mode === _TextProcessingMode.redaction) {
+            case 'm':
+                parser = new _PdfShapeParser();
+                skipUntil = parser._findRedactPath(recordCollection, i, page, this._redaction, this._mode, stream);
+                if (skipUntil !== -1) {
+                    i = skipUntil;
+                }
+                break;
+            }
+            if (this._mode === _TextProcessingMode.redaction && currentIndex === i) {
                 if (!isChangeOperator) {
                     updatedText = '';
                 }

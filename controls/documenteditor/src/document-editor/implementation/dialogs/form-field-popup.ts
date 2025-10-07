@@ -49,11 +49,14 @@ export class FormFieldPopUp {
     private textBoxCancelButtonDropDown: HTMLButtonElement;
 
     private applyTextFormFieldValueClickHandler: EventListenerOrEventListenerObject = this.onApplyTextFormFieldValueClick.bind(this);
+    private textBoxKeyPressEventHandler: EventListenerOrEventListenerObject = this.onTextBoxKeyPressEventHandler.bind(this);
     // eslint-disable-next-line max-len
     private applyDropDownFormFieldValueClickHandler: EventListenerOrEventListenerObject = this.onApplyDropDownFormFieldValueClick.bind(this);
     private closeButtonClickHandler: EventListenerOrEventListenerObject = this.onCloseButtonClick.bind(this);
     private applyDateFormFieldValueClickHandler: EventListenerOrEventListenerObject = this.onApplyDateFormFieldValueClick.bind(this);
     private applyNumberFormFieldValueClickHandler: EventListenerOrEventListenerObject = this.onApplyNumberFormFieldValueClick.bind(this);
+    private numericTextBoxKeyPressEventHandler: EventListenerOrEventListenerObject = this.onNumericTextBoxKeyPressEventHandler.bind(this);
+    private datePickerKeyPressEventHandler: EventListenerOrEventListenerObject = this.onDatePickerKeyPressEventHandler.bind(this);
     /**
      * @param {DocumentEditor} owner - Specifies the document editor.
      * @private
@@ -78,6 +81,7 @@ export class FormFieldPopUp {
         const textBoxInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
         const textBox: TextBox = new TextBox();
         this.textBoxInput = textBoxInput;
+        this.textBoxInput.addEventListener('keypress', this.textBoxKeyPressEventHandler);
         this.textBoxButtonDiv = createElement('div', { className: 'e-de-cmt-action-button' });
         this.textBoxOkButton = createElement('button') as HTMLButtonElement;
         this.textBoxCancelButton = createElement('button') as HTMLButtonElement;
@@ -99,6 +103,7 @@ export class FormFieldPopUp {
         const numberInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
         const numericTextBox: NumericTextBox = new NumericTextBox();
         this.numberInput = numberInput;
+        this.numberInput.addEventListener('keypress', this.numericTextBoxKeyPressEventHandler);
         this.textBoxButtonNumericDiv = createElement('div', { className: 'e-de-cmt-action-button' });
         this.textBoxOkButtonNumeric = createElement('button') as HTMLButtonElement;
         this.textBoxCancelButtonNumeric = createElement('button') as HTMLButtonElement;
@@ -121,6 +126,7 @@ export class FormFieldPopUp {
         /* eslint-disable-next-line max-len */
         const datePicker: DateTimePicker = new DateTimePicker({ strictMode: true, change: this.enableDisableDatePickerOkButton });
         this.dateInput = dateInput;
+        this.dateInput.addEventListener('keypress', this.datePickerKeyPressEventHandler);
         this.textBoxButtonDateDiv = createElement('div', { className: 'e-de-cmt-action-button' });
         this.textBoxOkButtonDate = createElement('button') as HTMLButtonElement;
         this.textBoxCancelButtonDate = createElement('button') as HTMLButtonElement;
@@ -160,6 +166,11 @@ export class FormFieldPopUp {
     private onApplyTextFormFieldValueClick(): void {
         this.applyTextFormFieldValue();
     }
+    private onTextBoxKeyPressEventHandler(args: KeyboardEvent): void {
+        if (args.key === 'Enter') {
+            this.applyTextFormFieldValue();
+        }
+    }
     /**
      * @returns {void}
      */
@@ -171,6 +182,11 @@ export class FormFieldPopUp {
     private onApplyNumberFormFieldValueClick(): void {
         this.applyNumberFormFieldValue();
     }
+    private onNumericTextBoxKeyPressEventHandler(args: KeyboardEvent): void {
+        if (args.key === 'Enter') {
+            this.applyNumberFormFieldValue();
+        }
+    }
     /**
      * @returns {void}
      */
@@ -181,6 +197,11 @@ export class FormFieldPopUp {
     };
     private onApplyDateFormFieldValueClick(): void {
         this.applyDateFormFieldValue();
+    }
+    private onDatePickerKeyPressEventHandler(args: KeyboardEvent): void {
+        if (args.key === 'Enter') {
+            this.applyDateFormFieldValue();
+        }
     }
     /**
      * @returns {void}
@@ -368,6 +389,15 @@ export class FormFieldPopUp {
         }
         if (this.textBoxCancelButtonDropDown) {
             this.textBoxCancelButtonDropDown.removeEventListener('click', this.closeButtonClickHandler);
+        }
+        if (this.textBoxInput) {
+            this.textBoxInput.removeEventListener('keypress', this.textBoxKeyPressEventHandler);
+        }
+        if (this.numberInput) {
+            this.numberInput.removeEventListener('keypress', this.numericTextBoxKeyPressEventHandler);
+        }
+        if (this.dateInput) {
+            this.dateInput.removeEventListener('keypress', this.datePickerKeyPressEventHandler);
         }
     }
     private removeElements(): void {

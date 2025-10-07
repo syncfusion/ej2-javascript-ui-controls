@@ -3007,3 +3007,183 @@ describe('calling processpredcessor method for code coverage', () => {
         destroyGantt(ganttObj);
     });
 });
+describe('CR-983909', () => {
+    let ganttObj: Gantt;
+       const data = [
+      {
+        Id: 0,
+        Name: 'Parent Task',
+        Start: '2025-09-01T02:30:00.000Z',
+        Finish: '2025-09-30T12:30:00.000Z',
+        SubTasks: [
+          {
+            Id: 86,
+            Name: 'Task 86',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-10T12:30:00.000Z',
+            Duration: 8,
+            Predecessors: '',
+            ConstraintType: null,
+            ConstraintDate: null,
+          },
+          {
+            Id: 158,
+            Name: 'Task 158',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-12T12:30:00.000Z', // Early finish
+            Duration: 10,
+            Predecessors: '',
+            ConstraintType: 2,
+            ConstraintDate: '2025-09-01T02:30:00.000Z',
+          },
+          {
+            Id: 159,
+            Name: 'Task 159',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-10T12:30:00.000Z',
+            Duration: 8,
+            Predecessors: '',
+            ConstraintType: null,
+            ConstraintDate: null,
+          },
+          {
+            Id: 160,
+            Name: 'Task 160',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-10T12:30:00.000Z',
+            Duration: 8,
+            Predecessors: '',
+            ConstraintType: null,
+            ConstraintDate: null,
+          },
+          {
+            Id: 171,
+            Name: 'Task 171',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-10T12:30:00.000Z',
+            Duration: 8,
+            Predecessors: '',
+            ConstraintType: null,
+            ConstraintDate: null,
+          },
+          {
+            Id: 172,
+            Name: 'Task 172',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-10T12:30:00.000Z',
+            Duration: 8,
+            Predecessors: '',
+            ConstraintType: null,
+            ConstraintDate: null,
+          },
+          {
+            Id: 189,
+            Name: 'Task 189',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-10T12:30:00.000Z',
+            Duration: 8,
+            Predecessors: '',
+            ConstraintType: null,
+            ConstraintDate: null,
+          },
+          {
+            Id: 190,
+            Name: 'Task 190',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-10T12:30:00.000Z',
+            Duration: 8,
+            Predecessors: '',
+            ConstraintType: null,
+            ConstraintDate: null,
+          },
+          {
+            Id: 207,
+            Name: 'Task 207',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-10T12:30:00.000Z',
+            Duration: 8,
+            Predecessors: '',
+            ConstraintType: null,
+            ConstraintDate: null,
+          },
+          {
+            Id: 208,
+            Name: 'Task 208',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-10T12:30:00.000Z',
+            Duration: 8,
+            Predecessors: '',
+            ConstraintType: null,
+            ConstraintDate: null,
+          },
+          {
+            Id: 218,
+            Name: 'Task 218',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-16T12:30:00.000Z', // Late finish
+            Duration: 12,
+            Predecessors: '',
+            ConstraintType: 2,
+            ConstraintDate: '2025-09-01T02:30:00.000Z',
+          },
+          {
+            Id: 219,
+            Name: 'Task 219',
+            Start: '2025-09-01T02:30:00.000Z',
+            Finish: '2025-09-10T12:30:00.000Z',
+            Duration: 8,
+            Predecessors: '',
+            ConstraintType: null,
+            ConstraintDate: null,
+          },
+          {
+            Id: 161,
+            Name: 'Task 161',
+            Start: '2025-09-16T02:30:00.000Z',
+            Finish: '2025-09-24T12:30:00.000Z',
+            Duration: 7,
+            Predecessors: '158, 219, 190, 208, 218, 207, 172, 171, 189, 86, 159, 160', // Swap to '158,218,219,190,208,207,172,171,189,86,159,160'
+            ConstraintType: 0, // AsSoonAsPossible
+            ConstraintDate: null,
+          },
+        ],
+      },
+    ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: data,
+            height: "450px",
+            taskFields: {
+                id: 'Id',
+                name: 'Name',
+                startDate: 'Start',
+                endDate: 'Finish',
+                duration: 'Duration',
+                dependency: 'Predecessors',
+                constraintType: 'ConstraintType',
+                constraintDate: 'ConstraintDate',
+                child: 'SubTasks',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            timelineSettings: {
+                topTier: { unit: 'Week', format: 'MMM dd, y' },
+                bottomTier: { unit: 'Day' },
+            },
+            projectStartDate: new Date('09/01/2025'),
+            projectEndDate: new Date('09/30/2025')
+        }, done);
+    });
+    it('Checking for predecessor length', () => {
+        expect(ganttObj.flatData[13].ganttProperties.predecessor.length).toBe(12);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});

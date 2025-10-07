@@ -3852,7 +3852,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public chartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
         this.isLegendClicked = false;
         this.removeNavigationStyle();
-        if (actionKey !== 'Enter' && actionKey !== 'Space') {
+        if (actionKey.indexOf('Arrow') > -1 || actionKey === 'Tab') {
             this.setNavigationStyle(targetId);
         }
         switch (actionKey) {

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 31.1.23 (2025-10-07)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I767142` - Resolved issue where records added via context menu using add `Above` or `Below` options were not displayed after Gantt refresh.
+- `#I769702` - Issue with predecessor values containing spaces not being validated correctly has been fixed.
+
 ## 31.1.22 (2025-10-01)
 
 ### GanttChart

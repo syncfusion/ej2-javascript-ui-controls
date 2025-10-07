@@ -690,6 +690,9 @@ export class Selection {
                 }
                 const bmStartPos: TextPosition = this.getElementPosition(elementStart, false, false).startPosition;
                 const bmEndPos: TextPosition = this.getElementPosition(elementEnd, true, false).startPosition;
+                if (!isField && !isNullOrUndefined((elementEnd as BookmarkElementBox).properties) && this.checkIsAfterBookmark((elementEnd as BookmarkElementBox).properties)) {
+                   bmEndPos.offset++;
+                }
                 if (bmStartPos.paragraph.isInsideTable || bmEndPos.paragraph.isInsideTable) {
                     if (selectedCells.length > 0) {
                         if (selectedCells.indexOf(bmStartPos.paragraph.associatedCell) >= 0
@@ -740,7 +743,22 @@ export class Selection {
             return bookmarkCln;
         }   
     }
-    /**
+    private checkIsAfterBookmark(properties: any): boolean {
+        if (properties.hasOwnProperty('isAfterParagraphMark') && properties['isAfterParagraphMark']) {
+            return true;
+        }
+        if (properties.hasOwnProperty('isAfterTableMark') && properties['isAfterTableMark']) {
+            return true;
+        }
+        if (properties.hasOwnProperty('isAfterRowMark') && properties['isAfterRowMark']) {
+            return true
+        }
+        if (properties.hasOwnProperty('isAfterCellMark') && properties['isAfterCellMark']) {
+            return true;
+        }
+        return false;
+    }
+     /**
      * 
      * @private
      */

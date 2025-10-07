@@ -1988,4 +1988,31 @@ describe('Base Quick Toolbar', ()=> {
         });
     });
 
+    describe('984019: Inline Toolbar position is not properly calculated on an empty RichTextEditor', () => {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                inlineMode: {
+                    enable: true
+                },
+                focus: ()=> {
+                    editor.showInlineToolbar();
+                }
+            })
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it ('Should show the Quick toolbar in View port and add range when the showInlineToolbar method is called.', (done: DoneFn) => {
+            editor.focusIn();
+            setTimeout(() => {
+                const inlineToolbar: HTMLElement = editor.element.querySelector('.e-rte-inline-popup');
+                expect(editor).not.toBeNull();
+                const range: Range = window.getSelection().getRangeAt(0);
+                expect(range.startContainer).toBe(editor.inputElement.firstChild);
+                expect(inlineToolbar.getBoundingClientRect().top).toBeGreaterThan(editor.element.getBoundingClientRect().top);
+                done();
+            }, 100);
+        });
+    });
 });

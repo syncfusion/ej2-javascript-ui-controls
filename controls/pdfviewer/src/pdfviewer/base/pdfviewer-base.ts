@@ -234,6 +234,7 @@ export class PdfViewerBase {
     private isInkAnnot: boolean = false;
     private modifiedPageIndex: any[] = [];
     private pointerCount: number = 0;
+    private formFieldsData: any;
     private pointersForTouch: PointerEvent[] = [];
     private corruptPopup: Dialog;
     /**
@@ -1922,6 +1923,8 @@ export class PdfViewerBase {
             this.saveDocumentHashData();
             if (data.pageCount < 100) {
                 this.saveFormfieldsData(data);
+            } else {
+                this.formFieldsData = data;
             }
             this.pdfViewer.allowServerDataBinding = true;
             if (this.clientSideRendering) {
@@ -3401,6 +3404,7 @@ export class PdfViewerBase {
             this.isMessageBoxOpen = null;
             this.notifyDialog = null;
             this.previousScrollbarWidth = 0;
+            this.formFieldsData = null;
         }
         if (!isNullOrUndefined(this.pdfViewer.annotationModule) && this.pdfViewer.annotationModule.measureAnnotationModule) {
             this.pdfViewer.annotationModule.measureAnnotationModule.destroy();
@@ -4468,7 +4472,8 @@ export class PdfViewerBase {
      * @returns {void}
      */
     public showAnnotationPropertiesToolbar(isEnable: boolean): void {
-        if (this.pdfViewer.selectedItems.annotations.length > 0) {
+        if (this.pdfViewer.selectedItems.annotations.length > 0 && this.pdfViewer.toolbar &&
+            this.pdfViewer.toolbar.annotationToolbarModule) {
             if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Stamp' ||
                 this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image') {
                 this.pdfViewer.toolbar.annotationToolbarModule.enableStampAnnotationPropertiesTools(isEnable);
@@ -4490,6 +4495,7 @@ export class PdfViewerBase {
                     this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(isEnable);
                 }
             }
+            this.pdfViewer.toolbar.annotationToolbarModule.selectAnnotationDeleteItem(true);
         }
     }
 
@@ -6781,7 +6787,10 @@ export class PdfViewerBase {
                     }
                     const pageIndex: number = 0;
                     proxy.loadPage(pageIndex);
-                    proxy.saveFormfieldsData(data);
+                    if (!isNullOrUndefined(this.formFieldsData)) {
+                        proxy.saveFormfieldsData(this.formFieldsData);
+                    }
+                    this.formFieldsData = null;
                 }
                 proxy.pageContainer.style.height = proxy.getPageTop(proxy.pageSize.length - 1) + proxy.getPageHeight(proxy.pageSize.length - 1) + 'px';
                 const pageData: string = proxy.sessionStorageManager.getItem(proxy.documentId + '_pagedata');

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.23 (2025-10-07)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#I758457` - The issue with improper rounding for values exceeding seven decimal places has been resolved.
+
 ## 31.1.22 (2025-10-01)
 
 ### ColorPicker

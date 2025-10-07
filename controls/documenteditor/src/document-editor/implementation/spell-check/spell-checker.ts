@@ -430,7 +430,7 @@ export class SpellChecker {
                 }
             }
 
-            const endPattern: RegExp = new RegExp('[#\\@\\!\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\s\\`\\’]+$', 'g');
+            const endPattern: RegExp = new RegExp('[#\\@\\!\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\>\\/\\?\\s\\`\\’]+$', 'g');
             matches = [];
             let originalText: string = replaceText;
             if (!isRemove) {
@@ -868,6 +868,7 @@ export class SpellChecker {
         if (isCombined && callSpellChecker && !this.checkCombinedElementsBeIgnored(this.combinedElements, currentText)) {
             if (isPrevious || isNext) {
                 for (let i: number = 0; i < this.combinedElements.length; i++) {
+                    this.combinedElements[i].isChangeDetected = false;
                     if (i !== 0) {
                         this.combinedElements[i].istextCombined = true;
                         this.combinedElements[i].errorCollection = this.combinedElements[0].errorCollection;

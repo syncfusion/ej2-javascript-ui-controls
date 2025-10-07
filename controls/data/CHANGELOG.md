@@ -2,19 +2,15 @@
 
 ## [Unreleased]
 
-## 31.1.22 (2025-10-01)
+## 31.1.23 (2025-10-07)
 
 ### DataManager
 
 #### Bug Fixes
 
-- `#I743131` - Resolved an issue where filtering a string column with an empty string in local data shows no records.
+- `#I765580` -  Fixed an issue where `applyPreRequestMiddleWare` was not triggered when `DataManager` is offline.
 
-## 30.1.38 (2025-07-02)
-
-- `FB68201` - Fixed an issue where middleware was not triggered during `CRUD` operations.
-
-## 30.1.37 (2025-06-25)
+## 31.1.17 (2025-09-05)
 
 ### DataManager
 

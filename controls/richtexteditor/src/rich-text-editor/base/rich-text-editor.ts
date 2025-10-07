@@ -3055,7 +3055,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public showInlineToolbar(): void {
         if (this.inlineMode.enable) {
-            const currentRange: Range = this.getRange();
+            let currentRange: Range = this.getRange();
+            if (!this.isSelectionInRTE()) {
+                const node: Element = this.contentModule.getEditPanel();
+                const cursorFocusElement: Element = (this.enterKey === 'BR')
+                    ? (node.childNodes[0] as Element).parentElement
+                    : (node.childNodes[0] as Element);
+                this.formatter.editorManager.nodeSelection.setCursorPoint(
+                    this.contentModule.getDocument(), cursorFocusElement, 0);
+                currentRange = this.getRange();
+            }
             const targetElm: HTMLElement = currentRange.endContainer.nodeName === '#text' ?
                 currentRange.endContainer.parentElement : currentRange.endContainer as HTMLElement;
             let rects: DOMRect[] = Array.from(currentRange.getClientRects(), (rect: DOMRect) => rect as DOMRect);

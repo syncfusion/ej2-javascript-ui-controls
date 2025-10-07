@@ -434,7 +434,7 @@ export class PageRenderer{
                                         {this.findStampImage(annotation); }
                                         else
                                         {this.findStampTemplate(annotation, rubberStampAnnotation, pageRotation,
-                                                                this.annotationOrder.length - 1); }
+                                                                this.annotationOrder.length - 1, template); }
                                     }
                                 }
                             }
@@ -444,7 +444,7 @@ export class PageRenderer{
                                 {this.findStampImage(annotation); }
                                 else
                                 {this.findStampTemplate(annotation, rubberStampAnnotation, pageRotation,
-                                                        this.annotationOrder.length - 1); }
+                                                        this.annotationOrder.length - 1, template); }
                             }
                         }
 
@@ -561,6 +561,7 @@ export class PageRenderer{
      * @param {any} rubberStampAnnotation - rubberStampAnnotation
      * @param {number} pageRotation - pageRotation
      * @param {number} collectionOrder - Gets the collection order
+     * @param {PdfTemplate} template - Get the template from the appearance
      * @param {boolean} isFormField - Optional flag indicating whether the annotation is for a form field.
      * @param {string} formFieldName - Optional name of the form field, if applicable.
      * @param {Array<any>} formFieldList - Optional list of form fields, if applicable.
@@ -568,10 +569,12 @@ export class PageRenderer{
      * @returns {void}
      */
     public findStampTemplate(annotation: PdfRubberStampAnnotation, rubberStampAnnotation: any, pageRotation: number,
-                             collectionOrder: number, isFormField?: boolean, formFieldName?: any,
+                             collectionOrder: number, template: PdfTemplate, isFormField?: boolean, formFieldName?: any,
                              formFieldList?: any, PageIndex?: number): void {
         // Create a template from the appearance of rubber stamp annotation
-        const template: PdfTemplate = annotation.createTemplate();
+        if (isNullOrUndefined(template)) {
+            template = annotation.createTemplate();
+        }
         //Store custom stamp model calss
         rubberStampAnnotation.template = template._appearance;
         rubberStampAnnotation.templateSize = template.size;

@@ -246,7 +246,7 @@ export class PdfRenderer {
                 this.formFieldsBase.showDigitalSignatureAppearance = jsonObject['showDigitalSignatureAppearance'];
             }
         }
-        if (!isNullOrUndefined(this.formFieldsBase) && this.pageSizes && Object.keys(this.pageSizes).length <= 100) {
+        if (!isNullOrUndefined(this.formFieldsBase) && this.pageSizes && jsonObject.action === 'Load') {
             this.formFieldsBase.GetFormFields();
             pdfRenderedFormFields = this.formFieldsBase.PdfRenderedFormFields;
         }
@@ -1724,10 +1724,12 @@ export class PdfRenderer {
         const pageCount: number = this.loadedDocument.pageCount;
         const endNumber: number = !isNullOrUndefined(value.jsonObject.pageStartIndex) ? (pageEndIndex - pageStartIndex) : (pageCount);
         if (!isNullOrUndefined(value)) {
-            this.documentTextCollection.push(value.pageTextDataCollection);
-            if (this.documentTextCollection.length === endNumber) {
+            const collection: any = value.isNeedToRender ? this.pdfViewer.textSearchModule.findTextDocumentCollection :
+                this.documentTextCollection;
+            collection.push(value.pageTextDataCollection);
+            if (collection.length === endNumber) {
                 return({ uniqueId : value.jsonObject.uniqueId,
-                    documentTextCollection: this.documentTextCollection,
+                    documentTextCollection: collection,
                     pageStartIndex: pageStartIndex,
                     pageEndIndex: !isNullOrUndefined(value.jsonObject.pageEndIndex) ? pageEndIndex : pageCount,
                     textBounds: value.textBounds,

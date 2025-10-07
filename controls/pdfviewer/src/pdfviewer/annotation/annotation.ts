@@ -3247,7 +3247,7 @@ export class Annotation {
             container.appendChild(label);
         }
         if (this.pdfViewer.localeObj.getConstant('Opacity') === labelText) {
-            this.opacityIndicator = createElement('span', { className: 'e-pv-properties-opacity-indicator' });
+            this.opacityIndicator = createElement('div', { className: 'e-pv-properties-opacity-indicator' });
             container.appendChild(this.opacityIndicator);
         }
         const textBoxInput: HTMLElement = createElement(input, { id: idString });
@@ -5579,10 +5579,11 @@ export class Annotation {
     /**
      * @param {string} annotationType - annotationType
      * @param {string} annotationSubType - annotationSubType
+     * @param {any} annotation - It gets the annotation details
      * @private
      * @returns {string} - string
      */
-    public updateAnnotationAuthor(annotationType: string, annotationSubType?: string): string {
+    public updateAnnotationAuthor(annotationType: string, annotationSubType?: string, annotation?: any): string {
         let annotationAuthor: string;
         if (annotationType === 'sticky') {
             annotationAuthor = (this.pdfViewer.stickyNotesSettings.author !== 'Guest') ? this.pdfViewer.stickyNotesSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
@@ -5682,6 +5683,9 @@ export class Annotation {
             if ( annotationAuthor !== 'Guest' && this.pdfViewer.enableHtmlSanitizer ){
                 annotationAuthor = SanitizeHtmlHelper.sanitize(annotationAuthor);
             }
+        }
+        if (annotation && annotation.Author !== annotationAuthor) {
+            annotationAuthor = annotation.Author;
         }
         if (!annotationAuthor) {
             annotationAuthor = this.pdfViewer.annotationSettings.author;
