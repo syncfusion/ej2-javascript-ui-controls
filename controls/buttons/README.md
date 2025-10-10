@@ -1,7 +1,5 @@
 [![coverage](http://ej2.syncfusion.com/badges/ej2-buttons/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-buttons)
 
-The Syncfusion JavaScript UI controls library is the only suite that you will ever need to build an application since it contains over 70+ high-performance, lightweight, modular, and responsive UI components in a single package.
-
 # JavaScript Button Controls
 
 ## What's Included in the JavaScript Buttons Package
