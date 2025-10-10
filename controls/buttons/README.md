@@ -1,5 +1,7 @@
 [![coverage](http://ej2.syncfusion.com/badges/ej2-buttons/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-buttons)
 
+The Syncfusion JavaScript UI controls library is the only suite that you will ever need to build an application since it contains over 70+ high-performance, lightweight, modular, and responsive UI components in a single package.
+
 # JavaScript Button Controls
 
 ## What's Included in the JavaScript Buttons Package
@@ -155,6 +157,17 @@ Button controls are also offered to following list of frameworks.
 
 * Expanse Tracker - [Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/?utm_source=npm&utm_campaign=button#/dashboard)
 * Loan Calculator - [Source](https://github.com/syncfusion/ej2-sample-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=button)
+
+## Resources
+
+* [Documentation](https://ej2.syncfusion.com/documentation/button/getting-started)
+* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
+* [Custom Resource Generator](https://crg.syncfusion.com/)
+* [Contact Support](https://www.syncfusion.com/support/directtrac/incidents/newincident?utm_medium=listing&utm_source=github)
+* [Forums](https://www.syncfusion.com/forums/essential-js2?utm_medium=listing&utm_source=github)
+* [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)
+* [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=github)
+* [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=github)
 
 ## Support
 
