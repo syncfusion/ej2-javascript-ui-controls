@@ -161,8 +161,6 @@ Button controls are also offered to following list of frameworks.
 * [Documentation](https://ej2.syncfusion.com/documentation/button/getting-started)
 * [Theme Studio](https://ej2.syncfusion.com/themestudio/)
 * [Custom Resource Generator](https://crg.syncfusion.com/)
-* [Contact Support](https://www.syncfusion.com/support/directtrac/incidents/newincident?utm_medium=listing&utm_source=github)
-* [Forums](https://www.syncfusion.com/forums/essential-js2?utm_medium=listing&utm_source=github)
 * [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)
 * [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=github)
 * [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=github)
