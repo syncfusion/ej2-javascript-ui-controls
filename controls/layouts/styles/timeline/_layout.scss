@@ -8,7 +8,7 @@
     height: inherit;
     width: 100%;
 
-    [class ^= 'e-dot ']::before,
+    .e-dot:not([class *= ' e-dot']):not([class = 'e-dot'])::before,
     .e-dot-item,
     .e-dot {
       display: flex;
@@ -16,7 +16,7 @@
       justify-content: center;
     }
 
-    [class ^= 'e-dot ']::before {
+    .e-dot:not([class *= ' e-dot']):not([class = 'e-dot'])::before {
       min-width: $timeline-dot-icon-size;
       min-height: $timeline-dot-icon-size;
       border-radius: var(--dot-radius);

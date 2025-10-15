@@ -374,6 +374,19 @@ export class DateParser {
         return null;
     }
     /**
+     * Escapes all regex metacharacters in a string, preserving the {0} placeholder.
+     *
+     * @param {string} str ? - The input string to escape.
+     * @returns {string} ? - The escaped string with {0} preserved.
+     */
+    private static escapeRegex(str: string): string {
+        const tempPlaceholder = '__TEMP__';
+        const tempStr = str.replace('{0}', tempPlaceholder);
+        const metaChars = /[.*+?^${}()|[\]\\]/g;
+        const escapedStr = tempStr.replace(metaChars, '\\$&');
+        return escapedStr.replace(tempPlaceholder, '{0}');
+    }
+    /**
      * Returns parsed time zone RegExp for provided hour format and time zone
      *
      * @param {string} hourFormat ?
@@ -382,7 +395,7 @@ export class DateParser {
      * @returns {string} ?
      */
     private static parseTimeZoneRegx(hourFormat: string, tZone: base.TimeZoneOptions, nRegex: string): string {
-        const pattern: string = tZone.gmtFormat;
+        let pattern: string = tZone.gmtFormat;
         let ret: string;
         const cRegex: string = '(' + nRegex + ')' + '(' + nRegex + ')';
 
@@ -392,10 +405,12 @@ export class DateParser {
         } else {
             ret = ret.replace(/H|m/g, '(' + cRegex + '?)');
         }
+        pattern = this.escapeRegex(pattern);
         const splitStr: string[] = (ret.split(';').map((str: string): string => {
             return pattern.replace('{0}', str);
         }));
-        ret = splitStr.join('|') + '|' + tZone.gmtZeroFormat;
+        const gmtZeroFormat: string = this.escapeRegex(tZone.gmtZeroFormat);
+        ret = splitStr.join('|') + '|' + gmtZeroFormat;
         return ret;
     }
     /**

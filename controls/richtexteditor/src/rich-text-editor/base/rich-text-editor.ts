@@ -2413,6 +2413,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private keyUp(e: KeyboardEvent): void {
+        if (this.inputElement.classList.contains('e-mention')) {
+            const mentionPopup: HTMLElement = this.element.ownerDocument.getElementById(this.inputElement.id + '_popup');
+            const slashMenuPopup: HTMLElement = this.element.ownerDocument.getElementById(this.inputElement.id + '_slash_menu_popup');
+            const isMentionPopupOpen: boolean = mentionPopup && mentionPopup.classList.contains('e-popup-open');
+            const isSlashMenuPopupOpen: boolean = slashMenuPopup && slashMenuPopup.classList.contains('e-popup-open');
+            if ((isMentionPopupOpen || isSlashMenuPopupOpen)) {
+                return;
+            }
+        }
         if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
             if (!isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete' || e.code === 'KeyX')) {
@@ -2586,7 +2595,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
 
-    private updateUndoRedoStack(e: MouseEvent | TouchEvent | KeyboardEvent): void {
+    private updateUndoRedoStack(e: MouseEvent | TouchEvent | KeyboardEvent| Event, selectionChange?: boolean): void {
         const undoRedoStack: IHtmlUndoRedoData[] | MarkdownUndoRedoData[] = this.formatter.getUndoRedoStack();
         const currentStackIndex: number = this.formatter.getCurrentStackIndex();
         const navigationKeys: string[] = [
@@ -2598,7 +2607,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (undoRedoStack.length === 0 || currentStackIndex === 0) {
             if (undoRedoStack.length === 0) {
                 this.formatter.saveData();
-            } else if (currentStackIndex === 0 && this.editorMode === 'HTML' && isNavigationKey) {
+            } else if ((currentStackIndex === 0 && this.editorMode === 'HTML') && (isNavigationKey || selectionChange)) {
                 const firstStackState: IHtmlUndoRedoData = undoRedoStack[0] as IHtmlUndoRedoData;
                 const save: NodeSelection = new NodeSelection(this.inputElement as HTMLElement)
                     .save(this.getRange(), this.contentModule.getDocument());
@@ -4744,6 +4753,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private selectionChangeHandler(event: Event): void {
         if (this.isSelectionInRTE() && !this.isSelectionCollapsed() && this.isSelectionStartInRTE) {
             this.isSelecting = true;
+        }
+        if (this.isSelectionInRTE()) {
+            this.updateUndoRedoStack(event, true);
         }
     }
 

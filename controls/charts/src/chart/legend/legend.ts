@@ -114,7 +114,7 @@ export class Legend extends BaseLegend {
                             (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),
                         seriesType, series.legendImageUrl ? series.legendImageUrl : (series.type === 'Scatter' && series.marker.shape === 'Image' ?
                             series.marker.imageUrl : ''),
-                        series.marker.shape, series.marker.visible, null, null
+                        series.marker.shape, series.marker.visible, null, null, series.dashArray
                     ));
                 }
             } else if (this.legend.mode === 'Point') {
@@ -126,7 +126,7 @@ export class Legend extends BaseLegend {
                         points.x.toString(), fill, series.legendShape, (series.category === 'TrendLine' ?
                             (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : points.visible),
                         seriesType, (series.type === 'Scatter' && series.marker.shape === 'Image') ? series.marker.imageUrl : '',
-                        series.marker.shape, series.marker.visible
+                        series.marker.shape, series.marker.visible, null, null, series.dashArray
                     ));
                 }
             } else if (this.legend.mode === 'Range') {
@@ -147,7 +147,7 @@ export class Legend extends BaseLegend {
                                 legendLabel, fill, series.legendShape, (series.category === 'TrendLine' ?
                                     (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : points.visible),
                                 seriesType, (series.type === 'Scatter' && series.marker.shape === 'Image') ? series.marker.imageUrl : '',
-                                series.marker.shape, series.marker.visible
+                                series.marker.shape, series.marker.visible, null, null, series.dashArray
                             ));
                         }
                     }
@@ -690,3 +690,4 @@ export class Legend extends BaseLegend {
     }
 
 }
+

@@ -1,5 +1,5 @@
 import { DocumentEditorContainer } from '../document-editor-container';
-import { L10n, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { getInstance, L10n, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Ribbon as EJ2Ribbon, RibbonTabModel, RibbonGroupModel, RibbonItemModel, RibbonFileMenu, RibbonColorPicker, RibbonGallery, RibbonContextualTab, RibbonKeyTip, BackStageMenuModel, RibbonBackstage, RibbonContextualTabSettingsModel, RibbonCollectionModel } from '@syncfusion/ej2-ribbon';
 import { Dictionary, FileMenuItemType } from '../../document-editor/base/index';
 import { DocumentEditor } from '../../document-editor/document-editor';
@@ -12,6 +12,7 @@ import { RibbonTabType } from '../../document-editor/base/ribbon-types';
 import { RibbonGroupInfo, RibbonItemInfo } from '../helper/ribbon-interfaces';
 import { IToolbarHandler } from '../helper/toolbar-handler';
 import { RibbonHelper } from '../helper/ribbon-helper';
+import { ComboBox } from '@syncfusion/ej2-dropdowns';
 
 /**
  * Ribbon class for DocumentEditorContainer
@@ -146,7 +147,14 @@ export class Ribbon implements IToolbarHandler {
             enableKeyTips: true,
             activeLayout: this.container.ribbonLayout,
             tabSelected: this.eventManager.onTabSelected.bind(this.eventManager),
-            ribbonLayoutSwitched: this.eventManager.onRibbonLayoutChange.bind(this.eventManager)
+            ribbonLayoutSwitched: this.eventManager.onRibbonLayoutChange.bind(this.eventManager),
+            created: () => {
+                const fontSizeElement: HTMLElement = document.getElementById(this.container.element.id + '_ribbon_font_size');
+                if (fontSizeElement) {
+                    const fontSizeInstance: object = getInstance(fontSizeElement, ComboBox);
+                    (fontSizeInstance as any).allowCustom = true;
+                }
+            }
         });
 
         // Check if backstage menu is configured

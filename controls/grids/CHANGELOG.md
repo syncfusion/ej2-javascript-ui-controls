@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 31.2.2 (2025-10-15)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I764198` - Fixed the issue where selection events were triggered twice after updating a record with persist selection enabled.
+
 ## 31.1.23 (2025-10-07)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I770531` - Resolved the issue where the grid displayed empty data upon manual refresh after filtering on the last page with `virtualization` enabled.
+- `#I770944` - The issue where the filter input is not disabled when opening the filter menu with the operators `IsNull`, `NotNull`, `IsEmpty`, and `IsNotEmpty` across different locale has been resolved.
+
+## 31.1.22 (2025-10-01)
 
 ### Grid
 

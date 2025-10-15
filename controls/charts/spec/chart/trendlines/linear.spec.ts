@@ -455,6 +455,17 @@ describe('Chart', () => {
             chartObj.export('XLSX', 'Chart');
             chartObj.refresh();
         });
+        it('Checking a XLSX export with transposed chart', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.isTransposed = true;
+            chartObj.enableExport = true
+            chartObj.export('XLSX', 'Chart');
+            chartObj.refresh();
+        });
+
     });
     it('memory leak', () => {
         profile.sample();

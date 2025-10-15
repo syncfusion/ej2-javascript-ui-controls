@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.1.23 (2025-10-07)
+## 31.2.2 (2025-10-15)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I766282` - Resolved an issue where `keydown` focus was not retained in the modal popup when the footer button was disabled.
+
+## 31.1.20 (2025-09-10)
 
 ### Dialog
 

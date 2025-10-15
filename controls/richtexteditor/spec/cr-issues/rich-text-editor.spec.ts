@@ -191,6 +191,75 @@ describe('RTE CR issues ', () => {
             document.body.innerHTML = "";
         });
     });
+    describe('Bug 985502: Script error throws when using EmojiPicker with the Inline toolbar in RichTextEditor' , () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs: any;
+        beforeEach( () => {
+            rteObj = renderRTE({
+                inlineMode: {
+                    enable: true,
+                    onSelection: true,
+                },
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+            });
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                keyCode: 186,
+                shiftKey: true,
+                altKey: false,
+                ctrlKey: false,
+                char: '',
+                key: ':',
+                charCode: 13,
+                which: 13,
+                code: 'Semicolon',
+                action: 'Semicolon',
+                type: 'keydown'
+            };
+        });
+        afterEach( () => {
+            destroy(rteObj);
+        });
+        it(' Should insert emoji through : when toolbar is in inline mode', () => {
+            rteObj.focusIn();
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                keyCode: 186,
+                shiftKey: true,
+                altKey: false,
+                ctrlKey: false,
+                char: '',
+                key: ':',
+                charCode: 13,
+                which: 13,
+                code: 'Semicolon',
+                action: 'Semicolon',
+                type: 'keydown'
+            };
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            const emoji: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojipickerbtn-group button');
+            emoji[0].focus();
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                keyCode: 13,
+                shiftKey: false,
+                altKey: false,
+                ctrlKey: false,
+                char: '',
+                key: ':',
+                charCode: 13,
+                which: 13,
+                code: 'Enter',
+                action: 'Enter',
+                type: 'Enter',
+                target: emoji[0]
+            };
+            (<any>rteObj).emojiPickerModule.onKeyDown({preventDefault: function () { },keyCode: 13, target: emoji[0], type: 'keydown'});
+            expect(rteObj.contentModule.getEditPanel().innerHTML).toBe('<p>😀</p>');
+        });
+    });
     describe('930848: Formatting, Shift+Enter, and zero-width space removal', () => {
         let rteObj: RichTextEditor;
         let keyboardEventArgs: any;
@@ -348,6 +417,35 @@ describe('RTE CR issues ', () => {
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 12, 16)
             rteObj.executeCommand('insertHTML', '<span>Test</span>');
             expect(rteObj.inputElement.innerHTML === '<p>testing the <span>Test</span> text editor</p>').toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 984457: Inline toolbar doesn"t show properly for the texts with Images in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><img alt="Editor Features Overview" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" width="400" height="200" class= "e-img-left e-rte-image e-imginline"/>image</p>`,
+                inlineMode: {
+                    enable: true,
+                    onSelection: true
+                },
+            });
+        });
+        it('Should show the Quick toolbar in View port', (done) => {
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            const mouseDownEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(mouseDownEvent);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[1], rteObj.inputElement.childNodes[0].childNodes[1], 1, 3);
+            const target: HTMLElement = rteObj.inputElement.firstChild as HTMLElement;
+            target.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const inlineToolbar: HTMLElement = rteObj.element.querySelector('.e-rte-inline-popup');
+                expect(rteObj).not.toBeNull();
+                expect(inlineToolbar.getBoundingClientRect().top).toBeGreaterThan(rteObj.element.getBoundingClientRect().top);
+                done();
+            }, 100);
         });
         afterAll(() => {
             destroy(rteObj);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.22 (2025-10-01)
+
+### Spreadsheet
+
+#### Bug fixes
+
+-`#I752195` - Issue with "`getSingleSelectedRange` was not found in spreadsheet while building an Angular application with Angular Spreadsheet's `ngcc` package" has been resolved.
+
 ## 31.1.21 (2025-09-23)
 
 ### Spreadsheet

@@ -349,6 +349,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private isDragEventPrevent;
     private isValueEmpty;
     private isPropChange;
+    private isRuleClicked;
     private ddTree;
     /**
      * Triggers when the component is created.
@@ -357,6 +358,12 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @blazorProperty 'Created'
      */
     created: EmitType<Event>;
+    /**
+     * Triggers when the component is destroyed.
+     *
+     * @event destroyed
+     */
+    destroyed: EmitType<Object>;
     /**
      * Triggers when field, operator, value is change.
      *

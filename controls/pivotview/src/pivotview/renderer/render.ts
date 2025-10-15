@@ -489,10 +489,13 @@ export class Render {
         if (args.element && this.parent.cssClass) {
             addClass([args.element.parentElement], this.parent.cssClass);
         }
+        let elem: Element;
+        const cellTarget: Element = this.parent.lastCellClicked ? this.parent.lastCellClicked :
+            (this.parent.isAdaptive ? (args.event.target as Element) : this.parent.lastCellClicked);
+        if (cellTarget) {
+            elem = this.getCellElement(cellTarget);
+        }
         for (const item of args.items) {
-            const cellTarget: Element = this.parent.lastCellClicked ? this.parent.lastCellClicked :
-                (this.parent.isAdaptive ? (args.event.target as Element) : this.parent.lastCellClicked);
-            const elem: Element = this.getCellElement(cellTarget);
             let bool: boolean;
             let isGroupElement: boolean;
             if (!elem || (elem && Number(elem.getAttribute('index')) === 0 && parseInt(elem.getAttribute('aria-colindex'), 10) - 1 === 0)) {
@@ -754,7 +757,12 @@ export class Render {
         const selected: string = args.item.id;
         let exportArgs: BeforeExportEventArgs = {
         };
-        const ele: Element = this.getCellElement(target);
+        let ele: Element;
+        if (target) {
+            ele = this.getCellElement(target);
+        } else {
+            return;
+        }
         const rowIndx: number = Number(ele.getAttribute('index'));
         const colIndx: number = parseInt(ele.getAttribute('aria-colindex'), 10) - 1;
         const pivotValue: IAxisSet = this.parent.pivotValues[rowIndx as number][colIndx as number] as IAxisSet;
@@ -1330,9 +1338,20 @@ export class Render {
                     }));
                 }
                 rowOuterDiv.appendChild(createElement('span', {
-                    className: cls.CELLVALUE,
-                    innerHTML: (this.parent.isRowCellHyperlink || cell.enableHyperlink ? '<a  data-url="' + localizedText + '" class="e-hyperlinkcell ' + customClass + '">' + localizedText + '</a>' : localizedText)
+                    className: cls.CELLVALUE
                 }));
+                if (!args.column.disableHtmlEncode) {
+                    rowOuterDiv.querySelector('.' + cls.CELLVALUE).innerHTML = (this.parent.isRowCellHyperlink || cell.enableHyperlink ?
+                        '<a  data-url="' + localizedText + '" class="e-hyperlinkcell ' + customClass + '">' + localizedText + '</a>'
+                        : localizedText);
+                } else {
+                    if (this.parent.isRowCellHyperlink || cell.enableHyperlink) {
+                        rowOuterDiv.querySelector('.' + cls.CELLVALUE).innerHTML =
+                            '<a  data-url="' + localizedText + '" class="e-hyperlinkcell ' + customClass + '">' + localizedText + '</a>';
+                    } else {
+                        rowOuterDiv.querySelector('.' + cls.CELLVALUE).textContent = localizedText;
+                    }
+                }
                 const vSort: IValueSortSettings = this.parent.pivotView.dataSourceSettings.valueSortSettings;
                 if (this.parent.enableValueSorting) {
                     let headerText: string | number | Date = vSort && this.parent.dataType === 'pivot' &&

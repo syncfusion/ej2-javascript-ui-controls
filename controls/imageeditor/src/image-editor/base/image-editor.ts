@@ -2524,6 +2524,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      *
      */
     public updateShape(setting: ShapeSettings, isSelected?: boolean): boolean {
+        if (setting.type.toLowerCase() === 'text') {
+            this.notify('shape', { prop: 'setPublicUpdateShape', onPropertyChange: false, value: { isPublicUpdateShape: true } });
+        }
         const obj: Object = {isSelected: false}; let isTextArea: boolean = false;
         const freehandObj: Object = {bool: false };
         if (isNullOrUndefined(setting.id)) {
@@ -2583,6 +2586,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.selectShape(setting.id);
                 }
             }
+        }
+        if (setting.type.toLowerCase() === 'text') {
+            this.notify('shape', { prop: 'setPublicUpdateShape', onPropertyChange: false, value: { isPublicUpdateShape: false } });
         }
         return obj['isSelected'];
     }

@@ -286,6 +286,13 @@ export interface QueryBuilderModel extends ComponentModel{
     created?: EmitType<Event>;
 
     /**
+     * Triggers when the component is destroyed.
+     *
+     * @event destroyed
+     */
+    destroyed?: EmitType<Object>;
+
+    /**
      * Triggers when field, operator, value is change.
      *
      * @event actionBegin

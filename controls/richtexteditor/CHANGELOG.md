@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 31.2.2 (2025-10-15)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I764281` - Now, the inline toolbar displays correctly when text content is positioned alongside an image within the same block-level element.
+
+- `#I771571` - Now, the Rich Text Editor properly handles pasting when content is pasted from Microsoft Teams.
+
+- `#I773939` - Now, emoji insertion via the colon `:` functions properly when inline mode is enabled.
+
 ## 31.1.23 (2025-10-07)
 
 ### RichTextEditor

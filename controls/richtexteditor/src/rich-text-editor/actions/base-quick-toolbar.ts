@@ -790,9 +790,9 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
     }
 
     private getSpaceAbove(args: QuickToolbarOffsetParam, isFloatingTop: boolean
-        , toolbarRect: DOMRect, scrollParentRect: DOMRect): number {
+        , toolbarRect: DOMRect, scrollParentRect: DOMRect, containsMedia?: boolean): number {
         let spaceAbove: number;
-        const blockRect: DOMRect = args.blockRect;
+        const blockRect: DOMRect = containsMedia ? args.rangeRect : args.blockRect;
         const parentRect: DOMRect = args.editPanelDomRect;
         const collision: QuickToolbarCollision = this.getTopCollisionType(blockRect, parentRect
             , isFloatingTop ? toolbarRect : scrollParentRect);
@@ -800,7 +800,11 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             switch (collision) {
             case 'ParentElement':
             case 'ScrollableContainer':  // When the toolbar is floating at top.
-                spaceAbove = blockRect.top - toolbarRect.top - toolbarRect.height;
+                if (this.parent.inlineMode.enable && this.type === 'Inline') {
+                    spaceAbove = blockRect.top;
+                } else {
+                    spaceAbove = blockRect.top - toolbarRect.top - toolbarRect.height;
+                }
                 break;
             case 'ViewPort':
             case 'Hidden':
@@ -824,9 +828,10 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         return spaceAbove;
     }
 
-    private getSpaceBelow(args: QuickToolbarOffsetParam, isFloatingBot: boolean, toolbarRect: DOMRect, scrollParentRect: DOMRect): number {
+    private getSpaceBelow(args: QuickToolbarOffsetParam, isFloatingBot: boolean, toolbarRect: DOMRect, scrollParentRect: DOMRect,
+                          containsMedia?: boolean): number {
         let spaceBelow: number;
-        const blockRect: DOMRect = args.blockRect;
+        const blockRect: DOMRect = containsMedia ? args.rangeRect : args.blockRect;
         const parentRect: DOMRect = args.editPanelDomRect;
         const collision: QuickToolbarCollision = this.getBottomCollisionType(blockRect, parentRect, isFloatingBot
             ? toolbarRect : scrollParentRect);
@@ -867,7 +872,10 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         const scrollTopParentElement: HTMLElement = this.parent.scrollParentElements && this.parent.scrollParentElements.length > 0 &&
         this.parent.scrollParentElements[0].nodeName !== '#document' ? this.parent.scrollParentElements[0] : this.parent.inputElement;
         const scrollParentRect: DOMRect = scrollTopParentElement.getBoundingClientRect() as DOMRect;
-        const blockRect: DOMRect = offsetParams.blockRect;
+        const parentRect: DOMRect = offsetParams.editPanelDomRect as DOMRect;
+        const isBottomToolbar: boolean = this.parent.toolbarSettings.position === 'Bottom';
+        const containsMedia: boolean = (this.type === 'Text' || this.type === 'Inline') && offsetParams.blockElement.querySelectorAll('img, video').length > 0;
+        const blockRect: DOMRect = containsMedia ? offsetParams.rangeRect : offsetParams.blockRect;
         const toolbarRect: DOMRect = this.parent.getToolbarElement().getBoundingClientRect() as DOMRect;
         const isFloating: boolean = this.parent.toolbarSettings.enableFloating;
         const isFloatingTop: boolean = isFloating && this.parent.toolbarSettings.position === 'Top';
@@ -875,17 +883,43 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         const topViewPortSpace: number = blockRect.top;
         const botViewPortSpace: number = blockRect.bottom;
         const spaceAbove: number = this.getSpaceAbove(
-            offsetParams, isFloatingTop, toolbarRect, scrollParentRect);
+            offsetParams, isFloatingTop, toolbarRect, scrollParentRect, containsMedia);
         const spaceBelow: number = this.getSpaceBelow(
-            offsetParams, isFloatingBot, toolbarRect, scrollParentRect);
+            offsetParams, isFloatingBot, toolbarRect, scrollParentRect, containsMedia);
         const totalPopupHeight: number = (this.tipPointerHeight + this.popupHeight);
         const isTopPosition: boolean = this.isElemVisible(blockRect, 'top', false) && spaceAbove > totalPopupHeight && topViewPortSpace > totalPopupHeight;
         const isBotPosition: boolean = offsetParams.direction === 'Backward'  && isTopPosition ? false : this.isElemVisible(blockRect, 'bottom', false) && spaceBelow > totalPopupHeight && botViewPortSpace > totalPopupHeight;
         if (isBotPosition) {
-            return args; // Default Bottom position no need to change offset.
+            this.currentTipPosition = this.currentTipPosition.replace('Bottom', 'Top') as TipPointerPosition;
         } else if (isTopPosition) {
             args.positionY = -(this.popupHeight + 10) + (offsetParams.rangeRect.top - offsetParams.blockRect.top);
             this.currentTipPosition = this.currentTipPosition.replace('Top', 'Bottom') as TipPointerPosition;
+        } else if ((spaceAbove < totalPopupHeight && spaceBelow < totalPopupHeight) && containsMedia) {
+            const withToolbarHeight: number = -(offsetParams.blockRect.top) + toolbarRect.bottom; // When floating Main toolbar will hide the quick toolbar so need to add the main toolbar height.
+            const withOutToolbarHeight: number = scrollTopParentElement === this.parent.inputElement ?
+                -(offsetParams.blockRect.top) : (-offsetParams.blockRect.top) + parentRect.top; // When there is no floating Main toolbar wont hide the quick toolbar so no need to add main toolbar height.
+            if (isBottomToolbar || (this.parent.inlineMode.enable && this.type === 'Inline')) {
+                args.positionY = withOutToolbarHeight;
+            } else {
+                if (isFloating) {
+                    if (toolbarRect.top < 0) { // When the Toolbar is hidden beyond a viewport inside a scrollable container with overflow auto and static height.
+                        args.positionY = -blockRect.top;
+                    } else {
+                        args.positionY = withToolbarHeight;
+                    }
+                } else {
+                    if (scrollTopParentElement === this.parent.inputElement) {
+                        args.positionY = withOutToolbarHeight;
+                    } else {
+                        if (parentRect.top < 0) { // When the Parent is hidden we need to calculate against the viewport.
+                            args.positionY = -blockRect.top;
+                        } else {
+                            args.positionY = -(blockRect.top - scrollParentRect.top);
+                        }
+                    }
+                }
+            }
+            this.currentTipPosition = 'None';
         }
         return args;
     }

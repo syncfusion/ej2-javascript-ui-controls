@@ -2,13 +2,21 @@
 
 ## [Unreleased]
 
-## 31.1.23 (2025-10-07)
+## 31.2.2 (2025-10-15)
 
 ### Image Editor
 
 #### Bug Fixes
 
-- `#I762686` - The issue with "Script error thrown and shapes not removed when 'undo' method is called programmatically" has been resolved.
+- `#I769870` - Resolved an issue with `UpdateShape` method causes font size decrease and page unresponsive.
+
+## 31.1.22 (2025-10-01)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I762686` - Resolved an issue where a script error was thrown and shapes were not removed when the 'undo' method was called programmatically.
 
 ## 31.1.21 (2025-09-23)
 

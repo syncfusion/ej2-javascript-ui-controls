@@ -966,3 +966,45 @@ describe('getValueByText method', () => {
         expect(value).toBeNull();
     });
 });
+
+describe('DropDownBase checkingAccent', () => {
+    let listObj: any;
+    let element: HTMLElement;
+    const datasource: { [key: string]: Object }[] = [
+        { id: '1', text: 'Item 1' },
+        { id: '2', text: 'Item 2' }
+    ];
+    beforeEach(() => {
+        element = document.createElement('div');
+        element.id = 'dropdownbase';
+        document.body.appendChild(element);
+    });
+    afterEach(() => {
+        if (element) {
+            element.remove();
+        }
+        document.body.innerHTML = '';
+    });
+    it('with ignoreCase as false', () => {
+        listObj = new DropDownBase({ dataSource: datasource, fields: { text: 'text', value: 'id' } });
+        listObj.appendTo(element);
+        (<any>listObj).checkingAccent('Item 1', 'Item 1', false);
+    });
+    it('with ignoreCase as false and different cases', () => {
+        listObj = new DropDownBase({ dataSource: datasource, fields: { text: 'text', value: 'id' } });
+        listObj.appendTo(element);
+        (<any>listObj).checkingAccent('Item 1', 'item 1', false);
+    });
+    it('dispatchEvent with null element', () => {
+        listObj = new DropDownBase({ dataSource: datasource });
+        listObj.appendTo(element);
+        (<any>listObj).dispatchEvent(null, 'change');
+    });
+    it('getIndexByValueFilter with null ulElement', () => {
+        listObj = new DropDownBase({ dataSource: datasource });
+        listObj.appendTo(element);
+        (<any>listObj).getIndexByValueFilter('1', null);
+    });
+});
+
+

@@ -566,6 +566,15 @@ function globalVariables(id: string, radius: number, count: number, previousId: 
         previousId: previousId
     };
 }
+/**
+ *
+ * @returns {number} - returns the number
+ */
+function secureRandom(): number {
+    const array: Uint32Array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] / (0xFFFFFFFF + 1);
+}
 
 /**
  * @returns {string} - returns the string
@@ -575,7 +584,7 @@ function random_generator() : string {
     let random: string = '';
     const combine: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     for (let i: number = 0; i < 5; i++) {
-        random += combine.charAt(Math.floor(Math.random() * combine.length));
+        random += combine.charAt(Math.floor(secureRandom() * combine.length));
     }
     return random;
 }

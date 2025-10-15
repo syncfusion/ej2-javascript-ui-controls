@@ -236,10 +236,10 @@ export class FilterMenuRenderer {
             !parentsUntil(this.parent.element, 'e-gantt-dialog')) {
             resetDialogAppend(this.parent, this.dlgObj);
         }
-        const optrInput: HTMLInputElement = this.dlgObj.element.querySelector('.e-flm_optrdiv').querySelector('input');
+        const optrValue: string = this.flMuiObj.getFlOperator();
         const valInput: HTMLInputElement = this.dlgObj.element.querySelector('.e-flmenu-valuediv').querySelector('input');
-        if (optrInput.value === 'Empty' || optrInput.value === 'Not Empty' ||
-            optrInput.value === 'Null' || optrInput.value === 'Not Null') {
+        if (optrValue === 'isempty' || optrValue === 'isnotempty' ||
+            optrValue === 'isnull' || optrValue === 'isnotnull') {
             if (!isNullOrUndefined(valInput['ej2_instances'])) {
                 valInput['ej2_instances'][0]['enabled'] = false ;
             } else {

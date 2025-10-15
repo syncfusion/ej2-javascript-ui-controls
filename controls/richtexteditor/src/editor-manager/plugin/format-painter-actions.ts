@@ -148,42 +148,67 @@ export class FormatPainterActions implements IFormatPainterEditor{
     }
 
     private removeDeniedFormats(parentElement: HTMLElement): HTMLElement {
-        if (!isNOU(this.deniedFormatsCollection) && this.deniedFormatsCollection.length > 0){
-            const deniedPropArray: DeniedFormatsCollection[] = this.deniedFormatsCollection;
+        const deniedPropArray: DeniedFormatsCollection[] = this.deniedFormatsCollection;
+        if (!isNOU(deniedPropArray) && deniedPropArray.length > 0) {
             const length: number = deniedPropArray.length;
             for (let i: number = 0; i < length; i++) {
-                const tag: string = deniedPropArray[i as number].tag;
-                if (deniedPropArray[i as number].tag) {
-                    const elementsList: NodeList = parentElement.querySelectorAll(tag);
-                    for ( let j: number = 0; j < elementsList.length; j++){
-                        if (deniedPropArray[i as number].classes.length > 0){
-                            const classes: string[] = deniedPropArray[i as number].classes;
-                            const classLength: number = classes.length;
-                            for (let k: number = 0; k < classLength; k++){
-                                if ((elementsList[j as number] as HTMLElement).classList.contains(classes[k as number])){
-                                    removeClass([elementsList[j as number] as HTMLElement], classes[k as number].trim());
+                const currentRule: DeniedFormatsCollection = deniedPropArray[i as number];
+                const tag: string = currentRule.tag;
+                if (!tag) { continue; }
+                const elementsList: NodeListOf<HTMLElement> = parentElement.querySelectorAll(tag);
+                for (let j: number = 0; j < elementsList.length; j++) {
+                    const currentElement: HTMLElement = elementsList[j as number];
+                    const classes: string[] = currentRule.classes;
+                    const styles: string[] = currentRule.styles;
+                    const attributes: string[] = currentRule.attributes;
+                    // Step 1: Check class condition
+                    let classConditionMet: boolean = true;
+                    if (classes.length > 0 && classes[j as number].trim() !== '') {
+                        classConditionMet = true;
+                        for (let k: number = 0; k < classes.length; k++) {
+                            if (currentElement.classList.contains(classes[k as number].trim())) {
+                                classConditionMet = true;
+                            } else {
+                                classConditionMet = false;
+                            }
+                        }
+                    }
+                    // Step 2: Check if styles or attributes are targeted
+                    const hasExplicitTargets: boolean =
+                        (styles.length > 0 && styles[j as number].trim() !== '') ||
+                        (attributes.length > 0 && attributes[j as number].trim() !== '');
+                    // Step 3: Apply denial logic
+                    if (classConditionMet) {
+                        // Case A: Remove styles
+                        if (hasExplicitTargets) {
+                            for (let k: number = 0; k < styles.length; k++) {
+                                const styleName: string = styles[k as number].trim();
+                                if (styleName) {
+                                    currentElement.style.removeProperty(styleName);
                                 }
                             }
-                            if ((elementsList[j as number] as HTMLElement).classList.length === 0){
-                                (elementsList[j as number] as HTMLElement).removeAttribute('class');
+                            for (let k: number = 0; k < attributes.length; k++) {
+                                const attrName: string = attributes[k as number].trim();
+                                if (attrName) {
+                                    currentElement.removeAttribute(attrName);
+                                }
                             }
                         }
-                        if (deniedPropArray[i as number].styles.length > 0){
-                            const styles: string[] = deniedPropArray[i as number].styles;
-                            const styleLength: number = styles.length;
-                            for (let k: number = 0; k < styleLength; k++){
-                                (elementsList[j as number] as HTMLElement).style.removeProperty(styles[k as number].trim());
-                            }
-                            if ((elementsList[j as number] as HTMLElement).style.length === 0){
-                                (elementsList[j as number] as HTMLElement).removeAttribute('style');
+                        // Case B: Remove classes
+                        if (classes.length > 0) {
+                            for (let k: number = 0; k < classes.length; k++) {
+                                const className: string = classes[k as number].trim();
+                                if (className) {
+                                    removeClass([currentElement], className);
+                                }
                             }
                         }
-                        if (deniedPropArray[i as number].attributes.length > 0){
-                            const attributes: string[] = deniedPropArray[i as number].attributes;
-                            const attributeLength: number = attributes.length;
-                            for (let k: number = 0; k < attributeLength; k++){
-                                (elementsList[j as number] as HTMLElement).removeAttribute(attributes[k as number].trim());
-                            }
+                        // Final cleanup
+                        if (currentElement.style.length === 0) {
+                            currentElement.removeAttribute('style');
+                        }
+                        if (currentElement.classList.length === 0) {
+                            currentElement.removeAttribute('class');
                         }
                     }
                 }

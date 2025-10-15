@@ -148,7 +148,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     if (cell.visible && isFirstCell) {
                         if (this.parent.groupSettings && this.parent.groupSettings.columns.length) {
                             td.classList.add('e-grid-group-first-cell');
-                        } else if (!this.parent.allowRowDragAndDrop) {
+                        } else if ((this.parent.renderModule && this.parent.renderModule.isFirstColumnHidden) &&
+                            !(this.parent.allowRowDragAndDrop || this.parent.childGrid || this.parent.detailTemplate)) {
                             td.classList.add('e-first-visible-cell');
                         }
                         isFirstVisibleCell = false;
@@ -302,17 +303,18 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 }
                 if ((cell.cellType === CellType.Header || cell.cellType === CellType.StackedHeader) &&
                     isFirstCell && (cell.visible || cell.cellType === CellType.StackedHeader)) {
-                    if (this.parent.groupSettings && this.parent.groupSettings.columns.length) {
-                        const visibleColumns: Column[] = this.parent.getVisibleColumns();
-                        const field: string = 'field';
-                        const type: string = 'type';
-                        if ((cell.column[`${type}`] && cell.column[`${type}`] === 'checkbox') ||
-                            (cell.cellType === CellType.Header && cell.column[`${field}`] && visibleColumns.length &&
-                                visibleColumns[0].field === cell.column[`${field}`]) || cell.cellType === CellType.StackedHeader) {
+                    const visibleColumns: Column[] = this.parent.getVisibleColumns();
+                    const field: string = 'field';
+                    const type: string = 'type';
+                    if ((cell.column[`${type}`] && cell.column[`${type}`] === 'checkbox') ||
+                        (cell.cellType === CellType.Header && cell.column[`${field}`] && visibleColumns.length &&
+                            visibleColumns[0].field === cell.column[`${field}`]) || cell.cellType === CellType.StackedHeader) {
+                        if (this.parent.groupSettings && this.parent.groupSettings.columns.length) {
                             td.classList.add('e-grid-group-first-cell');
+                        } else if ((this.parent.renderModule && this.parent.renderModule.isFirstColumnHidden) &&
+                            !(this.parent.allowRowDragAndDrop || this.parent.childGrid || this.parent.detailTemplate)) {
+                            td.classList.add('e-first-visible-cell');
                         }
-                    } else if (!this.parent.allowRowDragAndDrop) {
-                        td.classList.add('e-first-visible-cell');
                     }
                     isFirstVisibleCell = false;
                 }
@@ -362,7 +364,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 if (cell.visible && isFirstCell ) {
                     if (this.parent.groupSettings && this.parent.groupSettings.columns.length) {
                         td.classList.add('e-grid-group-first-cell');
-                    } else if (!this.parent.allowRowDragAndDrop) {
+                    } else if ((this.parent.renderModule && this.parent.renderModule.isFirstColumnHidden) &&
+                        !(this.parent.allowRowDragAndDrop || this.parent.childGrid || this.parent.detailTemplate)) {
                         td.classList.add('e-first-visible-cell');
                     }
                     isFirstVisibleCell = false;

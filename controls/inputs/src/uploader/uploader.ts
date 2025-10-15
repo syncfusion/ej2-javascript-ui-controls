@@ -2907,9 +2907,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private createProgressBar(liElement : Element) : void {
         const progressbarWrapper : Element = this.createElement('span', {className: PROGRESS_WRAPPER});
-        const progressBar : Element = this.createElement('progressbar', {className: PROGRESSBAR, attrs: {value : '0', max : '100'}});
+        const progressBar : HTMLElement = this.createElement('progressbar', {className: PROGRESSBAR, attrs: {value : '0', max : '100'}});
         const progressbarInnerWrapper : Element = this.createElement('span', {className: PROGRESS_INNER_WRAPPER});
-        progressBar.setAttribute('style', 'width: 0%');
+        progressBar.style.width = '0%';
         const progressbarText : Element = this.createElement('span', {className: PROGRESSBAR_TEXT});
         progressbarText.textContent = '0%';
         progressbarInnerWrapper.appendChild(progressBar);
@@ -2933,7 +2933,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private changeProgressValue(li : Element, progressValue : string) : void {
-        li.querySelector('.' + PROGRESSBAR).setAttribute('style', 'width:' + progressValue );
+        (li.querySelector('.' + PROGRESSBAR) as HTMLElement).style.width = progressValue;
         li.querySelector('.' + PROGRESSBAR_TEXT).textContent = progressValue;
     }
 

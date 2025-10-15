@@ -6361,4 +6361,65 @@ describe('Splitter Control', () => {
             splitterObj.destroy();
         });
     });
+    describe('getBorder cross-browser calculation', () => {
+        let splitterObj: any;
+        let originalName: string;
+        beforeAll((): void => {
+            originalName = Browser.info.name;
+        });
+        afterAll((): void => {
+            Browser.info.name = originalName;
+            document.body.innerHTML = '';
+        });
+        it('should compute horizontal border for non-chrome browsers (e.g., firefox)', () => {
+            const element: HTMLElement = createElement('div', { id: 'splitter-border-horizontal' });
+            element.style.width = '400px';
+            element.style.height = '200px';
+            element.style.borderLeft = '10px solid #000';
+            element.style.borderRight = '10px solid #000';
+            const child1: HTMLElement = createElement('div');
+            const child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({
+                width: '400px',
+                height: '200px',
+                orientation: 'Horizontal',
+                paneSettings: [{ size: '50%' }, { size: '50%' }]
+            });
+            splitterObj.appendTo('#splitter-border-horizontal');
+            Browser.info.name = 'firefox';
+            splitterObj.getBorder();
+            expect(splitterObj.border).toBe(10);
+            Browser.info.name = 'chrome';
+            splitterObj.getBorder();
+            expect(splitterObj.border).toBe(10);
+        });
+        it('should compute vertical border for non-chrome browsers (e.g., firefox)', () => {
+            const element: HTMLElement = createElement('div', { id: 'splitter-border-vertical' });
+            element.style.width = '300px';
+            element.style.height = '300px';
+            element.style.borderTop = '8px solid #000';
+            element.style.borderBottom = '8px solid #000';
+            const child1: HTMLElement = createElement('div');
+            const child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({
+                width: '300px',
+                height: '300px',
+                orientation: 'Vertical',
+                paneSettings: [{ size: '50%' }, { size: '50%' }]
+            });
+            splitterObj.appendTo('#splitter-border-vertical');
+            Browser.info.name = 'firefox';
+            splitterObj.getBorder();
+            expect(splitterObj.border).toBe(8);
+            Browser.info.name = 'chrome';
+            splitterObj.getBorder();
+            expect(splitterObj.border).toBe(8);
+        });
+    });
  });

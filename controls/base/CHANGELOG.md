@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.1.23 (2025-10-07)
+## 31.2.2 (2025-10-15)
+
+### Common
+
+#### Bug Fixes
+
+- `#768391` - Resolved the localization issue where Marathi (mr) culture was not applied correctly in Syncfusion components.
+
+## 31.1.22 (2025-10-01)
 
 ### Common
 

@@ -34,7 +34,7 @@ import { GridSettings } from '../model/gridsettings';
 import { GridSettingsModel } from '../model/gridsettings-model';
 import { PivotButton } from '../../common/actions/pivot-button';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
-import { Grid, QueryCellInfoEventArgs, ColumnModel, Reorder, Resize, getObject } from '@syncfusion/ej2-grids';
+import { Grid, QueryCellInfoEventArgs, ColumnModel, Reorder, Resize, getObject, Column } from '@syncfusion/ej2-grids';
 import { SelectionType, ContextMenuItemModel } from '@syncfusion/ej2-grids';
 import { CellSelectEventArgs, RowSelectEventArgs, ResizeArgs, getScrollBarWidth } from '@syncfusion/ej2-grids';
 import { RowDeselectEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
@@ -5296,8 +5296,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
         if (cell && hasField) {
             const columnIndex: number = (this.isTabular && this.engineModule.rowMaxLevel > 0) ? this.engineModule.rowMaxLevel : 0;
-            const rowHeaders: string = this.getRowText(rowIndex, columnIndex);
-            const columnHeaders: string = this.getColText(0, colIndex, rowIndex);
+            let rowHeaders: string = this.getRowText(rowIndex, columnIndex);
+            let columnHeaders: string = this.getColText(0, colIndex, rowIndex);
             const value: string = (cell.formattedText === '' ? this.localeObj.getConstant('noValue') :
                 cell.formattedText);
             if (this.tooltipTemplate && this.getTooltipTemplate() !== undefined) {
@@ -5331,6 +5331,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
             } else {
+                const col: Column = this.grid.getColumns()[colIndex as number] as Column;
+                columnHeaders = col.disableHtmlEncode ? this.encodeHtml(columnHeaders) : columnHeaders;
+                rowHeaders = col.disableHtmlEncode ? this.encodeHtml(rowHeaders) : rowHeaders;
                 const contentTemp: string = '<div class=' + cls.PIVOTTOOLTIP + '><p class=' + cls.TOOLTIP_HEADER + '>' +
                     this.localeObj.getConstant('row') + ':</p><p class=' + cls.TOOLTIP_CONTENT + '>' +
                     rowHeaders + '</p></br><p class=' + cls.TOOLTIP_HEADER + '>' + this.localeObj.getConstant('column') +
@@ -5346,6 +5349,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         } else {
             args.cancel = true;
         }
+    }
+
+    public encodeHtml(value: string): string {
+        const div: HTMLElement = createElement('div');
+        div.innerText = value;
+        return div.innerHTML;
     }
 
     /** @hidden */

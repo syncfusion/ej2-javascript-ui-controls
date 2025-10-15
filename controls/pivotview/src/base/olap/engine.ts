@@ -351,7 +351,7 @@ export class OlapEngine {
             const virtualValuesTupples: Element[] = this.getVirtualValues(
                 valTuples, calColPage + colTuplesOffset, calRowPage + rowTuplesOffset, calColSize, calRowSize,
                 colData.indexCollection, rowData.indexCollection, colTuples.length, rowTuples.length, colDepth,
-                rowDepth, isRowGrandTolExists
+                rowDepth, isColGrandTolExists, isRowGrandTolExists
             );
             colTuples = [...virtualColTuples];
             rowTuples = [...virtualRowTuples];
@@ -420,7 +420,7 @@ export class OlapEngine {
     private getVirtualValues(
         valueTuples: Element[], calColumnPage: number, calRowPage: number, calColunmnSize: number, calRowSize: number,
         colTotalsIndex: number[], rowTotalsIndex: number[], colTuplesLen: number, rowTuplesLen: number, columnDepth: number,
-        rowDepth: number, isRowGrandTolExists: boolean
+        rowDepth: number, isColGrandTolExists: boolean, isRowGrandTolExists: boolean
     ): Element[] {
         let framedVirtValTuples: Element[] = [];
         let virtValTuples: Element[] = valueTuples;
@@ -435,9 +435,10 @@ export class OlapEngine {
             }
             virtValTuples = virtRowTotalValues.concat(virtValTuples);
         }
+        const columnOffset: number = calColumnPage + (isColGrandTolExists ? columnDepth : 0);
         for (let i: number = 0, j: number = virtValTuples.length / colTuplesLen; i < j; i++) {
             const rows: Element[] = virtValTuples.slice(i * colTuplesLen, (i * colTuplesLen) + colTuplesLen);
-            const virtRows: Element[] = rows.slice(calColumnPage + columnDepth, calColumnPage + columnDepth + calColunmnSize);
+            const virtRows: Element[] = rows.slice(columnOffset, columnOffset + calColunmnSize);
             const virtTotals: Element[] = [];
             for (let x: number = 0; x < colTotalsIndex.length; x++) {
                 virtTotals[virtTotals.length] = rows[colTotalsIndex[x as number]];

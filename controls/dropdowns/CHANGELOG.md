@@ -2,7 +2,33 @@
 
 ## [Unreleased]
 
+## 31.2.2 (2025-10-15)
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I771719` - Resolved an issue where a console error occurred when users searched and quickly pressed the tab key.
+
+- `#I771989` - Fixed an issue where the dropdown displayed escaped HTML entities instead of the intended readable tag names.
+
 ## 31.1.23 (2025-10-07)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I760104` - Resolved an issue where the footer element would move outside the popup when resizing the MultiSelect popup.
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I760104` - Resolved an issue where the footer element would move outside the popup when resizing the DropdownList popup.
+
+- `#I764838` - Resolved an issue where an empty popup would appear when rendering the select tag within the Details tag.
+
+## 31.1.22 (2025-10-01)
 
 ### DropDownTree
 

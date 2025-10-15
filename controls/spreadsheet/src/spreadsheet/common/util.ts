@@ -1694,8 +1694,8 @@ export function updateAction(
                 options.eventArgs.prevTop, currentLeft: options.eventArgs.prevLeft, id: options.eventArgs.id, currentHeight:
                 options.eventArgs.prevHeight, currentWidth: options.eventArgs.prevWidth, requestType: 'imageRefresh',
                 prevHeight: options.eventArgs.currentHeight, prevWidth: options.eventArgs.currentWidth,
-                prevRowIdx: options.eventArgs.prevRowIdx, prevColIdx: options.eventArgs.prevColIdx,
-                currentRowIdx: options.eventArgs.currentRowIdx, currentColIdx: options.eventArgs.currentColIdx,
+                prevRowIdx: options.eventArgs.currentRowIdx, prevColIdx: options.eventArgs.currentColIdx,
+                currentRowIdx: options.eventArgs.prevRowIdx, currentColIdx: options.eventArgs.prevColIdx,
                 isUndoRedo: true });
         } else {
             options.eventArgs.isUndoRedo = true;

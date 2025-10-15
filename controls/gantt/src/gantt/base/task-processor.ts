@@ -413,6 +413,23 @@ export class TaskProcessor extends DateProcessor {
         return `${prefix}${this.uid++}`;
     }
 
+    private processCustomColumns(data: Object): void {
+        if (!this.parent.customColumns || this.parent.customColumns.length === 0) {
+            return;
+        }
+        this.parent.customColumns.forEach((column: string) => {
+            const value: string | Date = data[column as string];
+            const isValidDateString: boolean =
+                typeof value === 'string' && !isNaN(new Date(value).getTime());
+            const isValidDateObject: boolean =
+                value instanceof Date && !isNaN(value.getTime());
+            if (isValidDateString || isValidDateObject) {
+                const dateValue: Date = isValidDateString ? new Date(value) : value as Date;
+                data[column as string] = this.getDateFromFormat(dateValue, true);
+            }
+        });
+    }
+
     /**
      * To populate Gantt record
      *
@@ -435,6 +452,7 @@ export class TaskProcessor extends DateProcessor {
         const predecessors: string | number | object[] = data[taskSettings.dependency];
         const baselineStartDate: Date = this.getDateFromFormat(data[taskSettings.baselineStartDate], true);
         const baselineEndDate: Date = this.getDateFromFormat(data[taskSettings.baselineEndDate], true);
+        this.processCustomColumns(data);
         let ganttData: IGanttData;
         let unModifiedData: Object;
         if (this.parent.loadChildOnDemand && taskSettings.hasChildMapping && !this.parent.enableVirtualization) {

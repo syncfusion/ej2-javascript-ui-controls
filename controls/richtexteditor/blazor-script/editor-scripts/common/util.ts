@@ -76,7 +76,26 @@ export function updateTextNode(value: string): string {
                 tableElm[i as number].classList.remove('e-rte-paste-onenote-table');
                 continue;
             } else if (tableElm[i as number].classList.contains('e-rte-paste-html-table')) {
-                tableElm[i as number].classList.remove('e-rte-paste-html-table');
+                const currentTable: HTMLTableElement = tableElm[i as number] as HTMLTableElement;
+                currentTable.classList.remove('e-rte-paste-html-table');
+                if (!currentTable.classList.contains('e-rte-table-border')) {
+                    const cells: NodeListOf<HTMLElement> = currentTable.querySelectorAll('td, th');
+                    const tableStyle: string = currentTable.getAttribute('style');
+                    let hasBorder: boolean = tableStyle && tableStyle.includes('border');
+                    if (!hasBorder) {
+                        for (const cell of Array.from(cells)) {
+                            const cellStyle: string = cell.getAttribute('style');
+                            if (cellStyle && cellStyle.includes('border')) {
+                                hasBorder = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!hasBorder) {
+                        currentTable.classList.add('e-rte-table');
+                        currentTable.classList.remove('e-rte-paste-table');
+                    }
+                }
                 continue;
             }
         }

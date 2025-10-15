@@ -1861,4 +1861,243 @@ describe("Quick Toolbar Module", () => {
             }, 100);
         });
     });
+    describe("980349 - Unselected Items Still Appear in Text Quick Toolbar After Configuration", () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Fontcolor', 'Blockquote', '|', 'Unorderedlist', 'Orderedlist', 'Indent', 'Outdent']
+                },
+                value: `<p>Syncfusion</p>`
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it("should change quicktooolbar items dynamically", (done: DoneFn) => {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('p');
+            setSelection(target.firstChild, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                const quickPopup: HTMLElement = document.body.querySelector('.e-rte-quick-popup');
+                expect(quickPopup).not.toBe(null);
+            }, 100);
+            editor.focusIn();
+            editor.quickToolbarSettings.text = ['Formats', 'OrderedList', 'UnOrderedList'];
+            editor.dataBind();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const targetTwo: HTMLElement = editor.inputElement.querySelector('p');
+            setSelection(targetTwo.firstChild, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                const quickPopup: HTMLElement = document.body.querySelector('.e-rte-quick-popup');
+                expect(quickPopup).not.toBe(null);
+                expect(document.querySelectorAll('.e-text-quicktoolbar .e-toolbar-item').length === 3).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('982140 - Updated image options in the QuickToolbar settings are not reflected', () => {
+        describe("982140 - Check with image quick toolbar", () => {
+            let editor: RichTextEditor;
+            beforeAll(() => {
+                editor = renderRTE({
+                    quickToolbarSettings: {
+                        image: ['Caption', '|', 'Align', 'Display', '|', 'InsertLink', 'OpenImageLink', 'EditImageLink', '|', 'Dimension', 'Replace', 'Remove'],
+                    },
+                    value: EDITOR_CONTENT
+                });
+            });
+            afterAll(() => {
+                destroy(editor);
+            });
+            it("should change image quicktooolbar items dynamically", (done: DoneFn) => {
+                editor.focusIn();
+                editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                const target: HTMLElement = editor.inputElement.querySelector('img');
+                setCursorPoint(target, 0);
+                target.dispatchEvent(MOUSEUP_EVENT);
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Image_Quick_Popup') >= 0).toBe(true);
+                    expect(editor.quickToolbarSettings.image.length).toBe(12);
+                    editor.focusIn();
+                    editor.quickToolbarSettings.image = ['Display', 'Dimension', 'Replace', 'Remove'];
+                    editor.dataBind();
+                    editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                    setCursorPoint(target, 0);
+                    target.dispatchEvent(MOUSEUP_EVENT);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Image_Quick_Popup') >= 0).toBe(true);
+                        expect(editor.quickToolbarSettings.image.length).toBe(4);
+                        expect(document.querySelectorAll('.e-image-quicktoolbar .e-toolbar-item').length === 4).toBe(true);
+                        editor.inputElement.blur();
+                        done();
+                    }, 100);
+                }, 100);
+            });
+        });
+        describe("982140 - Check with video quick toolbar", () => {
+            let editor: RichTextEditor;
+            beforeAll(() => {
+                editor = renderRTE({
+                    quickToolbarSettings: {
+                        video: ['VideoLayoutOption', 'VideoAlign', '|', 'VideoDimension', 'VideoReplace', 'VideoRemove'],
+                    },
+                    value: EDITOR_CONTENT
+                });
+            });
+            afterAll(() => {
+                destroy(editor);
+            });
+            it("should change video quicktooolbar items dynamically", (done: DoneFn) => {
+                editor.focusIn();
+                editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                const target: HTMLElement = editor.inputElement.querySelector('video');
+                setSelection(target, 0, 1);
+                target.dispatchEvent(MOUSEUP_EVENT);
+                setTimeout(() => {
+                    expect(editor.quickToolbarSettings.video.length).toBe(6);
+                    expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Video_Quick_Popup') >= 0).toBe(true);
+                    expect(editor.quickToolbarSettings.video.length).toBe(6);
+                    editor.inputElement.blur();
+                    editor.focusIn();
+                    editor.quickToolbarSettings.video = ['VideoLayoutOption', 'VideoDimension', 'VideoRemove'];
+                    editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                    const target: HTMLElement = editor.inputElement.querySelector('video');
+                    setSelection(target, 0, 1);
+                    target.dispatchEvent(MOUSEUP_EVENT);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Video_Quick_Popup') >= 0).toBe(true);
+                        expect(editor.quickToolbarSettings.video.length).toBe(3);
+                        expect(document.querySelectorAll('.e-video-quicktoolbar .e-toolbar-item').length === 3).toBe(true);
+                        editor.inputElement.blur();
+                        done();
+                    }, 100);
+                }, 100);
+            });
+        });
+        describe("982140 - Check with link quick toolbar", () => {
+            let editor: RichTextEditor;
+            beforeAll(() => {
+                editor = renderRTE({
+                    quickToolbarSettings: {
+                        link: ['Open', 'Edit', 'UnLink'],
+                    },
+                    value: EDITOR_CONTENT
+                });
+            });
+            afterAll(() => {
+                destroy(editor);
+            });
+            it("should change link quicktooolbar items dynamically", (done: DoneFn) => {
+                editor.focusIn();
+                editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                const target: HTMLElement = editor.inputElement.querySelector('a');
+                setCursorPoint(target.firstChild, 2);
+                target.dispatchEvent(MOUSEUP_EVENT);
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+                    expect(editor.quickToolbarSettings.link.length).toBe(3);
+                    editor.inputElement.blur();
+                    editor.focusIn();
+                    editor.quickToolbarSettings.link = ['Edit', 'UnLink'];
+                    editor.dataBind();
+                    editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                    const target: HTMLElement = editor.inputElement.querySelector('a');
+                    setCursorPoint(target.firstChild, 2);
+                    target.dispatchEvent(MOUSEUP_EVENT);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+                        expect(editor.quickToolbarSettings.link.length).toBe(2);
+                        expect(document.querySelectorAll('.e-link-quicktoolbar .e-toolbar-item').length === 2).toBe(true);
+                        editor.inputElement.blur();
+                        done();
+                    }, 100);
+                }, 100);
+            });
+        });
+        describe("982140 - Check with table quick toolbar", () => {
+            let editor: RichTextEditor;
+            beforeAll(() => {
+                editor = renderRTE({
+                    quickToolbarSettings: {
+                        table: ['Tableheader', 'TableRemove', '|', 'TableRows', 'TableColumns', '|', 'Styles', 'BackgroundColor', 'Alignments', 'TableCellVerticalAlign']
+                    },
+                    value: EDITOR_CONTENT
+                });
+            });
+            afterAll(() => {
+                destroy(editor);
+            });
+            it("should change table quicktooolbar items dynamically", (done: DoneFn) => {
+                editor.focusIn();
+                editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                const target: HTMLElement = editor.inputElement.querySelector('td');
+                setCursorPoint(target.firstChild, 0);
+                target.dispatchEvent(MOUSEUP_EVENT);
+                setTimeout(() => {
+                    expect(editor.quickToolbarSettings.table.length).toBe(10);
+                    expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Table_Quick_Popup') >= 0).toBe(true);
+                    editor.inputElement.blur();
+                    editor.quickToolbarSettings.table = ['TableRemove', '|', 'TableRows', 'TableColumns', '|', 'Styles', 'BackgroundColor'];
+                    editor.dataBind();
+                    editor.focusIn();
+                    editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                    const target: HTMLElement = editor.inputElement.querySelector('td');
+                    setCursorPoint(target.firstChild, 0);
+                    target.dispatchEvent(MOUSEUP_EVENT);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Table_Quick_Popup') >= 0).toBe(true);
+                        expect(editor.quickToolbarSettings.table.length).toBe(7);
+                        expect(document.querySelectorAll('.e-table-quicktoolbar .e-toolbar-item').length === 7).toBe(true);
+                        editor.inputElement.blur();
+                        done();
+                    }, 100);
+                }, 100);
+            });
+        });
+        describe("982140 - Check with audio quick toolbar", () => {
+            let editor: RichTextEditor;
+            let innerHTML: string = `<p>testing&nbsp;<audio controls><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/mp3" /></audio><br></p>`;
+            beforeAll(() => {
+                editor = renderRTE({
+                    quickToolbarSettings: {
+                        audio: ['AudioLayoutOption', 'AudioReplace', 'AudioRemove'],
+                    },
+                    value: innerHTML
+                });
+            });
+            afterAll(() => {
+                destroy(editor);
+            });
+            it("should change audio quicktooolbar items dynamically", (done: DoneFn) => {
+                const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+                editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                let target = (editor.contentModule.getEditPanel() as HTMLElement).querySelector('.e-clickelem');
+                (editor as any).formatter.editorManager.nodeSelection.setSelectionNode(editor.contentModule.getDocument(), target);
+                editor.inputElement.querySelector('.e-clickelem').dispatchEvent(MOUSEUP_EVENT);
+                setTimeout(function () {
+                    let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                    expect(quickPop.querySelectorAll('.e-rte-quick-toolbar').length).toBe(1);
+                    expect(editor.quickToolbarSettings.audio.length).toBe(3)
+                    editor.focusIn();
+                    editor.quickToolbarSettings.audio = ['AudioReplace', 'AudioRemove'];
+                    editor.dataBind();
+                    editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                    let target = (editor.contentModule.getEditPanel() as HTMLElement).querySelector('.e-clickelem');
+                    (editor as any).formatter.editorManager.nodeSelection.setSelectionNode(editor.contentModule.getDocument(), target);
+                    editor.inputElement.querySelector('.e-clickelem').dispatchEvent(MOUSEUP_EVENT);
+                    setTimeout(function () {
+                        let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                        expect(quickPop.querySelectorAll('.e-rte-quick-toolbar').length).toBe(1);
+                        expect(editor.quickToolbarSettings.audio.length).toBe(2)
+                        expect(document.querySelectorAll('.e-audio-quicktoolbar .e-toolbar-item').length === 2).toBe(true);
+                        done();
+                    }, 100);
+                }, 100);
+            });
+        });
+    });
 });

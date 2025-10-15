@@ -71,6 +71,21 @@ export class SpellChecker {
 
     private textSearchResults: TextSearchResults;
 
+    private ignoreUppercaseInternal: boolean = false;
+    /**
+     * Gets a value indicating whether to ignore words written in uppercase during spell check.
+     */
+    public get ignoreUppercase(): boolean {
+        return this.ignoreUppercaseInternal;
+    }
+
+     /**
+     * Sets a value indicating whether to ignore words written in uppercase during spell check.
+     */
+    public set ignoreUppercase(value: boolean) {
+        this.ignoreUppercaseInternal = value;
+    }
+
     /**
      * Gets module name.
      */
@@ -1069,7 +1084,7 @@ export class SpellChecker {
                 {
                     word = word.replace(String.fromCharCode(160), ' ');
                 }
-                const spellCheckData: any = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
+                const spellCheckData: any = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord, IgnoreUppercase: this.ignoreUppercase };
                 const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'SpellCheck', headers: headers, timeout: 0, cancel: false, withCredentials: false };
                 headers = httprequestEventArgs.headers;
                 this.documentHelper.owner.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);

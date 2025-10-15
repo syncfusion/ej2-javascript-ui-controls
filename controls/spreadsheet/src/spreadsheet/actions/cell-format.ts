@@ -441,7 +441,7 @@ export class CellFormat {
             if (options.type === 'Clear Hyperlinks') {
                 this.parent.removeHyperlink(sheet.name + '!' + range);
             }
-            this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
+            this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type, isAction: args.isAction === true || args.isFromUpdateAction === false });
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
                 getSwapRange(getRangeIndexes(range)), false, false, false, options.type === 'Clear Hyperlinks' ? true : false, isImported(this.parent), !isClearAll,
                 null, true, null, isSelectAll);

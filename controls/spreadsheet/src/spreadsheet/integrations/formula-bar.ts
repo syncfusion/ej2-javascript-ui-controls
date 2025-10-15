@@ -127,6 +127,23 @@ export class FormulaBar {
         if (this.parent.isEdit) {
             const trgtElem: HTMLTextAreaElement = <HTMLTextAreaElement>e.target;
             if (trgtElem.classList.contains('e-formula-bar')) {
+                if (e.altKey && e.keyCode === 13) {
+                    const val: string = trgtElem.value;
+                    const selectionStart: number = trgtElem.selectionStart;
+                    const before: string = val.slice(0, selectionStart);
+                    const after: string = val.slice(trgtElem.selectionEnd);
+                    trgtElem.value = before + '\n';
+                    const maxScrollTop: number = Math.max(0, trgtElem.scrollHeight - trgtElem.clientHeight);
+                    trgtElem.value += after;
+                    const caret: number = before.length + 1;
+                    trgtElem.setSelectionRange(caret, caret);
+                    getUpdateUsingRaf(() => {
+                        const formulaBar: HTMLTextAreaElement = <HTMLTextAreaElement>document.activeElement;
+                        if (formulaBar.classList.contains('e-formula-bar')) {
+                            formulaBar.scrollTop = maxScrollTop;
+                        }
+                    });
+                }
                 const eventArg: { editedValue: string, action: string } = { action: 'getCurrentEditValue', editedValue: '' };
                 this.parent.notify(
                     editOperation, eventArg);

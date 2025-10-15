@@ -2396,7 +2396,7 @@ export class DialogEdit {
                     sDate = this.parent.dataOperation.checkStartDate(startDate);
                     eDate = this.parent.dateValidationModule.getDateFromFormat(sDate);
                     const dayEndTime: number = this.parent['getCurrentDayEndTime'](eDate);
-                    if (eDate.getHours() === 0 && dayEndTime !== 86400) {
+                    if (dayEndTime !== 86400 && eDate.getHours() === 0) {
                         this.parent.dateValidationModule.setTime(dayEndTime, eDate);
                     }
                     eDate = !isNullOrUndefined(taskFields.endDate) && !isNullOrUndefined(gridData) && gridData.length <= 0 ?
@@ -3478,6 +3478,7 @@ export class DialogEdit {
     }
 
     private updatePredecessorDropDownData(ganttData: IGanttData): void {
+        this.processedId.length = 0;
         let index: number = -1;
         const id: string = this.parent.viewType === 'ResourceView' ? ganttData.ganttProperties.taskId.toString()
             : ganttData.ganttProperties.rowUniqueID.toString();

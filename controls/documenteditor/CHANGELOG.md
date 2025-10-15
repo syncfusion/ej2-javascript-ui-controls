@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 31.2.2 (2025-10-15)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#757129` - handle the behaviour for 'in-front of text' Wrapping Style to Prevent Image Overlapping in Word Documents.
+- `#I768465` - Fixed style not appear on the list of the styles.
+- `#I758675` - Resolved custom font-size values not applying in ribbon mode.
+
+## 31.1.23 (2025-10-07)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I747636` - Fixed issue while inserting bookmark.
+- `#I769142` - Resolved `GetBookmark` method is not returning the `isafterpara` bookmark.
+- `#I759877` - Resolved the spell check issues with German words.
+- `#I770083` - Fixed Duplicate Page Numbers in Compared document.
+- `#I759877` - Resolved Alt text is not preserved on copy and paste.
+
 ## 31.1.22 (2025-10-01)
 
 ### DocumentEditor

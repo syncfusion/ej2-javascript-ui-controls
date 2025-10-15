@@ -1032,6 +1032,25 @@ describe('ListBox', () => {
             dragArgs.event = mouseEventArs; dragArgs.name = 'drop'; dragArgs.droppedElement = listItem[0];
             listObj.dragEnd(dragArgs);
         });
+
+        it('Simple: drag to disabled target keeps only No records found', () => {
+            // setup source and target
+            listObj = new ListBox({ dataSource: data, allowDragAndDrop: true, fields: { text: 'text', groupBy: 'icon' } }, elem);
+            listObj1 = new ListBox({ dataSource: [], allowDragAndDrop: false }, elem1);
+
+            // drag any item from source to target wrapper
+            const srcItem: any = listObj.list.querySelectorAll('.e-list-item')[0];
+            srcItem.classList.add('e-grabbed');
+            let dragArgs: any = { bindEvents: null, dragElement: srcItem, element: listObj.element, event: mouseEventArs, name: 'dragStart', target: srcItem };
+            listObj.triggerDragStart(dragArgs);
+            dragArgs = { element: listObj.element, event: mouseEventArs, name: 'drag', target: listObj1.element.parentElement };
+            listObj.triggerDrag(dragArgs);
+            dragArgs = { cancel: false, currentIndex: 0, droppedElement: srcItem, handled: false, helper: helper, name: 'beforeDrop', target: listObj1.element.parentElement, previousIndex: 0, element: listObj1.list };
+            listObj.beforeDragEnd(dragArgs);
+            dragArgs.event = mouseEventArs; dragArgs.name = 'drop'; dragArgs.droppedElement = listObj1.element.parentElement;
+            listObj.dragEnd(dragArgs);
+            expect(listObj1.ulElement.innerText).toEqual('No records found');
+        });
     });
 
     describe('Customer Reported Bug', () => {

@@ -208,7 +208,7 @@ export class Export {
                     this.axisCollection.push(null);
                 }
                 else {
-                    this.axisCollection = controls[i as number].getModuleName() === 'stockChart' ? (controls[i as number] as StockChart).chart.horizontalAxes : (controls[i as number] as Chart).horizontalAxes;
+                    this.axisCollection = controls[i as number].getModuleName() === 'stockChart' ? (controls[i as number] as StockChart).chart.horizontalAxes : (controls[i as number] as Chart).isTransposed ? (controls[i as number] as Chart).verticalAxes : (controls[i as number] as Chart).horizontalAxes;
                 }
                 //To get the number of columns for the excel.
                 requiredValues = this.getRequiredValues(isRangeNavigator);

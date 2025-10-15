@@ -396,6 +396,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private isDragEventPrevent: boolean;
     private isValueEmpty: boolean = false;
     private isPropChange: boolean = false;
+    private isRuleClicked: boolean = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private ddTree: any;
 
@@ -407,6 +408,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     @Event()
     public created: EmitType<Event>;
+
+    /**
+     * Triggers when the component is destroyed.
+     *
+     * @event destroyed
+     */
+    @Event()
+    public destroyed: EmitType<Object>;
+
     /**
      * Triggers when field, operator, value is change.
      *
@@ -1031,6 +1041,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             case target.className.indexOf('e-clone-rule-btn') > -1:
                 this.actionButton = target;
                 this.cloneRuleBtnClick = true;
+                this.isRuleClicked = true;
                 this.ruleClone(target);
                 break;
             case target.className.indexOf('e-lock-rule-btn') > -1:
@@ -1044,6 +1055,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             case target.className.indexOf('e-clone-grp-btn') > -1:
                 this.actionButton = target;
                 this.cloneGrpBtnClick = true;
+                this.isRuleClicked = true;
                 this.groupClone(closest(target, '.e-group-container'));
                 break;
             case target.className.indexOf('e-deletegroup') > -1:
@@ -1187,8 +1199,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 addClass([event.element.querySelector('li span.e-addgroup').parentElement], 'e-button-hide');
             }
         } else if (event.element.children[0].className.indexOf('e-addrule') > -1) {
+            this.isRuleClicked = true;
             this.addRuleElement(closest(target, '.e-group-container'), {});
         } else if (event.element.children[0].className.indexOf('e-addgroup') > -1) {
+            this.isRuleClicked = true;
             this.addGroupElement(true, closest(target, '.e-group-container'), '', true);
         }
     }
@@ -1374,6 +1388,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (!this.isImportRules) {
                 this.updateAddedRule(trgt, rule, newRule, isRlTmp, pId, this.enableSeparateConnector ? true : null);
             }
+            if (this.rule.condition === '' && (this.isRuleClicked || this.rule.rules.length > 1)) {
+                this.rule.condition = 'and';
+            }
+            this.isRuleClicked = false;
             const ruleCount: number = this.rule.rules.length;
             if (!column || (column && !column.ruleTemplate) || !rule.field) {
                 if (ruleCount > 20) {
@@ -4304,6 +4322,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
         this.isDestroy = false;
+        super.destroy();
     }
     /**
      * Adds single or multiple rules.

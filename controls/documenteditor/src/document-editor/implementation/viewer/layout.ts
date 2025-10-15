@@ -1724,6 +1724,18 @@ export class Layout {
             }
             paragraphWidget.width = area.width;
             paragraphWidget.y = area.y;
+             let floatElementHeight: number = 0;
+            if (this.viewer instanceof WebLayoutViewer && !isNullOrUndefined(paragraphWidget.previousWidget) && paragraphWidget.previousWidget instanceof ParagraphWidget && paragraphWidget.previousWidget.isEndsWithPageBreak && !paragraphWidget.previousWidget.isInsideTable && paragraphWidget.bodyWidget.floatingElements.length > 0) {
+                for (let i = 0; i < paragraphWidget.bodyWidget.floatingElements.length; i++) {
+                    if (floatElementHeight < (paragraphWidget.bodyWidget.floatingElements[i].height + paragraphWidget.bodyWidget.floatingElements[i].y)) {
+                        floatElementHeight = paragraphWidget.bodyWidget.floatingElements[i].height + paragraphWidget.bodyWidget.floatingElements[i].y;
+                    }
+                }
+                if (paragraphWidget.y < floatElementHeight) {
+                    paragraphWidget.y = floatElementHeight;
+                    area.y = floatElementHeight;
+                }
+            }
             paragraphWidget.clientX = undefined;
             if (paragraphWidget.hasOwnProperty('absoluteXPosition')) {
                 delete paragraphWidget['absoluteXPosition'];
@@ -6234,7 +6246,18 @@ export class Layout {
                 this.shiftFooterChildLocation(paragraphWidget.bodyWidget, this.viewer);
             }
         }
+        let floatElementHeight: number = paragraphWidget.y + paragraphWidget.height;
+        let shapeHeight: number = 0;
         if (viewer instanceof WebLayoutViewer && paragraphWidget.containerWidget instanceof BodyWidget) {
+            if (paragraphWidget.isEndsWithPageBreak && paragraphWidget.bodyWidget.floatingElements.length > 0 && !paragraphWidget.isInsideTable) {
+                for (let i = 0; i < paragraphWidget.bodyWidget.floatingElements.length; i++) {
+                    if (floatElementHeight < (paragraphWidget.bodyWidget.floatingElements[i].height + paragraphWidget.bodyWidget.floatingElements[i].y)) {
+                        floatElementHeight = paragraphWidget.bodyWidget.floatingElements[i].height + paragraphWidget.bodyWidget.floatingElements[i].y;
+                        shapeHeight = ((paragraphWidget.bodyWidget.floatingElements[i].height + paragraphWidget.bodyWidget.floatingElements[i].y) - (paragraphWidget.y + paragraphWidget.height));
+                    }
+                }
+            }
+            paragraphWidget.containerWidget.height += shapeHeight;
             paragraphWidget.containerWidget.height += paragraphWidget.height;
         }
         

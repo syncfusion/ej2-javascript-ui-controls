@@ -18202,23 +18202,26 @@ export class Editor {
             list = undefined;
         }
         if (isNullOrUndefined(list)) {
-            while (!isNullOrUndefined(currentParagraph.previousWidget) && currentParagraph.previousWidget instanceof ParagraphWidget
-                && currentParagraph.previousWidget.isEmpty() && currentParagraph.previousWidget.paragraphFormat.listFormat.listId === -1) {
-                currentParagraph = currentParagraph.previousWidget;
+            let isUpdated: boolean = false;
+            let prevParagraph: ParagraphWidget = selection.getPreviousParagraphBlock(currentParagraph) as ParagraphWidget;
+            while (!isNullOrUndefined(prevParagraph) && prevParagraph instanceof ParagraphWidget) {
+                if (prevParagraph.paragraphFormat.listFormat && prevParagraph.paragraphFormat.listFormat.listId !== -1) {
+                    currentParagraph = prevParagraph;
+                    isUpdated = true;
+                    break;
+                }
+                prevParagraph = selection.getPreviousParagraphBlock(prevParagraph, true) as ParagraphWidget;
             }
-            if (currentParagraph.previousWidget && currentParagraph.previousWidget instanceof ParagraphWidget
-                && currentParagraph.previousWidget.paragraphFormat.listFormat.listId !== -1) {
-                let isUpdated: boolean = false;
+            if (isUpdated) {
                 while (!isNullOrUndefined(currentParagraph.previousWidget) && currentParagraph.previousWidget instanceof ParagraphWidget
                     && currentParagraph.previousWidget.paragraphFormat.listFormat.listId !== -1 && start.paragraph.paragraphFormat.firstLineIndent < Math.abs(currentParagraph.previousWidget.paragraphFormat.firstLineIndent)) {
                     currentParagraph = currentParagraph.previousWidget;
-                    isUpdated = true;
-                }
-                if (!isUpdated) {
-                    currentParagraph = currentParagraph.previousWidget as ParagraphWidget;
                 }
                 list = this.documentHelper.getListById(currentParagraph.paragraphFormat.listFormat.listId);
                 isUpdate = true;
+                if (list.levelOverrides.length > 0) {
+                    list = undefined;
+                }
             }
             if (!isUpdate) {
                 while (!isNullOrUndefined(currentParagraph.nextWidget) && currentParagraph.nextWidget instanceof ParagraphWidget
@@ -22032,7 +22035,7 @@ export class Editor {
             this.selection.end.setPositionParagraph(bookmarkEnd.line, bookmarkEnd.line.getOffset(bookmarkEnd, bookmarkEnd.length) - 1);
             this.initHistory('DeleteBookmark');
             this.selection.selectPosition(start, end);
-            if (this.editorHistory) {
+            if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
                 this.editorHistory.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Marker_Start;
                 this.editorHistory.currentBaseHistoryInfo.markerData.push({bookmarkName: bookmarkName});
                 this.editorHistory.currentBaseHistoryInfo.setBookmarkInfo(bookmark);

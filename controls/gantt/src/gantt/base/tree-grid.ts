@@ -816,7 +816,15 @@ export class GanttTreeGrid {
                 if (column.field === 'WBSCode' || column.field === 'WBSPredecessor') {
                     column.clipMode = 'EllipsisWithTooltip';
                 }
-                column.editType = column.editType ? column.editType : 'stringedit';
+                if (column.editType === undefined) {
+                    if (column.type === 'date') {
+                        column.editType = 'datepickeredit';
+                    } else if (column.type === 'datetime') {
+                        column.editType = 'datetimepickeredit';
+                    } else {
+                        column.editType = 'stringedit';
+                    }
+                }
                 column.type = column.type ? column.type : 'string';
                 if (column.type === 'checkbox') {
                     this.parent.selectionSettings.type = 'Multiple';
@@ -1296,6 +1304,19 @@ export class GanttTreeGrid {
         const treeGridColumn: ColumnModel = {}; const ganttColumn: GanttColumnModel = {};
         for (const prop of Object.keys(newGanttColumn)) {
             treeGridColumn[prop as string] = ganttColumn[prop as string] = newGanttColumn[prop as string];
+        }
+        const templateProps: string[] = [
+            'template',
+            'editTemplate',
+            'filterTemplate',
+            'filter_itemTemplate',
+            'headerTemplate',
+            'formatter'
+        ];
+        for (const prop of templateProps) {
+            if (prop in newGanttColumn && newGanttColumn[prop as string] != null) {
+                treeGridColumn[prop as string] = ganttColumn[prop as string] = newGanttColumn[prop as string];
+            }
         }
         if (ganttColumn.field === this.parent.taskFields.constraintDate) {
             if (!('type' in ganttColumn)) {

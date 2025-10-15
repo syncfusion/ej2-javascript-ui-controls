@@ -6496,6 +6496,41 @@ describe('QueryBuilder', () => {
             done();
         });
     });
+    describe('Customer bug #902507', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+                remove(queryBuilder.element);
+            }
+        });
+        it('Initial rule condition is not updated when adding a rule', () => {
+            const columns = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' }
+            ];
+            const importRules: RuleModel = {
+                condition: '',
+                rules: []
+            };
+            queryBuilder = new QueryBuilder({
+                columns: columns,
+                rule: importRules,
+                showButtons: {
+                    cloneGroup: true,
+                    cloneRule: true
+                }
+            });
+            queryBuilder.appendTo('#querybuilder');
+            const addBtn: HTMLElement = select('.e-add-btn', queryBuilder.element) as HTMLElement;
+            addBtn.click();
+            (selectAll('.e-dropdown-popup .e-item', document.body)[1] as HTMLElement).click();
+            const rules = queryBuilder.getRules();
+            expect(rules.condition).toEqual('and');
+        });
+    });
     describe('Data Manager', () => {
         const data: DataManager = new DataManager({
             url: 'https://services.syncfusion.com/js/production/api/orders',

@@ -111,7 +111,9 @@ export class EmojiPicker {
         } else if (this.parent.inlineMode.enable) {
             spanElement = this.parent.element.ownerDocument.querySelector('.e-emoji');
         }
-        this.divElement = spanElement.closest('div');
+        if (!isNOU(spanElement)) {
+            this.divElement = spanElement.closest('div');
+        }
         if (!(this.parent.inputElement.contains(this.parent.formatter.editorManager.nodeSelection.
             getRange(this.parent.contentModule.getDocument()).startContainer))) {
             (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
@@ -122,7 +124,7 @@ export class EmojiPicker {
         this.clickEvent = (args as NotifyArgs).args as ClickEventArgs;
         const emojiPicker: EmojiIconsSet[] = this.parent.emojiPickerSettings.iconsSet;
         if (this.popupObj) {
-            removeClass([this.divElement], 'e-active');
+            this.removeActiveClass();
             if (this.popupObj.element.querySelector('.e-rte-emoji-search') || !this.parent.emojiPickerSettings.showSearchBox) {
                 this.popupObj.hide();
                 return;
@@ -197,8 +199,10 @@ export class EmojiPicker {
                 this.popupObj.element.parentElement.style.zIndex = '';
                 detach(this.popupObj.element);
                 this.popupObj = null;
-                const activeElement: HTMLElement = this.divElement.firstChild as HTMLElement;
-                activeElement.focus();
+                if (this.divElement) {
+                    const activeElement: HTMLElement = this.divElement.firstChild as HTMLElement;
+                    activeElement.focus();
+                }
             }
         });
         this.isPopupDestroyed = false;
@@ -297,8 +301,14 @@ export class EmojiPicker {
         if (scrollTop < toolbarName[0].offsetHeight) {
             addClass([toolbarName[0]], 'e-selected');
         }
-        if (this.popupObj) {
+        if (this.popupObj && this.divElement) {
             addClass([this.divElement], 'e-active');
+        }
+    }
+
+    private removeActiveClass(): void {
+        if (this.divElement) {
+            removeClass([this.divElement], 'e-active');
         }
     }
 
@@ -353,7 +363,7 @@ export class EmojiPicker {
 
     private onIframeMouseDown(): void {
         if (this.popupObj) {
-            removeClass([this.divElement], 'e-active');
+            this.removeActiveClass();
             this.popupObj.hide();
         }
     }
@@ -368,7 +378,7 @@ export class EmojiPicker {
         if (target && target.classList && ((this.popupObj && !closest(target, '[id=' + '\'' + this.popupObj.element.id + '\'' + ']')))
             && (!target.classList.contains('e-emoji') && !target.classList.contains('e-toolbar-item'))) {
             if (this.popupObj) {
-                removeClass([this.divElement], 'e-active');
+                this.removeActiveClass();
                 this.popupObj.hide();
             }
         }
@@ -409,7 +419,7 @@ export class EmojiPicker {
 
     private contentscroll(): void {
         if (isNOU(this.clickEvent) && this.popupObj) {
-            removeClass([this.divElement], 'e-active');
+            this.removeActiveClass();
             this.popupObj.hide();
             return;
         }
@@ -463,7 +473,7 @@ export class EmojiPicker {
         const searchKeyHandler: HTMLElement = this.parent.element.querySelector('.e-rte-emojisearch-btn button');
         if (e.keyCode === 27) {
             if (this.popupObj) {
-                removeClass([this.divElement], 'e-active');
+                this.removeActiveClass();
                 this.popupObj.hide();
             }
         }
@@ -798,7 +808,7 @@ export class EmojiPicker {
                     }
                     if (this.noResultsFoundCount >= 9) {
                         if (!isNOU(this.popupObj)) {
-                            removeClass([this.divElement], 'e-active');
+                            this.removeActiveClass();
                             this.popupObj.hide();
                             this.noResultsFoundCount = 0;
                             return;
@@ -835,7 +845,7 @@ export class EmojiPicker {
             this.save.restore();
         }
         if (this.popupObj) {
-            removeClass([this.divElement], 'e-active');
+            this.removeActiveClass();
             this.popupObj.hide();
         }
         if (this.parent.userAgentData.isSafari() && e.type === 'keydown') {
@@ -871,11 +881,11 @@ export class EmojiPicker {
             this.parent.showEmojiPicker(coordinates.left, coordinates.top);
         }
         if (originalEvent.keyCode === 8 && colon && this.popupObj) {
-            removeClass([this.divElement], 'e-active');
+            this.removeActiveClass();
             this.popupObj.hide();
         }
         if (originalEvent.keyCode === 32 && isPrevColon && this.popupObj) {
-            removeClass([this.divElement], 'e-active');
+            this.removeActiveClass();
             const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
                 this.parent.contentModule.getDocument();
             if (this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {

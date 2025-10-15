@@ -54,6 +54,17 @@ export class StylesHelper {
 
             // Add remaining styles
             StylesHelper.addRemainingStyles(styles, paragraphStyles, linkedStyles, addedStylesMap);
+
+            //Add character styles
+            for (const linkedStyle of linkedStyles) {
+                for (const charStyle of characterStyles) {
+                    if (linkedStyle['StyleName'] + ' Char' === charStyle['StyleName']) {
+                        characterStyles.splice(characterStyles.indexOf(charStyle), 1);
+                        break;
+                    }
+                }
+            }
+            StylesHelper.addRemainingStyles(styles, characterStyles, linkedStyles, addedStylesMap);
         }
 
         // If no styles found, provide some defaults

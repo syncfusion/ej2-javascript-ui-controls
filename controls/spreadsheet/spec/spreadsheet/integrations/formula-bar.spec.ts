@@ -1,8 +1,8 @@
 import { SpreadsheetModel, Spreadsheet } from '../../../src/spreadsheet/index';
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { DefineNameModel, SheetModel } from '../../../src';
-import { getRangeAddress } from "../../../src/index";
+import { CellModel, DefineNameModel, getCell, SheetModel } from '../../../src/index';
+import { getRangeAddress } from '../../../src/index';
 import { getComponent } from '@syncfusion/ej2-base';
 
 
@@ -314,7 +314,7 @@ describe('Spreadsheet formula bar module ->', () => {
     });
 
     describe('CR-issues->', () => {
-        describe('EJ2-50374, EJ2-54291,EJ2-55782,EJ2-980749->', () => {
+        describe('EJ2-50374, EJ2-54291,EJ2-55782,EJ2-980749,EJ2-980683->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }],
@@ -378,6 +378,28 @@ describe('Spreadsheet formula bar module ->', () => {
                     expect(editorElem.value).not.toBe('Casual Shoes');
                     expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('l Shoes');
                     done();
+                });
+            });
+            it('EJ2-980683 - Alt + Enter retains focus and inserts newline in formula bar', (done: Function) => {
+                helper.invoke('selectRange', ['B1']);
+                const formulaBar: HTMLTextAreaElement = <HTMLTextAreaElement>helper.getElementFromSpreadsheet('.e-formula-bar-panel .e-formula-bar');
+                const coords: DOMRect = <DOMRect>formulaBar.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: coords.x, y: coords.y }, null, formulaBar);
+                helper.triggerMouseAction('mouseup', { x: coords.x, y: coords.y }, null, formulaBar);
+                helper.triggerMouseAction('click', { x: coords.x, y: coords.y }, null, formulaBar);
+                formulaBar.focus();
+                setTimeout((): void => {
+                    formulaBar.value = 'Default Date';
+                    formulaBar.setSelectionRange(formulaBar.value.length, formulaBar.value.length);
+                    formulaBar.dispatchEvent(new Event('input'));
+                    helper.triggerKeyNativeEvent(13, false, false, null, 'keyup', true, formulaBar);
+                    setTimeout((): void => {
+                        const cell: CellModel = getCell(0, 1, helper.invoke('getActiveSheet'));
+                        expect(cell.value).toBe('Date');
+                        helper.invoke('endEdit');
+                        expect(cell.value).toBe('Default Date\n');
+                        done();
+                    });
                 });
             });
         });

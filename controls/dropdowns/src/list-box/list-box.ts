@@ -899,7 +899,7 @@ export class ListBox extends DropDownBase {
         const targetListObj: ListBox = this.getComponent(args.target);
         if (targetListObj && targetListObj.listData.length === 0) {
             const noRecElem: Element = targetListObj.ulElement.childNodes[0] as Element;
-            if (noRecElem) {
+            if (noRecElem && targetListObj.allowDragAndDrop) {
                 targetListObj.ulElement.removeChild(noRecElem);
             }
         }

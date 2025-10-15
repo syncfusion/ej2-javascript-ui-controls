@@ -4280,7 +4280,7 @@
       line-height: normal;
     }
   }
-  .e-grid.sf-grid.e-grid-min-height .e-virtualtable {
+  .e-grid.sf-grid .e-virtualtable:has(tr.e-masked-row) {
     /* stylelint-disable declaration-no-important */
     .e-table {
       border-spacing: 0 !important;
@@ -4289,6 +4289,19 @@
   
     .e-rowcell {
       line-height: 1;
+    }
+  }
+}
+/* stylelint-enable function-url-quotes */
+
+/* Apply styles for Safari on macOS desktop and other Apple devices */
+/* stylelint-disable function-url-quotes */
+@supports (font: -apple-system-body) {
+  .e-grid.sf-grid .e-virtualtable:has(tr.e-masked-row) {
+
+    /* stylelint-disable declaration-no-important */
+    .e-table {
+      border-spacing: 0 !important;
     }
   }
 }
