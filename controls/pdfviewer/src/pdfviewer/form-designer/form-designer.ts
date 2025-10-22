@@ -70,6 +70,8 @@ export class FormDesigner {
     private formFieldStrikeOut: string;
     private formFieldAlign: string;
     private fontColorValue: string;
+    private formFieldListItemName: TextBox;
+    private formFieldExportValueBox: TextBox;
     private backgroundColorValue: string;
     private borderColorValue: string;
     private formFieldBorderWidth: string;
@@ -5609,7 +5611,9 @@ export class FormDesigner {
         if (ulItem && ulItem.children && ulItem.children.length > 0) {
             for (let i: number = 0; i < ulItem.children.length; i++) {
                 const liItem: Element = ulItem.children[parseInt(i.toString(), 10)];
-                this.formFieldListItemDataSource.push({ itemName: liItem.innerHTML, itemValue: liItem.innerHTML });
+                const name: string = (liItem.textContent || '').trim();
+                const value: string = (liItem.getAttribute('data-value') || name).trim();
+                this.formFieldListItemDataSource.push({ itemName: name, itemValue: value });
             }
         } else if (selectedItem && selectedItem.options.length > 0) {
             this.formFieldListItemDataSource = selectedItem.options;
@@ -7152,18 +7156,18 @@ export class FormDesigner {
         formFieldListItemContainer.setAttribute('aria-label', 'Item Name');
         formFieldListItemContainer.addEventListener('keyup', (args: KeyboardEvent) => {
             this.formFieldAddButton.disabled = true;
-            this.formFieldListItem.value = (args.target as any).value;
-            if (args.target && (args.target as any).value) {
+            const nameText: string = (args.target as HTMLInputElement).value;
+            this.formFieldListItemName.value = nameText;
+            if (this.formFieldExportValueBox) {
+                this.formFieldExportValueBox.value = nameText;
+            }
+            if (nameText) {
                 if (this.formFieldListItemCollection.length > 0) {
+                    let exists: boolean = false;
                     for (let i: number = 0; i < this.formFieldListItemCollection.length; i++) {
-                        const itemName: string = this.formFieldListItemCollection[parseInt(i.toString(), 10)];
-                        if (itemName === (args.target as any).value) {
-                            this.formFieldAddButton.disabled = true;
-                            break;
-                        } else {
-                            this.formFieldAddButton.disabled = false;
-                        }
+                        if (this.formFieldListItemCollection[i as number] === nameText) { exists = true; break; }
                     }
+                    this.formFieldAddButton.disabled = exists;
                 } else {
                     this.formFieldAddButton.disabled = false;
                 }
@@ -7171,7 +7175,7 @@ export class FormDesigner {
         });
         formFieldListItemDiv.appendChild(formFieldListItemContainer);
         formFieldListItemMainDiv.appendChild(formFieldListItemDiv);
-        this.formFieldListItem = new TextBox({ type: 'text', cssClass: 'e-pv-properties-formfield-listitem' }, (formFieldListItemContainer as HTMLInputElement));
+        this.formFieldListItemName = new TextBox({ type: 'text', cssClass: 'e-pv-properties-formfield-listitem' }, formFieldListItemContainer as HTMLInputElement);
         listItemAddContainer.appendChild(formFieldListItemMainDiv);
         optionPropertiesDiv.appendChild(listItemAddContainer);
         const buttonDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-list-btn-div' });
@@ -7188,7 +7192,7 @@ export class FormDesigner {
         formFieldExportItemContainer.setAttribute('aria-label', 'Item Value');
         formFieldExportItemDiv.appendChild(formFieldExportItemContainer);
         formFieldexportValueMainDiv.appendChild(formFieldExportItemDiv);
-        this.formFieldListItem = new TextBox({ type: 'text', cssClass: 'e-pv-properties-formfield-exportvalue' }, (formFieldExportItemContainer as HTMLInputElement));
+        this.formFieldExportValueBox = new TextBox({ type: 'text', cssClass: 'e-pv-properties-formfield-exportvalue' }, formFieldExportItemContainer as HTMLInputElement);
         exportValueContainer.appendChild(formFieldexportValueMainDiv);
         optionPropertiesDiv.appendChild(exportValueContainer);
         const dropdownListItemContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-option-dropdown-list-div' });
@@ -7232,8 +7236,10 @@ export class FormDesigner {
     }
 
     private addListItemOnClick(): void {
-        const dropdownValue: string = this.formFieldListItem.value;
-        this.formFieldListItemCollection.push(dropdownValue);
+        const itemName: string = (this.formFieldListItemName && this.formFieldListItemName.value || '').trim();
+        const itemValue: string = (this.formFieldExportValueBox && this.formFieldExportValueBox.value || itemName).trim();
+        if (!itemName) { return; }
+        this.formFieldListItemCollection.push(itemName);
         const ulElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_ul_list_item');
         if (ulElement.children && ulElement.children.length > 0) {
             for (let i: number = 0; i < ulElement.children.length; i++) {
@@ -7245,7 +7251,8 @@ export class FormDesigner {
         }
         const createLiElement: HTMLElement = createElement('li', { className: 'e-pv-formfield-li-element' });
         createLiElement.addEventListener('click', this.listItemOnClick.bind(this));
-        createLiElement.innerHTML = dropdownValue;
+        createLiElement.innerHTML = itemName;
+        createLiElement.setAttribute('data-value', itemValue);
         createLiElement.classList.add('e-pv-li-select');
         ulElement.appendChild(createLiElement);
         this.formFieldDeleteButton.disabled = false;
@@ -7371,17 +7378,14 @@ export class FormDesigner {
         if (selectedElement) {
             if (selectedElement.options && selectedElement.options.length > 0) {
                 for (let i: number = 0; i < selectedElement.options.length; i++) {
-                    const dropdownValue: string = selectedElement.options[parseInt(i.toString(), 10)].itemName;
-                    if (this.formFieldListItemCollection[parseInt(i.toString(), 10)] !==
-                    selectedElement.options[parseInt(i.toString(), 10)].itemName) {
-                        this.formFieldListItemCollection.push(dropdownValue);
-                        const createLiElement: HTMLElement = createElement('li', { className: 'e-pv-formfield-li-element' });
-                        createLiElement.addEventListener('click', this.listItemOnClick.bind(this));
-                        createLiElement.addEventListener('focus', this.focusFormFields.bind(this));
-                        createLiElement.addEventListener('blur', this.blurFormFields.bind(this));
-                        createLiElement.innerHTML = dropdownValue;
-                        ulElement.appendChild(createLiElement);
-                    }
+                    const opt: any = selectedElement.options[parseInt(i.toString(), 10)];
+                    const createLiElement: HTMLElement = createElement('li', { className: 'e-pv-formfield-li-element' });
+                    createLiElement.addEventListener('click', this.listItemOnClick.bind(this));
+                    createLiElement.addEventListener('focus', this.focusFormFields.bind(this));
+                    createLiElement.addEventListener('blur', this.blurFormFields.bind(this));
+                    createLiElement.innerHTML = opt.itemName;
+                    createLiElement.setAttribute('data-value', opt.itemValue);
+                    ulElement.appendChild(createLiElement);
                 }
                 ulElement.children[ulElement.children.length - 1].classList.add('e-pv-li-select');
             }

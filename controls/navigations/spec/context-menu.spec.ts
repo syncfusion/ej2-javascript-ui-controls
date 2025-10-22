@@ -1569,7 +1569,7 @@ describe('ContextMenu', () => {
             expect(liElements[0].innerHTML).toEqual("JavaScript");
             (contextMenu as any).isReact = false;
         });
-
+        
         it('Changing the context menu template dynamically', (done) => {
             const items = [
                 { text: 'JavaScript' },

@@ -944,6 +944,9 @@ export class ContentRender implements IRenderer {
             }
             this.parent.invokedFromMedia = false;
         }
+        if (gObj.gridLines === 'Both' || gObj.gridLines === 'Vertical') {
+            needFullRefresh = true;
+        }
         if (needFullRefresh) {
             this.refreshContentRows({ requestType: 'refresh' });
         } else {

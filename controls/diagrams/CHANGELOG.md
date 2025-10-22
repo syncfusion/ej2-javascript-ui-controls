@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 31.2.2 (2025-10-15)
+## 31.2.3 (2025-10-22)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I771011` - Child nodes are now positioned correctly when dropped inside a nested container.
+- `#I771107` - Tooltips are now displayed correctly for Swimlane children.
+- `#I739181` - The issue "Nodes Overlap in Organizational Chart Layout with Multiple Roots" has been fixed.
+
+## 31.1.22 (2025-10-01)
 
 ### Diagram
 

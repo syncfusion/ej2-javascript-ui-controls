@@ -336,6 +336,15 @@ export class GanttTreeGrid {
                 document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
             }
         }
+        this.parent.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
+        if  (this.parent.showOverAllocation) {
+            this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+        }
+        if (!this.parent.enableVirtualization) {
+            this.parent.updateContentHeight();
+        }
+        this.parent.ganttChartModule.updateWidthAndHeight();
+        this.parent.ganttChartModule.reRenderConnectorLines();
         this.parent['hideLoadingIndicator']();
         this.parent.trigger('collapsed', args);
     }
@@ -361,6 +370,15 @@ export class GanttTreeGrid {
                 document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
             }
         }
+        this.parent.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
+        if  (this.parent.showOverAllocation) {
+            this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+        }
+        if (!this.parent.enableVirtualization) {
+            this.parent.updateContentHeight();
+        }
+        this.parent.ganttChartModule.updateWidthAndHeight();
+        this.parent.ganttChartModule.reRenderConnectorLines();
         this.parent['hideLoadingIndicator']();
         this.parent.isCollapseAll = false;
         this.parent.trigger('expanded', args);

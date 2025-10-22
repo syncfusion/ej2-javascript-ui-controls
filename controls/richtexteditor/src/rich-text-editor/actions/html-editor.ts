@@ -717,7 +717,13 @@ export class HtmlEditor {
                             cursorpointer
                         );
                     }
-                    currentElement.parentNode.removeChild(currentElement);
+                    let currentParent: Node = currentElement.parentNode;
+                    currentParent.removeChild(currentElement);
+                    while (!currentParent.hasChildNodes() && currentParent.textContent === '') {
+                        const tempParent: Node = currentParent.parentNode;
+                        currentParent.parentNode.removeChild(currentParent);
+                        currentParent = tempParent;
+                    }
                     (e.args as KeyboardEventArgs).preventDefault();
                 } else {
                     prevSibling.parentNode.removeChild(prevSibling);

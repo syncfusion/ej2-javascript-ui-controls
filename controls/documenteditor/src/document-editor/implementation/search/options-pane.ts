@@ -1026,7 +1026,7 @@ export class OptionsPane {
         let inputElement: any = this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_option_search_text_box');
         /* eslint-enable @typescript-eslint/no-explicit-any */
         let text: string = inputElement.value;
-        if (text === '') {
+        if (text === '' || this.documentHelper.isDocumentLoadAsynchronously) {
             return;
         }
         this.hideMatchDiv();

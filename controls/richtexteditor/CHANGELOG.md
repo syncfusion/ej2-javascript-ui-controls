@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I762935` - Now, list elements seamlessly adopt the appropriate styling properties when a list is applied.
+
+- `#I762396` - Now, when using backspace on a list pasted from Outlook into the Rich Text Editor, the entire list is correctly removed as expected.
+
+- `#I775016` - Now, text dragged into the Rich Text Editor is correctly tracked in the undo and redo history.
+
 ## 31.2.2 (2025-10-15)
 
 ### RichTextEditor

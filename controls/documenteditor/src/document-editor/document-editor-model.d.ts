@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit, Base, updateCSSText } from '@syncfusion/ej2-base';import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';import { Save } from '@syncfusion/ej2-file-utils';import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend } from './index';import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';import { Print, SearchResultsChangeEventArgs, SelectionWidgetInfo, Dictionary, ElementBox } from './index';import { Page, BodyWidget, ParagraphWidget } from './index';import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';import { SfdtReader } from './index';import { Selection } from './index';import { TextPosition } from './index';import { Editor, EditorHistory } from './index';import { WStyles } from './index';import { HeaderFooters } from './index';import { Search } from './index';import { OptionsPane } from './index';import { XmlPane } from './index';import { WordExport } from './index';import { TextExport } from './index';import { FormatType, PageFitType, DialogType, FormattingExceptions, CompatibilityMode } from './index';import { ContextMenu } from './index';import { ImageResizer } from './index';import { SfdtExport } from './index';import { HyperlinkDialog, TableDialog, BookmarkDialog, StylesDialog, TableOfContentsDialog } from './index';import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog } from './index';import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';import { SpellChecker } from './implementation/spell-check/spell-checker';import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';import { PasteOptions } from './index';import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo } from './implementation/index';import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';import { Revision, RevisionCollection } from './implementation/track-changes/track-changes';import { NotesDialog } from './implementation/dialogs/notes-dialog';import { CommentElementBox, ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange, documentLoadFailedEvent, beforecontentControlFillEvent, aftercontentControlFillEvent } from './base/constants';import { Optimized, Regular, HelperMethods } from './index';import { ColumnsDialog } from './implementation/dialogs/columns-dialog';import { DocumentCanvasElement } from './implementation/viewer/document-canvas';import { ZipArchiveItem, ZipArchive } from '@syncfusion/ej2-compression';import { Ruler } from './implementation/ruler/index';import { TabDialog } from './implementation/dialogs/tab-dialog';import { RulerHelper } from './implementation/utility/dom-util';import { ColorPickerModel } from '@syncfusion/ej2-inputs';import { MentionModel } from '@syncfusion/ej2-dropdowns';import { DatePickerDialog } from './implementation/dialogs/datepicker-dialog';import { ContentControlPropertiesDialog } from './implementation/dialogs/content-control-properties-dialog';import { PicContentControlDialog } from './implementation/dialogs/pic-contentControl-dialog';import { DialogUtility, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { BeforePasteEventArgs, Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs } from './base/events-helper';import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit, Base, updateCSSText } from '@syncfusion/ej2-base';import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';import { Save } from '@syncfusion/ej2-file-utils';import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend, asyncPagesVisible } from './index';import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';import { Print, SearchResultsChangeEventArgs, SelectionWidgetInfo, Dictionary, ElementBox } from './index';import { Page, BodyWidget, ParagraphWidget } from './index';import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';import { SfdtReader } from './index';import { Selection } from './index';import { TextPosition } from './index';import { Editor, EditorHistory } from './index';import { WStyles } from './index';import { HeaderFooters } from './index';import { Search } from './index';import { OptionsPane } from './index';import { XmlPane } from './index';import { WordExport } from './index';import { TextExport } from './index';import { FormatType, PageFitType, DialogType, FormattingExceptions, CompatibilityMode } from './index';import { ContextMenu } from './index';import { ImageResizer } from './index';import { SfdtExport } from './index';import { HyperlinkDialog, TableDialog, BookmarkDialog, StylesDialog, TableOfContentsDialog } from './index';import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog } from './index';import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';import { SpellChecker } from './implementation/spell-check/spell-checker';import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';import { PasteOptions } from './index';import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo } from './implementation/index';import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';import { Revision, RevisionCollection } from './implementation/track-changes/track-changes';import { NotesDialog } from './implementation/dialogs/notes-dialog';import { CommentElementBox, ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange, documentLoadFailedEvent, beforecontentControlFillEvent, aftercontentControlFillEvent } from './base/constants';import { Optimized, Regular, HelperMethods } from './index';import { ColumnsDialog } from './implementation/dialogs/columns-dialog';import { DocumentCanvasElement } from './implementation/viewer/document-canvas';import { ZipArchiveItem, ZipArchive } from '@syncfusion/ej2-compression';import { Ruler } from './implementation/ruler/index';import { TabDialog } from './implementation/dialogs/tab-dialog';import { RulerHelper } from './implementation/utility/dom-util';import { ColorPickerModel } from '@syncfusion/ej2-inputs';import { MentionModel } from '@syncfusion/ej2-dropdowns';import { DatePickerDialog } from './implementation/dialogs/datepicker-dialog';import { ContentControlPropertiesDialog } from './implementation/dialogs/content-control-properties-dialog';import { PicContentControlDialog } from './implementation/dialogs/pic-contentControl-dialog';import { DialogUtility, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { BeforePasteEventArgs, Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs } from './base/events-helper';import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -42,6 +42,11 @@ export interface DocumentEditorSettingsModel {
      * Specified the auto resize settings.
      */
     autoResizeSettings?: AutoResizeSettingsModel;
+
+    /**
+     * Gets or sets the asynchronous loading settings for the document.
+     */
+    openAsyncSettings?: OpenAsyncSettingsModel;
 
     /**
      * Gets ot sets the collaborative editing settings.
@@ -222,6 +227,46 @@ export interface RevisionSettingsModel {
      *
      */
     showCustomDataWithAuthor?: boolean;
+
+}
+
+/**
+ * Interface for a class OpenAsyncSettings
+ */
+export interface OpenAsyncSettingsModel {
+
+    /**
+     * Gets or sets a value indicating whether to enable asynchronous page loading.
+     *
+     * @default false
+     *
+     * @remarks
+     * This property is intended for UI interaction scenarios (document opening through the UI) only.
+     * It does not affect the behavior of the `openAsync` API, which controls asynchronous
+     * document loading at the API level.
+     *
+     * When asynchronous loading is in progress, user interactions with the document
+     * are restricted until the required pages are fully loaded.
+     *
+     * @returns {boolean}
+     */
+    enable?: boolean;
+
+    /**
+     * Gets or sets the number of pages to be loaded initially during asynchronous document loading operation.
+     *
+     * @default 5
+     * @returns {number}
+     */
+    initialPageLoadCount?: number;
+
+    /**
+     * Gets or sets the number of pages to be incrementally loaded after initial pages loaded, during asynchronous document loading operation.
+     *
+     * @default 3
+     * @returns {number}
+     */
+    incrementalPageLoadCount?: number;
 
 }
 
@@ -858,6 +903,12 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers when SFDT is failed to load in the document editor
      */
     documentLoadFailed?: EmitType<DocumentLoadFailedEventArgs>;
+
+    /**
+     * @private
+     * Triggers when pages loads asynchronously in the document editor
+     */
+    asyncPagesVisible?: EmitType<void>;
 
 }
 

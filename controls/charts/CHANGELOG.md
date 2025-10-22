@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I771969` - Now, no extra space will be created on multilevel labels when the text width is reduced.
+- `#I770538` - Axis label colors were updated for dark and high-contrast themes to improve visibility.
+- `#I774667` - The console error will no longer occur when hovering over the trendline legend text.
+
+#### Breaking Changes
+
+- The axis label color was updated to `#FFFFFFE6` for the dark theme and `#FFFFFF` for the high contrast theme.
+
 ## 31.2.2 (2025-10-15)
 
 ### Chart

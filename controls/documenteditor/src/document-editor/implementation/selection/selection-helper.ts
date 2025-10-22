@@ -192,7 +192,11 @@ export class TextPosition {
             position.index = position.index.substring(index).replace(';', '');
         }
         index = parseInt(newValue, 10);
-        page = this.documentHelper.pages[index];
+        if (this.documentHelper.owner.enableLayout) {
+            page = this.documentHelper.pages[index];
+        } else {
+            page = this.documentHelper.pages[0];
+        }
         return page;
     }
     /**
@@ -202,14 +206,17 @@ export class TextPosition {
         if (isNullOrUndefined(position.index)) {
             return undefined;
         }
+        let index: number = position.index.indexOf(';');
+        let sectionIndex: string = '0';
+        sectionIndex = position.index.substring(0, index);
         const page: Page = this.getPage(position);
-        const child: LineWidget = this.getLineWidget(undefined, position, page);
+        const child: LineWidget = this.getLineWidget(undefined, position, page, sectionIndex);
         return child;
     }
     /**
      * @private
      */
-    public getLineWidget(widget: Widget, position: IndexInfo, page?: Page): LineWidget {
+    public getLineWidget(widget: Widget, position: IndexInfo, page?: Page, sectionIndex?: string): LineWidget {
         if (isNullOrUndefined(position.index)) {
             return undefined;
         }
@@ -220,10 +227,24 @@ export class TextPosition {
             position.index = position.index.substring(index).replace(';', '');
         }
         if (value === 'H' || value === 'F') {
-            if (value === 'H') {
-                widget = page.headerWidget;
+            if (this.documentHelper.owner.enableLayout) {
+                if (value === 'H') {
+                    widget = page.headerWidget;
+                } else {
+                    widget = page.footerWidget;
+                }
             } else {
-                widget = page.footerWidget;
+                let index: number = position.index.indexOf(';');
+                let value: string = '0';
+                value = position.index.substring(0, index);
+                position.index = position.index.substring(index).replace(';', '');
+                const headersFooters = this.documentHelper.headersFooters[parseInt(sectionIndex, 10)];
+                if (headersFooters) {
+                    const currentHeaderFooter = headersFooters[parseInt(value, 10)];
+                    if (currentHeaderFooter) {
+                        widget = currentHeaderFooter;
+                    }
+                }
             }
         } else if (value === 'FN' || value === 'EN') {
             let index1: number = position.index.indexOf(';');

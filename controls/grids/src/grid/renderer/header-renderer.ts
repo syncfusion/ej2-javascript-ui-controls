@@ -362,6 +362,15 @@ export class HeaderRender implements IRenderer {
         if (headerTemplateColumn.length && (this.parent.isReact || this.parent.isVue)) {
             clearReactVueTemplates(this.parent, ['headerTemplate']);
         }
+        if (columns && columns.length && !columns[0].visible) {
+            if (this.parent && this.parent.renderModule) {
+                this.parent.renderModule.isFirstColumnHidden = true;
+            }
+        } else {
+            if (this.parent && this.parent.renderModule) {
+                this.parent.renderModule.isFirstColumnHidden = false;
+            }
+        }
         for (let i: number = 0, len: number = this.colDepth; i < len; i++) {
             headerRow = rowRenderer.render(rows[parseInt(i.toString(), 10)], columns);
             if (this.parent.rowHeight && headerRow.querySelector('.e-headercell')) {

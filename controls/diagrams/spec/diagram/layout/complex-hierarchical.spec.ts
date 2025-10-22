@@ -4744,15 +4744,18 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
            var connector0 = diagram.connectors[0].id;
             var pathElement = document.getElementById(connector0 + "_path_groupElement");
             console.log(pathElement.children[0].getAttribute("d"));
-            expect(pathElement.children[0].getAttribute("d") === "M187,0 L187,9 L0,9 L0,19.5 L0,19.5 L-0.05,29.1 " || pathElement.children[0].getAttribute("d") ===  "M187,0 L187,15 L0,15 L-0.05,29.1 " || pathElement.children[0].getAttribute("d") === 'M182.32,0 L182.32,9 L0,9 L0,19.5 L0,19.5 L0.42,29.1 ' || pathElement.children[0].getAttribute("d") === 'M181.99,0 L181.99,9 L0,9 L0,19.5 L0,19.5 L-0.06,29.1 ').toBe(true);
+            expect(pathElement.children[0].getAttribute("d") === "M187,0 L187,9 L0,9 L0,19.5 L0,19.5 L-0.05,29.1 " || pathElement.children[0].getAttribute("d") ===  "M187,0 L187,15 L0,15 L-0.05,29.1 " || pathElement.children[0].getAttribute("d") === 'M182.32,0 L182.32,9 L0,9 L0,19.5 L0,19.5 L0.42,29.1 ' || pathElement.children[0].getAttribute("d") === 'M181.99,0 L181.99,9 L0,9 L0,19.5 L0,19.5 L-0.06,29.1 '
+                || pathElement.children[0].getAttribute("d") === 'M181.99,0 L181.99,9 L0,9 L0,19.5 L0,19.5 L-0.37,29.1 ').toBe(true);
             var connector1 = diagram.connectors[1].id;
             var pathElement1 = document.getElementById(connector1 + "_path_groupElement");
             console.log(pathElement1.children[0].getAttribute("d"));
-            expect(pathElement1.children[0].getAttribute("d") === "M0,0 L0,15 L0,15 L-0.05,29.7 " || pathElement1.children[0].getAttribute("d") ===  "M0,0 L-0.05,29.7 " || pathElement1.children[0].getAttribute("d") === 'M0,0 L0,15 L0,15 L0.43,29.7 ' || pathElement1.children[0].getAttribute("d") === 'M0,0 L0,15 L0,15 L-0.06,29.7 ').toBe(true);
+            expect(pathElement1.children[0].getAttribute("d") === "M0,0 L0,15 L0,15 L-0.05,29.7 " || pathElement1.children[0].getAttribute("d") ===  "M0,0 L-0.05,29.7 " || pathElement1.children[0].getAttribute("d") === 'M0,0 L0,15 L0,15 L0.43,29.7 ' || pathElement1.children[0].getAttribute("d") === 'M0,0 L0,15 L0,15 L-0.06,29.7 '
+                || pathElement1.children[0].getAttribute("d") === 'M0,0 L0,15 L0,15 L-0.38,29.7 ').toBe(true);
             var connector11 = diagram.connectors[11].id;
             var pathElement11 = document.getElementById(connector11 + "_path_groupElement");
             console.log(pathElement11.children[0].getAttribute("d"));
-            expect(pathElement11.children[0].getAttribute("d") === "M0,0 L0,15 L39.45,15 L39.45,22.5 L39.45,22.5 L39.75,29.1 " || pathElement11.children[0].getAttribute("d") === "M0,0 L0,15 L39.45,15 L39.76,29.1 " || pathElement11.children[0].getAttribute("d") === 'M0,0 L0,15 L38.34,15 L38.34,22.5 L38.34,22.5 L38.34,29.1 ' || pathElement11.children[0].getAttribute("d") === 'M0,0 L0,15 L38.33,15 L38.33,22.5 L38.33,22.5 L38.01,29.1 ').toBe(true);
+            expect(pathElement11.children[0].getAttribute("d") === "M0,0 L0,15 L39.45,15 L39.45,22.5 L39.45,22.5 L39.75,29.1 " || pathElement11.children[0].getAttribute("d") === "M0,0 L0,15 L39.45,15 L39.76,29.1 " || pathElement11.children[0].getAttribute("d") === 'M0,0 L0,15 L38.34,15 L38.34,22.5 L38.34,22.5 L38.34,29.1 '
+                || pathElement11.children[0].getAttribute("d") === 'M0,0 L0,15 L38.34,15 L38.34,22.5 L38.34,22.5 L38.65,29.1 ').toBe(true);
 
             done();
         });

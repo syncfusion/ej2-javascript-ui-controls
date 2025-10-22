@@ -778,6 +778,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public defaultFieldListOrder: Sorting = 'None';
     /** @hidden */
     public pivotDeferLayoutUpdate: boolean;
+    /** @hidden */
+    public isWindowResized: boolean;
 
     //Property Declarations
 
@@ -5932,6 +5934,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     public onWindowResize(): void {
         this.actionObj.actionName = events.windowResize;
+        this.isWindowResized = true;
         if (this.actionBeginMethod()) {
             return;
         }
@@ -6902,6 +6905,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
 
     public actionBeginMethod(): boolean {
+        if (this.actionObj.actionName !== events.windowResize) {
+            if (this.renderModule) {
+                this.renderModule.selectedCells = [];
+            }
+            this.isWindowResized = false;
+        }
         const eventArgs: PivotActionBeginEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings),
             actionName: this.actionObj.actionName,

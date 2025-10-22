@@ -2,13 +2,28 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I752784` - Fixed the issue where suggestions in the spell check dialog were not updating after performing Ignore or Ignore All actions.
+- `#I753785` - Corrected the Find Next behaviour of the spell checker for pages that were not rendered.
+- `#I771628` - Resolved a script error that occurred when updating styles.
+- `#I768327` - Fixed layout issues for pasted text in `RTL` (Right-to-Left) documents.
+- `#I769448` - Addressed rendering issues of tab characters in empty paragraphs.
+- `#I774817` - Resolved field linking problems during document layout processing.
+- `#I769012` - Fixed a script error encountered when performing find and replace on placeholder text.
+- `#I753590` - Corrected table layout issues when exporting documents as DOCX.
+
 ## 31.2.2 (2025-10-15)
 
 ### DocumentEditor
 
 #### Bug Fixes
 
-- `#757129` - handle the behaviour for 'in-front of text' Wrapping Style to Prevent Image Overlapping in Word Documents.
+- `#I757129` - handle the behaviour for 'in-front of text' Wrapping Style to Prevent Image Overlapping in Word Documents.
 - `#I768465` - Fixed style not appear on the list of the styles.
 - `#I758675` - Resolved custom font-size values not applying in ribbon mode.
 

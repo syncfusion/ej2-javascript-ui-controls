@@ -1082,11 +1082,10 @@ export function padZero(value: number): string {
 /**
  * @param {PredicateModel} filterObject - Defines the filterObject
  * @param {string} type - Defines the type
- * @param {boolean} isExecuteLocal - Defines whether the data actions performed in client and used for dateonly type field
  * @returns {Predicate} Returns the Predicate
  * @hidden
  */
-export function getDatePredicate(filterObject: PredicateModel, type?: string, isExecuteLocal?: boolean): Predicate {
+export function getDatePredicate(filterObject: PredicateModel, type?: string): Predicate {
     let datePredicate: Predicate;
     let prevDate: Date;
     let nextDate: Date;
@@ -1097,7 +1096,7 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string, is
         return datePredicate;
     }
     const value: Date = new Date(filterObject.value as string);
-    if (type === 'dateonly' && !isExecuteLocal) {
+    if (type === 'dateonly') {
         if (typeof (prevObj.value) === 'string') {
             prevObj.value = new Date(prevObj.value);
         }

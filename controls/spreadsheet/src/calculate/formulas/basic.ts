@@ -4180,7 +4180,7 @@ export class BasicFormulas {
      * @returns {number | string} - Compute the count if.
      */
     public ComputeCOUNTIFS(...args: string[]): number | string {
-        const sum: string | number = this.parent.computeIfsFormulas(args, this.parent.trueValue);
+        const sum: string | number = this.parent.computeCountIfsFormulas(args);
         return sum;
     }
 

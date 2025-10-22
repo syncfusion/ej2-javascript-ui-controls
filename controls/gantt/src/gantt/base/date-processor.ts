@@ -310,11 +310,11 @@ export class DateProcessor {
         let dayStartTime: number;
         let dayEndTime: number;
         if (this.parent.weekWorkingTime.length > 0) {
-            let currentDay: Date = date;
+            let currentDay: Date = new Date(date.getTime());
             if (!this.parent.includeWeekend && ganttProp && ganttProp.isAutoSchedule || (this.parent.editModule
                 && this.parent.editModule.taskbarEditModule && this.parent.editModule.taskbarEditModule.taskBarEditRecord
                 && !this.parent.editModule.taskbarEditModule.taskBarEditRecord.ganttProperties.isAutoSchedule)) {
-                currentDay = this.getNextWorkingDay(date);
+                currentDay = this.getNextWorkingDay(currentDay);
             }
             dayStartTime = this.parent['getStartTime'](currentDay);
             dayEndTime = this.parent['getEndTime'](currentDay);

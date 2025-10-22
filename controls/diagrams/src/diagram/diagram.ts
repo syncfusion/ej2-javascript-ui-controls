@@ -3555,6 +3555,38 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             (!(this.blazorActions & BlazorAction.GroupClipboardInProcess))) {
             this.commandHandler.getBlazorOldValues();
         }
+        // Bug 984240: Incorrect Child Drop Position and Size Change in Container
+        // Check if the object is a container and update its children
+        if (obj && (obj as NodeModel).shape && (obj as NodeModel).shape.type === 'Container') {
+            this.updateChildOffset((obj as NodeModel), tx, ty);
+        }
+    }
+    /**
+     * Recursively updates the offset of children of containers.
+     *
+     * @returns {void} updates the offset of children of containers.
+     * @param {NodeModel} node The container object to be dragged.
+     * @param {number} tx A number representing the horizontal distance by which the given objects should be moved.
+     * @param {number} ty A number representing the vertical distance by which the given objects should be moved.
+     */
+    private updateChildOffset(node: NodeModel, tx: number, ty: number): void {
+        const containerChildren: string[] = (node.shape as any).children;
+        if (!containerChildren || containerChildren.length < 1) {
+            return;
+        }
+        containerChildren.forEach((childId: string) => {
+            const childObj: NodeModel = this.nameTable[`${childId}`];
+            if (!childObj || !childObj.shape) {
+                return;
+            }
+            // Recursively update if the child is also a container
+            if (childObj.shape.type === 'Container') {
+                this.updateChildOffset(childObj, tx, ty);
+            }
+            // Update position of child
+            childObj.offsetX += tx;
+            childObj.offsetY += ty;
+        });
     }
     private disableStackContainerPadding(wrapper: GroupableView, disable: boolean): void {
         if (wrapper instanceof StackPanel) {
@@ -9213,6 +9245,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             swimLaneMeasureAndArrange(obj);
             arrangeChildNodesInSwimLane(this, obj);
             this.updateLaneAfterAddChild (obj);
+            // 984230 - Tooltip Not Displayed for Child Nodes inside Swimlane in negative offset
+            (obj.shape as SwimLane).lanes.forEach((lane: Lane) => {
+                if (lane.children && lane.children.length > 0) {
+                    // Iterate over children to update quad
+                    lane.children.forEach((childNode: NodeModel) => {
+                        this.updateQuad(childNode as IElement);
+                    });
+                }
+            });
             this.updateDiagramElementQuad();
         } else {
             canvas.measure(new Size(obj.width, obj.height), obj.id, this.onLoadImageSize.bind(this));

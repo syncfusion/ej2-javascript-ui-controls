@@ -194,13 +194,21 @@ export class FileMenu {
                     if (formatType === '.txt') {
                         this.container.documentEditor.documentHelper.openTextFile(fileReader.result as string);
                     } else {
-                        this.container.documentEditor.openAsync(fileReader.result as string);
+                        if (this.container.documentEditor.documentEditorSettings.openAsyncSettings.enable) {
+                            this.container.documentEditor.openAsync(fileReader.result as string);
+                        } else {
+                            this.container.documentEditor.open(fileReader.result as string);
+                        }
                     }
                 };
                 fileReader.readAsText(file);
             } else {
                 if (this.isSupportedFormatType(formatType.toLowerCase())) {
-                    this.container.documentEditor.open(file);
+                    if (this.container.documentEditor.documentEditorSettings.openAsyncSettings.enable) {
+                        this.container.documentEditor.openAsync(file);
+                    } else {
+                        this.container.documentEditor.open(file);
+                    }
                 } else {
                     const localizeValue: L10n = new L10n('documenteditor', this.container.documentEditor.defaultLocale);
                     DialogUtility.alert({

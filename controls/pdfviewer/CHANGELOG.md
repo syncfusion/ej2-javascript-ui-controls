@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I773362` - Resolved an issue where the digital signature in the PDF document was not visible on first time loading in `standalone` PDF Viewer.
+
+#### Breaking Changes
+
+- `#I771734` - In `Dropdown` and `ListBox` form fields, the options list now displays `itemName` instead of `itemValue`.
+
 ## 31.2.2 (2025-10-15)
 
 ### PDF Viewer

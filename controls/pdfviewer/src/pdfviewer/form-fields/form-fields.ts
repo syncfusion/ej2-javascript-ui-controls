@@ -402,7 +402,11 @@ export class FormFields {
             for (let i: number = 0; i < listItem.length; i++) {
                 if (listItem[parseInt(i.toString(), 10)] === currentData['SelectedValue'])
                 {this.selectedIndex.push(i); }
-                options.push({ itemName: listItem[parseInt(i.toString(), 10)], itemValue: listItem[parseInt(i.toString(), 10)] });
+                const itemValue: string = listItem[parseInt(i.toString(), 10)].itemValue ?
+                    listItem[parseInt(i.toString(), 10)].itemValue : listItem[parseInt(i.toString(), 10)].ItemValue;
+                const itemName: string = listItem[parseInt(i.toString(), 10)].itemName ? listItem[parseInt(i.toString(), 10)].itemName
+                    : listItem[parseInt(i.toString(), 10)].ItemName;
+                options.push({ itemName: itemName, itemValue: itemValue });
             }
         }
         if (this.getFormFieldType(currentData) === 'ListBox') {

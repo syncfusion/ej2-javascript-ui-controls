@@ -1156,7 +1156,7 @@ export class Dependency {
         }
         else {
             this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
-                this.parent.updatedRecords : this.parent.getExpandedRecords(this.parent.updatedRecords);
+                this.parent.updatedRecords : this.parent.expandedRecords;
         }
         const flatData: IGanttData[] = this.parent.flatData;
         const flatDataCollection: Map<string, IGanttData> = isPdfExport ? null : new Map();

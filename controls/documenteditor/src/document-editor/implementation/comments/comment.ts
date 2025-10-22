@@ -5,7 +5,7 @@ import { CommentElementBox, CommentCharacterElementBox, ElementBox, CommentEditI
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Toolbar, TabItemModel, Tab, SelectEventArgs } from '@syncfusion/ej2-navigations';
-import { DialogUtility, Dialog } from '@syncfusion/ej2-popups';
+import { DialogUtility, Dialog, createSpinner } from '@syncfusion/ej2-popups';
 import { Dictionary, ReviewTabType, CommentDeleteEventArgs, CommentActionEventArgs, beforeCommentActionEvent, commentEndEvent, commentBeginEvent, commentDeleteEvent } from '../../base/index';
 import { HelperMethods } from '../editor/editor-helper';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
@@ -72,6 +72,7 @@ export class CommentReviewPane {
         localObj.setLocale(this.owner.locale);
         this.initReviewPane(localObj);
         this.parentPaneElement.style.display = 'none';
+
     }
     public selectReviewTab(tab: ReviewTabType): void {
         if (tab === 'Changes') {

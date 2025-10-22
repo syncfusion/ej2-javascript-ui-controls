@@ -6467,3 +6467,51 @@ describe('Cr-978444', () => {
         }
     });
 });
+
+describe('Cr-984009 convert to milestone', () => {
+    let ganttObj: Gantt;
+    let data = [
+        { TaskID: 1, TaskName: "Planning and Permits", StartDate: new Date("04/02/2025"), EndDate: new Date("04/10/2025"), Duration: 7, Progress: 100, resources: [1, 2, 3] },
+        { TaskID: 2, TaskName: "Site Evaluation", StartDate: new Date("04/02/2025"), EndDate: new Date("04/04/2025"), Duration: 2, Progress: 100, ParentId: 1, resources: [1] },
+        { TaskID: 3, TaskName: "Obtain Permits", StartDate: new Date("04/04/2025"), EndDate: new Date("04/09/2025"), Duration: 1, Progress: 100, ParentId: 1, Predecessor: "2", resources: [2, 4] },
+        { TaskID: 4, TaskName: "Finalize Planning", StartDate: new Date("04/10/2025"), EndDate: new Date("04/11/2025"), Duration: 2, Progress: 100, ParentId: 1, Predecessor: "3", resources: [3] },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                height: "650px",
+                dataSource: data,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'ParentId',
+                },
+                treeColumnIndex: 1,
+                allowSelection: true,
+                dateFormat: "MMM dd, y",
+                highlightWeekends: true,
+                gridLines: 'Both',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+            }, done);
+    });
+    it('checking start date', () => {
+        ganttObj.convertToMilestone("3");
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/3/2025');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

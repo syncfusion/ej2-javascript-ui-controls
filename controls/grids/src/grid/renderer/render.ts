@@ -261,6 +261,8 @@ export class Render {
         const columns: Column[] = this.parent.getColumns();
         if (columns && columns.length && !columns[0].visible) {
             this.isFirstColumnHidden = true;
+        } else {
+            this.isFirstColumnHidden = false;
         }
         const maskRow: boolean = (gObj.loadingIndicator.indicatorType === 'Shimmer' && args.requestType !== 'virtualscroll'
             && args.requestType !== 'infiniteScroll') || ((args.requestType === 'virtualscroll' || args.requestType === 'infiniteScroll')

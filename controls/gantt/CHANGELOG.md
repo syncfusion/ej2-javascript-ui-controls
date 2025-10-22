@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I767416` - Enhanced performance for adding records to large multi-level hierarchical collections, achieving approximately 80% improvement in CRUD operation efficiency.
+- `#I770741` - Resolved an issue where the `modifiedRecords` collection was not correctly updated in the `actionComplete` event arguments.
+- `#I771215` - Corrected date and time validation for milestone tasks during initial load and conversion, ensuring accurate rendering for tasks with dependencies.
+
 ## 31.2.2 (2025-10-15)
 
 ### GanttChart

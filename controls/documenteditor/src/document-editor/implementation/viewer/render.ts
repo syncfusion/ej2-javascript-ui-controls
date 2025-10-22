@@ -37,6 +37,7 @@ export class Renderer {
     public commentMarkDictionary: Dictionary<HTMLElement, CommentCharacterElementBox[]> =
     new Dictionary<HTMLElement, CommentCharacterElementBox[]>();
     public isPrinting: boolean = false;
+    public skipRenderWavyLine: boolean = false;
     public isExporting: boolean =  false;
     private pageLeft: number = 0;
     private pageTop: number = 0;
@@ -538,8 +539,11 @@ export class Renderer {
             }
         }
     }
-
-    private isOverLappedShapeWidget(floatingElement: ShapeBase): boolean {
+    /**
+     * @private
+     * @returns {boolean}
+     */
+    public isOverLappedShapeWidget(floatingElement: ShapeBase): boolean {
         return ((floatingElement instanceof ImageElementBox
             && floatingElement.textWrappingStyle !== 'Inline'
             && floatingElement.textWrappingStyle !== 'Behind'
@@ -1642,7 +1646,8 @@ private calculatePathBounds(data: string): Rect {
                     renderHighlight = true;
                 }
             }
-            if (renderHighlight) {
+            // isUpdatedWhileLoadAsync is checked to avoid adding selection highlight again while loading the document asynchronously.
+            if (renderHighlight && !page.documentHelper.isUpdatedWhileLoadAsync) {
                 page.documentHelper.owner.selectionModule.addSelectionHighlight(this.selectionContext, lineWidget, top, page);
             }
         }
@@ -2072,6 +2077,9 @@ private calculatePathBounds(data: string): Rect {
                 if (lineWidget.paragraph.bidi && !lineWidget.paragraph.isEmpty()) {
                     x -= this.documentHelper.textHelper.getWidth(text, currentCharFormat, FontScriptType.English);
                 }
+                if(paraFormat.firstLineIndent > 0){
+                    x = left;
+                }
                 this.pageContext.font = characterFont;
                 let scaleFactor: number = currentCharFormat.scaling < 100 ? 1 : currentCharFormat.scaling / 100;
                 (this.pageContext as any).letterSpacing = currentCharFormat.characterSpacing * this.documentHelper.zoomFactor + 'pt';
@@ -2451,53 +2459,7 @@ private calculatePathBounds(data: string): Rect {
             left -= elementBox.width;
         }
         if (this.documentHelper.owner.isSpellCheck) {
-            if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && elementBox.text.trim() !== '' && !this.documentHelper.textHelper.containsSpecialCharAlone(elementBox.text) && (this.documentHelper.owner.documentEditorSettings.enableSpellCheckOnScroll || !this.documentHelper.isScrollHandler) && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox && (elementBox.previousNode as FieldElementBox).fieldType === 2)))) {
-                elementBox.canTrigger = true;
-                this.leftPosition = this.pageLeft;
-                this.topPosition = this.pageTop;
-                let isDeleteRevision: boolean = false;
-                if (elementBox.revisionLength > 0) {
-                    isDeleteRevision = elementBox.getRevision(0).revisionType === "Deletion" ? true : false;
-                }
-                if (!isDeleteRevision) {
-                    let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
-                    if (elementBox.istextCombined) {
-                        if (errorDetails.errorFound && !this.isPrinting) {
-                            for (let i: number = 0; i < errorDetails.elements.length; i++) {
-                                let currentElement: ErrorTextElementBox = errorDetails.elements[i];
-                                if (elementBox.ignoreOnceItems.indexOf(currentElement.text) === -1) {
-                                    let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
-                                    this.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', format.baselineAlignment, backgroundColor);
-                                }
-                            }
-                        }
-                    } else if (errorDetails.errorFound && !this.isPrinting) {
-                        color = '#FF0000';
-                        let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
-                        const errors = this.spellChecker.errorWordCollection;
-                        for (let i: number = 0; i < errorDetails.elements.length; i++) {
-                            let currentElement: ErrorTextElementBox = errorDetails.elements[i];
-                            const exactText = this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true);
-                            if (elementBox.ignoreOnceItems.indexOf(exactText) === -1) {
-                                if (isRTL) {
-                                    this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.end)) ? left : currentElement.end.location.x, top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
-                                } else {
-                                    this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
-                                }
-                                if (errors.containsKey(exactText)) {
-                                    const errorElements = errors.get(exactText);
-                                    if (errorElements.indexOf(currentElement) === -1) {
-                                        errorElements.push(currentElement);
-                                    }
-                                }
-                            }
-                        }
-                    } else if (elementBox.isChangeDetected || this.documentHelper.triggerElementsOnLoading) {
-                        this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
-                        elementBox.isSpellCheckTriggered = true;
-                    }
-                }
-            }
+            this.triggerSpellChecker(elementBox, containerWidget, isRTL, left, top, underlineY, format.baselineAlignment);
         }
         let currentInfo: RevisionInfo = this.getRevisionType(revisionInfo, true);
 
@@ -2513,6 +2475,60 @@ private calculatePathBounds(data: string): Rect {
         }
         if (isHeightType) {
             this.pageContext.restore();
+        }
+    }
+
+    /**
+     *
+     * @private
+     */
+    public triggerSpellChecker(elementBox: TextElementBox, containerWidget: Widget, isRTL: boolean, left: number, top: number, underlineY: number, baselineAlignment: BaselineAlignment): void {
+        if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && elementBox.text.trim() !== '' && !this.documentHelper.textHelper.containsSpecialCharAlone(elementBox.text) && (this.documentHelper.owner.documentEditorSettings.enableSpellCheckOnScroll || !this.documentHelper.isScrollHandler) && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox && (elementBox.previousNode as FieldElementBox).fieldType === 2)))) {
+            elementBox.canTrigger = true;
+            this.leftPosition = this.pageLeft;
+            this.topPosition = this.pageTop;
+            let isDeleteRevision: boolean = false;
+            if (elementBox.revisionLength > 0) {
+                isDeleteRevision = elementBox.getRevision(0).revisionType === "Deletion" ? true : false;
+            }
+            if (!isDeleteRevision) {
+                let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
+                if (elementBox.istextCombined) {
+                    if (errorDetails.errorFound && !this.isPrinting) {
+                        for (let i: number = 0; i < errorDetails.elements.length; i++) {
+                            let currentElement: ErrorTextElementBox = errorDetails.elements[i];
+                            if (elementBox.ignoreOnceItems.indexOf(currentElement.text) === -1) {
+                                let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+                                this.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
+                            }
+                        }
+                    }
+                } else if (errorDetails.errorFound && !this.isPrinting) {
+                    let color: string = '#FF0000';
+                    let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+                    const errors = this.spellChecker.errorWordCollection;
+                    for (let i: number = 0; i < errorDetails.elements.length; i++) {
+                        let currentElement: ErrorTextElementBox = errorDetails.elements[i];
+                        const exactText = this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true);
+                        if (elementBox.ignoreOnceItems.indexOf(exactText) === -1) {
+                            if (isRTL) {
+                                this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.end)) ? left : currentElement.end.location.x, top, underlineY, color, 'Single', baselineAlignment, backgroundColor);
+                            } else {
+                                this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, top, underlineY, color, 'Single', baselineAlignment, backgroundColor);
+                            }
+                            if (errors.containsKey(exactText)) {
+                                const errorElements = errors.get(exactText);
+                                if (errorElements.indexOf(currentElement) === -1) {
+                                    errorElements.push(currentElement);
+                                }
+                            }
+                        }
+                    }
+                } else if (elementBox.isChangeDetected || this.documentHelper.triggerElementsOnLoading) {
+                    this.handleChangeDetectedElements(elementBox, underlineY, left, top, baselineAlignment);
+                    elementBox.isSpellCheckTriggered = true;
+                }
+            }
         }
     }
 
@@ -2722,7 +2738,7 @@ private calculatePathBounds(data: string): Rect {
 
 
     public renderWavyLine(elementBox: TextElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment, backgroundColor?: string): void {
-        if (this.isPrinting) {
+        if (this.isPrinting || this.skipRenderWavyLine) {
             return;
         }
         if (elementBox.text.length > 1) {

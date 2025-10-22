@@ -672,4 +672,45 @@ describe('Breadcrumb', () => {
             }
         });
     });
+    describe('Accessibility compliance', () => {
+        afterEach(() => {
+            breadcrumb.destroy();
+        });
+        it('should not set hardcoded aria-label on breadcrumb items', () => {
+            const host = createElement('nav', { id: 'breadcrumb-aria-label', styles: 'width: 400px;' });
+            document.body.appendChild(host);
+
+            breadcrumb = new Breadcrumb({ items: items.slice(), overflowMode: 'None' });
+            breadcrumb.appendTo(host);
+
+            const itemElements: HTMLElement[] = [].slice.call(
+                host.querySelectorAll('.e-breadcrumb-item:not(.e-breadcrumb-separator)')
+            );
+
+            expect(itemElements.length).toBe(items.length);
+            expect(host.querySelector('[aria-label="home"]')).toBeNull();
+
+            breadcrumb.destroy();
+            host.remove();
+        });
+
+        it('should set aria-current="page" only on the active breadcrumb item', () => {
+            const host = createElement('nav', { id: 'breadcrumb-aria-label', styles: 'width: 400px;' });
+            document.body.appendChild(host);
+
+            breadcrumb = new Breadcrumb({ items: items.slice(), activeItem: 'Breadcrumb', overflowMode: 'None'});
+            breadcrumb.appendTo(host);
+
+            const itemElements: HTMLElement[] = [].slice.call(host.querySelectorAll('.e-breadcrumb-item:not(.e-breadcrumb-separator)'));
+            expect(itemElements.length).toBe(items.length);
+            const activeItem = host.querySelector('.e-breadcrumb-item[data-active-item]') as HTMLElement;
+            expect(activeItem).not.toBeNull();
+            expect(activeItem.getAttribute('aria-current')).toBe('page');
+
+            itemElements.filter((li: HTMLElement) => li !== activeItem).forEach((li: HTMLElement) => {expect(li.hasAttribute('aria-current')).toBe(false);});
+            
+            breadcrumb.destroy();
+            host.remove();
+        });
+    });
 });

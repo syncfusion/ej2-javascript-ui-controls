@@ -282,7 +282,10 @@ export class SelectionCharacterFormat {
                 }
                 return undefined;
             case 'fontFamily':
-                return this.fontFamily;
+                if (this.fontFamily != '' ) {
+                    return this.fontFamily;
+                }
+                return undefined;
             case 'strikethrough':
                 return this.strikethrough;
             case 'baselineAlignment':

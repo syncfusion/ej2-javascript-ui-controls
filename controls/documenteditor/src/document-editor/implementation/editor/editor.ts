@@ -2619,7 +2619,7 @@ export class Editor {
      */
     public insertContentControl(info: ContentControlInfo): ContentControlInfo;
     public insertContentControl(typeOrInfo: ContentControlType | ContentControlInfo, value?: string | boolean, items?: string[]): ContentControlInfo {
-        if (this.selection.isPlainContentControl()) {
+        if (this.selection.isPlainContentControl() || this.owner.isReadOnlyMode) {
             return undefined;
         }
         let type: ContentControlType;
@@ -4975,7 +4975,7 @@ export class Editor {
                 (bodyWidget.nextRenderedWidget as BodyWidget).page.bodyWidgets.splice(startindex, 1);
             }
 
-            while (!isNullOrUndefined(newBodyWidget.nextRenderedWidget)) {
+            while (!isNullOrUndefined(newBodyWidget.nextRenderedWidget) && newBodyWidget !== bodyWidget.nextRenderedWidget) {
                 (newBodyWidget.nextRenderedWidget as BodyWidget).page = newBodyWidget.page;
                 newBodyWidget = newBodyWidget.nextRenderedWidget as BodyWidget;
             }
@@ -7971,6 +7971,19 @@ export class Editor {
             }
         }
         this.documentHelper.layout.isPastingContent = false;
+        if (!isNullOrUndefined(this.documentHelper.currentPage)) {
+            const currentPage: Page = this.documentHelper.currentPage;
+            if (!isNullOrUndefined(currentPage.endnoteWidget) && !isNullOrUndefined(currentPage.bodyWidgets) && currentPage.bodyWidgets.length > 0) {
+                const lastBodyWidget: BodyWidget = currentPage.bodyWidgets[currentPage.bodyWidgets.length - 1];
+                if (lastBodyWidget) {
+                    const lastChild: Widget = (!isNullOrUndefined(lastBodyWidget.childWidgets) && lastBodyWidget.childWidgets.length > 0) ?
+                        lastBodyWidget.childWidgets[lastBodyWidget.childWidgets.length - 1] as Widget : null;
+                    if (lastChild && currentPage.endnoteWidget.y <= (lastChild.y + lastChild.height)) {
+                        hasFootNoteElement = true;
+                    }
+                }
+            }
+        }
         if (hasFootNoteElement) {
             layoutWholeDocument = true;
             if (this.pasteFootNoteType === 'Footnote') {
@@ -11615,6 +11628,9 @@ export class Editor {
      * @returns {void}
      */
     public clearFormatting(): void {
+        if (this.owner.isReadOnlyMode) {
+            return;
+        }
         this.clearFormattingInternal();
     }
 
@@ -21823,6 +21839,9 @@ export class Editor {
      * @returns {void}
      */
     public insertPageNumber(numberFormat?: string): void {
+        if (this.owner.isReadOnlyMode) {
+            return;
+        }
         if (isNullOrUndefined(numberFormat)) {
             numberFormat = '';
         } else {
@@ -23583,7 +23602,7 @@ export class Editor {
      * @returns {void}
      */
     public insertTableOfContents(tableOfContentsSettings?: TableOfContentsSettings): void {
-        if (this.selection.isPlainContentControl()) {
+        if (this.selection.isPlainContentControl() || this.owner.isReadOnlyMode) {
             return;
         }
         this.isInsertingTOC = true;
@@ -24623,7 +24642,7 @@ export class Editor {
      * @returns {void}
      */
     public insertFormField(type: FormFieldType): void {
-        if (isNullOrUndefined(this.selection.start) || this.owner.enableHeaderAndFooter || this.selection.isPlainContentControl()) {
+        if (isNullOrUndefined(this.selection.start) || this.owner.enableHeaderAndFooter || this.selection.isPlainContentControl() || this.owner.isReadOnlyMode) {
             return;
         }
         this.initHistory('InsertHyperlink');
@@ -25283,7 +25302,7 @@ export class Editor {
      * @returns {void}
      */
     public insertFootnote(): void {
-        if (this.selection.isinFootnote || this.selection.isinEndnote || this.selection.isPlainContentControl()) {
+        if (this.selection.isinFootnote || this.selection.isinEndnote || this.selection.isPlainContentControl() || this.owner.isReadOnlyMode ) {
             return;
         }
         this.isFootNoteInsert = true;
@@ -25367,7 +25386,7 @@ export class Editor {
      * @returns {void}
      */
     public insertEndnote(): void {
-        if (this.selection.isinFootnote || this.selection.isinEndnote || this.selection.isPlainContentControl()) {
+        if (this.selection.isinFootnote || this.selection.isinEndnote || this.selection.isPlainContentControl() || this.owner.isReadOnlyMode) {
             return;
         }
         this.documentHelper.layout.isEndnoteContentChanged = true;

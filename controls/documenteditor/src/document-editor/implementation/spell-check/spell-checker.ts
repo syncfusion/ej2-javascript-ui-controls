@@ -1,10 +1,10 @@
 /* eslint-disable */
-import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo, TextSearch } from '../index';
+import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo, TextSearch, HelperMethods } from '../index';
 import { ServiceFailureArgs, XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from './../../index';
 import { Dictionary } from '../../base/dictionary';
-import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox } from '../viewer/page';
+import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox, ParagraphWidget, TableWidget, TableRowWidget, HeaderFooterWidget, BlockWidget, ShapeBase, ShapeElementBox, GroupShapeElementBox, BodyWidget, Widget, FootNoteWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { BaselineAlignment } from '../../base/types';
+import { BaselineAlignment, TextWrappingStyle } from '../../base/types';
 import { DocumentHelper } from '../viewer';
 /**
  * The spell checker module
@@ -63,13 +63,17 @@ export class SpellChecker {
     public errorSuggestions: Dictionary<string, string[]>;
 
     private performOptimizedCheck: boolean = true;
-
+    /**
+     * @private
+     */
+    public handleErrorElements: ElementBox[] = [];
     /**
      * @private
      */
     public isChangeAll: boolean = false;
 
     private textSearchResults: TextSearchResults;
+    private pageCacheIndex: number[] = [];
 
     private ignoreUppercaseInternal: boolean = false;
     /**
@@ -216,7 +220,7 @@ export class SpellChecker {
      *
      * @private
      */
-    public manageReplace(content: string, dialogElement?: ElementBox): void {
+    public manageReplace(content: string, dialogElement?: ElementBox, isChangeAll?: boolean): void {
         this.documentHelper.triggerSpellCheck = true;
         let exactText: string = '';
         let elementInfo: ElementInfo;
@@ -226,6 +230,7 @@ export class SpellChecker {
             this.documentHelper.selection.end = (dialogElement as ErrorTextElementBox).end.clone();
             if (content !== 'Ignore Once') {
                 content = this.manageSpecialCharacters(exactText, content);
+                this.addRemovedElements(isChangeAll, dialogElement);
                 this.documentHelper.owner.editorModule.insertTextInternal(content, true);
                 this.documentHelper.selection.start.setPositionInternal(this.documentHelper.selection.end);
                 this.documentHelper.clearSelectionHighlight();
@@ -237,15 +242,15 @@ export class SpellChecker {
         if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element && content !== 'Ignore Once') {
             const elementBox: ElementBox = this.currentContextInfo.element;
             exactText = (this.currentContextInfo.element as TextElementBox).text;
-
             this.documentHelper.selection.start = (elementBox as ErrorTextElementBox).start.clone();
             this.documentHelper.selection.end = (elementBox as ErrorTextElementBox).end.clone();
         } else {
             this.handleReplace(content);
         }
         if (content !== 'Ignore Once') {
+            this.addRemovedElements(isChangeAll, dialogElement);
             this.documentHelper.owner.editorModule.insertTextInternal(content, true);
-            if (!isNullOrUndefined(this.currentContextInfo)) {
+            if (isChangeAll && !isNullOrUndefined(this.currentContextInfo)) {
                 this.removeErrorsFromCollection(this.currentContextInfo);
             }
             this.documentHelper.selection.start.setPositionInternal(this.documentHelper.selection.end);
@@ -253,6 +258,26 @@ export class SpellChecker {
         }
         //this.documentHelper.owner.errorWordCollection.remove(content);
         this.documentHelper.triggerSpellCheck = false;
+    }
+    private addRemovedElements(isChangeAll: boolean, dialogElement: ElementBox) {
+        if (!isChangeAll) {
+            if (this.handleErrorElements.indexOf(dialogElement) === -1) {
+                this.handleErrorElements.push(dialogElement);
+            }
+            const start: TextPosition = this.documentHelper.selection.start;
+            const end: TextPosition = this.documentHelper.selection.end;
+            let startElement: ElementBox = (start.currentWidget as LineWidget).getInline(start.offset, 0, false, true).element;
+            const endElement: ElementBox = (end.currentWidget as LineWidget).getInline(end.offset, 0, false, true).element;
+            while (true) {
+                if (this.handleErrorElements.indexOf(startElement) === -1) {
+                    this.handleErrorElements.push(startElement);
+                }
+                if (startElement === endElement) {
+                    break;
+                }
+                startElement = startElement.nextNode;
+            }
+        }
     }
     /**
      * Method to handle replace logic
@@ -345,6 +370,7 @@ export class SpellChecker {
             if (textElement.ignoreOnceItems.indexOf(exactText) === -1) {
                 textElement.ignoreOnceItems.push(exactText);
             }
+            this.handleErrorElements.push(textElement);
         }
         this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
     }
@@ -369,6 +395,7 @@ export class SpellChecker {
                 if (textIndex === -1) {
                     (startInlineObj as TextElementBox).ignoreOnceItems.push(exactText);
                 }
+                this.handleErrorElements.push(startInlineObj);
             }
             if (startInlineObj === endInlineObj) {
                 break;
@@ -410,6 +437,33 @@ export class SpellChecker {
                 this.documentHelper.triggerSpellCheck = true;
                 this.removeErrorsFromCollection(contextItem);
                 this.ignoreAllItems.push(retrievedText);
+                // Build casing variants to suppress: original, Capitalized (if lower), and UPPER
+                const casingWords: string[] = [];
+                const text: string = contextItem.text;
+                if (!isNullOrUndefined(text) && text.length > 1) {
+                    if (text === text.toLowerCase()) {
+                        const formattedText: string = text.charAt(0).toUpperCase() + text.substring(1);
+                        if (formattedText !== text) {
+                            casingWords.push(formattedText);
+                        }
+                    }
+                    const upperCaseText: string = text.toUpperCase();
+                    if (upperCaseText !== text) {
+                        casingWords.push(upperCaseText);
+                    }
+                }
+                for (let i: number = 0; i < casingWords.length; i++) {
+                    const word: string = casingWords[i];
+                    if (this.ignoreAllItems.indexOf(word) === -1) {
+                        this.ignoreAllItems.push(word);
+                    }
+                    if (this.errorWordCollection.containsKey(word)) {
+                        const elements: ElementBox[] = this.errorWordCollection.get(word);
+                        if (elements && elements.length > 0) {
+                            this.removeErrorsFromCollection({ element: elements[0], text: word });
+                        }
+                    }
+                }
                 this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, true);
                 this.documentHelper.triggerSpellCheck = false;
             }
@@ -1132,46 +1186,168 @@ export class SpellChecker {
      * @private
      * @returns {void}
      */
-    public checkForNextError(): void {
+    public checkForHeaderFooterNextError(): ContextElementInfo {
         if (!isNullOrUndefined(this.viewer)) {
             const errorWords: Dictionary<string, ElementBox[]> = this.errorWordCollection;
+            let element: ContextElementInfo;
             if (errorWords.length > 0) {
                 for (let i: number = 0; i < errorWords.length; i++) {
                     const errorElements: ElementBox[] = errorWords.get(errorWords.keys[i]);
+                    if (isNullOrUndefined(errorElements)) {
+                        continue;
+                    }
                     for (let j: number = 0; j < errorElements.length; j++) {
                         if (errorElements[j] instanceof ErrorTextElementBox && !errorElements[j].isChangeDetected) {
                             if ((isNullOrUndefined((errorElements[j] as ErrorTextElementBox).start.paragraph) || (errorElements[j] as ErrorTextElementBox).start.paragraph.indexInOwner === -1)) {
-                                this.errorWordCollection.remove(errorWords.keys[i]);
+                                errorElements.splice(j, 1);
+                                j--;
+                                if (errorElements.length === 0) {
+                                    this.errorWordCollection.remove(errorWords.keys[i]);
+                                    i--;
+                                }
                             }
                             else {
-                                this.updateErrorElementTextBox(errorWords.keys[i], errorElements[j] as ErrorTextElementBox);
+                                if (isNullOrUndefined(element) && (errorElements[j] as ErrorTextElementBox).start.paragraph.isInHeaderFooter) {
+                                    return { element: errorElements[j], text: errorWords.keys[i] };
+                                }
                             }
                         } else if (errorElements[j] instanceof TextElementBox) {
                             if (isNullOrUndefined((errorElements[j] as TextElementBox).paragraph) || (errorElements[j] as TextElementBox).paragraph.indexInOwner === -1) {
-                                this.errorWordCollection.remove(errorWords.keys[i]);
+                                errorElements.splice(j, 1);
+                                j--;
+                                if (errorElements.length === 0) {
+                                    this.errorWordCollection.remove(errorWords.keys[i]);
+                                    i--;
+                                }
                             }
                             else {
-                                const matchResults: MatchResults = this.getMatchedResultsFromElement(errorElements[j]);
-                                const results: TextSearchResults = matchResults.textResults;
-    
-                                const markIndex: number = (errorElements[j].isChangeDetected) ? (errorElements[j] as ErrorTextElementBox).start.offset : errorElements[j].line.getOffset(errorElements[j], 0);
-    
-                                this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, errorElements[j], false, null, markIndex);
-                                for (let i: number = 0; i < results.length; i++) {
-                                    const element: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], errorElements[j]);
-                                    this.updateErrorElementTextBox(element.text, element);
-                                    break;
+                                if (isNullOrUndefined(element) && errorElements[j].line && errorElements[j].line.paragraph && errorElements[j].line.paragraph.isInHeaderFooter) {
+                                    const matchResults: MatchResults = this.getMatchedResultsFromElement(errorElements[j]);
+                                    const results: TextSearchResults = matchResults.textResults;
+                                    const markIndex: number = (errorElements[j].isChangeDetected && !isNullOrUndefined((errorElements[j] as ErrorTextElementBox).start)) ? (errorElements[j] as ErrorTextElementBox).start.offset : errorElements[j].line.getOffset(errorElements[j], 0);
+                                    this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, errorElements[j], false, null, markIndex);
+                                    for (let i: number = 0; i < results.length; i++) {
+                                        const errorElement: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], errorElements[j]);
+                                        element = { element: errorElement, text: errorElement.text };
+                                    }
                                 }
                             }
                         }
-                        break;
                     }
-                    break;
+                }
+            } else {
+                this.documentHelper.clearSelectionHighlight();
+            }
+            return element;
+        }
+        return undefined;
+    }
+
+    public checkForNextError(): void {
+        if (!isNullOrUndefined(this.viewer)) {
+            if (this.errorWordCollection.length > 0) {
+                let start: TextPosition = this.documentHelper.selection.start;
+                const isInHeaderFooter: boolean = start.currentWidget.paragraph.isInHeaderFooter;
+                let element: ContextElementInfo;
+                if (isInHeaderFooter) {
+                    element = this.checkForHeaderFooterNextError();
+                }
+                if (!isInHeaderFooter) {
+                    element = this.checkSelectionNextError(start);
+                }
+                if (isNullOrUndefined(element)) {
+                    start = this.documentHelper.selection.getDocumentStart();
+                    element = this.checkSelectionNextError(start);
+                }
+                if (isNullOrUndefined(element)) {
+                    element = this.checkForHeaderFooterNextError();
+                }
+                if (!isNullOrUndefined(element)) {
+                    if (element.element instanceof ErrorTextElementBox) {
+                        this.updateErrorElementTextBox(element.text, element.element);
+                    } else if (element.element instanceof TextElementBox) {
+                        let errorElement: ElementBox = element.element;
+                        const matchResults: MatchResults = this.getMatchedResultsFromElement(errorElement);
+                        const results: TextSearchResults = matchResults.textResults;
+                        const markIndex: number = errorElement.line.getOffset(errorElement, 0);
+                        this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, errorElement, false, null, markIndex);
+                        for (let i: number = 0; i < results.length; i++) {
+                            const errorTextElement: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], errorElement);
+                            this.updateErrorElementTextBox(element.text, errorTextElement);
+                            break;
+                        }
+                    }
                 }
             } else {
                 this.documentHelper.clearSelectionHighlight();
             }
         }
+    }
+    private checkSelectionNextError(start: TextPosition,): ContextElementInfo {
+        const errorWords: Dictionary<string, ElementBox[]> = this.errorWordCollection;
+        let element: ContextElementInfo;
+        let nextErrorPosition: TextPosition;
+        for (let i: number = 0; i < errorWords.length; i++) {
+            const errorElements: ElementBox[] = errorWords.get(errorWords.keys[i]);
+            if (isNullOrUndefined(errorElements)) {
+                continue;
+            }
+            for (let j: number = 0; j < errorElements.length; j++) {
+                let errorElement: ElementBox = errorElements[j];
+                let elementStart: TextPosition;
+                if (errorElement instanceof ErrorTextElementBox || errorElement instanceof TextElementBox) {
+                    if (errorElement instanceof ErrorTextElementBox) {
+                        elementStart = errorElement.start;
+                        if ((isNullOrUndefined((errorElement as ErrorTextElementBox).start.paragraph) || (errorElement as ErrorTextElementBox).start.paragraph.indexInOwner === -1)) {
+                            errorElements.splice(j, 1);
+                            j--;
+                            if (errorElements.length === 0) {
+                                this.errorWordCollection.remove(errorWords.keys[i]);
+                                i--;
+                            }
+                            continue;
+                        }
+                        if ((errorElement as ErrorTextElementBox).start.paragraph.isInHeaderFooter) {
+                            continue;
+                        }
+                    } else {
+                        if (isNullOrUndefined((errorElement as TextElementBox).paragraph) || (errorElement as TextElementBox).paragraph.indexInOwner === -1) {
+                            errorElements.splice(j, 1);
+                            j--;
+                            if (errorElements.length === 0) {
+                                this.errorWordCollection.remove(errorWords.keys[i]);
+                                i--;
+                            }
+                            continue;
+                        }
+                        if ((errorElement as TextElementBox).paragraph.isInHeaderFooter) {
+                            continue;
+                        }
+                    }
+                    if (isNullOrUndefined(elementStart)) {
+                        let offset: number = errorElement.line.getOffset(errorElement, 1);
+                        elementStart = new TextPosition(this.documentHelper.owner);
+                        elementStart.setPositionParagraph(errorElement.line, offset);
+                    }
+                    if (elementStart) {
+                        const isExistBefore: boolean = start.isExistBefore(elementStart);
+                        if (isNullOrUndefined(nextErrorPosition)) {
+                            if (isExistBefore) {
+                                element = { element: errorElement, text: errorWords.keys[i] };
+                                nextErrorPosition = elementStart;
+                            }
+                        } else {
+                            const isExistAfter: boolean = nextErrorPosition.isExistAfter(elementStart);
+                            if (isExistBefore && isExistAfter) {
+                                element = { element: errorElement, text: errorWords.keys[i] };
+                                nextErrorPosition = elementStart;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return element;
     }
     /**
      * Method to create error element with matched results
@@ -1434,7 +1610,11 @@ export class SpellChecker {
      */
     public getUniqueWordsFromLocalStorage(): void {
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
-            this.uniqueSpelledWords = JSON.parse(localStorage.getItem(this.uniqueKey));
+            let spellData: any = JSON.parse(localStorage.getItem(this.uniqueKey));
+            if (Object.keys(this.uniqueSpelledWords).length > 0 && Object.keys(spellData).length === 0) {
+                spellData = this.uniqueSpelledWords;
+            }
+            this.uniqueSpelledWords = spellData;
         }
         this.uniqueSpelledWords = this.uniqueSpelledWords || {};
         this.uniqueSpelledWordsCount = Object.keys(this.uniqueSpelledWords).length;
@@ -1502,6 +1682,213 @@ export class SpellChecker {
         }
         return { hasSpellError: hasError, isElementPresent: elementPresent };
     }
+
+    public triggerErrorForNonRenderPages(): void {
+        if (this.documentHelper.render) {
+            setTimeout(() => {
+                for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+                    let page: Page = this.documentHelper.pages[i];
+                    if (this.pageCacheIndex.indexOf(page.index) === -1) {
+                        if (this.documentHelper.cachedPages.indexOf(page.index) === -1) {
+                            this.documentHelper.cachedPages.push(page.index);
+                        }
+                        this.pageCacheIndex.push(page.index);
+                        let content: string = this.getPageContent(page);
+                        if (content.trim().length > 0) {
+                            this.updateUniqueWords(HelperMethods.getSpellCheckData(content));
+                            /* eslint-disable @typescript-eslint/no-explicit-any */
+                            this.callSpellChecker(this.languageID, content, true, false, false, true).then((data: any) => {
+                                /* eslint-disable @typescript-eslint/no-explicit-any */
+                                let jsonObject: any = JSON.parse(data);
+                                if (!isNullOrUndefined(this.documentHelper.owner)) {
+                                    this.updateUniqueWords(jsonObject.SpellCollection);
+                                    if (!isNullOrUndefined(this.documentHelper)) {
+                                        this.documentHelper.triggerElementsOnLoading = true;
+                                        this.documentHelper.triggerSpellCheck = true;
+                                        this.documentHelper.triggerElementsOnLoading = true;
+                                        this.documentHelper.render.skipRenderWavyLine = true;
+                                        this.triggerPage(page);
+                                        this.documentHelper.render.skipRenderWavyLine = false;
+                                        this.documentHelper.triggerSpellCheck = false;
+                                        this.documentHelper.triggerElementsOnLoading = false;
+                                    }
+                                }
+                            })
+                                .catch()
+                            {
+                                if (!isNullOrUndefined(this.documentHelper.render)) {
+                                    this.documentHelper.render.skipRenderWavyLine = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }, 0);
+        }
+    }
+
+    private triggerPage(page: Page): void {
+        this.getUniqueWordsFromLocalStorage();
+        this.triggerWidgets(page);
+        this.addUniqueWordsToLocalStorage();
+    }
+
+    private triggerParagraphWidget(paragarph: ParagraphWidget): void {
+        for (let i: number = 0; i < paragarph.childWidgets.length; i++) {
+            let lineWidget: LineWidget = paragarph.childWidgets[i] as LineWidget;
+            for (let j: number = 0; j < lineWidget.children.length; j++) {
+                if (lineWidget.children[j] instanceof TextElementBox) {
+                    this.documentHelper.render.triggerSpellChecker(lineWidget.children[j] as TextElementBox, undefined, false, 0, 0, 0, undefined);
+                }
+            }
+        }
+    }
+
+    private triggerTableWidget(table: TableWidget): void {
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            let rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
+                let cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+                for (let k: number = 0; k < cellWidget.childWidgets.length; k++) {
+                    if (cellWidget.childWidgets[k] instanceof TableWidget) {
+                        this.triggerTableWidget(cellWidget.childWidgets[k] as TableWidget);
+                    } else if (cellWidget.childWidgets[k] instanceof ParagraphWidget) {
+                        this.triggerParagraphWidget(cellWidget.childWidgets[k] as ParagraphWidget);
+                    }
+                }
+            }
+        }
+    }
+
+    private triggerWidgets(page: Page): void {
+        if (page.headerWidget) {
+            this.triggerHFWidgets(page, page.headerWidgetIn);
+        }
+        if (page.footerWidget) {
+            this.triggerHFWidgets(page, page.footerWidgetIn);
+        }
+        /* eslint-disable */
+        for (let i: number = 0; i < page.bodyWidgets.length; i++) {
+            if (!isNullOrUndefined(page.bodyWidgets[i].floatingElements)) {
+                this.triggerFloatingItems(page, page.bodyWidgets[i].floatingElements, 'Behind');
+            }
+        }
+        /* eslint-enable */
+        for (let i: number = 0; i < page.bodyWidgets.length; i++) {
+            this.trigger(page, page.bodyWidgets[parseInt(i.toString(), 10)]);
+            if (page.footnoteWidget && this.documentHelper.owner.layoutType === 'Pages') {
+                this.triggerFootNoteWidget(page, page.footnoteWidget);
+            }
+        }
+        if (page.endnoteWidget && this.documentHelper.owner.layoutType === 'Pages') {
+            this.triggerFootNoteWidget(page, page.endnoteWidget);
+        }
+    }
+
+    private triggerHFWidgets(page: Page, widget: HeaderFooterWidget): void {
+        this.triggerFloatingItems(page, widget.floatingElements, 'Behind');
+        for (let i: number = 0; i < widget.childWidgets.length; i++) {
+            const block: BlockWidget = widget.childWidgets[parseInt(i.toString(), 10)] as BlockWidget;
+            this.triggerWidget(block);
+        }
+        this.triggerFloatingItems(page, widget.floatingElements, 'InFrontOfText');
+    }
+
+    private triggerFloatingItems(page: Page, floatingElements: (ShapeBase | TableWidget)[], wrappingType: TextWrappingStyle): void {
+        if (!isNullOrUndefined(floatingElements) && floatingElements.length > 0) {
+            const overLappedShapeWidgets: Dictionary<number, ShapeBase> = new Dictionary<number, ShapeBase>();
+            /* eslint-disable */
+            floatingElements.sort(function (a, b) {
+                if (a instanceof TableWidget || b instanceof TableWidget) {
+                    return 0;
+                } else {
+                    return a.zOrderPosition - b.zOrderPosition;
+                }
+            });
+            for (let i: number = 0; i < floatingElements.length; i++) {
+                if (floatingElements[i] instanceof TableWidget) {
+                    continue;
+                }
+                let shape: ShapeBase = floatingElements[i] as ShapeBase;
+                if ((wrappingType === "Behind" && shape.textWrappingStyle !== "Behind") ||
+                    (wrappingType !== "Behind" && shape.textWrappingStyle === "Behind")) {
+                    continue;
+                }
+                if (!this.documentHelper.render.isOverLappedShapeWidget(shape) || overLappedShapeWidgets.containsKey(shape.zOrderPosition)) {
+                    if (shape instanceof ShapeElementBox) {
+                        this.triggerShapeElementBox(shape, page);
+                    } else if (shape instanceof GroupShapeElementBox) {
+                        this.triggerGroupShapeElementBox(shape, page);
+                    }
+                } else if (!overLappedShapeWidgets.containsKey(shape.zOrderPosition)) {
+                    overLappedShapeWidgets.add(shape.zOrderPosition, shape);
+                }
+            }
+            if (overLappedShapeWidgets.length > 0) {
+                let sortedOverLappedShapeWidgets: number[] = overLappedShapeWidgets.keys.sort();
+                for (let j: number = 0; j < sortedOverLappedShapeWidgets.length; j++) {
+                    let shape: ShapeBase = overLappedShapeWidgets.get(sortedOverLappedShapeWidgets[j]) as ShapeBase;
+                    if (shape instanceof ShapeElementBox) {
+                        this.triggerShapeElementBox(shape, page);
+                    } else if (shape instanceof GroupShapeElementBox) {
+                        this.triggerGroupShapeElementBox(shape, page);
+                    }
+                }
+            }
+        }
+    }
+
+    private triggerShapeElementBox(shape: ShapeElementBox, page: Page): void {
+        if (shape.isHorizontalRule) {
+            return;
+        }
+        let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
+        for (let i: number = 0; i < blocks.length; i++) {
+            this.triggerWidget(blocks[i]);
+        }
+    }
+
+    private triggerWidget(widget: Widget): void {
+        if (widget instanceof ParagraphWidget) {
+            this.triggerParagraphWidget(widget as ParagraphWidget);
+        } else {
+            this.triggerTableWidget(widget as TableWidget);
+        }
+    }
+
+    private trigger(page: Page, bodyWidget: BodyWidget): void {
+        for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
+            const widget: Widget = bodyWidget.childWidgets[parseInt(i.toString(), 10)] as ParagraphWidget;
+            this.triggerWidget(widget);
+        }
+        for (let i: number = 0; i < page.bodyWidgets.length; i++) {
+            if (!isNullOrUndefined(page.bodyWidgets[i].floatingElements)) {
+                this.triggerFloatingItems(page, page.bodyWidgets[i].floatingElements, 'InFrontOfText');
+            }
+        }
+    }
+
+    private triggerGroupShapeElementBox(groupShape: GroupShapeElementBox, page: Page): void {
+        for (let i = 0; i < groupShape.childWidgets.length; i++) {
+            let shape: any = groupShape.childWidgets[i];
+            if (shape instanceof GroupShapeElementBox) {
+                this.triggerGroupShapeElementBox(shape, page);
+            } else if (shape instanceof ShapeElementBox) {
+                this.triggerShapeElementBox(shape, page);
+            }
+        }
+    }
+
+    private triggerFootNoteWidget(page: Page, footnote: FootNoteWidget): void {
+        for (let i: number = 0; i < footnote.bodyWidgets.length; i++) {
+            let bodyWidget: BodyWidget = footnote.bodyWidgets[i];
+            for (let j: number = 0; j < bodyWidget.childWidgets.length; j++) {
+                let widget: BlockWidget = bodyWidget.childWidgets[j] as BlockWidget;
+                this.triggerWidget(widget);
+            }
+        }
+    }
+
     /**
      * @private
      * @returns {void}
@@ -1517,5 +1904,7 @@ export class SpellChecker {
             localStorage.removeItem(this.uniqueKey);
         }
         this.documentHelper = undefined;
+        this.handleErrorElements = [];
+        this.pageCacheIndex = [];
     }
 }

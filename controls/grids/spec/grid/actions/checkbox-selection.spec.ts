@@ -1215,4 +1215,55 @@ describe('Grid checkbox selection functionality', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-985385: Checkbox Row Selection Behavior Conflicts with Row Editing and Selection Events', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    allowSelection: true,
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true,
+                        mode: 'Normal',
+
+                        newRowPosition: 'Top',
+                    },
+                    selectionSettings: {
+                        type: 'Multiple',
+                        mode: 'Row',
+                        persistSelection: true,
+                    },
+                    pageSettings: { pageCount: 5 },
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    ],
+                }, done);
+        });
+
+        it('case 1 select events not trigger in edit mode', (done: Function) => {
+            let rowSelected = (args: any) => {
+                expect(args.rowIndexes.length).toBe(1);
+                gridObj.rowSelected = null;
+                done();
+            };
+
+            gridObj.rowSelected = rowSelected;
+            const tr: Element = gridObj.getRows()[1];
+            (gridObj as any).editModule.startEdit(tr);
+            (gridObj.element.querySelector('td.e-boolcell input') as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -2801,10 +2801,10 @@ export class Selection {
                 this.owner.editorModule.updateListLevel(isShiftTab ? false : true);
             }
         } else if (!this.owner.isReadOnlyMode && !this.documentHelper.isFormFillProtectedMode) {
-            if (isCursorAtParaStart && start.paragraph.paragraphFormat.firstLineIndent < this.documentHelper.defaultTabWidth) {
+            if (isCursorAtParaStart && start.paragraph.paragraphFormat.firstLineIndent < this.documentHelper.defaultTabWidth && !start.paragraph.isEmpty()) {
                 this.documentHelper.owner.editorModule.onApplyParagraphFormat('firstLineIndent', this.documentHelper.defaultTabWidth, true, false);
             }
-            else if (isCursorAtLineStart) {
+            else if (isCursorAtLineStart && !start.paragraph.isEmpty()) {
                 if (isShiftTab) {
                     this.owner.editorModule.decreaseIndent();
                 }
@@ -3563,7 +3563,10 @@ export class Selection {
         }
         return undefined;
     }
-    private getHeaderFooterIndex(block: HeaderFooterWidget): number {
+    /**
+     * @private
+     */
+    public getHeaderFooterIndex(block: HeaderFooterWidget): number {
         const headersFooters: HeaderFooters[] = this.documentHelper.headersFooters;
         for (let i = 0; i < headersFooters.length; i++) {
             const headerFooter = headersFooters[i];
@@ -11378,6 +11381,8 @@ export class Selection {
                 }
             }
             if (isRelayout) {
+                parentHFWidget.height = 0;
+                this.documentHelper.layout.clearBlockWidget(parentHFWidget.childWidgets, false, true, true);
                 (this.owner.viewer as PageLayoutViewer).updateHFClientArea(parentHFWidget.sectionFormat, isHeader);
                 parentHFWidget = this.documentHelper.layout.layoutHeaderFooterItems(this.owner.viewer, parentHFWidget);
             }
@@ -11620,6 +11625,9 @@ export class Selection {
      * @private
      */
     public navigateBookmark(name: string, moveToStart?: boolean, excludeBookmarkStartEnd?: boolean): void {
+        if (this.documentHelper.isDocumentLoadAsynchronously) {
+            return;
+        }
         let bookmarks: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
         if (bookmarks.containsKey(name)) {
             //bookmark start element

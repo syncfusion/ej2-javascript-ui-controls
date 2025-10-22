@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.2 (2025-10-15)
+## 31.2.3 (2025-10-22)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I771544` - Fixed an issue that caused a maximum call stack size exceeded error when parsing stringified data using `DataUtil's parseJson` method.
+
+## 31.1.23 (2025-10-07)
 
 ### DataManager
 

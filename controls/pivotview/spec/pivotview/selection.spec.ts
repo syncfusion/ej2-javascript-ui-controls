@@ -660,6 +660,97 @@ describe(' - selection', () => {
         });
     });
 
+    describe(' - Persist the selection while resizing the window', () => {
+        let originalTimeout: number;
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        let args: PivotCellSelectedEventArgs;
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    expandAll: true,
+                    dataSource: pivot_smalldata as IDataSet[],
+                    rows: [{ name: 'Country' }, { name: 'State' }],
+                    columns: [{ name: 'Date' }],
+                    values: [{ name: 'Amount' }],
+                },
+                width: '100%',
+                height: 400,
+                gridSettings: {
+                    allowSelection: true,
+                    selectionSettings: {
+                        mode: 'Both',
+                        type: 'Multiple'
+                    }
+                },
+                cellSelected: function (arg: PivotCellSelectedEventArgs): void {
+                    args = arg;
+                }
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        let ctrlClick: MouseEvent = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+            'ctrlKey': true
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('For sample render', (done: Function) => {
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 500);
+        });
+        it('FY 2005 mouse click', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelector('[aria-colindex="1"][index="2"]').textContent).toBe('Alberta');
+                const element: Element = document.querySelector('[aria-colindex="2"][index="0"]');
+                element.dispatchEvent(ctrlClick);
+                done();
+            }, 2000);
+        });
+        it('Canada.Alberta mouse click', (done: Function) => {
+            setTimeout(() => {
+                expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
+                const element: Element = document.querySelector('[aria-colindex="1"][index="2"]');
+                element.dispatchEvent(ctrlClick);
+                done();
+            }, 2000);
+        });
+        it('Simulate window resize (enlarge)', (done: Function) => {
+            setTimeout(() => {
+                expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
+                pivotGridObj.element.style.width = '1200px';
+                window.dispatchEvent(new Event('resize'));
+                done();
+            }, 2000);
+        });
+        it('Canada mouse click', (done: Function) => {
+            setTimeout(() => {
+                expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
+                const element: Element = document.querySelector('[aria-colindex="1"][index="1"]');
+                element.dispatchEvent(ctrlClick);
+                done();
+            }, 2000);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

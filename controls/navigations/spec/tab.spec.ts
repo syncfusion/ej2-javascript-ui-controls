@@ -12986,6 +12986,7 @@ describe('Tab Control', () => {
             expect(tabs[6].classList.contains('e-hidden')).toBe(true);
             expect(tabObj.selectedItem).toBe(3);
         });
+
         it('should show chat apps and hide Instagram', () => {
             let tabs = tabObj.element.querySelectorAll('.e-toolbar-item');
             tabObj.hideTab(tabObj.getItemIndex(tabs[3].getAttribute('data-id')), true);

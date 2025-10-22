@@ -13759,7 +13759,6 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
         });
     });
 
-    
     describe('Toolbar Popup with Text Shown Testing', () => {
         let toolbar: any;
         let keyEventArgs: any;

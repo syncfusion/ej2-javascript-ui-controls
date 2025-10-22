@@ -79,6 +79,9 @@ export class Search {
         if (isNullOrUndefined(findOptions)) {
             findOptions = 'None';
         }
+        if (this.documentHelper.isDocumentLoadAsynchronously) {
+            return;
+        }
         const result: TextSearchResult = this.textSearch.find(text, findOptions);
         if (!isNullOrUndefined(result)) {
             this.navigate(result);
@@ -93,7 +96,7 @@ export class Search {
      * @returns {void}
      */
     public findAll(text: string, findOptions?: FindOption): void {
-        if (isNullOrUndefined(text || text === '')) {
+        if (isNullOrUndefined(text || text === '') || this.documentHelper.isDocumentLoadAsynchronously) {
             return;
         }
         if (isNullOrUndefined(findOptions)) {

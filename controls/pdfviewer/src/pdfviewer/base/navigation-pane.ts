@@ -869,7 +869,7 @@ export class NavigationPane {
     }
 
     private onTooltipBeforeOpen(args: TooltipEventArgs): void {
-        if (!this.pdfViewer.toolbarSettings.showTooltip) {
+        if (!this.pdfViewer.toolbarSettings.showTooltip || (args.target as any).disabled) {
             args.cancel = true;
         }
     }

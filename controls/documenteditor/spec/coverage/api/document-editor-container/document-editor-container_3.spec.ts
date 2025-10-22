@@ -2,6 +2,7 @@ import { DocumentEditorContainer } from '../../../../src/document-editor-contain
 import { Toolbar } from '../../../../src/document-editor-container/tool-bar/tool-bar';
 import { CommentDeleteEventArgs, TrackChangeEventArgs, RevisionActionEventArgs, AutoResizeEventArgs } from '../../../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
+import { Ribbon } from '../../../../src/document-editor-container/ribbon/ribbon';
 /**
  * Document Editor container
  */
@@ -99,3 +100,88 @@ describe('Document Editor container properties_changes', () => {
         expect(() => { (container.tableProperties.tableTextProperties.paragraph.toggleHiddenMarks) }).not.toThrowError();
     });
 }); 
+
+describe('Test Font Family', () => {
+  let container:DocumentEditorContainer;
+  let containerElement:HTMLElement;
+
+  // Helper function to hide cursor animation for consistent screenshots
+  function hideCursorAnimation() {
+    const element: HTMLElement = document.querySelector('[class="e-de-blink-cursor e-de-cursor-animation"]') as any;
+    if (element) {
+      element.style.display = 'none';
+    }
+  }
+
+  beforeAll(() => {
+    // Create container div for the document editor
+    containerElement = document.createElement('div') as any;
+    containerElement.id = 'ribbon';
+    document.body.appendChild(containerElement);
+
+    // Initialize the DocumentEditorContainer
+    DocumentEditorContainer.Inject(Ribbon);
+    container = new DocumentEditorContainer({ 
+      height: "590px", 
+      toolbarMode: 'Ribbon', 
+    });
+    container.serviceUrl = 'https://ej2services.syncfusion.com/production/web-services/api/documenteditor/';
+    container.appendTo('#ribbon') as any;
+    
+    // Wait for the control to be fully initialized
+    jasmine.clock().install();
+    jasmine.clock().tick(100);
+    
+    hideCursorAnimation();
+
+    jasmine.clock().tick(50);
+  });
+
+  afterAll(() => {
+    // Clean up
+    if (container) {
+      container.destroy();
+      container = null;
+    }
+    if (containerElement) {
+      document.body.removeChild(containerElement);
+    }
+    jasmine.clock().uninstall();
+  });
+
+  it('Check if font family is undefined', () => {
+    const editorContainer = document.getElementById('ribbon_editor_viewerContainer') as any;
+    editorContainer.click();
+    container.documentEditor.editor.insertText('Testing font family') as any;
+    container.documentEditor.editor.onEnter();
+    container.documentEditor.editor.onEnter();
+    container.documentEditor.editor.insertText('Second Paragraph') as any;
+    
+    const selection = container.documentEditor.selection;
+    selection.selectParagraph();
+    // Open font dropdown
+    const fontDropdown = document.querySelector('#ribbon_ribbon_font_family') as any;
+    const dropdownIcon = fontDropdown.ej2_instances[0];
+    dropdownIcon.showPopup();
+    jasmine.clock().tick(100);
+    
+    const options = document.querySelectorAll('li[role="option"]');
+    let arialOption = null;
+    for (let i = 0; i < options.length; i++) {
+        if (options[i].textContent && options[i].textContent.indexOf('Arial') !== -1) {
+            arialOption = options[i] as any;
+            break;
+        }
+    }
+    
+    if (arialOption) {
+        arialOption.click();
+        jasmine.clock().tick(100);
+    }
+
+    // Select the whole text
+    container.documentEditor.selection.selectAll();
+    expect(container.documentEditor.selection.characterFormat.fontFamily).toBe(undefined) as any;
+  });
+
+});

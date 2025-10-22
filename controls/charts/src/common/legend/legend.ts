@@ -1697,7 +1697,7 @@ export class BaseLegend {
                     }
                     if (this.isChartControl) {
                         showTooltip(
-                            (<Chart>this.chart).series[index as number].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip',
+                            (<Chart>this.chart).visibleSeries[index as number].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip',
                             getElement(this.chart.element.id + '_Secondary_Element'), null, null, this.legendBounds
                         );
                     } else {

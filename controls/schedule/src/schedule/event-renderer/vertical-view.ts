@@ -691,23 +691,28 @@ export class VerticalEvent extends EventBase {
             }
             const queue: Record<string, any>[] = [];
             this.overlapList.forEach((obj: Record<string, any>) => {
-                queue.push(obj);
                 let filterList: Record<string, any>[] = [];
                 const processedIds: Set<any> = new Set();
+                queue.push(obj);
+                processedIds.add(obj[fieldMapping.id]);
+                filterList.push(obj);
                 while (queue.length > 0) {
                     const currentObj: Record<string, any> = queue.shift() as Record<string, any>;
-                    const overlaps: Record<string, any>[] = appointmentList.filter((data: Record<string, any>) => {
-                        return data[fieldMapping.endTime] > currentObj[fieldMapping.startTime] &&
-                            data[fieldMapping.startTime] <= currentObj[fieldMapping.endTime] &&
-                            !processedIds.has(data[fieldMapping.id]);
-                    });
-                    overlaps.forEach((overlap: Record<string, any>) => {
-                        filterList.push(overlap);
-                        processedIds.add(overlap[fieldMapping.id]);
-                        queue.push(overlap);
-                    });
-                    if (processedIds.size < appointmentList.length - 1) {
-                        break;
+                    const currentObjEndTime: number = currentObj[fieldMapping.endTime].getTime();
+                    const currentObjStartTime: number = currentObj[fieldMapping.startTime].getTime();
+                    for (const data of appointmentList) {
+                        const dataStartTime: number = data[fieldMapping.startTime].getTime();
+                        const dataEndTime: number = data[fieldMapping.endTime].getTime();
+                        if (dataStartTime >= currentObjEndTime) {
+                            break;
+                        }
+                        if (!processedIds.has(data[fieldMapping.id])) {
+                            if (dataEndTime > currentObjStartTime && dataStartTime < currentObjEndTime) {
+                                filterList.push(data);
+                                processedIds.add(data[fieldMapping.id]);
+                                queue.push(data);
+                            }
+                        }
                     }
                 }
                 if (this.parent.activeViewOptions.group.resources.length > 0) {

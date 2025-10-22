@@ -936,6 +936,78 @@ describe('Virtual scroll', () => {
         });
     });
 
+    describe('Virtual scroll byDate:true with event creation on scroll end with custom style', () => {
+        let schObj: Schedule;
+        const style: HTMLStyleElement = document.createElement('style');
+        style.innerHTML = `
+        .e-schedule .e-vertical-view .e-date-header-wrap table col,
+        .e-schedule .e-vertical-view .e-content-wrap table col {
+            width: 100px !important;
+        }
+        .e-schedule .e-vertical-view .e-time-cells-wrap table td,
+        .e-schedule .e-vertical-view .e-work-cells {
+            height: 50px;
+        }`;
+        beforeAll((done: DoneFn) => {
+            document.head.appendChild(style);
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '750px',
+                currentView: 'Week',
+                views: [{ option: 'Week', allowVirtualScrolling: true }],
+                group: {
+                    byDate: true,
+                    resources: ['Resources']
+                },
+                resources: [{
+                    field: 'ResourceId',
+                    title: 'Resource',
+                    name: 'Resources',
+                    dataSource: [
+                        { Text: 'Resource 1', Id: 1 },
+                        { Text: 'Resource 2', Id: 2 },
+                        { Text: 'Resource 3', Id: 3 },
+                        { Text: 'Resource 4', Id: 4 }
+                    ],
+                    textField: 'Text', idField: 'Id'
+                }],
+                selectedDate: new Date(2025, 6, 30),
+                eventSettings: { dataSource: [] }
+            };
+            schObj = createSchedule(options, [], done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+            document.head.removeChild(style);
+        });
+        it('should save event on correct date after scrolling to the last cell', (done: DoneFn) => {
+            const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            triggerScrollEvent(contentWrap, 0, 4000);
+            const workCells: NodeListOf<HTMLElement> = contentWrap.querySelectorAll('.e-work-cells');
+            const lastCell: HTMLElement = workCells[35];
+            expect(lastCell.offsetWidth).toBe(100);
+            const cellDetails: Record<string, any> = schObj.getCellDetails(lastCell);
+            const eventData: Record<string, any> = {
+                Id: 4,
+                Subject: 'Event After Scroll',
+                StartTime: new Date(2025, 7, 2, 1, 0),
+                EndTime: new Date(2025, 7, 2, 1, 30),
+                ResourceId: 4
+            };
+            schObj.addEvent(eventData);
+            setTimeout(() => {
+                const addedEvent: Record<string, any> = schObj.eventsData.find(e => e.Subject === 'Event After Scroll');
+                expect(addedEvent).toBeDefined();
+                const addedEventDate: Date = addedEvent.StartTime as Date;
+                const expectedDate: Date = cellDetails.startTime;
+                expect(addedEventDate.getFullYear()).toEqual(expectedDate.getFullYear());
+                expect(addedEventDate.getMonth()).toEqual(expectedDate.getMonth());
+                expect(addedEventDate.getDate()).toEqual(expectedDate.getDate());
+                done();
+            }, 500);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

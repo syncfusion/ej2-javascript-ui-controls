@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I775054` - The content type of the XMLA request is now correctly configured in the OLAP pivot table.
+- `#I757830` - The pivot table now properly updates when culture settings are changed dynamically.
+
+## 31.2.2 (2025-10-05)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I764347` - The option to enable or disable HTML encoding for row and column headers is now available.
+- `#I768117` - Value cells are now rendered correctly in the OLAP pivot table when virtualization is enabled.
+- `#I772818` - Context menu functionality in the pivot table now operates correctly without any script errors.
+
 ## 31.1.23 (2025-10-07)
 
 ### Pivot Table

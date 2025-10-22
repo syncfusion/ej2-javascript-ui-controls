@@ -196,7 +196,7 @@ export class GanttChart {
         }
     }
     private getTopValue(currentRecord: IGanttData): number {
-        const updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        const updatedRecords: IGanttData[] = this.parent.expandedRecords;
         let recordIndex: number = updatedRecords.indexOf(currentRecord);
         if (currentRecord.parentItem && recordIndex === -1) {
             const nestedParent: IGanttData = this.parent.getRecordByID(currentRecord.parentItem.taskId);
@@ -1078,15 +1078,9 @@ export class GanttChart {
         } else {
             this.expandCollapseChartRows('collapse', getValue('chartRow', args), record, null);
         }
-        // To render the child record on parent row after collapsing
-        if (this.parent.viewType === 'ResourceView' || this.parent.viewType === 'ProjectView') {
-            this.renderMultiTaskbar(record);
+        if (this.parent.enableMultiTaskbar) {
+            this.parent.chartRowsModule.refreshRecords([record], true);
         }
-        if (!this.parent.enableVirtualization) {
-            this.parent.updateContentHeight();
-        }
-        this.updateWidthAndHeight();
-        this.reRenderConnectorLines();
         getValue('chartRow', args).setAttribute('aria-expanded', 'false');
     }
 
@@ -1143,22 +1137,10 @@ export class GanttChart {
             this.parent.isExpandCollapseLevelMethod = false;
         }
         // To render the child record on parent row after expanding.
-        if (this.parent.viewType === 'ResourceView' || this.parent.viewType === 'ProjectView') {
-            this.renderMultiTaskbar(record);
-        }
-        if (!this.parent.enableVirtualization) {
-            this.parent.updateContentHeight();
-        }
-        this.updateWidthAndHeight();
-        this.reRenderConnectorLines();
-        getValue('chartRow', args).setAttribute('aria-expanded', 'true');
-    }
-    private renderMultiTaskbar(record: IGanttData): void {
         if (this.parent.enableMultiTaskbar) {
             this.parent.chartRowsModule.refreshRecords([record], true);
-        } else if (this.parent.showOverAllocation) {
-            this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
         }
+        getValue('chartRow', args).setAttribute('aria-expanded', 'true');
     }
 
     /**
@@ -1836,7 +1818,7 @@ export class GanttChart {
      * @returns {Element} .
      */
     private getNextRowElement(rowIndex: number, isTab: boolean, isChartRow: boolean): Element {
-        const expandedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        const expandedRecords: IGanttData[] = this.parent.expandedRecords;
         const currentItem: IGanttData = this.parent.currentViewData[rowIndex as number];
         const expandedRecordIndex: number = expandedRecords.indexOf(currentItem);
         const nextRecord: IGanttData = isTab ? expandedRecords[expandedRecordIndex + 1] : expandedRecords[expandedRecordIndex - 1];

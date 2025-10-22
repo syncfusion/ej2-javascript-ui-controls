@@ -585,7 +585,7 @@ export abstract class BlockContainer extends Widget {
         return index;
     }
     public getHierarchicalIndex(hierarchicalIndex: string): string {
-        let documentHelper: DocumentHelper = undefined;
+        let documentHelper: DocumentHelper = this.page.documentHelper;;
         let node: BlockContainer = this;
         if (node instanceof BodyWidget) {
             hierarchicalIndex = node.index + ';' + hierarchicalIndex;
@@ -596,16 +596,31 @@ export abstract class BlockContainer extends Widget {
                 hierarchicalIndex = 'EN' + ';' + hierarchicalIndex;
             }
         } else {
-            if ((node as HeaderFooterWidget).headerFooterType.indexOf('Header') !== -1) {
+            if (documentHelper.owner.enableLayout) {
+                if ((node as HeaderFooterWidget).headerFooterType.indexOf('Header') !== -1) {
                 hierarchicalIndex = 'H' + ';' + hierarchicalIndex;
+                } else {
+                    hierarchicalIndex = 'F' + ';' + hierarchicalIndex;
+                }
             } else {
-                hierarchicalIndex = 'F' + ';' + hierarchicalIndex;
+                let headerIndex: string = documentHelper.selection.getHeaderFooterIndex(node as HeaderFooterWidget).toString();
+                if ((node as HeaderFooterWidget).headerFooterType.indexOf('Header') !== -1) {
+                    hierarchicalIndex = 'H' + ';' + headerIndex + ';' + hierarchicalIndex;
+                } else {
+                    hierarchicalIndex = 'F' + ';' + headerIndex + ';' + hierarchicalIndex;
+                }
             }
         }
         if (!isNullOrUndefined(node.page)) {
-            documentHelper = this.page.documentHelper;
-            let pageIndex: number = documentHelper.pages.indexOf(this.page);
-            return pageIndex + ';' + hierarchicalIndex;
+            if (documentHelper.owner.enableLayout) {
+                let pageIndex: number = documentHelper.pages.indexOf(this.page);
+                return pageIndex + ';' + hierarchicalIndex;
+            } else {
+                if (node instanceof HeaderFooterWidget) {
+                    let pageIndex: number = node.headerSectionIndex;
+                    return pageIndex + ';' + hierarchicalIndex;
+                }
+            }
         }
         return hierarchicalIndex;
     }
@@ -5244,6 +5259,9 @@ export abstract class ElementBox {
                     (childNode as FieldElementBox).fieldEnd = fieldEnd;
                     if (!isNullOrUndefined((childNode as FieldElementBox).fieldBegin)) {
                         fieldEnd.fieldBegin = (childNode as FieldElementBox).fieldBegin;
+                        if (fieldEnd && isNullOrUndefined(fieldEnd.fieldBegin.fieldEnd)) {
+                            fieldEnd.fieldBegin.fieldEnd = fieldEnd;
+                        }
                     }
                 }
             }
@@ -5627,7 +5645,7 @@ export class FieldElementBox extends ElementBox {
                 }
             } else {
                 field.removedIds = this.removedIds.slice();
-                if (!isNullOrUndefined(this.fieldEnd) && !isNullOrUndefined(this.fieldEnd.paragraph) && !(this.fieldEnd.paragraph.containerWidget instanceof TableCellWidget)) {
+                if (!(!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) && !isNullOrUndefined(this.fieldEnd) && !isNullOrUndefined(this.fieldEnd.paragraph) && !(this.fieldEnd.paragraph.containerWidget instanceof TableCellWidget)) {
                     field.hasFieldEnd = this.hasFieldEnd;
                 }
             }

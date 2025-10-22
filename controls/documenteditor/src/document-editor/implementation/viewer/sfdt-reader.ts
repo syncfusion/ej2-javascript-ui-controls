@@ -1459,6 +1459,9 @@ export class SfdtReader {
                             }
                         }
                     }
+                    if(this.documentHelper.textHelper.isRTLText(textElement.text)){
+                        this.documentHelper.layout.isDocumentContainsRtl = true;
+                    }
                 } else {
                     this.checkAndApplyRevision(this.keywordIndex, inline, textElement, paragraph);
                 }

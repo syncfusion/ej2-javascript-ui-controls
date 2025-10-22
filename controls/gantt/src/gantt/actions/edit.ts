@@ -1053,6 +1053,39 @@ export class Edit {
         }
         return false;
     }
+    private isTaskToMilestone(args: ITaskbarEditedEventArgs): boolean {
+        let isMilestone: boolean = false;
+        if (args && args.data) {
+            const ganttProps: ITaskData = args.data.ganttProperties;
+            const duration: number = ganttProps.duration;
+            const startDate: Date = ganttProps.startDate;
+            const endDate: Date = ganttProps.endDate;
+            if (!isNullOrUndefined(this.parent.taskFields.duration)) {
+                if (duration === 0) {
+                    isMilestone = true;
+                }
+            } else if (
+                startDate &&
+                endDate &&
+                new Date(startDate).getTime() === new Date(endDate).getTime()
+            ) {
+                isMilestone = true;
+            }
+            const previousData: IGanttData = this.parent.previousRecords && this.parent.previousRecords[ganttProps.uniqueID as string];
+            if (previousData && previousData.ganttProperties && !isNullOrUndefined(previousData.ganttProperties.isMilestone)) {
+                const prevStart: Date = previousData.ganttProperties.startDate;
+                const isSameStart: boolean = startDate && prevStart && new Date(startDate).getTime() === new Date(prevStart).getTime();
+                if (!previousData.ganttProperties.isMilestone && isMilestone && (isSameStart || !prevStart)) {
+                    isMilestone = true;
+                } else {
+                    isMilestone = false;
+                }
+            } else {
+                isMilestone = false;
+            }
+        }
+        return isMilestone;
+    }
     /**
      * Method to update all dependent record on edit action
      *
@@ -1062,6 +1095,20 @@ export class Edit {
      */
     public initiateUpdateAction(args: ITaskbarEditedEventArgs): void {
         let isValidatePredecessor: boolean = this.isCheckPredecessor(args.data);
+        const isMilestone: boolean = this.isTaskToMilestone(args);
+        if (isMilestone && args.data.ganttProperties.predecessor) {
+            const predecessorArray: IPredecessor[] = args.data.ganttProperties.predecessor;
+            const milestoneDate: Date = this.parent.predecessorModule.getPredecessorDate(args.data, predecessorArray, null);
+            if (
+                milestoneDate &&
+                new Date(milestoneDate).getTime() !==
+                new Date(args.data.ganttProperties.startDate).getTime()
+            ) {
+                this.parent.setRecordValue('startDate', new Date(milestoneDate.getTime()), args.data.ganttProperties, true);
+                this.parent.setRecordValue('endDate', new Date(milestoneDate.getTime()), args.data.ganttProperties, true);
+                this.parent.dataOperation.updateTaskData(args.data);
+            }
+        }
         let parentData: IGanttData;
         let childRecordIndex: number;
         if (!isNullOrUndefined(args.data.parentItem) && !isValidatePredecessor) {

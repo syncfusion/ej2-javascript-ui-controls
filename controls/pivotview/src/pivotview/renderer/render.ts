@@ -72,6 +72,8 @@ export class Render {
     private drilledLevelInfo: { [key: string]: boolean } = {};
     private timeOutObj: ReturnType<typeof setTimeout>;
     private modifiedHeaderText: string | number | Date;
+    /** @hidden */
+    public selectedCells: { rowIndex: number; colIndex: number }[] = [];
     /** Constructor for render module
      *
      * @param {PivotView} parent - Instance of pivot table.
@@ -295,6 +297,28 @@ export class Render {
         if (args && args.requestType === 'refresh' && this.isAutoFitEnabled) {
             this.removePivotAutoFitClass();
         }
+        if (this.parent && this.parent.isWindowResized && this.selectedCells && this.selectedCells.length > 0) {
+            this.parent.grid.clearSelection();
+            const parentElement: HTMLElement = this.parent.element;
+            const selectedElements: Element[] = [];
+            this.selectedCells.forEach((cell: { rowIndex: number | undefined; colIndex: number }) => {
+                if (cell.colIndex != null) {
+                    const ariaColIndex: number = cell.colIndex + 1;
+                    let selector: string = `[aria-colindex="${ariaColIndex}"]`;
+                    if (cell.rowIndex != null) {
+                        selector += `[index="${cell.rowIndex}"]`;
+                    }
+                    const element: HTMLElement = parentElement.querySelector(selector);
+                    if (element) {
+                        selectedElements.push(element);
+                    }
+                }
+            });
+            selectedElements.forEach((element: HTMLElement) => {
+                addClass([element], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
+            });
+        }
+        this.parent.isWindowResized = false;
     }
 
     /**
@@ -1183,11 +1207,13 @@ export class Render {
         const pivotArgs: PivotCellSelectedEventArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues, currentCell: null };
         const selectedElements: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.'
             + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
+        this.selectedCells = [];
         for (let i: number = 0; i < selectedElements.length; i++) {
             const element: HTMLElement = selectedElements[i as number];
             const colIndex: number = parseInt(element.getAttribute('aria-colindex'), 10) - 1;
             const rowIndex: number = Number(element.getAttribute('index'));
             const cell: IAxisSet = (this.engine.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
+            this.selectedCells.push({ colIndex, rowIndex });
             if (cell) {
                 if (cell.axis === 'value') {
                     pivotArgs.selectedCellsInfo.push({
@@ -2558,6 +2584,7 @@ export class Render {
         this.hierarchyPosCollection = {};
         this.drilledLevelInfo = {};
         this.aggMenu = null;
+        this.selectedCells = [];
     }
 
     /**

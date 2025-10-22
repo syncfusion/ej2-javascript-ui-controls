@@ -4530,21 +4530,6 @@ export class OlapEngine {
     // }
 
     public doAjaxPost(type: string, url: string, data: string, success: Function, customArgs?: Object): void {
-        const ajax: Ajax = new Ajax(
-            {
-                mode: false,
-                contentType: 'text/xml',
-                url: url,
-                data: data,
-                dataType: 'xml',
-                type: type,
-                beforeSend: this.beforeSend.bind(this),
-                onSuccess: this.onSuccess.bind(this, success, customArgs),
-                onFailure: (e: string) => {
-                    this.errorInfo = e;
-                }
-            }
-        );
         const params: BeforeServiceInvokeEventArgs = {
             dataSourceSettings: (customArgs as { [Key: string]: Object }).dataSourceSettings,
             action: (customArgs as { [Key: string]: string }).action,
@@ -4561,6 +4546,23 @@ export class OlapEngine {
             this.getBeforeSeviceInvoke(params);
         }
         this.requestHeaders = (params.internalProperties as { [key: string]: string }).headers as {} || {};
+        const contentType: string = this.requestHeaders['Content-Type'] ? this.requestHeaders['Content-Type'] : 'text/xml';
+        const ajax: Ajax = new Ajax(
+            {
+                mode: false,
+                contentType: contentType,
+                url: url,
+                data: data,
+                dataType: 'xml',
+                type: type,
+                beforeSend: this.beforeSend.bind(this),
+                onSuccess: this.onSuccess.bind(this, success, customArgs),
+                onFailure: (e: string) => {
+                    this.errorInfo = e;
+                }
+
+            }
+        );
         ajax.send();
     }
     private onSuccess(success: Function, customArgs: Object, args: string | Object, request: Ajax): void {
@@ -4594,7 +4596,7 @@ export class OlapEngine {
                 ':' + this.dataSourceSettings.authentication.password));
         }
         for (const key in this.requestHeaders) {
-            if (Object.prototype.hasOwnProperty.call(this.requestHeaders, key)) {
+            if (Object.prototype.hasOwnProperty.call(this.requestHeaders, key) && key !== 'Content-Type') {
                 (args as { httpRequest: XMLHttpRequest }).httpRequest.setRequestHeader(key, this.requestHeaders[key as string]);
             }
         }

@@ -2,7 +2,7 @@ import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Eve
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
-import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend } from './index';
+import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend, asyncPagesVisible } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
 import { Print, SearchResultsChangeEventArgs, SelectionWidgetInfo, Dictionary, ElementBox } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
@@ -27,7 +27,7 @@ import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog }
 import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
-import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel, RevisionSettingsModel } from './document-editor-model';
+import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel, RevisionSettingsModel, OpenAsyncSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';
 import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo } from './implementation/index';
@@ -100,6 +100,11 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property({ interval: 2000, itertationCount: 5 })
     public autoResizeSettings: AutoResizeSettingsModel;
+    /**
+     * Gets or sets the asynchronous loading settings for the document.
+     */
+    @Property({ enable: false, initialPageLoadCount: 5, incrementalPageLoadCount: 3 })
+    public openAsyncSettings: OpenAsyncSettingsModel;
     /**
      * Gets ot sets the collaborative editing settings.
      */
@@ -297,6 +302,47 @@ export class RevisionSettings extends ChildProperty<RevisionSettings> {
     public showCustomDataWithAuthor: boolean;
 }
 
+
+/**
+ * Gets or sets the asynchronous page loading settings for the document.
+ */
+export class OpenAsyncSettings extends ChildProperty<OpenAsyncSettings> {
+    /**
+     * Gets or sets a value indicating whether to enable asynchronous page loading.
+     *
+     * @default false
+     *
+     * @remarks
+     * This property is intended for UI interaction scenarios (document opening through the UI) only.
+     * It does not affect the behavior of the `openAsync` API, which controls asynchronous
+     * document loading at the API level.
+     *
+     * When asynchronous loading is in progress, user interactions with the document
+     * are restricted until the required pages are fully loaded.
+     *
+     * @returns {boolean}
+     */
+    @Property(false)
+    public enable: boolean;
+
+    /**
+     * Gets or sets the number of pages to be loaded initially during asynchronous document loading operation.
+     *
+     * @default 5
+     * @returns {number}
+     */
+    @Property(5)
+    public initialPageLoadCount: number;
+
+    /**
+     * Gets or sets the number of pages to be incrementally loaded after initial pages loaded, during asynchronous document loading operation.
+     *
+     * @default 3
+     * @returns {number}
+     */
+    @Property(3)
+    public incrementalPageLoadCount: number;
+}
 
 /**
  * Represents the settings required for resizing the Document editor automatically when the visibility of parent element changed.
@@ -1240,6 +1286,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public documentLoadFailed: EmitType<DocumentLoadFailedEventArgs>;
     /**
      * @private
+     * Triggers when pages loads asynchronously in the document editor
+     */
+    @Event()
+    public asyncPagesVisible: EmitType<void>;
+    /**
+     * @private
      */
     public externalFonts: ExternalFontInfo[];
     /**
@@ -1562,8 +1614,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {TextPosition} - Returns isReadOnlyMode.
      */
     public get isReadOnlyMode(): boolean {
-        return this.isReadOnly || isNullOrUndefined(this.editorModule)
-            || isNullOrUndefined(this.selectionModule) || !isNullOrUndefined(this.editorModule) && this.editorModule.restrictEditing;
+        return this.isReadOnly || (!isNullOrUndefined(this.documentHelper) && this.documentHelper.isDocumentLoadAsynchronously)
+            || isNullOrUndefined(this.editorModule) || isNullOrUndefined(this.selectionModule)
+            || !isNullOrUndefined(this.editorModule) && this.editorModule.restrictEditing;
     }
     /**
      * @private
@@ -1930,6 +1983,17 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                             this.documentEditorSettings.revisionSettings.showCustomDataWithAuthor = model.documentEditorSettings.revisionSettings.showCustomDataWithAuthor;
                         }
                     }
+                    if (!isNullOrUndefined(model.documentEditorSettings.openAsyncSettings)) {
+                        if (!isNullOrUndefined(model.documentEditorSettings.openAsyncSettings.enable)) {
+                            this.documentEditorSettings.openAsyncSettings.enable = model.documentEditorSettings.openAsyncSettings.enable;
+                        }
+                        if (!isNullOrUndefined(model.documentEditorSettings.openAsyncSettings.initialPageLoadCount)) {
+                            this.documentEditorSettings.openAsyncSettings.initialPageLoadCount = model.documentEditorSettings.openAsyncSettings.initialPageLoadCount;
+                        }
+                        if (!isNullOrUndefined(model.documentEditorSettings.openAsyncSettings.incrementalPageLoadCount)) {
+                            this.documentEditorSettings.openAsyncSettings.incrementalPageLoadCount = model.documentEditorSettings.openAsyncSettings.incrementalPageLoadCount;
+                        }
+                    }
                     break;
                 case 'height':
                     this.element.style.height = formatUnit(this.height);
@@ -2278,6 +2342,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public fireDocumentChange(): void {
         if (this.enableLockAndEdit && this.enableEditor) {
             this.editorModule.enforceProtection('', false, true);
+        }
+        if (this.commentReviewPane) {
+            hideSpinner(this.commentReviewPane.reviewPane);
+        }
+        if (this.trackChangesPane) {
+            hideSpinner(this.trackChangesPane.trackChangeDiv);
         }
         const eventArgs: DocumentChangeEventArgs = { source: this };
         this.trigger(documentChangeEvent, eventArgs);
@@ -3562,43 +3632,52 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Opens the given sfdt text or base 64 string or url.
      *
      * @param {string} sfdtText Specifies the sfdt text or base 64 string or url.
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    public openAsync(inputData: string): void;
+    public openAsync(inputData: string): Promise<void>;
     /**
      * Opens the given blob.
      *
      * @param {string} blob Specifies the Blob object containing the document data.
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    public openAsync(blob: Blob): void;
+    public openAsync(blob: Blob): Promise<void>;
     /**
      * Opens the given file.
      *
      * @param {string} file Specifies the File object containing the document data..
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    public openAsync(file: File): void;
-
-    public openAsync(sfdtText: string | File | Blob): void {
+    public openAsync(file: File): Promise<void>;
+    /**
+     * Opens a document from an SFDT string, a Base64-encoded string, or a URL.
+     *
+     * Note: This operation is asynchronous. SFDT and plain text are loaded on the client.
+     * Other formats (e.g., DOCX, RTF, HTML) are sent to a server for conversion to SFDT;
+     * client-side loading begins after the server responds, which may introduce a slight delay.
+     *
+     * @param {string} inputData - The SFDT string, Base64 string, or URL of the document to open.
+     * @returns {Promise} A promise that resolves when the document has been opened.
+     */
+    public async openAsync(inputData: string | File | Blob): Promise<void> {
         // sfdtText = HelperMethods.sanitizeString(sfdtText);
         showSpinner(this.element);
         try {
-            if (!isNullOrUndefined(sfdtText)) {
-                this.openInternal(sfdtText, true);
+            if (!isNullOrUndefined(inputData)) {
+                await this.openInternal(inputData, true);
             }
         } catch (error) {
             this.failureHandler('onError');
         }
     }
-    private openInternal(sfdtText: string | Blob | File, isAsync: boolean): void {
+    private async openInternal(sfdtText: string | Blob | File, isAsync: boolean): Promise<void> {
         const fileName: string = this.isValidUrl(sfdtText as string);
         if (fileName !== null) {
             this.getSfdtFromUrl(sfdtText as string, fileName)
-                .then((sfdt: string) => {
+                .then(async (sfdt: string) => {
                     sfdtText = sfdt;
                     // Continue with the next steps after getting sfdt from URL
-                    this.processSfdt(sfdtText as string);
+                    await this.processSfdt(sfdtText as string, isAsync);
                 })
                 .catch((error: any) => {
                     // Handle error
@@ -3606,10 +3685,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 });
         } else if (this.isValidBase64(sfdtText as string)) {
             this.getSfdtFromBase64string(sfdtText as string)
-                .then((sfdt: string) => {
+                .then(async (sfdt: string) => {
                     sfdtText = sfdt;
                     // Continue with the next steps after getting sfdt from base64 string
-                    this.processSfdt(sfdtText as string);
+                    await this.processSfdt(sfdtText as string, isAsync);
                 })
                 .catch((error: any) => {
                     // Handle error
@@ -3617,10 +3696,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 });
         } else if (sfdtText instanceof File) {
             this.convertToSfdt(sfdtText)
-                .then((sfdt: string) => {
+                .then(async (sfdt: string) => {
                     sfdtText = sfdt;
                     // Continue with the next steps after converting file to sfdt
-                    this.processSfdt(sfdtText as string);
+                    await this.processSfdt(sfdtText as string, isAsync);
                 })
                 .catch((error: any) => {
                     // Handle error
@@ -3630,10 +3709,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             const name: string[] = sfdtText.type.split('/');
             if (name[name.length - 1] === 'sfdt') {
                 this.convertFromSfdtBlob(sfdtText)
-                    .then((sfdt: string) => {
+                    .then(async (sfdt: string) => {
                         sfdtText = sfdt;
                         // Continue with the next steps after converting from sfdt blob
-                        this.processSfdt(sfdtText as string);
+                        await this.processSfdt(sfdtText as string, isAsync);
                     })
                     .catch((error: any) => {
                         // Handle error
@@ -3641,10 +3720,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     });
             } else {
                 this.convertFromBlob(sfdtText)
-                    .then((sfdt: string) => {
+                    .then(async (sfdt: string) => {
                         sfdtText = sfdt;
                         // Continue with the next steps after converting from blob
-                        this.processSfdt(sfdtText as string);
+                        await this.processSfdt(sfdtText as string, isAsync);
                     })
                     .catch((error: any) => {
                         // Handle error
@@ -3653,12 +3732,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
         } else {
             if (!isAsync) {
-                this.processSfdt(sfdtText as string);
+                await this.processSfdt(sfdtText as string, false);
             }
             else {
-                setTimeout(() => {
+                setTimeout(async () => {
                     try {
-                        this.processSfdt(sfdtText as string);
+                        await this.processSfdt(sfdtText as string, true);
                     } catch (error) {
                         this.failureHandler('onError');
                     }
@@ -3666,7 +3745,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
     }
-    private processSfdt(sfdtText: string): void {
+    private async processSfdt(sfdtText: string, isAsync: boolean): Promise<void> {
         if (!isNullOrUndefined(this.viewer) && !isNullOrUndefined(sfdtText)) {
             this.clearPreservedCollectionsInViewer();
             this.documentHelper.userCollection.push('Everyone');
@@ -3685,8 +3764,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 const incrementalOps: Record<string, ActionInfo[]> = {};
                 this.documentHelper.setDefaultDocumentFormat();
                 const sections: BodyWidget[] = this.parser.convertJsonToDocument(sfdtText as string, incrementalOps);
-                this.documentHelper.onDocumentChanged(sections, incrementalOps);
+                if (isAsync) {
+                    await this.documentHelper.onDocumentChanged(sections, incrementalOps, true);
+                } else {
+                    this.documentHelper.onDocumentChanged(sections, incrementalOps, false);
+                }
             }
+
             if (this.isSpellCheck) {
                 if (this.isSpellCheck && !this.spellCheckerModule.enableOptimizedSpellCheck) {
                     this.documentHelper.triggerElementsOnLoading = false;
@@ -4320,6 +4404,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public print(printWindow?: Window): void {
+        if (this.documentHelper.isDocumentLoadAsynchronously) {
+            return;
+        }
         if (isNullOrUndefined(this.viewer)) {
             throw new Error('Invalid operation.');
         }
@@ -4873,7 +4960,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 'sty': [styleData]
             };
             if (this.editorModule.isLinkedStyle((style as WStyle).name)) {
-                const linkedStyle: WStyle = this.documentHelper.styles.findByName((style as WStyle).name + ' Char') as WStyle;
+                const linkedStyle: WStyle = this.documentHelper.styles.findByName((style as WStyle).link.name) as WStyle;
                 const linkedStyleData: any = this.documentHelper.owner.sfdtExportModule.writeStyle(linkedStyle);
                 styleObject.sty.push(linkedStyleData);
             }

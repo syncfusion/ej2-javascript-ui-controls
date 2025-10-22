@@ -21,6 +21,10 @@ export class StatusBar {
     private pageLabel: HTMLElement;
     private pageNumberInput: HTMLInputElement;
     private editablePageNumber: HTMLElement;
+    /**
+     * @private
+     */
+    public loadingDiv: HTMLElement;
     private ofLabel: HTMLElement;
     private zoomBtn: HTMLButtonElement;
     private pageButton: HTMLButtonElement;
@@ -43,11 +47,17 @@ export class StatusBar {
     private onPageNumberFocusHandler: EventListenerOrEventListenerObject = this.onPageNumberFocus.bind(this);
     //Event Handler Methods
     private onPageLayoutClick(): void {
+        if (this.documentEditor.documentHelper.isDocumentLoadAsynchronously) {
+            return;
+        }
         this.documentEditor.layoutType = 'Pages';
         this.addRemoveClass(this.pageButton, this.webButton);
         this.documentEditor.focusIn();
     }
     private onWebLayoutClick(): void {
+        if (this.documentEditor.documentHelper.isDocumentLoadAsynchronously) {
+            return;
+        }
         this.documentEditor.layoutType = 'Continuous';
         this.addRemoveClass(this.webButton, this.pageButton);
         this.documentEditor.focusIn();
@@ -134,6 +144,28 @@ export class StatusBar {
         this.pageCount = createElement('span');
         this.pageNumDiv.appendChild(this.pageCount);
         this.updatePageCount();
+        const paddingStyle: string = isRtl ? 'padding-right:10px;' : 'padding-left:10px;';
+        this.loadingDiv = createElement('div', {
+            styles: `display: none; ${paddingStyle}`
+        });
+        this.loadingDiv.innerHTML = 'Loading<span id="dots"></span>';
+        const style: HTMLStyleElement = document.createElement('style');
+        style.textContent = `
+#dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+  }
+
+  @keyframes dots {
+    0%   { content: ''; }
+    25%  { content: '.'; }
+    50%  { content: '..'; }
+    75%  { content: '...'; }
+    100% { content: ''; }
+  }
+`;
+        document.head.appendChild(style);
+        this.pageNumDiv.appendChild(this.loadingDiv);
         if (this.documentEditor.enableSpellCheck) {
             this.verticalLine = createElement('div', { className: 'e-de-statusbar-separator' });
             this.statusBarDiv.appendChild(this.verticalLine);

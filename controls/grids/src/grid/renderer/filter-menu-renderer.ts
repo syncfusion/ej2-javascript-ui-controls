@@ -197,8 +197,8 @@ export class FilterMenuRenderer {
         }
         this.currentDialogCreatedColumn = column;
         this.renderFilterUI(target, column);
-        if (!(column.isForeignColumn() && !(!isNullOrUndefined(column.filter) && !isNullOrUndefined(column.filter.ui)
-            && !isNullOrUndefined(column.filter.ui.create as Function)))) {
+        if ((!(column.isForeignColumn() && !(!isNullOrUndefined(column.filter) && !isNullOrUndefined(column.filter.ui)
+            && !isNullOrUndefined(column.filter.ui.create as Function)))) && !isNullOrUndefined(column.type)) {
             this.afterRenderFilterUI();
         }
         const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
@@ -284,6 +284,7 @@ export class FilterMenuRenderer {
         const valueDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flmenu-valuediv' });
         const fObj: Object = this.filterObj;
         dlgConetntEle.appendChild(valueDiv);
+        if (isNullOrUndefined(column.type)) { return; }
         const instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
             new this.colTypes[column.type](this.parent, this.serviceLocator, this.parent.filterSettings);
         if (column.filterTemplate) {

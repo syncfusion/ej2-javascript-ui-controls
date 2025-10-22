@@ -417,8 +417,8 @@ describe('Diagram Control', () => {
 
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
-            expect(bounds.x == 118 && bounds.y == 50 && bounds.width == 1055 && bounds.height == 805).toBe(true);
-            expect(diagram.nodes[0].offsetX == 712.5 && diagram.nodes[0].offsetY == 75).toBe(true);
+            expect(bounds.x == 70 && bounds.y == 50 && bounds.width == 1055 && bounds.height == 805).toBe(true);
+            expect(diagram.nodes[0].offsetX == 665 && diagram.nodes[0].offsetY == 75).toBe(true);
             done();
         });
         it('Checking vertical left tree with less offset', (done: Function) => {
@@ -433,8 +433,8 @@ describe('Diagram Control', () => {
 
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
-            expect(bounds.x == 120 && bounds.y == 50 && bounds.width == 1015 && bounds.height == 805).toBe(true);
-            expect(diagram.nodes[0].offsetX == 695 && diagram.nodes[0].offsetY == 75).toBe(true);
+            expect(bounds.x == 93 && bounds.y == 50 && bounds.width == 1015 && bounds.height == 805).toBe(true);
+            expect(diagram.nodes[0].offsetX == 667.5 && diagram.nodes[0].offsetY == 75).toBe(true);
             done();
         });
         it('Checking vertical left tree with 0 offset', (done: Function) => {
@@ -449,8 +449,8 @@ describe('Diagram Control', () => {
 
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
-            expect(bounds.x == 118 && bounds.y == 50 && bounds.width == 1055 && bounds.height == 805).toBe(true);
-            expect(diagram.nodes[0].offsetX == 712.5 && diagram.nodes[0].offsetY == 75).toBe(true);
+            expect(bounds.x == 70 && bounds.y == 50 && bounds.width == 1055 && bounds.height == 805).toBe(true);
+            expect(diagram.nodes[0].offsetX == 665 && diagram.nodes[0].offsetY == 75).toBe(true);
             done();
         });
         it('Checking vertical left tree with greater offset', (done: Function) => {

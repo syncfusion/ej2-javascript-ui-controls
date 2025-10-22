@@ -9,6 +9,7 @@ import { ParagraphWidget, TableCellWidget, TableRowWidget, TableWidget } from '.
 import { Editor } from '../index';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { DocumentHelper, SelectionBorders, SelectionBorder } from '../../index';
+import { BordersHelper } from '../../../document-editor-container/helper/borders-helper';
 
 /**
  * The Borders and Shading dialog is used to modify borders and shading options for selected table or cells.
@@ -645,7 +646,17 @@ export class BordersAndShadingDialog {
             if (!isNullOrUndefined(borders)) {
                 editorModule.applyBordersInternal(this.cellFormat.borders, borders);
             } else if (this.noneDiv.classList.contains('e-de-table-border-inside-setting-click')) {
-                editorModule.applyBordersInternal(this.cellFormat.borders, new WBorders());
+                const clearedBorders: WBorders = new WBorders();
+                clearedBorders.top.lineStyle = 'Cleared';
+                clearedBorders.bottom.lineStyle = 'Cleared';
+                clearedBorders.left.lineStyle = 'Cleared';
+                clearedBorders.right.lineStyle = 'Cleared';
+                clearedBorders.horizontal.lineStyle = 'Cleared';
+                clearedBorders.vertical.lineStyle = 'Cleared';
+                clearedBorders.diagonalDown.lineStyle = 'Cleared';
+                clearedBorders.diagonalUp.lineStyle = 'Cleared';
+                BordersHelper.applyBorder(this.documentHelper.owner, 'AllBorders', '#000000', 'No Border');
+                editorModule.applyBordersInternal(this.cellFormat.borders, clearedBorders);
             }
             // Once option has been added for texture and foreground, need to handle this similar to Shading Fill.
             if (!isNullOrUndefined(selectedCell.cellFormat.shading)) {

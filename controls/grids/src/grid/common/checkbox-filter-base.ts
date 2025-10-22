@@ -42,7 +42,6 @@ export class CheckBoxFilterBase {
     protected searchBox: Element;
     protected sInput: HTMLInputElement;
     protected sIcon: Element;
-    protected isExecuteLocal: boolean = false;
     private queryFilteredColumn: Object[] = [];
     /** @hidden */
     public options: IFilterArgs;
@@ -731,6 +730,10 @@ export class CheckBoxFilterBase {
     /** @hidden */
     public initiateFilter(fColl: PredicateModel[]): void {
         const firstVal: PredicateModel = fColl[0];
+        if (firstVal && firstVal.type === 'dateonly') {
+            firstVal.value = firstVal.value instanceof Date ?
+                firstVal.value.getFullYear() + '-' + padZero(firstVal.value.getMonth() + 1) + '-' + padZero(firstVal.value.getDate()) : firstVal.value;
+        }
         let predicate: PredicateModel;
         if (!isNullOrUndefined(firstVal)) {
             predicate = firstVal.ejpredicate ? firstVal.ejpredicate :
@@ -922,8 +925,8 @@ export class CheckBoxFilterBase {
         }
     }
 
-    private getPredicateFromCols(columns: Object[], isExecuteLocal?: boolean): Predicate {
-        const predicates: Predicate = CheckBoxFilterBase.getPredicate(columns, isExecuteLocal);
+    private getPredicateFromCols(columns: Object[]): Predicate {
+        const predicates: Predicate = CheckBoxFilterBase.getPredicate(columns);
         const predicateList: Predicate[] = [];
         const fPredicate: { predicate?: Predicate } = {};
         const isGrid: boolean = this.parent.getForeignKeyColumns !== undefined;
@@ -1324,9 +1327,7 @@ export class CheckBoxFilterBase {
         if (args1.executeQuery) {
             const query: Query = new Query();
             if (!this.customQuery){
-                this.isExecuteLocal = true;
                 this.queryGenerate(query);
-                this.isExecuteLocal = false;
             }
             // query.select(this.options.field);
             const result: Object[] = new DataManager(args1.dataSource as JSON[]).executeLocal(query);
@@ -1388,7 +1389,7 @@ export class CheckBoxFilterBase {
                     }
                 }
             }
-            const predicate: Predicate = this.getPredicateFromCols(cols, this.isExecuteLocal);
+            const predicate: Predicate = this.getPredicateFromCols(cols);
             if (predicate) {
                 query.where(predicate);
             }
@@ -1401,9 +1402,7 @@ export class CheckBoxFilterBase {
         // query.requiresCount();
         // let result: Object = new DataManager(dataSource as JSON[]).executeLocal(query);
         // let res: { result: Object[] } = result as { result: Object[] };
-        this.isExecuteLocal = true;
         this.updateResult();
-        this.isExecuteLocal = false;
         const args1: Object = { dataSource: this.fullData, isCheckboxFilterTemplate: false, column: this.options.column,
             element: this.cBox, type: this.options.type, format: this.options.type, btnObj: this.options.isResponsiveFilter ? null :
                 (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0], searchBox: this.searchBox };
@@ -1423,8 +1422,8 @@ export class CheckBoxFilterBase {
     private updateResult(): void {
         this.result = {};
         const predicate: Predicate = this.infiniteRenderMod && this.existingPredicate[this.options.field] ?
-            this.getPredicateFromCols(this.existingPredicate[this.options.field], this.isExecuteLocal) :
-            this.getPredicateFromCols(this.options.filteredColumns, this.isExecuteLocal);
+            this.getPredicateFromCols(this.existingPredicate[this.options.field]) :
+            this.getPredicateFromCols(this.options.filteredColumns);
         const query: Query = new Query();
         if (predicate) {
             query.where(predicate);
@@ -1469,7 +1468,7 @@ export class CheckBoxFilterBase {
                     if (this.infiniteRenderMod && !this.options.isRemote && this.options.parentTotalDataCount
                         && this.infiniteUnloadParentExistPred.length) {
                         const predicate: Predicate = this.getPredicateFromCols(this.options.filteredColumns
-                            .concat(...this.infiniteManualSelectMaintainPred), true);
+                            .concat(...this.infiniteManualSelectMaintainPred));
                         const query: Query = new Query();
                         if (predicate) {
                             query.where(predicate);
@@ -1786,11 +1785,14 @@ export class CheckBoxFilterBase {
             for (let i: number = 0; i < data.length; i++) {
                 const uid: string = getUid('cbox');
                 this.values[`${uid}`] = getValue(key, data[parseInt(i.toString(), 10)]);
-                let value: string | number = getValue(this.options.field, data[parseInt(i.toString(), 10)]);
+                let value: string | number | Date = getValue(this.options.field, data[parseInt(i.toString(), 10)]);
                 if (this.options.formatFn) {
+                    if (this.options.type === 'dateonly') {
+                        value = new Date(value);
+                    }
                     value = this.valueFormatter.toView(value as number, this.options.formatFn) as string;
                 }
-                const args: { value: string | number, column: ColumnModel, data: Object }
+                const args: { value: string | number | Date, column: ColumnModel, data: Object }
                             = { value: value, column: this.options.column, data: data[parseInt(i.toString(), 10)] };
                 this.parent.notify(events.filterCboxValue, args);
                 value = args.value;
@@ -1892,7 +1894,7 @@ export class CheckBoxFilterBase {
         hideSpinner(this.spinner);
     }
 
-    private updateInfiniteUnLoadedCheckboxExistPred(value: string | number, updatePredArr: Object[]): void {
+    private updateInfiniteUnLoadedCheckboxExistPred(value: string | number | Date, updatePredArr: Object[]): void {
         for (let j: number = 0; j < updatePredArr.length; j++) {
             const pred: PredicateModel = updatePredArr[j as number] as PredicateModel;
             const predValue: string | number | boolean | (string | number | boolean | Date)[] = pred.value instanceof Date ?
@@ -1934,10 +1936,6 @@ export class CheckBoxFilterBase {
 
         while (len--) {
             value = json[parseInt(len.toString(), 10)] as string;
-            if (column && column.type === 'dateonly' && typeof value[`${field}`] === 'string' && value[`${field}`]) {
-                const arr: string[] = value[`${field}`].split(/[^0-9.]/);
-                value[`${field}`] = new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10));
-            }
             value = getObject(field, value); //local remote diff, check with mdu
             const currentFilterValue: string = (typeof value === 'string') && !(isNullOrUndefined(checkboxFilter)) &&
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1961,7 +1959,7 @@ export class CheckBoxFilterBase {
         return DataUtil.group(DataUtil.sort(result, field, DataUtil.fnAscending), 'ejValue');
     }
 
-    public static getPredicate(columns: PredicateModel[], isExecuteLocal?: boolean): Predicate {
+    public static getPredicate(columns: PredicateModel[]): Predicate {
         const cols: PredicateModel[] = DataUtil.distinct(columns, 'field', true) || [];
         let collection: Object[] = [];
         const pred: Predicate = {} as Predicate;
@@ -1969,20 +1967,20 @@ export class CheckBoxFilterBase {
             collection = new DataManager(columns as JSON[]).executeLocal(
                 new Query().where('field', 'equal', cols[parseInt(i.toString(), 10)].field));
             if (collection.length !== 0) {
-                pred[cols[parseInt(i.toString(), 10)].field] = CheckBoxFilterBase.generatePredicate(collection, isExecuteLocal);
+                pred[cols[parseInt(i.toString(), 10)].field] = CheckBoxFilterBase.generatePredicate(collection);
             }
         }
         return pred;
     }
 
-    private static generatePredicate(cols: PredicateModel[], isExecuteLocal?: boolean): Predicate {
+    private static generatePredicate(cols: PredicateModel[]): Predicate {
         const len: number = cols ? cols.length : 0;
         let predicate: Predicate;
         const operate: string = 'or';
         const first: PredicateModel = CheckBoxFilterBase.updateDateFilter(cols[0]);
         first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
         if (first.type === 'date' || first.type === 'datetime' || first.type === 'dateonly') {
-            predicate = getDatePredicate(first, first.type, isExecuteLocal);
+            predicate = getDatePredicate(first, first.type);
         } else {
             predicate = first.ejpredicate ? first.ejpredicate as Predicate :
                 new Predicate(
@@ -1995,7 +1993,7 @@ export class CheckBoxFilterBase {
                 || (cols[p as number].predicate === 'and' && cols[p as number - 1].predicate === 'and'))) {
                 if (cols[p as number].type === 'date' || cols[p as number].type === 'datetime' || cols[p as number].type === 'dateonly') {
                     predicate.predicates.push(
-                        getDatePredicate(cols[parseInt(p.toString(), 10)], cols[p as number].type, isExecuteLocal));
+                        getDatePredicate(cols[parseInt(p.toString(), 10)], cols[p as number].type));
                 } else {
                     predicate.predicates.push(new Predicate(
                         cols[p as number].field, cols[parseInt(p.toString(), 10)].operator,
@@ -2006,11 +2004,11 @@ export class CheckBoxFilterBase {
                 if (cols[p as number].type === 'date' || cols[p as number].type === 'datetime' || cols[p as number].type === 'dateonly') {
                     if (cols[parseInt(p.toString(), 10)].predicate === 'and' && cols[parseInt(p.toString(), 10)].operator === 'equal') {
                         predicate = (predicate[`${operate}`] as Function)(
-                            getDatePredicate(cols[parseInt(p.toString(), 10)], cols[parseInt(p.toString(), 10)].type, isExecuteLocal),
+                            getDatePredicate(cols[parseInt(p.toString(), 10)], cols[parseInt(p.toString(), 10)].type),
                             cols[parseInt(p.toString(), 10)].type, cols[parseInt(p.toString(), 10)].ignoreAccent);
                     } else {
                         predicate = (predicate[((cols[parseInt(p.toString(), 10)] as Predicate).predicate) as string] as Function)(
-                            getDatePredicate(cols[parseInt(p.toString(), 10)], cols[parseInt(p.toString(), 10)].type, isExecuteLocal),
+                            getDatePredicate(cols[parseInt(p.toString(), 10)], cols[parseInt(p.toString(), 10)].type),
                             cols[parseInt(p.toString(), 10)].type, cols[parseInt(p.toString(), 10)].ignoreAccent);
                     }
                 } else {

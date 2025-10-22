@@ -1360,7 +1360,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 ele.insertBefore(el, ele.childNodes[nodeIndex + nodePri]);
                 ++nodeIndex;
             } else {
-                ele.appendChild(el);
+                const children: HTMLElement[] = Array.prototype.slice.call(ele.children) as HTMLElement[];
+                const insertionNode: HTMLElement = children.slice(index)
+                    .find((child: HTMLElement) => !child.classList.contains(CLS_POPPRI));
+                ele.insertBefore(el, insertionNode || null);
             }
             if (el.classList.contains(CLS_SEPARATOR)) {
                 setStyle(el, { display: '', height: sepHeight + 'px' });

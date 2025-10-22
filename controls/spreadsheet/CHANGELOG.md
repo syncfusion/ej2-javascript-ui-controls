@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I769422` - Issue with "page goes unresponsive while importing a file containing a `COUNTIFS` formula with large criteria range" has been resolved.
+
 ## 31.1.22 (2025-10-01)
 
 ### Spreadsheet

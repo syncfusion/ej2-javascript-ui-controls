@@ -468,6 +468,9 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     args.item.removeAttribute('role');
                     if (isLastItem) {
                         args.item.setAttribute('data-active-item', '');
+                        args.item.setAttribute('aria-current', 'page');
+                    } else {
+                        args.item.removeAttribute('aria-current');
                     }
                     if (!this.itemTemplate) {
                         this.beforeItemRenderChanges(args.curData, eventArgs.item, args.item, containsRightIcon);
@@ -653,9 +656,6 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     private beforeItemRenderChanges(prevItem: BreadcrumbItemModel, currItem: BreadcrumbItemModel, elem: Element, isRightIcon: boolean)
         : void {
         const wrapElem: Element = elem.querySelector('.e-anchor-wrap');
-        if (wrapElem) {
-            wrapElem.parentElement.setAttribute('aria-label', 'home');
-        }
         if (currItem.text !== prevItem.text && wrapElem) {
             wrapElem.childNodes.forEach((child: Element) => {
                 if (child.nodeType === Node.TEXT_NODE) {
