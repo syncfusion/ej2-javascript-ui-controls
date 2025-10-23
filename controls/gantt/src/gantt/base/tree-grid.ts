@@ -336,6 +336,15 @@ export class GanttTreeGrid {
                 document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
             }
         }
+        this.parent.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
+        if  (this.parent.showOverAllocation) {
+            this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+        }
+        if (!this.parent.enableVirtualization) {
+            this.parent.updateContentHeight();
+        }
+        this.parent.ganttChartModule.updateWidthAndHeight();
+        this.parent.ganttChartModule.reRenderConnectorLines();
         this.parent['hideLoadingIndicator']();
         this.parent.trigger('collapsed', args);
     }
@@ -361,6 +370,15 @@ export class GanttTreeGrid {
                 document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
             }
         }
+        this.parent.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
+        if  (this.parent.showOverAllocation) {
+            this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+        }
+        if (!this.parent.enableVirtualization) {
+            this.parent.updateContentHeight();
+        }
+        this.parent.ganttChartModule.updateWidthAndHeight();
+        this.parent.ganttChartModule.reRenderConnectorLines();
         this.parent['hideLoadingIndicator']();
         this.parent.isCollapseAll = false;
         this.parent.trigger('expanded', args);
@@ -816,7 +834,15 @@ export class GanttTreeGrid {
                 if (column.field === 'WBSCode' || column.field === 'WBSPredecessor') {
                     column.clipMode = 'EllipsisWithTooltip';
                 }
-                column.editType = column.editType ? column.editType : 'stringedit';
+                if (column.editType === undefined) {
+                    if (column.type === 'date') {
+                        column.editType = 'datepickeredit';
+                    } else if (column.type === 'datetime') {
+                        column.editType = 'datetimepickeredit';
+                    } else {
+                        column.editType = 'stringedit';
+                    }
+                }
                 column.type = column.type ? column.type : 'string';
                 if (column.type === 'checkbox') {
                     this.parent.selectionSettings.type = 'Multiple';
@@ -1296,6 +1322,19 @@ export class GanttTreeGrid {
         const treeGridColumn: ColumnModel = {}; const ganttColumn: GanttColumnModel = {};
         for (const prop of Object.keys(newGanttColumn)) {
             treeGridColumn[prop as string] = ganttColumn[prop as string] = newGanttColumn[prop as string];
+        }
+        const templateProps: string[] = [
+            'template',
+            'editTemplate',
+            'filterTemplate',
+            'filter_itemTemplate',
+            'headerTemplate',
+            'formatter'
+        ];
+        for (const prop of templateProps) {
+            if (prop in newGanttColumn && newGanttColumn[prop as string] != null) {
+                treeGridColumn[prop as string] = ganttColumn[prop as string] = newGanttColumn[prop as string];
+            }
         }
         if (ganttColumn.field === this.parent.taskFields.constraintDate) {
             if (!('type' in ganttColumn)) {

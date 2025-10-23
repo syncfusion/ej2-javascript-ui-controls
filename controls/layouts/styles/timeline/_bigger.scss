@@ -1,7 +1,7 @@
 @include export-module('timeline-bigger') {
   .e-bigger.e-timeline,
   .e-bigger .e-timeline {
-    [class ^= 'e-dot ']::before {
+    .e-dot:not([class *= ' e-dot']):not([class = 'e-dot'])::before {
       min-width: $timeline-bigger-dot-icon-size;
       min-height: $timeline-bigger-dot-icon-size;
       font-size: $timeline-bigger-dot-font-size;

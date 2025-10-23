@@ -238,15 +238,15 @@
   }
 }
 
-.querybuilder-spinner::before {
+.e-querybuilder-spinner::before {
   content: '';
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   width: 16px;
   height: 16px;
-  border: 2px solid $primary-light;
-  border-top: 2px solid $primary;
+  border: 2px solid $spinner-border-light-color;
+  border-top: 2px solid $spinner-border-color;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

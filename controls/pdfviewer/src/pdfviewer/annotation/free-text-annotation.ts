@@ -888,6 +888,7 @@ export class FreeTextAnnotation {
                 };
                 if (this.pdfViewer.enableRtl) {
                     annot.textAlign = 'Right';
+                    annotObject.textAlign = 'Right';
                 }
                 const annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                 const bounds: AnnotBoundsRect = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width,

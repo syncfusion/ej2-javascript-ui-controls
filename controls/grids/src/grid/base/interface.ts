@@ -2516,6 +2516,7 @@ export interface IEdit {
     isAdded?: boolean;
     previousData?: object;
     addBatchRow?: boolean;
+    virtualEditValidationArgs: object;
 }
 
 export interface CheckBoxChangeEventArgs extends ICancel {

@@ -150,19 +150,33 @@ export function getTaskData(
 export function updateDates(record: IGanttData, parent: Gantt): void {
     // let startDate: Date = (record as IGanttData).taskData[parent.taskFields.startDate];
     if (record && !isNullOrUndefined((record as IGanttData).ganttProperties)) {
-        (record as IGanttData).taskData[parent.taskFields.startDate] = parent.dateValidationModule.remove(
-            (record as IGanttData).ganttProperties.startDate, parent.timezone);
+        const taskData: Object = (record as IGanttData).taskData;
+        const ganttProps: ITaskData = (record as IGanttData).ganttProperties;
+        // Update start date
+        taskData[parent.taskFields.startDate] = parent.dateValidationModule.remove(
+            ganttProps.startDate,
+            parent.timezone
+        );
+        // Update end date if defined
         if (parent.taskFields.endDate !== null) {
-            (record as IGanttData).taskData[parent.taskFields.endDate] = parent.dateValidationModule.remove(
-                (record as IGanttData).ganttProperties.endDate, parent.timezone);
+            taskData[parent.taskFields.endDate] = parent.dateValidationModule.remove(
+                ganttProps.endDate,
+                parent.timezone
+            );
         }
-        if (parent.taskFields.baselineEndDate || parent.taskFields.baselineStartDate) {
-            (record as IGanttData).taskData[parent.taskFields.baselineStartDate] = parent.dateValidationModule.remove(
-                (record as IGanttData).ganttProperties.baselineStartDate, parent.timezone);
-
-            (record as IGanttData).taskData[parent.taskFields.baselineEndDate] = parent.dateValidationModule.remove(
-                (record as IGanttData).ganttProperties.baselineEndDate, parent.timezone);
+        // Update baseline dates if defined
+        if (parent.taskFields.baselineStartDate || parent.taskFields.baselineEndDate) {
+            taskData[parent.taskFields.baselineStartDate] = parent.dateValidationModule.remove(
+                ganttProps.baselineStartDate,
+                parent.timezone
+            );
+            taskData[parent.taskFields.baselineEndDate] = parent.dateValidationModule.remove(
+                ganttProps.baselineEndDate,
+                parent.timezone
+            );
         }
+        // Update custom date columns
+        parent.editModule['processCustomDateColumns'](record, taskData, parent, 'remove');
     }
     return null;
 }

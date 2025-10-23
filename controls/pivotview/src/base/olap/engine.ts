@@ -351,7 +351,7 @@ export class OlapEngine {
             const virtualValuesTupples: Element[] = this.getVirtualValues(
                 valTuples, calColPage + colTuplesOffset, calRowPage + rowTuplesOffset, calColSize, calRowSize,
                 colData.indexCollection, rowData.indexCollection, colTuples.length, rowTuples.length, colDepth,
-                rowDepth, isRowGrandTolExists
+                rowDepth, isColGrandTolExists, isRowGrandTolExists
             );
             colTuples = [...virtualColTuples];
             rowTuples = [...virtualRowTuples];
@@ -420,7 +420,7 @@ export class OlapEngine {
     private getVirtualValues(
         valueTuples: Element[], calColumnPage: number, calRowPage: number, calColunmnSize: number, calRowSize: number,
         colTotalsIndex: number[], rowTotalsIndex: number[], colTuplesLen: number, rowTuplesLen: number, columnDepth: number,
-        rowDepth: number, isRowGrandTolExists: boolean
+        rowDepth: number, isColGrandTolExists: boolean, isRowGrandTolExists: boolean
     ): Element[] {
         let framedVirtValTuples: Element[] = [];
         let virtValTuples: Element[] = valueTuples;
@@ -435,9 +435,10 @@ export class OlapEngine {
             }
             virtValTuples = virtRowTotalValues.concat(virtValTuples);
         }
+        const columnOffset: number = calColumnPage + (isColGrandTolExists ? columnDepth : 0);
         for (let i: number = 0, j: number = virtValTuples.length / colTuplesLen; i < j; i++) {
             const rows: Element[] = virtValTuples.slice(i * colTuplesLen, (i * colTuplesLen) + colTuplesLen);
-            const virtRows: Element[] = rows.slice(calColumnPage + columnDepth, calColumnPage + columnDepth + calColunmnSize);
+            const virtRows: Element[] = rows.slice(columnOffset, columnOffset + calColunmnSize);
             const virtTotals: Element[] = [];
             for (let x: number = 0; x < colTotalsIndex.length; x++) {
                 virtTotals[virtTotals.length] = rows[colTotalsIndex[x as number]];
@@ -4529,21 +4530,6 @@ export class OlapEngine {
     // }
 
     public doAjaxPost(type: string, url: string, data: string, success: Function, customArgs?: Object): void {
-        const ajax: Ajax = new Ajax(
-            {
-                mode: false,
-                contentType: 'text/xml',
-                url: url,
-                data: data,
-                dataType: 'xml',
-                type: type,
-                beforeSend: this.beforeSend.bind(this),
-                onSuccess: this.onSuccess.bind(this, success, customArgs),
-                onFailure: (e: string) => {
-                    this.errorInfo = e;
-                }
-            }
-        );
         const params: BeforeServiceInvokeEventArgs = {
             dataSourceSettings: (customArgs as { [Key: string]: Object }).dataSourceSettings,
             action: (customArgs as { [Key: string]: string }).action,
@@ -4560,6 +4546,23 @@ export class OlapEngine {
             this.getBeforeSeviceInvoke(params);
         }
         this.requestHeaders = (params.internalProperties as { [key: string]: string }).headers as {} || {};
+        const contentType: string = this.requestHeaders['Content-Type'] ? this.requestHeaders['Content-Type'] : 'text/xml';
+        const ajax: Ajax = new Ajax(
+            {
+                mode: false,
+                contentType: contentType,
+                url: url,
+                data: data,
+                dataType: 'xml',
+                type: type,
+                beforeSend: this.beforeSend.bind(this),
+                onSuccess: this.onSuccess.bind(this, success, customArgs),
+                onFailure: (e: string) => {
+                    this.errorInfo = e;
+                }
+
+            }
+        );
         ajax.send();
     }
     private onSuccess(success: Function, customArgs: Object, args: string | Object, request: Ajax): void {
@@ -4593,7 +4596,7 @@ export class OlapEngine {
                 ':' + this.dataSourceSettings.authentication.password));
         }
         for (const key in this.requestHeaders) {
-            if (Object.prototype.hasOwnProperty.call(this.requestHeaders, key)) {
+            if (Object.prototype.hasOwnProperty.call(this.requestHeaders, key) && key !== 'Content-Type') {
                 (args as { httpRequest: XMLHttpRequest }).httpRequest.setRequestHeader(key, this.requestHeaders[key as string]);
             }
         }

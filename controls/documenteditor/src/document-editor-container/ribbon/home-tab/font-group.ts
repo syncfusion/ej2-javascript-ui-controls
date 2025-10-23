@@ -308,6 +308,13 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
             if (fontFamilyElement) {
                 (fontFamilyElement as HTMLInputElement).value = fontFamily;
             }
+        } else {
+            const fontFamilyElement: HTMLElement = document.getElementById(id + FONT_FAMILY_ID);
+            if (fontFamilyElement) {
+                const fontFamilyInstance: any = getInstance(fontFamilyElement, ComboBox);
+                (fontFamilyInstance as any).value = null;
+                (fontFamilyElement as HTMLInputElement).value = null;
+            }
         }
 
         // Update font size dropdown

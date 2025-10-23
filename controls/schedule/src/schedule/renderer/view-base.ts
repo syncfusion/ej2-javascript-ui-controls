@@ -687,14 +687,28 @@ export class ViewBase {
         }
     }
 
-    public getGroupIndices(dataCollection?: TdData[]): number[] {
-        let groupIndices: number[] = [];
-        if (this.parent.virtualScrollModule && this.parent.activeViewOptions.group.resources.length > 0 && (dataCollection ||
-            this.parent.virtualScrollModule.existingDataCollection.length > 0) && !this.parent.uiStateValues.isGroupAdaptive) {
-            dataCollection = isNullOrUndefined(dataCollection) ? this.parent.virtualScrollModule.existingDataCollection : dataCollection;
-            groupIndices = dataCollection.map((data: TdData) => data.groupIndex);
+    private getCollection(dataCollection?: TdData[]): TdData[] {
+        if (this.parent.virtualScrollModule && this.parent.activeViewOptions.group.resources.length > 0 &&
+            !this.parent.uiStateValues.isGroupAdaptive && (dataCollection ||
+                this.parent.virtualScrollModule.existingDataCollection.length > 0)) {
+            return isNullOrUndefined(dataCollection) ? this.parent.virtualScrollModule.existingDataCollection : dataCollection;
         }
-        return groupIndices;
+        return [];
+    }
+
+    public getGroupIndices(dataCollection?: TdData[]): number[] {
+        return this.getCollection(dataCollection).map((data: TdData) => data.groupIndex);
+    }
+
+    public getRenderedDate(dataCollection?: TdData[]): number[] {
+        const processedDates: number[] = [];
+        this.getCollection(dataCollection).forEach((tdData: TdData) => {
+            const date: number = tdData.date.getTime();
+            if (processedDates.indexOf(date) === -1) {
+                processedDates.push(date);
+            }
+        });
+        return processedDates;
     }
 
     public destroy(): void {

@@ -820,6 +820,33 @@ describe('Paste CR issues ', ()=> {
         });
     });
 
+    describe('Bug 984176: Copy and Pasting texts from Teams doesn"t work properly in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: false,
+                }
+            });
+        });
+        it(' Check the table to have RTE table class which has styles for border', (done: DoneFn) => {
+            rteObj.focusIn();
+            const clipBoardData: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><span data-teams="true"><p>&nbsp;</p><table><tbody><tr><td><p>1</p></td><td><p>2</p></td><td><p>3</p></td></tr><tr><td><p>4</p></td><td><p>5</p></td><td><p>6</p></td></tr><tr><td><p>7</p></td><td><p>8</p></td><td><p>9</p><p>&nbsp;</p></td></tr></tbody></table><p>&nbsp;</p></span>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(pasteEvent);
+            setTimeout(() => {
+                let pastedElem: string = (rteObj as any).inputElement.querySelector('.e-rte-table');
+                expect(pastedElem).not.toBe(null);
+                done();
+            }, 100);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('946861: Paste cleanup Dialog close testing', ()=> {
         let editor: RichTextEditor;
         beforeAll(()=> {

@@ -1179,10 +1179,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     // Added logic to assign a default size to child nodes if no size is defined at the sample level.
                     content.measure(new Size());
                     content.arrange(content.desiredSize);
-                    content.width = content.width || this.symbolWidth || content.actualSize.width || content.style.strokeWidth;
-                    content.height = content.height || this.symbolHeight || content.actualSize.height || content.style.strokeWidth;
-                    symbol.width = symbol.width || this.symbolWidth || content.actualSize.width || content.style.strokeWidth;
-                    symbol.height = symbol.height || this.symbolHeight || content.actualSize.height || content.style.strokeWidth;
+                    content.width = content.width || content.actualSize.width || this.symbolWidth || content.style.strokeWidth;
+                    content.height = content.height || content.actualSize.height || this.symbolHeight || content.style.strokeWidth;
+                    symbol.width = symbol.width || content.actualSize.width || this.symbolWidth || content.style.strokeWidth;
+                    symbol.height = symbol.height || content.actualSize.height || this.symbolHeight || content.style.strokeWidth;
                     container.children.push(content);
                 }
             }

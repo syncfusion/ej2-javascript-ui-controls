@@ -14,7 +14,7 @@ import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditor
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs, BeforePasteEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
-import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange, beforePaste } from '../document-editor/base/constants';
+import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange, beforePaste, asyncPagesVisible } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DialogUtility } from '@syncfusion/ej2-popups';
@@ -313,6 +313,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Event()
     public beforeXmlHttpRequestSend: EmitType<XmlHttpRequestEventArgs>;
+    /**
+     * @private
+     * Triggers when pages loads asynchronously in the document editor
+     */
+    @Event()
+    public asyncPagesVisible: EmitType<void>;
     /**
      * Document editor container's toolbar module
      *
@@ -631,6 +637,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     break;
                 case 'layoutType':
                     if (this.documentEditor) {
+                        if (this.documentEditor.documentHelper.isDocumentLoadAsynchronously) {
+                            break;
+                        }
                         this.documentEditor.layoutType = newModel.layoutType;
                         if (newModel.layoutType === 'Continuous') {
                             this.statusBar.togglePageLayout();
@@ -919,6 +928,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentEditorSettings.revisionSettings)) {
             this.documentEditor.documentEditorSettings.revisionSettings = this.documentEditorSettings.revisionSettings;
         }
+        if (!isNullOrUndefined(this.documentEditorSettings.openAsyncSettings)) {
+            this.documentEditor.documentEditorSettings.openAsyncSettings = this.documentEditorSettings.openAsyncSettings;
+        }
         if (!isNullOrUndefined(this.documentEditorSettings.allowHyphensInBookmarkNames)) {
             this.documentEditor.documentEditorSettings.allowHyphensInBookmarkNames = this.documentEditorSettings.allowHyphensInBookmarkNames;
         }
@@ -1041,6 +1053,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             trackChange: this.onTrackChange.bind(this),
             serviceFailure: this.fireServiceFailure.bind(this),
             beforeXmlHttpRequestSend: this.beforeXmlHttpSend.bind(this),
+            asyncPagesVisible: this.onAsyncPagesVisible.bind(this),
             locale: this.locale,
             acceptTab: true,
             zIndex: this.zIndex,
@@ -1276,6 +1289,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         if (this.statusBar) {
             this.statusBar.updatePageCount();
+            this.statusBar.loadingDiv.style.display = 'none';
         }
         let eventArgs: ContainerDocumentChangeEventArgs = { source: this };
         this.trigger(documentChangeEvent, eventArgs);
@@ -1373,6 +1387,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * @private
      */
+    private onAsyncPagesVisible(): void {
+        if (this.statusBar) {
+            this.statusBar.updatePageCount();
+            this.statusBar.loadingDiv.style.display = 'inline-flex';
+        }
+    }
+    /**
+     * @private
+     */
     public showPropertiesPaneOnSelection(): void {
         if (((this.restrictEditing) && !this.showPropertiesPane) || isNullOrUndefined(this.tableProperties)) {
             return;
@@ -1426,7 +1449,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.previousContext = this.documentEditor.selectionModule.contextType;
         if (this.toolbarHandler) {
-            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode && !this.documentEditor.selectionModule.isinFootnote && !this.documentEditor.selectionModule.isinEndnote &&
+            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && (!this.documentEditor.isReadOnlyMode || this.documentEditor.documentHelper.isDocumentLoadAsynchronously) && !this.documentEditor.selectionModule.isinFootnote && !this.documentEditor.selectionModule.isinEndnote &&
                 !this.documentEditor.selectionModule.isPlainContentControl());
         }
     }

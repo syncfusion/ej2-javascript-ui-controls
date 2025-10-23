@@ -185,6 +185,28 @@
         min-height: $treeview-big-item-height;
       }
 
+      @if $skin-name == 'bootstrap5.3' {
+        padding: $treeview-big-text-padding;
+      }
+
+      @if $skin-name == 'highcontrast' {
+        padding: $treeview-big-text-padding;
+      }
+
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+
+      @if $skin-name == 'FluentUI' {
+        padding: $treeview-big-text-padding;
+      }
+
+      @if $skin-name == 'bootstrap4' {
+        padding-top: 13px;
+        padding-bottom: 13px;
+      }
+
       .e-input-group {
         height: $treeview-big-input-height;
 
@@ -192,6 +214,69 @@
           .e-input {
             height: 36px;
           }
+        }
+
+        @if $skin-name =='bootstrap5' {
+          padding-top: 6px;
+          padding-bottom: 6px;
+          margin-top: 2px;
+          margin-bottom: 2px;
+        }
+
+        @if $skin-name == 'highcontrast' or $skin-name == 'material-dark' {
+          line-height: 42px;
+          min-height: 42px;
+        }
+
+        .e-input {
+          @if $skin-name =='tailwind3' {
+            height: 40px;
+            line-height: 24px;
+            padding-top: 8px;
+            padding-bottom: 8px;
+          }
+
+          @if $skin-name =='bootstrap5' {
+            height: 24px;
+          }
+
+          @if $skin-name =='material' or $skin-name == 'material-dark' {
+            line-height: 28px;
+            min-height: 28px;
+            padding-top: 9px;
+            padding-bottom: 5px;
+          }
+
+          @if $skin-name == 'bootstrap5.3' {
+            line-height: 24px;
+            min-height: 24px;
+            padding-top: 7px;
+            padding-bottom: 7px;
+          }
+        }
+      }
+    }
+
+    .e-list-item .e-text-content .e-list-text {
+      &:has(> .e-input-group) {
+        @if $skin-name =='highcontrast' {
+          padding-top: 4px;
+          padding-bottom: 4px;
+        }
+
+        @if $skin-name =='FluentUI' {
+          padding-top: 2px;
+          padding-bottom: 2px;
+        }
+
+        @if $skin-name =='material' or $skin-name == 'material-dark' {
+          padding-top: 3px;
+          padding-bottom: 3px;
+        }
+
+        @if $skin-name == 'bootstrap4' {
+          padding-top: 6px;
+          padding-bottom: 6px;
         }
       }
     }
@@ -230,7 +315,7 @@
 
     .e-icon-collapsible,
     .e-icon-expandable {
-      @if $skin-name == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5.3' {
         height: $treeview-big-icon-size;
         margin: $treeview-big-icon-margin;
         width: $treeview-big-icon-size;
@@ -242,7 +327,7 @@
       }
 
       &::before {
-        @if $skin-name != 'tailwind3' {
+        @if $skin-name != 'tailwind3' and $skin-name != 'Material3' {
           padding: $treeview-big-icon-padding;
         }
       }
@@ -377,6 +462,10 @@
   .e-treeview.e-bigger {
     .e-list-text {
       font-size: $treeview-big-font-size;
+      @if $skin-name == 'Material3' {
+        padding: 12px;
+      }
+      
       @if $skin-name == 'bootstrap4' {
         color: $treeview-big-text-color;
       }

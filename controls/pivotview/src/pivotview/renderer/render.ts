@@ -72,6 +72,8 @@ export class Render {
     private drilledLevelInfo: { [key: string]: boolean } = {};
     private timeOutObj: ReturnType<typeof setTimeout>;
     private modifiedHeaderText: string | number | Date;
+    /** @hidden */
+    public selectedCells: { rowIndex: number; colIndex: number }[] = [];
     /** Constructor for render module
      *
      * @param {PivotView} parent - Instance of pivot table.
@@ -295,6 +297,28 @@ export class Render {
         if (args && args.requestType === 'refresh' && this.isAutoFitEnabled) {
             this.removePivotAutoFitClass();
         }
+        if (this.parent && this.parent.isWindowResized && this.selectedCells && this.selectedCells.length > 0) {
+            this.parent.grid.clearSelection();
+            const parentElement: HTMLElement = this.parent.element;
+            const selectedElements: Element[] = [];
+            this.selectedCells.forEach((cell: { rowIndex: number | undefined; colIndex: number }) => {
+                if (cell.colIndex != null) {
+                    const ariaColIndex: number = cell.colIndex + 1;
+                    let selector: string = `[aria-colindex="${ariaColIndex}"]`;
+                    if (cell.rowIndex != null) {
+                        selector += `[index="${cell.rowIndex}"]`;
+                    }
+                    const element: HTMLElement = parentElement.querySelector(selector);
+                    if (element) {
+                        selectedElements.push(element);
+                    }
+                }
+            });
+            selectedElements.forEach((element: HTMLElement) => {
+                addClass([element], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
+            });
+        }
+        this.parent.isWindowResized = false;
     }
 
     /**
@@ -489,10 +513,13 @@ export class Render {
         if (args.element && this.parent.cssClass) {
             addClass([args.element.parentElement], this.parent.cssClass);
         }
+        let elem: Element;
+        const cellTarget: Element = this.parent.lastCellClicked ? this.parent.lastCellClicked :
+            (this.parent.isAdaptive ? (args.event.target as Element) : this.parent.lastCellClicked);
+        if (cellTarget) {
+            elem = this.getCellElement(cellTarget);
+        }
         for (const item of args.items) {
-            const cellTarget: Element = this.parent.lastCellClicked ? this.parent.lastCellClicked :
-                (this.parent.isAdaptive ? (args.event.target as Element) : this.parent.lastCellClicked);
-            const elem: Element = this.getCellElement(cellTarget);
             let bool: boolean;
             let isGroupElement: boolean;
             if (!elem || (elem && Number(elem.getAttribute('index')) === 0 && parseInt(elem.getAttribute('aria-colindex'), 10) - 1 === 0)) {
@@ -754,7 +781,12 @@ export class Render {
         const selected: string = args.item.id;
         let exportArgs: BeforeExportEventArgs = {
         };
-        const ele: Element = this.getCellElement(target);
+        let ele: Element;
+        if (target) {
+            ele = this.getCellElement(target);
+        } else {
+            return;
+        }
         const rowIndx: number = Number(ele.getAttribute('index'));
         const colIndx: number = parseInt(ele.getAttribute('aria-colindex'), 10) - 1;
         const pivotValue: IAxisSet = this.parent.pivotValues[rowIndx as number][colIndx as number] as IAxisSet;
@@ -1175,11 +1207,13 @@ export class Render {
         const pivotArgs: PivotCellSelectedEventArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues, currentCell: null };
         const selectedElements: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.'
             + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
+        this.selectedCells = [];
         for (let i: number = 0; i < selectedElements.length; i++) {
             const element: HTMLElement = selectedElements[i as number];
             const colIndex: number = parseInt(element.getAttribute('aria-colindex'), 10) - 1;
             const rowIndex: number = Number(element.getAttribute('index'));
             const cell: IAxisSet = (this.engine.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
+            this.selectedCells.push({ colIndex, rowIndex });
             if (cell) {
                 if (cell.axis === 'value') {
                     pivotArgs.selectedCellsInfo.push({
@@ -1330,9 +1364,20 @@ export class Render {
                     }));
                 }
                 rowOuterDiv.appendChild(createElement('span', {
-                    className: cls.CELLVALUE,
-                    innerHTML: (this.parent.isRowCellHyperlink || cell.enableHyperlink ? '<a  data-url="' + localizedText + '" class="e-hyperlinkcell ' + customClass + '">' + localizedText + '</a>' : localizedText)
+                    className: cls.CELLVALUE
                 }));
+                if (!args.column.disableHtmlEncode) {
+                    rowOuterDiv.querySelector('.' + cls.CELLVALUE).innerHTML = (this.parent.isRowCellHyperlink || cell.enableHyperlink ?
+                        '<a  data-url="' + localizedText + '" class="e-hyperlinkcell ' + customClass + '">' + localizedText + '</a>'
+                        : localizedText);
+                } else {
+                    if (this.parent.isRowCellHyperlink || cell.enableHyperlink) {
+                        rowOuterDiv.querySelector('.' + cls.CELLVALUE).innerHTML =
+                            '<a  data-url="' + localizedText + '" class="e-hyperlinkcell ' + customClass + '">' + localizedText + '</a>';
+                    } else {
+                        rowOuterDiv.querySelector('.' + cls.CELLVALUE).textContent = localizedText;
+                    }
+                }
                 const vSort: IValueSortSettings = this.parent.pivotView.dataSourceSettings.valueSortSettings;
                 if (this.parent.enableValueSorting) {
                     let headerText: string | number | Date = vSort && this.parent.dataType === 'pivot' &&
@@ -2539,6 +2584,7 @@ export class Render {
         this.hierarchyPosCollection = {};
         this.drilledLevelInfo = {};
         this.aggMenu = null;
+        this.selectedCells = [];
     }
 
     /**

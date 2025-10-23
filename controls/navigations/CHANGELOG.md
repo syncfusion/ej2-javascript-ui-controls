@@ -2,7 +2,31 @@
 
 ## [Unreleased]
 
-## 31.1.23 (2025-10-07)
+## 31.2.3 (2025-10-22)
+
+### Breadcrumb
+
+#### Bug Fixes
+
+- `#I775259` - The issue with the aria-label attribute in the Breadcrumb component has been resolved.
+
+## 31.1.20 (2025-09-10)
+
+### Treeview
+
+#### Bug Fixes
+
+- `#I766330` - The issue where the ripple effect remained visible on the screen when the checkbox was checked rapidly and the mouse was moved quickly has been resolved in the TreeView component.
+
+## 31.1.18 (2025-09-10)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I759090` -  Resolved an alignment issue with the `e-caret` icon in the Menu Component.
+
+## 31.1.17 (2025-09-05)
 
 ### Tab
 
@@ -30,13 +54,13 @@
 
 #### Bug Fixes
 
-- `#FB68847` - An issue where null value is not assignable to isValid property in the stepper component has been resolved..
+- `#FB68847` - An issue where null value is not assignable to `isValid` property in the stepper component has been resolved.
 
 ### Breadcrumb
 
 #### Bug Fixes
 
-- `#I741569` - Fixed an issue where UI did not reflect updates to the items list when using the maxItems property in the Breadcrumb component.
+- `#I741569` - Fixed an issue where UI did not reflect updates to the items list when using the `maxItems` property in the Breadcrumb component.
 
 ### Tab
 

@@ -83,6 +83,7 @@ export class EventTooltip {
         }
         const record: Record<string, any> = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (isNullOrUndefined(record)) {
+            this.setContent('No Title');
             return;
         }
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {

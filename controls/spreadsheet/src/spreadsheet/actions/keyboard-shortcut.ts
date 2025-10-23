@@ -73,7 +73,8 @@ export class KeyboardShortcut {
                     const actEle: HTMLElement = document.activeElement as HTMLElement;
                     if (!actEle.classList.contains('e-spreadsheet-edit') && !actEle.classList.contains('e-sheet-rename') &&
                         actEle.id !== `${this.parent.element.id}_name_box` && !closest(actEle, '.e-dropdown-btn') &&
-                        !closest(actEle, '.e-split-btn') && !closest(actEle, '.e-popup-open')) {
+                        !closest(actEle, '.e-split-btn') && !closest(actEle, '.e-popup-open') &&
+                        !actEle.classList.contains('e-formula-bar')) {
                         const cell: HTMLElement = this.parent.getCell(activeCell[0], activeCell[1]);
                         if (cell && cell.querySelector('.e-validation-list')) {
                             return;

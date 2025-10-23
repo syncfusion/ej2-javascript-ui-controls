@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#I767047` - Resolved an issue with the CSP that occurred during file uploads in the Uploader.
+
 ## 31.1.23 (2025-10-07)
 
 ### NumericTextBox

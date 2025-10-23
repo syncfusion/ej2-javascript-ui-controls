@@ -15,6 +15,7 @@ export class Shape {
     private shapeImg: HTMLImageElement;
     private preventFrameAnnotation: boolean = false;
     private redactType: string = 'blur';
+    private isPublicUpdateShape: boolean = false;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -302,6 +303,9 @@ export class Shape {
         case 'setRedactType':
             this.redactType = args.value['redactType'];
             break;
+        case 'setPublicUpdateShape':
+            this.isPublicUpdateShape = args.value['isPublicUpdateShape'];
+            break;
         }
     }
 
@@ -327,7 +331,7 @@ export class Shape {
         this.textSettings =
             {text: 'Enter Text', fontFamily: this.parent.fontFamily.default, fontSize: null, fontRatio: null, bold: false, italic: false, underline: false, strikethrough: false};
         this.strokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, radius: null, outlineColor: '', outlineWidth: null};
-        this.preventFrameAnnotation = false;
+        this.preventFrameAnnotation = this.isPublicUpdateShape = false;
     }
 
     private drawEllipse(x?: number, y?: number, radiusX?: number, radiusY?: number, strokeWidth?: number, strokeColor?: string,
@@ -1031,7 +1035,7 @@ export class Shape {
         }
         parent.notify('selection', { prop: 'setTextSelection', onPropertyChange: false,
             value: {width: width, height: height}});
-        if (parent.activeObj.rotatedAngle !== 0) {
+        if (parent.activeObj.rotatedAngle !== 0 && !this.isPublicUpdateShape) {
             const width: number = parent.activeObj.activePoint.width - tempActiveObj.activePoint.width;
             const height: number = parent.activeObj.activePoint.height - tempActiveObj.activePoint.height;
             let value: string = '';
@@ -1047,6 +1051,19 @@ export class Shape {
                 x: width, y: height, angle: parent.activeObj.rotatedAngle, type: 'text', elem: value }});
             parent.notify('shape', { prop: 'updateFontSize', onPropertyChange: false,
                 value: {obj: parent.activeObj}});
+        } else if (this.isPublicUpdateShape) {
+            const width: number = parent.activeObj.activePoint.width - tempActiveObj.activePoint.width;
+            const height: number = parent.activeObj.activePoint.height - tempActiveObj.activePoint.height;
+            let value: string = '';
+            if (parent.transform.degree === 0 || parent.transform.degree === 180) {
+                value = 'width';
+            }
+            else if (parent.transform.degree === 90 || parent.transform.degree === 270) {
+                value = 'height';
+            }
+            parent.activeObj.activePoint = extend({}, tempActiveObj.activePoint, {}, true) as ActivePoint;
+            parent.notify('selection', { prop: 'adjustRotationPoints', onPropertyChange: false, value: { rectangle: parent.activeObj.activePoint,
+                x: width, y: height, angle: parent.activeObj.rotatedAngle, type: 'text', elem: value }});
         }
         parent.notify('draw', { prop: 'updateActiveObject', onPropertyChange: false, value: {actPoint: parent.activeObj.activePoint, obj: parent.activeObj,
             isMouseMove: null, x: null, y: null}});

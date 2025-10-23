@@ -4787,3 +4787,58 @@ describe('Dialog Null or undefined value testing', () => {
     });
 });
 
+describe('EJ2-765718 Keydown Tab focus wrap in modal Dialog when footer button is disabled', () => {
+    let dlgObj: any;
+    let eventArgs: any;
+    let prevented: boolean;
+    beforeAll(() => {
+        const host: HTMLElement = createElement('div', { id: 'focusWrapDialog' });
+        document.body.appendChild(host);
+        const footerTemplate: string = '<button class="e-btn" disabled="true">Send</button>';
+        dlgObj = new Dialog({
+            header: 'Header content',
+            isModal: true,
+            animationSettings: { effect: 'None' },
+            content:
+                '<div>' +
+                '<input id="firstInput" placeholder="Enter your message here!"/><br/>' +
+                '<input id="secondInput" placeholder="Enter your value here!"/>' +
+                '</div>',
+            footerTemplate: footerTemplate
+        });
+        dlgObj.appendTo(host);
+        dlgObj.show();
+    });
+
+    it('Tab from last focusable content element wraps to the first content element', (done) => {
+        const firstInput = document.getElementById('firstInput') as HTMLInputElement;
+        const secondInput = document.getElementById('secondInput') as HTMLInputElement;
+
+        expect(firstInput).not.toBeNull();
+        expect(secondInput).not.toBeNull();
+
+        secondInput.focus();
+        expect(document.activeElement).toBe(secondInput);
+
+        prevented = false;
+        eventArgs = {
+            keyCode: 9, // Tab
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            preventDefault: function () { prevented = true; }
+        };
+
+        dlgObj.keyDown(eventArgs);
+
+        setTimeout(() => {
+            expect(prevented).toBe(true);
+            expect(document.activeElement).toBe(firstInput);
+            done();
+        });
+    });
+
+    afterAll(() => {
+        destroyDialog(dlgObj);
+    });
+});

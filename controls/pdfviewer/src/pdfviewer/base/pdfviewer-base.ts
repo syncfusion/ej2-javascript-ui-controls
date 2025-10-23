@@ -996,9 +996,7 @@ export class PdfViewerBase {
                         if (signatureField.isSigned && this.pdfViewer.pdfRenderer.formFieldsBase) {
                             this.pdfViewer.pdfRenderer.formFieldsBase.mIsDigitalSignaturePresent = true;
                         }
-                        if (this.pdfViewer.pdfRenderer.formFieldsBase &&
-                            this.pdfViewer.pdfRenderer.formFieldsBase.mIsDigitalSignaturePresent &&
-                            this.pdfViewer.pdfRenderer.formFieldsBase.showDigitalSignatureAppearance) {
+                        if (signatureField.isSigned && (jsonObject as any)['showDigitalSignatureAppearance']) {
                             signatureField.flatten = true;
                             isSignatureFlatten = true;
                         }
@@ -2869,7 +2867,8 @@ export class PdfViewerBase {
             const digitalSignature: boolean = proxy.clientSideRendering ? proxy.isDigitalSignaturePresent :
                 (proxy.digitalSignaturePages && proxy.digitalSignaturePages.length !== 0);
             if (digitalSignature) {
-                if (proxy.pdfViewer.isDocumentEdited) {
+                if (proxy.pdfViewer.isDocumentEdited || (!isNullOrUndefined(proxy.pdfViewer.pageOrganizer) &&
+            proxy.pdfViewer.pageOrganizer.isDocumentModified)) {
                     jsonObject['digitalSignatureDocumentEdited'] = true;
                 } else {
                     jsonObject['digitalSignatureDocumentEdited'] = false;

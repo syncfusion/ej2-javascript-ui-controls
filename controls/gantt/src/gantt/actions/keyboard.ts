@@ -43,7 +43,7 @@ export class FocusModule {
     public onKeyPress(e: KeyboardEventArgs): void | boolean {
         const ganttObj: Gantt = this.parent;
         const ele: Element = e.target as Element;
-        const expandedRecords: IGanttData[] = ganttObj.getExpandedRecords(ganttObj.currentViewData);
+        const expandedRecords: IGanttData[] = ganttObj.expandedRecords;
         if (isNullOrUndefined(this.parent.focusModule.getActiveElement()) && (e.action === 'expandAll' || e.action === 'collapseAll')) {
             const focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
             focussedElement.focus();
@@ -335,7 +335,7 @@ export class FocusModule {
             expandedRecords = ganttObj.getExpandedRecords(ganttObj.flatData);
         }
         else {
-            expandedRecords = ganttObj.getExpandedRecords(ganttObj.currentViewData);
+            expandedRecords = ganttObj.expandedRecords;
         }
         if (ganttObj.selectionModule) {
             if (ganttObj.selectionSettings.mode !== 'Cell' && ganttObj.selectedRowIndex !== -1) {

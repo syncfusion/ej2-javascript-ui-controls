@@ -1152,7 +1152,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'locale':
-                super.refresh();
+                if (!this.isPopupView) {
+                    super.refresh();
+                }
                 break;
             case 'dataSourceSettings':
                 if (newProp.dataSourceSettings && ((!isNullOrUndefined(newProp.dataSourceSettings.dataSource) &&

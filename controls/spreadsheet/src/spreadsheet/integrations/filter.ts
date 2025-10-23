@@ -418,7 +418,7 @@ export class Filter {
             delete (args.eventArgs as { cancel: boolean }).cancel;
         }
         if (this.filterCollection.get(sheetIdx).length || preventRefresh) {
-            if (this.filterCollection.get(sheetIdx).length && clearAction) {
+            if (this.filterCollection.get(sheetIdx).length && (clearAction && !isCut)) {
                 const newArgs: { [key: string]: Object } = {
                     action: 'filter',
                     eventArgs: {
@@ -2704,7 +2704,7 @@ export class Filter {
         if (this.filterRange.has(info.sheetIndex)) {
             const indexes: number[] = this.filterRange.get(info.sheetIndex).range.slice();
             if (inRange(info.indices, indexes[0], indexes[1]) && inRange(info.indices, indexes[0], indexes[3])) {
-                this.removeFilter(info.sheetIndex, null, null, true);
+                this.removeFilter(info.sheetIndex, !(args as { isAction?: boolean }).isAction, null, true);
             }
         }
     }

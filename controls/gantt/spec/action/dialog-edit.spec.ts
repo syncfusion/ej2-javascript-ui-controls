@@ -15078,8 +15078,8 @@ describe('actionComplete event\'s modifiedRecords property not showing data prop
         });
         it('Edit end date', () => {
             ganttObj.actionComplete = function (args: any): void {
-                if(args.requestType==="save"){
-                    expect(args.modifiedTaskData.length).toBe(3);
+                if (args.requestType === "save") {
+                    expect(args.modifiedTaskData.length).toBe(1);
                 }
             };
             let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];

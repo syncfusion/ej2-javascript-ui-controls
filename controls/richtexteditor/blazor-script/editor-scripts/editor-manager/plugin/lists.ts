@@ -1418,40 +1418,60 @@ export class Lists {
     }
     private setStyle(innerHTML: string): string {
         const tempDiv: HTMLElement = document.createElement('div');
-        tempDiv.innerHTML = innerHTML.trim(); // Convert string to DOM elements
-        let liElement: HTMLElement = tempDiv.querySelector('li');
-        const styleElement: HTMLElement = liElement;
-        if (liElement && liElement.childNodes.length === 1) {
-            while (liElement && liElement.children.length === 1 && liElement.firstChild &&
-                liElement.firstChild.nodeType !== Node.TEXT_NODE) {
-                const childElement: HTMLElement = liElement.firstChild as HTMLElement;
-                if (childElement && (childElement.style.cssText || childElement.tagName.toUpperCase() === 'B' || childElement.tagName.toUpperCase() === 'STRONG' || childElement.tagName.toUpperCase() === 'I' || childElement.tagName.toUpperCase() === 'EM')) {
-                    // Extract styles, filter out background-color, and merge
-                    const allowedStyles: string[] = ['font-size', 'font-family', 'color', 'font-weight'];
-                    let filteredStyles: string = childElement.style.cssText.split(';')
-                        .map((style: string) => style.trim())
-                        .filter((style: string) => {
-                            const styleName: string = !isNOU(style.split(':')[0]) ? style.split(':')[0].trim() : '';
-                            return styleName && allowedStyles.indexOf(styleName) !== -1;
-                        })
-                        .join(';');
-                    if (filteredStyles) {
-                        styleElement.style.cssText += (styleElement.style.cssText ? ';' : '') + filteredStyles;
-                    }
-                    else if (childElement.tagName.toUpperCase() === 'B' || childElement.tagName.toUpperCase() === 'STRONG') {
-                        filteredStyles = 'font-weight: bold;';
-                        styleElement.style.cssText += (styleElement.style.cssText ? ';' : '') + filteredStyles;
-                    }
-                    else if (childElement.tagName.toUpperCase() === 'I' || childElement.tagName.toUpperCase() === 'EM') {
-                        filteredStyles = 'font-style: italic;';
-                        styleElement.style.cssText += (styleElement.style.cssText ? ';' : '') + filteredStyles;
-                    }
-                }
-                liElement = childElement;
-            }
-            innerHTML = tempDiv.innerHTML;
+        tempDiv.innerHTML = innerHTML;
+        const liElement: HTMLElement | null = tempDiv.querySelector('li');
+        if (!liElement) {
+            return innerHTML;
         }
-        return innerHTML;
+        const targetProps: string[] = ['color', 'font-size', 'font-family', 'font-weight', 'font-style'];
+        const styleTextMap: Map<string, Map<string, string>> = new Map(); // Map<styleProp, Map<styleValue, text>>
+        const walker: TreeWalker = this.parent.currentDocument.createTreeWalker(
+            liElement,
+            NodeFilter.SHOW_TEXT,
+            null
+        );
+        let node: Node | null = walker.nextNode();
+        while (node) {
+            const text: string = node.textContent || '';
+            let current: HTMLElement | null = node.parentElement;
+            const styleSnapshot: Map<string, string> = new Map();
+            // Traverse up to <li> and collect inline styles and semantic tags
+            while (current && current !== liElement) {
+                targetProps.forEach((prop: string) => {
+                    const inlineValue: string = current.style.getPropertyValue(prop);
+                    if (inlineValue && !styleSnapshot.has(prop)) {
+                        styleSnapshot.set(prop, inlineValue);
+                    }
+                });
+                if ((current.tagName === 'B' || current.tagName === 'STRONG') && !styleSnapshot.has('font-weight')) {
+                    styleSnapshot.set('font-weight', 'bold');
+                }
+                if ((current.tagName === 'I' || current.tagName === 'EM') && !styleSnapshot.has('font-style')) {
+                    styleSnapshot.set('font-style', 'italic');
+                }
+
+                current = current.parentElement;
+            }
+            // Merge text into styleTextMap
+            styleSnapshot.forEach((value: string, prop: string) => {
+                if (!styleTextMap.has(prop)) {
+                    styleTextMap.set(prop, new Map());
+                }
+                const valueMap: Map<string, string> = styleTextMap.get(prop) || new Map<string, string>();
+                const existingText: string = valueMap.get(value) || '';
+                valueMap.set(value, existingText + text);
+            });
+            node = walker.nextNode();
+        }
+        // Apply styles where the accumulated text matches li's full text
+        styleTextMap.forEach((valueMap: Map<string, string>, prop: string) => {
+            valueMap.forEach((text: string, styleValue: string) => {
+                if (text === liElement.textContent) {
+                    liElement.style.setProperty(prop, styleValue);
+                }
+            });
+        });
+        return tempDiv.innerHTML;
     }
     private removeEmptyListElements(): void {
         const listElem: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('ol, ul');

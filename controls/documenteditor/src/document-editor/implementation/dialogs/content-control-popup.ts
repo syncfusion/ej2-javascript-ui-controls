@@ -123,7 +123,7 @@ export class ContentControlPopUp {
     private initDropDownList(): HTMLElement {
         this.dropDownDiv = createElement('div', { className: 'e-de-ddl-field' });
         const dropDownInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
-        const ddl: DropDownList = new DropDownList({ fields: { text: 'displayText' } });
+        const ddl: DropDownList = new DropDownList({ fields: { text: 'displayText' }, open: this.open });
         this.dropDownInput = dropDownInput;
         this.textBoxButtonDiv = createElement('div', { className: 'e-de-cmt-action-button' });
         this.textBoxOkButton = createElement('button') as HTMLButtonElement;
@@ -240,6 +240,17 @@ export class ContentControlPopUp {
     private closeButton = (): void => {
         // const field: FieldElementBox = this.formField;
         this.hidePopup();
+    };
+     /**
+     * @private
+     * @returns {void}
+     */
+    private open = (): void => {
+        if (!isNullOrUndefined(this.ddlInstance)) {
+            setTimeout(() => {
+                this.ddlInstance.showPopup();
+            }, 50);
+        }
     };
     /**
      * @private

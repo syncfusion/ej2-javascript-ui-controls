@@ -65,20 +65,22 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         options.datetime = options.number;
         options.dateonly = options.number;
         const model: MenuItemModel[] = [];
-        for (let i: number = 0; i < options[`${type}`].length; i++) {
-            if (options[`${type}`][parseInt(i.toString(), 10)].length) {
-                if (operator) {
-                    model.push({
-                        text: this.getLocalizedLabel(options[`${type}`][parseInt(i.toString(), 10)]) + '...',
-                        iconCss: 'e-icons e-icon-check ' + (operator === options[`${type}`][parseInt(i.toString(), 10)].toLowerCase() ? '' : 'e-emptyicon')
-                    });
+        if (!isNullOrUndefined(type)) {
+            for (let i: number = 0; i < options[`${type}`].length; i++) {
+                if (options[`${type}`][parseInt(i.toString(), 10)].length) {
+                    if (operator) {
+                        model.push({
+                            text: this.getLocalizedLabel(options[`${type}`][parseInt(i.toString(), 10)]) + '...',
+                            iconCss: 'e-icons e-icon-check ' + (operator === options[`${type}`][parseInt(i.toString(), 10)].toLowerCase() ? '' : 'e-emptyicon')
+                        });
+                    } else {
+                        model.push({
+                            text: this.getLocalizedLabel(options[`${type}`][parseInt(i.toString(), 10)]) + '...'
+                        });
+                    }
                 } else {
-                    model.push({
-                        text: this.getLocalizedLabel(options[`${type}`][parseInt(i.toString(), 10)]) + '...'
-                    });
+                    model.push({ separator: true });
                 }
-            } else {
-                model.push({ separator: true });
             }
         }
         return model;
@@ -141,7 +143,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         if (type !== 'boolean') {
             ul.appendChild(this.createMenuElem(
                 this.getLocalizedLabel(options[`${type}`]), 'e-submenu',
-                isCheckIcon && this.ensureTextFilter() ? 'e-icon-check' : icon + ' e-emptyicon', true));
+                !isNullOrUndefined(type) && isCheckIcon && this.ensureTextFilter() ? 'e-icon-check' : icon + ' e-emptyicon', true));
         }
         this.menu.appendChild(ul);
         this.parent.notify(events.beforeFltrcMenuOpen, { element: this.menu });

@@ -187,8 +187,10 @@ export class TextSearch {
                 this.initiateSearch(event.itemData.SearchString);
             },
             blur: (event: any) => {
-                this.searchAutocompleteObj.value = updatedTypedString;
-                this.searchAutocompleteObj.dataBind();
+                if (updatedTypedString && this.searchAutocompleteObj.value === updatedTypedString.toLowerCase()) {
+                    this.searchAutocompleteObj.value = updatedTypedString;
+                    this.searchAutocompleteObj.dataBind();
+                }
             },
             filtering: (event: any) => {
                 updatedTypedString = event.text;
@@ -859,6 +861,7 @@ export class TextSearch {
             }
             if (matches.length > 0) {
                 this.searchCount = this.searchCount + matches.length;
+                this.adjustInputContainerWidth();
             }
             if (this.searchMatches && matches.length > 0) {
                 this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
@@ -1062,6 +1065,7 @@ export class TextSearch {
         this.isTextSearch = true;
         this.isSearchText = false;
         let isCountIncreased: boolean = false;
+        this.isSingleSearch = true;
         if (this.isDocumentTextCollectionReady) {
             if (this.searchString) {
                 this.clearAllOccurrences();

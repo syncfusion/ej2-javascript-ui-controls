@@ -3002,14 +3002,20 @@ describe('Dialog editing constraint pop-up', () => {
     });
     beforeEach((done) => {
         setTimeout(done, 300);
-        ganttObj.openEditDialog(2);
+        ganttObj.openEditDialog(8);
     });
     it('Opening dialog for coverage', () => {
+        let durationField: any = document.querySelector('#' + ganttObj.element.id + 'Duration') as HTMLInputElement;
+        if (durationField) {
+            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            textObj.value = '2 days';
+            textObj.dataBind();
+        }
         let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveRecord, 'click');
         let okButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialogValidationRule > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(okButton, 'click');
-        expect(ganttObj.flatData[2].ganttProperties.constraintType).toBe(4);
+        expect(ganttObj.flatData[8].ganttProperties.constraintType).toBe(4);
     });
     afterAll(() => {
         if (ganttObj) {

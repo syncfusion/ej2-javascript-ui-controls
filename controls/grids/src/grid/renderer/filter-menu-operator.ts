@@ -112,7 +112,7 @@ export class FlMenuOptrUI {
                 selValue = !isNullOrUndefined(selectedField[0]) ? selectedField[0].text : '';
             }
         }
-        if (selValue === '') {// rewuired or not
+        if (selValue === '' && this.optrData) {// rewuired or not
             if (col.filter.operator) {
                 const optrLen: number = Object.keys(this.optrData).length;
                 for (let i: number = 0; i < optrLen; i++) {

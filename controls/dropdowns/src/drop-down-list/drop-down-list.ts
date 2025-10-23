@@ -2523,7 +2523,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.isRequesting = false;
         const eventArgs: FilteringEventArgs = {
             preventDefaultAction: false,
-            text: this.filterInput.value,
+            text: this.filterInput ? this.filterInput.value : '',
             updateData: (
                 dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
                 fields?: FieldSettingsModel) => {

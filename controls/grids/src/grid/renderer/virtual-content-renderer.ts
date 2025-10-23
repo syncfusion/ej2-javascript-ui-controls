@@ -1359,6 +1359,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.actions.some((value: string) => value === action)) {
             this.preventEvent = this.content.scrollTop !== 0;
             this.content.scrollTop = 0;
+            if (Object.keys(this.currentInfo).length) {
+                const offsetLeft: number = this.currentInfo.offsets && !isNullOrUndefined(this.currentInfo.offsets.left) ?
+                    this.currentInfo.offsets.left : 0;
+                this.currentInfo = this.getInfoFromView(this.currentInfo.direction, this.currentInfo.sentinelInfo,
+                                                        { top: 0, left: offsetLeft });
+            }
         }
         if (action !== 'virtualscroll') {
             this.isAdd = false;

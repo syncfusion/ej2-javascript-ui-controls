@@ -1104,9 +1104,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         fields: FieldSettingsModel, category: string = null): void {
         for (const option of options) {
             const json: { [key: string]: {} } = {};
-            json[fields.text] = option.innerHTML;
+            json[fields.text] = option.text;
             json[fields.value] = !isNullOrUndefined(option.getAttribute(fields.value)) ?
-                option.getAttribute(fields.value) : option.innerHTML;
+                option.getAttribute(fields.value) : option.value;
             if (!isNullOrUndefined(category)) {
                 json[fields.groupBy] = category;
             }
@@ -1653,7 +1653,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             const data: string[] | number[] | boolean[] | { [key: string]: Object }[] = this.sortOrder !== 'None' ? !isNullOrUndefined(this.fields.groupBy) ?
                 (this.sortedData as { [key: string]: any }[]).filter((item: { [key: string]: any }) => !('isHeader' in item) || item.isHeader !== true) : this.sortedData : this.listData;
             for (let index: number = 0; index < liCollections.length; index++) {
-                if (JSON.parse(JSON.stringify(data[index as number]))[this.fields.disabled]) {
+                if (data[index as number] && JSON.parse(JSON.stringify(data[index as number]))[this.fields.disabled]) {
                     if (!isNullOrUndefined(this.fields.groupBy)) {
                         const item: boolean | string | number | {
                             [key: string]: Object;

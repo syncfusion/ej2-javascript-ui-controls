@@ -173,7 +173,7 @@ export class ConnectorLineEdit {
     public refreshEditedRecordConnectorLine(editedRecord: IGanttData[]): void {
         this.parent.connectorLineModule.removePreviousConnectorLines(this.parent.previousRecords);
         this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
-            this.parent.updatedRecords : this.parent.getExpandedRecords(this.parent.updatedRecords);
+            this.parent.updatedRecords : this.parent.expandedRecords;
         const editedConnectorElement: DocumentFragment = this.getEditedConnectorLineString(editedRecord);
         if (editedConnectorElement) {
             this.parent.connectorLineModule.svgObject.appendChild(editedConnectorElement);
@@ -807,7 +807,7 @@ export class ConnectorLineEdit {
                     if (parentPreIndex !== -1) {
                         parentPredecessors[parentPreIndex as number].offset = offset;
                     }
-                    this.parent.setRecordValue('predecessor', parentPredecessors, parentTask.ganttProperties, true);
+                    parentTask.ganttProperties.predecessor = parentPredecessors as IPredecessor[];
                 }
             } else {
                 const validPredecessor: IPredecessor[] = record.ganttProperties.predecessor;

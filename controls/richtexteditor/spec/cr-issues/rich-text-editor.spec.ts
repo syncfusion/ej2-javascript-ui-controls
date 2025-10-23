@@ -191,6 +191,75 @@ describe('RTE CR issues ', () => {
             document.body.innerHTML = "";
         });
     });
+    describe('Bug 985502: Script error throws when using EmojiPicker with the Inline toolbar in RichTextEditor' , () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs: any;
+        beforeEach( () => {
+            rteObj = renderRTE({
+                inlineMode: {
+                    enable: true,
+                    onSelection: true,
+                },
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+            });
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                keyCode: 186,
+                shiftKey: true,
+                altKey: false,
+                ctrlKey: false,
+                char: '',
+                key: ':',
+                charCode: 13,
+                which: 13,
+                code: 'Semicolon',
+                action: 'Semicolon',
+                type: 'keydown'
+            };
+        });
+        afterEach( () => {
+            destroy(rteObj);
+        });
+        it(' Should insert emoji through : when toolbar is in inline mode', () => {
+            rteObj.focusIn();
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                keyCode: 186,
+                shiftKey: true,
+                altKey: false,
+                ctrlKey: false,
+                char: '',
+                key: ':',
+                charCode: 13,
+                which: 13,
+                code: 'Semicolon',
+                action: 'Semicolon',
+                type: 'keydown'
+            };
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            const emoji: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojipickerbtn-group button');
+            emoji[0].focus();
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                keyCode: 13,
+                shiftKey: false,
+                altKey: false,
+                ctrlKey: false,
+                char: '',
+                key: ':',
+                charCode: 13,
+                which: 13,
+                code: 'Enter',
+                action: 'Enter',
+                type: 'Enter',
+                target: emoji[0]
+            };
+            (<any>rteObj).emojiPickerModule.onKeyDown({preventDefault: function () { },keyCode: 13, target: emoji[0], type: 'keydown'});
+            expect(rteObj.contentModule.getEditPanel().innerHTML).toBe('<p>😀</p>');
+        });
+    });
     describe('930848: Formatting, Shift+Enter, and zero-width space removal', () => {
         let rteObj: RichTextEditor;
         let keyboardEventArgs: any;
@@ -353,6 +422,35 @@ describe('RTE CR issues ', () => {
             destroy(rteObj);
         });
     });
+    describe('Bug 984457: Inline toolbar doesn"t show properly for the texts with Images in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><img alt="Editor Features Overview" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" width="400" height="200" class= "e-img-left e-rte-image e-imginline"/>image</p>`,
+                inlineMode: {
+                    enable: true,
+                    onSelection: true
+                },
+            });
+        });
+        it('Should show the Quick toolbar in View port', (done) => {
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            const mouseDownEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(mouseDownEvent);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[1], rteObj.inputElement.childNodes[0].childNodes[1], 1, 3);
+            const target: HTMLElement = rteObj.inputElement.firstChild as HTMLElement;
+            target.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const inlineToolbar: HTMLElement = rteObj.element.querySelector('.e-rte-inline-popup');
+                expect(rteObj).not.toBeNull();
+                expect(inlineToolbar.getBoundingClientRect().top).toBeGreaterThan(rteObj.element.getBoundingClientRect().top);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('Bug 940154: Pressing backspace twice inside a table removes the entire table in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -371,6 +469,26 @@ describe('RTE CR issues ', () => {
             rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
             rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
             expect(rteObj.inputElement.querySelector('table')).not.toBe(null);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 986390: Bullet Point Not Removed Properly When Using Backspace on Pasted Text in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<ul><li><div>Line 1</div></li><li><div class="startNode">Line 2</div></li><li><div>Line 3</div></li></ul>',
+            });
+        });
+        it(' pressing backspace in start of list, should remove the entire list', () => {
+            const startNode: Element = rteObj.inputElement.querySelector('.startNode').firstChild as Element;
+            setCursorPoint(startNode, 0);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            expect(rteObj.inputElement.querySelectorAll('li').length).toBe(2);
         });
         afterAll(() => {
             destroy(rteObj);
@@ -962,6 +1080,36 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('Bug 986318: Bullet list doesn"t get"s the font color in the RichTextEditor', () => {
+            let editorObj: RichTextEditor;
+            beforeAll(() => {
+                editorObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['OrderedList', 'UnorderedList']
+                    },
+                    value: `<h1><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Welcome to the Syncfusion</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><sup>®</sup></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"> Rich Text Editor</span></h1>
+<h2><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Elevating Your Content with Images</span></h2>
+<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the </span><a class="e-rte-anchor" href="https://ej2.syncfusion.com/react/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">insertImageSettings</span></a><span style="color: rgb(255, 0, 0); text-decoration: inherit;"> to upload, save, or remove them. </span></p>
+<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">The Editor can integrate with the Syncfusion</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><sup>®</sup></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"> Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos </span><a class="e-rte-anchor" href="https://ej2.syncfusion.com/react/demos/#/material3/rich-text-editor/image-editor-integration" title="Image Editor Demo"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">here</span></a><span style="color: rgb(255, 0, 0); text-decoration: inherit;">.</span></p>
+<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Hello </span>World</p>`
+                });
+            });
+            afterAll(() => {
+                destroy(editorObj);
+            });
+            it('Apply unordered list and check for the font color style', (done) => {
+                const paragraphs = editorObj.inputElement.querySelectorAll('p');
+                const lastParagraph = paragraphs[paragraphs.length - 1];
+                // Select all <p> elements
+                editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, editorObj.inputElement.firstChild, lastParagraph, 0, 1);
+                (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+                setTimeout(() => {
+                    expect(editorObj.inputElement.innerHTML === `<ul><li style="color: rgb(255, 0, 0);"><h1><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Welcome to the Syncfusion</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><sup>®</sup></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"> Rich Text Editor</span></h1></li><li style="color: rgb(255, 0, 0);"><h2><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Elevating Your Content with Images</span></h2></li><li style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the </span><a class="e-rte-anchor" href="https://ej2.syncfusion.com/react/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">insertImageSettings</span></a><span style="color: rgb(255, 0, 0); text-decoration: inherit;"> to upload, save, or remove them. </span></li><li style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">The Editor can integrate with the Syncfusion</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><sup>®</sup></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"> Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos </span><a class="e-rte-anchor" href="https://ej2.syncfusion.com/react/demos/#/material3/rich-text-editor/image-editor-integration" title="Image Editor Demo"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">here</span></a><span style="color: rgb(255, 0, 0); text-decoration: inherit;">.</span></li><li><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Hello </span>World</li></ul>`).toBe(true);
+                    done();
+                }, 100);
+            });
+        });
+
     describe('Bug 970477: Texts in sub-bullet list turn into Bold in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', keyCode: 9, target: document.body };
@@ -1071,6 +1219,62 @@ describe('RTE CR issues ', () => {
                 expect((rteObj.inputElement.querySelector('img') as HTMLImageElement).src.includes('blob')).toBe(true);
                 done();
             }, 100);
+        });
+    });
+
+    describe('Bug 985976: Dragged text into the RichTextEditor is not included in the Undo history', () => {
+        let editor: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        beforeEach(() => {
+            editor = renderRTE({
+                value: `<p><img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/></p><h1>This is a heading</h1>`
+            });
+        });
+        afterEach(() => {
+            destroy(editor);
+        });
+        it(' should revert back to previous form when undo is called after image is drag and dropped', (done: DoneFn) => {
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.items.add(editor.inputElement.innerHTML, 'text/html');
+            const eventInit: DragEventInit = {
+                dataTransfer: dataTransfer,
+            };
+            const dragStartEvent: DragEvent = new DragEvent('dragstart', eventInit);
+            editor.inputElement.querySelector('img').dispatchEvent(dragStartEvent);
+            const dragOverEvent: DragEvent = new DragEvent('dragover', eventInit);
+            editor.inputElement.querySelector('img').dispatchEvent(dragOverEvent);
+            const dragEnterEvent: DragEvent = new DragEvent('dragend', eventInit);
+            editor.inputElement.querySelector('h1').dispatchEvent(dragEnterEvent);
+            const heading: HTMLElement = editor.inputElement.querySelector('h1');
+            const clientRect: DOMRect = heading.getBoundingClientRect() as DOMRect;
+            const dropEvent: DragEvent = new DragEvent('drop', {
+                dataTransfer: dataTransfer,
+                clientX: clientRect.x + 100,
+                clientY: clientRect.y
+            });
+            (editor as any).handleNonFileDrop(dropEvent);
+            setTimeout(() => {
+                heading.dispatchEvent(dropEvent);
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelectorAll('h1 img').length).toBe(1);
+                    (<any>editor).formatter.editorManager.undoRedoManager.keyUp({ event: keyboardEventArgs });
+                    (<any>editor).formatter.editorManager.execCommand("Actions", 'Undo', null);
+                    expect(editor.inputElement.querySelectorAll('h1 img').length).toBe(0);
+                    done();
+                }, 100);
+            }, 200);
         });
     });
 
@@ -2790,7 +2994,7 @@ describe('RTE CR issues ', () => {
             let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, code:'Backspace', key: 'backspace', action: 'backspace', keyCode: 8, stopPropagation: () => { }, shiftKey: false, which: 8 };
             keyBoardEvent.target = rteObj.inputElement;
             (rteObj as any).keyDown(keyBoardEvent);
-            expect((rteObj as any).inputElement.innerHTML === '<div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Hi Janet,</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Thank you for reaching out!</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"> <div><div>Has the claimant previously been absent due to back problems?</div></div> <div><div>Were aware of any pre-existing back problems with the claimant?Risk assessment for slips, trips and falls together with adverse weather conditions;</div></div> <div></div> <div><div>Whilst&nbsp;we note there is a stop work authority which the claimant alleges, he never really understood how it worked, did the other agents not know about it either - can we either provide training records or a read and sign;</div></div> </div>').toBe(true);
+            expect((rteObj as any).inputElement.innerHTML === '<div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Hi Janet,</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Thank you for reaching out!</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"> <div><div>Has the claimant previously been absent due to back problems?</div></div> <div><div>Were aware of any pre-existing back problems with the claimant?Risk assessment for slips, trips and falls together with adverse weather conditions;</div></div>  <div><div>Whilst&nbsp;we note there is a stop work authority which the claimant alleges, he never really understood how it worked, did the other agents not know about it either - can we either provide training records or a read and sign;</div></div> </div>').toBe(true);
             done();
         });
         afterAll((done: DoneFn) => {

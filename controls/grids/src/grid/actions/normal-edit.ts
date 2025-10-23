@@ -36,6 +36,8 @@ export class NormalEdit {
     private originalRow: Element;
     private currentVirtualData: Object = {};
     private evtHandlers: { event: string, handler: Function }[];
+    /** @hidden */
+    public virtualEditValidationArgs: { virtualData: Object, isAdd: boolean, isCancel: boolean };
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, renderer?: EditRender) {
         this.parent = parent;
@@ -325,10 +327,16 @@ export class NormalEdit {
         const dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') :  gObj.editSettings.showAddNewRow &&
         gObj.element.querySelector('.' + literals.editedRow) ?  gObj.element.querySelector(
                 '.' + literals.editedRow).getElementsByClassName('e-gridform')[0] : gObj.element.getElementsByClassName('e-gridform')[0];
-        const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
+        const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean, isCancel?: boolean } = {
             virtualData: extend({}, {}, this.previousData, true), isAdd: false, isScroll: false, endEdit: true
         };
-        this.parent.notify(events.getVirtualData, data);
+        if (!this.parent.enableVirtualization) {
+            this.parent.notify(events.getVirtualData, data);
+        } else {
+            data.virtualData = this.virtualEditValidationArgs.virtualData;
+            data.isAdd = this.virtualEditValidationArgs.isAdd;
+            data.isCancel = this.virtualEditValidationArgs.isCancel;
+        }
         if ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization || this.parent.enableInfiniteScrolling)
             && this.parent.editSettings.mode === 'Normal' && Object.keys(data.virtualData).length) {
             if (this.parent.isEdit) {

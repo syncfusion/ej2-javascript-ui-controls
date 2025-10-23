@@ -84,6 +84,56 @@ export class HierarchicalTree {
         return layout;
     }
 
+    /**
+     * Adjusts layout bounds to maintain proper spacing.
+     * This method updates the positions of the layout, including the root node and its children,
+     * If the space between the current and previous bounds is smaller than the required spacing.
+     *
+     * @param {Object} layout - The layout object containing node positions and structure.
+     * @param {Object} rootNode - The root node of the current layout.
+     * @param {Array} boundsArray - Array of bounds for all layouts.
+     * @param {number} index - Index of the current layout.
+     * @returns {void}
+     */
+    private updateLayoutBounds(layout: ILayout, rootNode: INode, boundsArray: Bounds[], index: number): void {
+        // Get the current and previous layouts bounds
+        const currentBounds: Bounds = boundsArray[parseInt(index.toString(), 10)];
+        const previousBounds: Bounds = boundsArray[parseInt(index.toString(), 10) - 1];
+        // Calculate the difference needed to maintain horizontal spacing
+        const diff: number = layout.horizontalSpacing - (currentBounds.x - previousBounds.right);
+
+        const traverseNodes: any = (nodeId: string): void => {
+            const node: INode = layout.nameTable[`${nodeId}`];
+            if (!node) { return; }
+            const layoutInfo: LayoutInfo = layout.graphNodes[`${nodeId}`];
+            layoutInfo.x += diff; // Shift the node's x position
+            if (layoutInfo.mid !== undefined) {
+                layoutInfo.mid += diff; // Shift the midpoint if defined
+            }
+            if (layoutInfo.firstChild && layoutInfo.firstChild.x !== undefined) {
+                layoutInfo.firstChild.x += diff; // Shift the first child if its position is defined
+            }
+
+            // Recursively traverse child nodes
+            if (layoutInfo.tree.children && layoutInfo.tree.children.length > 0) {
+                for (let i: number = 0; i < layoutInfo.tree.children.length; i++) {
+                    traverseNodes(layoutInfo.tree.children[parseInt(i.toString(), 10)]);
+                }
+            }
+            // Recursively traverse assistant nodes if present
+            if (layoutInfo.tree.assistants && layoutInfo.tree.assistants.length > 0) {
+                for (let j: number = 0; j < layoutInfo.tree.assistants.length; j++) {
+                    traverseNodes(layoutInfo.tree.assistants[parseInt(j.toString(), 10)]);
+                }
+            }
+        };
+        // Start traversal from the root node of the current layout
+        traverseNodes(rootNode.id);
+        // Update the bounds of the current layout to reflect the shift
+        currentBounds.x += diff;
+        currentBounds.right += diff;
+    }
+
     private doLayout(layout: ILayout, nodes: INode[], viewport: PointModel, uniqueId: string, action?: DiagramAction): void {
         let node: INode;
         let i: number;
@@ -122,7 +172,6 @@ export class HierarchicalTree {
         }
         // 965868: Layout Overlaps with other layout, when child node has larger size
         const layoutBoundsArray: Bounds[] = [];
-        const rootNodeDictionary: Object = {};
         if (layout.firstLevelNodes.length > 0) {
             layout.rootNode = layout.firstLevelNodes[0];
 
@@ -139,6 +188,10 @@ export class HierarchicalTree {
                 bounds = this.updateTree(layout, x, y, layout.firstLevelNodes[parseInt(i.toString(), 10)],
                                          0, layout.firstLevelNodes[i - 1]);
                 layoutBoundsArray.push(bounds);
+                // 984193 - Nodes Overlap in Org Chart Layout with Multiple Roots
+                if (layout.firstLevelNodes.length > 1 && i > 0 && i < layout.firstLevelNodes.length) {
+                    this.updateLayoutBounds(layout, layout.firstLevelNodes[parseInt(i.toString(), 10)], layoutBoundsArray, i);
+                }
                 const rootInfo: LayoutInfo = layout.graphNodes[layout.firstLevelNodes[parseInt(i.toString(), 10)].id];
                 bounds.y = Math.min(bounds.y, rootInfo.y);
                 bounds.x = Math.min(bounds.x, rootInfo.x);
@@ -158,45 +211,8 @@ export class HierarchicalTree {
                 layout.levels = [];
                 layout.maxLevel = undefined;
             }
-            // 965868: Layout Overlaps with other layout, when child node has larger size
-            let overlapSize: number = 0;
-            if (layoutBoundsArray.length > 1) {
-                for (i = 0; i < layoutBoundsArray.length - 1; i++) {
-                    const currentBounds: Bounds = layoutBoundsArray[parseInt(i.toString(), 10)];
-                    const nextBounds: Bounds = layoutBoundsArray[parseInt(i.toString(), 10) + 1];
-                    const currentLayoutBounds: Rect = new Rect(
-                        currentBounds.x, currentBounds.y,
-                        (currentBounds.right - currentBounds.x),
-                        (currentBounds.bottom - currentBounds.y)
-                    );
-                    const nextLayoutBounds: Rect = new Rect(
-                        nextBounds.x, nextBounds.y,
-                        (nextBounds.right - nextBounds.x),
-                        (nextBounds.bottom - nextBounds.y)
-                    );
-                    if (nextLayoutBounds.intersects(currentLayoutBounds)) {
-                        overlapSize = currentLayoutBounds.right - nextLayoutBounds.left;
-                    }
-                    if (layout.firstLevelNodes[parseInt(i.toString(), 10) + 1]) {
-                        rootNodeDictionary[layout.firstLevelNodes[parseInt(i.toString(), 10) + 1].id] = { size: overlapSize };
-                    }
-                }
-            }
-
             this.updateAnchor(layout, { x: minX, y: minY, right: maxX, bottom: maxY }, viewport);
             for (i = 0; i < layout.firstLevelNodes.length; i++) {
-                // 965868: Layout Overlaps with other layout, when child node has larger size
-                if (i > 0) {
-                    const rootNode: INode = layout.firstLevelNodes[parseInt(i.toString(), 10)];
-                    if (rootNodeDictionary[rootNode.id].size > 0) {
-                        if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
-                            layout.anchorX += (rootNodeDictionary[rootNode.id].size + layout.horizontalSpacing);
-                        }
-                        if (layout.orientation === 'RightToLeft' || layout.orientation === 'LeftToRight') {
-                            layout.anchorY += (rootNodeDictionary[rootNode.id].size + layout.verticalSpacing);
-                        }
-                    }
-                }
                 this.updateNodes(layout, layout.firstLevelNodes[parseInt(i.toString(), 10)], 0);
             }
 
@@ -368,6 +384,13 @@ export class HierarchicalTree {
                     info.canMoveBy = firstChildInfo.canMoveBy - info.canMoveBy;
                 } else if (firstChild && info.canMoveBy !== undefined) {
                     info.canMoveBy = 0;
+                }
+            }
+            else if (info.canMoveBy !== undefined) {
+                // 984193 - Nodes Overlap in Org Chart Layout with Multiple Roots
+                if (hasChild) {
+                    treeBounds.x = Math.min(treeBounds.x, info.x);
+                    treeBounds.right = Math.max(treeBounds.right, info.x + dim.width);
                 }
             }
         } else {

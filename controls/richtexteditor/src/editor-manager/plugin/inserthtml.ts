@@ -851,7 +851,8 @@ export class InsertHtml {
         docElement: Document, lastSelectionNode: Node, editNode: Element
     ): Node {
         const matchedElement: HTMLElement = this.getClosestMatchingElement(tempSpan.parentNode as HTMLElement, fragment, editNode);
-        if (fragment.childNodes.length === 1 && fragment.firstChild && matchedElement) {
+        const hasMultipleChildNodes: boolean = fragment.firstChild && fragment.firstChild.childNodes.length > 1;
+        if (fragment.childNodes.length === 1 && fragment.firstChild && !hasMultipleChildNodes && matchedElement) {
             return this.replaceWithMatchedContent(
                 tempSpan, matchedElement, fragment,
                 range, nodeSelection, docElement, lastSelectionNode

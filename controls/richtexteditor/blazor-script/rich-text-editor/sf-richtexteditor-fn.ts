@@ -476,9 +476,6 @@ export class SfRichTextEditor {
         iframe.contentDocument.close();
         iframe.contentDocument.body.id = this.id + '_rte-edit-view';
         iframe.contentDocument.body.className = 'e-content';
-        if (this.height === 'auto') {
-            iframe.contentDocument.body.style.overflowY = 'hidden';
-        }
         if (!isNOU(iframe.contentDocument.head) && (this.iframeSettings.metaTags as Array<MetaTag>).length > 0) {
             const head: HTMLHeadElement = iframe.contentDocument.head;
             const metaData: Array<MetaTag> = this.iframeSettings.metaTags;

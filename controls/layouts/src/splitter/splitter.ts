@@ -2143,7 +2143,7 @@ export class Splitter extends Component<HTMLElement> {
         this.border = 0;
         const border: number = this.orientation === 'Horizontal' ? ((this.element.offsetWidth - this.element.clientWidth) / 2) :
             (this.element.offsetHeight - this.element.clientHeight) / 2;
-        this.border = Browser.info.name !== 'chrome' ? this.border : border;
+        this.border = border;
     }
 
     private onMouseMove(e: MouseEvent | TouchEvent | PointerEvent): void {

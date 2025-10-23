@@ -146,6 +146,9 @@
       .e-checkbox-wrapper .e-frame {
         margin-right: 0;
       }
+      .e-list-item:last-child:not(.e-level-1) {
+        padding-bottom: 0;
+      }
     }
 
     .e-ul {
@@ -160,7 +163,7 @@
 
     .e-list-item {
       list-style: none;
-      @if $skin-name != 'tailwind3' and $skin-name != 'tailwind' and $skin-name != 'Material3' and $skin-name != 'fluent2' {
+      @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
         padding: 2px 0;
       }
       @if $skin-name == 'fluent2' {
@@ -168,13 +171,12 @@
       }
 
       .e-ul {
-        margin: 2px 0 -2px;
         padding: $treeview-child-ul-padding;
-        @if $skin-name == 'tailwind' {
-          margin: 2px 0 0;
+        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
+          margin: 2px 0 -2px;
         }
-        @else if $skin-name == 'tailwind3' or $skin-name == 'Material3' {
-          margin: 0;
+        @if $skin-name == 'fluent2' {
+          margin-top: 4px;
         }
       }
 
@@ -211,6 +213,49 @@
       .e-icons.e-icons-spinner::before {
         content: none;
       }
+      
+      .e-text-content {
+        .e-list-text {
+          &:has(> .e-input-group) {
+            @if $skin-name == 'material' or $skin-name == 'material-dark' {
+              padding-top: 1px;
+              padding-bottom: 1px;
+              .e-input-group {
+                height: 34px;
+
+                .e-input {
+                  line-height: 26px;
+                  min-height: 26px;
+                }
+              }
+            }
+            @if $skin-name == 'tailwind3' {
+              padding-top: 4px;
+              padding-bottom: 4px;
+            }
+            @if $skin-name == 'highcontrast' {
+              padding-top: 3px;
+              padding-bottom: 3px;
+            }
+            @if ($skin-name == 'FluentUI') {
+              padding-top: 3px;
+              padding-bottom: 3px;
+            }
+            @if $skin-name == 'bootstrap5.3' {
+              padding-top: 2px;
+              padding-bottom: 2px;
+            }
+            @if $skin-name == 'bootstrap4' {
+              padding-top: 5px;
+              padding-bottom: 5px;
+            }
+            @if $skin-name == 'bootstrap5' {
+              padding-top: 3px;
+              padding-bottom: 3px;
+            }
+          }
+        }
+      }
     }
 
     .e-icons {
@@ -228,10 +273,13 @@
 
     .e-text-content {
       @include user-select;
-      border: 1px solid;
       cursor: pointer;
       margin: 0;
       padding: $treeview-text-wrap-padding;
+
+      @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
+        border: 1px solid;
+      }
 
       @if $skin-name == 'Material3' or $skin-name == 'tailwind3' {
         border: none;
@@ -267,7 +315,7 @@
       }
 
       @supports (-webkit-overflow-scrolling: touch) {
-        z-index: -1;
+        z-index: 0;
       }
     }
 
@@ -318,14 +366,9 @@
 
       .e-input-group {
         height: $treeview-input-height;
-        @if ($skin-name == 'FluentUI') {
-          margin-top: 3px;
-        }
-        @else if($skin-name == 'tailwind') {
-          margin-bottom: 3px;
-        }
-        @else if($skin-name == 'bootstrap5') {
-          margin-bottom: 2px;
+        @if ($skin-name == 'tailwind') {
+          margin-top: 4px;
+          margin-bottom: 4px;
         }
         @else {
           margin-bottom: 0;
@@ -335,9 +378,20 @@
         @if ($skin-name == 'fluent2') {
           border-color: $treeview-input-border-color;
         }
-        @if $skin-name != 'material' {
-          .e-input {
+        .e-input {
+          @if $skin-name != 'material' and $skin-name != 'material-dark' {
             height: 28px;
+            padding-top: 6px;
+            padding-bottom: 6px;
+          }
+          @if $skin-name == 'tailwind3' {
+            line-height: 20px;
+            height: 32px;
+          }
+          @if $skin-name == 'bootstrap5.3' {
+            height: 32px;
+            padding-top: 5px;
+            padding-bottom: 5px;
           }
         }
       }

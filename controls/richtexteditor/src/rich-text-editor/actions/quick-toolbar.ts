@@ -685,6 +685,24 @@ export class QuickToolbar implements IQuickToolbar {
                         this.parent.off(events.contentscroll, this.onScroll);
                     }
                     break;
+                case 'text':
+                    this.refreshTextQTBar();
+                    break;
+                case 'image':
+                    this.refreshImageQTbar();
+                    break;
+                case 'audio':
+                    this.refreshAudioQTbar();
+                    break;
+                case 'video':
+                    this.refreshVideoQTbar();
+                    break;
+                case 'link':
+                    this.refreshLinkQTbar();
+                    break;
+                case 'table':
+                    this.refreshTableQTbar();
+                    break;
                 }
             }
         }
@@ -760,6 +778,79 @@ export class QuickToolbar implements IQuickToolbar {
     private onWindowResize(e: NotifyArgs): void {
         if (!isNOU(e.args)) {
             this.refreshQuickToolbarPopup(e.args as MouseEvent);
+        }
+    }
+
+    // This method called when the text quicktoolbar properties got changed
+    private refreshTextQTBar(): void {
+        if (this.parent.quickToolbarSettings.enable) {
+            if (this.textQTBar) {
+                this.textQTBar.destroy();
+            }
+            if (this.parent.quickToolbarSettings.text && this.parent.quickToolbarSettings.text.length > 0 &&
+                !this.parent.inlineMode.enable) {
+                this.textQTBar = this.createQTBar('Text', 'MultiRow', this.parent.quickToolbarSettings.text, RenderType.TextToolbar);
+            }
+        }
+    }
+
+    // This method called when the image quicktoolbar properties got changed
+    private refreshImageQTbar(): void {
+        if (this.parent.quickToolbarSettings.enable) {
+            if (this.imageQTBar) {
+                this.imageQTBar.destroy();
+            }
+            if (this.parent.quickToolbarSettings.image && this.parent.quickToolbarSettings.image.length > 0) {
+                this.imageQTBar = this.createQTBar('Image', 'MultiRow', this.parent.quickToolbarSettings.image, RenderType.ImageToolbar);
+            }
+        }
+    }
+
+    // This method called when the audio quicktoolbar properties got changed
+    private refreshAudioQTbar(): void {
+        if (this.parent.quickToolbarSettings.enable) {
+            if (this.audioQTBar) {
+                this.audioQTBar.destroy();
+            }
+            if (this.parent.quickToolbarSettings.audio && this.parent.quickToolbarSettings.audio.length > 0) {
+                this.audioQTBar = this.createQTBar('Audio', 'MultiRow', this.parent.quickToolbarSettings.audio, RenderType.AudioToolbar);
+            }
+        }
+    }
+
+    // This method called when the video quicktoolbar properties got changed
+    private refreshVideoQTbar(): void {
+        if (this.parent.quickToolbarSettings.enable) {
+            if (this.videoQTBar) {
+                this.videoQTBar.destroy();
+            }
+            if (this.parent.quickToolbarSettings.video && this.parent.quickToolbarSettings.video.length > 0) {
+                this.videoQTBar = this.createQTBar('Video', 'MultiRow', this.parent.quickToolbarSettings.video, RenderType.VideoToolbar);
+            }
+        }
+    }
+
+    // This method called when the Link quicktoolbar properties got changed
+    private refreshLinkQTbar(): void {
+        if (this.parent.quickToolbarSettings.enable) {
+            if (this.linkQTBar) {
+                this.linkQTBar.destroy();
+            }
+            if (this.parent.quickToolbarSettings.link && this.parent.quickToolbarSettings.link.length > 0) {
+                this.linkQTBar = this.createQTBar('Link', 'Scrollable', this.parent.quickToolbarSettings.link, RenderType.LinkToolbar);
+            }
+        }
+    }
+
+    // This method called when the table quicktoolbar properties got changed
+    private refreshTableQTbar(): void {
+        if (this.parent.quickToolbarSettings.enable) {
+            if (this.tableQTBar) {
+                this.tableQTBar.destroy();
+            }
+            if (this.parent.quickToolbarSettings.table && this.parent.quickToolbarSettings.table.length > 0) {
+                this.tableQTBar = this.createQTBar('Table', 'MultiRow', this.parent.quickToolbarSettings.table, RenderType.TableToolbar);
+            }
         }
     }
 }

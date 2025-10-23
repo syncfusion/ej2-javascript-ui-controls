@@ -3142,6 +3142,7 @@ export class Gantt extends Component<HTMLElement>
                 this.updatedRecords = this.flatData;
             }
         }
+        this.expandedRecords = this.getExpandedRecords(this.currentViewData);
     }
     /**
      * @param {IGanttData} records -Defines the delete record collections.
@@ -3170,7 +3171,7 @@ export class Gantt extends Component<HTMLElement>
                 this.contentHeight = length * this.rowHeight;
             } else {
                 const expandedRecords: IGanttData[] = this.virtualScrollModule && this.enableVirtualization ?
-                    this.currentViewData : this.getExpandedRecords(this.currentViewData);
+                    this.currentViewData : this.expandedRecords;
                 this.expandedRecords = expandedRecords;
                 let height: number;
                 const chartRow: Element = (!isNullOrUndefined(this.ganttChartModule) &&
@@ -3217,14 +3218,89 @@ export class Gantt extends Component<HTMLElement>
      * @returns {IGanttData[]} .
      */
     public getExpandedRecords(records: IGanttData[]): IGanttData[] {
-        if (isNullOrUndefined(records)) {
+        if (!records || records.length === 0) {
+            this.expandedRecords = [];
             return [];
         }
-        const expandedRecords: IGanttData[] = records.filter((record: IGanttData) => {
-            return this.getExpandStatus(record) === true;
-        });
-        this.expandedRecords = expandedRecords;
-        return expandedRecords;
+        // Step 1: Build recordMap and parent-to-children map in a single loop
+        const recordMap: Map<string, IGanttData> = new Map<string, IGanttData>();
+        const parentToChildren: Map<string, string[]> = new Map<string, string[]>();
+        const visibilityMap: Map<string, boolean> = new Map<string, boolean>();
+        for (const record of records) {
+            const uniqueID: string = record.uniqueID;
+            recordMap.set(uniqueID, record);
+            // Build parent-to-children map for potential child pruning
+            if (record.parentItem) {
+                const parentId: string = record.uniqueID;
+                if (!parentToChildren.has(parentId)) {
+                    parentToChildren.set(parentId, []);
+                }
+                parentToChildren.get(parentId)!.push(uniqueID);
+            }
+        }
+        // Step 2: Process records in input order to preserve original order
+        const visibleRecords: IGanttData[] = [];
+        const processed: Set<string> = new Set<string>();
+        for (const record of records) {
+            const uniqueID: string = record.uniqueID;
+            // Skip if already processed (prevents duplicates)
+            if (processed.has(uniqueID)) {
+                if (visibilityMap.get(uniqueID)) {
+                    visibleRecords.push(record);
+                }
+                continue;
+            }
+            processed.add(uniqueID);
+            // Determine visibility
+            let isVisible: boolean = record.expanded !== false; // Assume visible unless collapsed
+            // Check ancestors' visibility using processed Set for cycle detection
+            if (isVisible && record.parentItem) {
+                let current: IGanttData = record;
+                while (current.parentItem) {
+                    const parentId: string = current.parentItem.uniqueID;
+                    const parent: IGanttData | null = this.getParentTask(current.parentItem, recordMap);
+                    if (processed.has(parentId)) {
+                        // Check if parent was processed and cached
+                        if (visibilityMap.has(parentId) && parent && parent.expanded) {
+                            isVisible = visibilityMap.get(parentId)!;
+                            break;
+                        } else {
+                            isVisible = false; // Cycle or unprocessed parent
+                            break;
+                        }
+                    }
+                    processed.add(parentId); // Mark as visited to prevent cycles
+                    if (parent && records.indexOf(parent) === -1 && parent.expanded && !visibilityMap.get(parentId)) {
+                        visibilityMap.set(parentId, true);
+                    }
+                    if (!parent) {
+                        isVisible = false; // Orphaned record
+                        break;
+                    }
+                    // Check parent's expanded state
+                    if (parent.expanded === false) {
+                        isVisible = false;
+                        break;
+                    }
+                    current = parent;
+                }
+            }
+            else if (!isVisible) {
+                let parent: IGanttData;
+                if (record.parentItem) {
+                    parent = this.getParentTask(record.parentItem, recordMap);
+                }
+                isVisible = (!record.parentItem || parent && parent.expanded) ? true : false;
+            }
+            // Cache visibility
+            visibilityMap.set(uniqueID, isVisible);
+            // Add to result if visible
+            if (isVisible) {
+                visibleRecords.push(record);
+            }
+        }
+        this.expandedRecords = visibleRecords;
+        return visibleRecords;
     }
     /**
      * Getting the Zooming collections of the Gantt control
@@ -4899,17 +4975,21 @@ export class Gantt extends Component<HTMLElement>
         const resultIf: boolean = (this.isOnEdit || this.isOnDelete) ? true : false;
         if (resultIf) {
             this.makeCloneData(field, record, isTaskData);
+            const fieldName: any = field.includes('.') ? field.split('.')[1] : field;
             const ganttData: ITaskData = isTaskData ? (record as ITaskData) : (record as IGanttData).ganttProperties;
             const id: string  = ganttData.rowUniqueID;
             const task: IGanttData = this.getRecordByID(id);
             let isValid: boolean = false;
-            isValid = ((isNullOrUndefined(value) || isNullOrUndefined(record[`${field}`])) ||
-                (!isNullOrUndefined(value) && !isNullOrUndefined(record[`${field}`]) &&
+            isValid = ((isNullOrUndefined(value) || isNullOrUndefined(record[`${fieldName}`])) ||
+                (!isNullOrUndefined(value) && !isNullOrUndefined(record[`${fieldName}`]) &&
                     (value instanceof Date
-                        ? value.getTime() !== record[`${field}`].getTime()
+                        ? value.getTime() !== record[`${fieldName}`].getTime()
                         : (Array.isArray(value) || typeof value === 'object')
-                            ? JSON.stringify(value) !== JSON.stringify(record[`${field}`])
-                            : record[`${field}`] !== value))) ? true : isValid;
+                            ? JSON.stringify(value) !== JSON.stringify(record[`${fieldName}`])
+                            : record[`${fieldName}`] !== value))) ? true : isValid;
+            if (fieldName === 'totalDuration' && task) {
+                isValid = (record as ITaskData).progress !== task.ganttProperties.progress ? true : false;
+            }
             if (task && isValid && (this.editedRecords.indexOf(task) === -1 || this.editedRecords.length === 0)) {
                 if (this.editModule['draggedRecord'] && this.editModule['draggedRecord'].ganttProperties.taskId === ganttData.taskId) {
                     this.editedRecords.splice(0, 0, task);

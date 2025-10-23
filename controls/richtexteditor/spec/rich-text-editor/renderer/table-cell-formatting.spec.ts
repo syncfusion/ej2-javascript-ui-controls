@@ -133,7 +133,7 @@ describe('Table cell formatting ', () => {
             const toolbarButtons : NodeList = editor.element.querySelectorAll('.e-tbar-btn');
             (toolbarButtons[5] as HTMLElement).click();
             expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(2);
-            expect(table.rows[0].cells[0].innerHTML === '<ul><li>Span&nbsp;<br></li><li><strong>Bold </strong><br></li><li style="font-style: italic;"><em>Italic <br></em></li></ul>').toBe(true);
+            expect(table.rows[0].cells[0].innerHTML === '<ul><li>Span&nbsp;<br></li><li style="font-weight: bold;"><strong>Bold </strong><br></li><li style="font-style: italic;"><em>Italic <br></em></li></ul>').toBe(true);
             expect(table.rows[0].cells[1].innerHTML === '<ul><li>Paragraph 1</li><li>Paragraph 2</li><li>Paragraph 3</li></ul>').toBe(true);
         });
         it('Revert the list', () => {
@@ -141,7 +141,7 @@ describe('Table cell formatting ', () => {
             const toolbarButtons : NodeList = editor.element.querySelectorAll('.e-tbar-btn');
             (toolbarButtons[5] as HTMLElement).click();
             expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(2);
-            expect(table.rows[0].cells[0].innerHTML === '<p>Span&nbsp;<br></p><p><strong>Bold </strong><br></p><p style="font-style: italic;"><em>Italic <br></em></p>').toBe(true);
+            expect(table.rows[0].cells[0].innerHTML === '<p>Span&nbsp;<br></p><p style="font-weight: bold;"><strong>Bold </strong><br></p><p style="font-style: italic;"><em>Italic <br></em></p>').toBe(true);
             expect(table.rows[0].cells[1].innerHTML === '<p>Paragraph 1</p><p>Paragraph 2</p><p>Paragraph 3</p>').toBe(true);
         });
     });

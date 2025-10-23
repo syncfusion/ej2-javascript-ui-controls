@@ -2,6 +2,37 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I771969` - Now, no extra space will be created on multilevel labels when the text width is reduced.
+- `#I770538` - Axis label colors were updated for dark and high-contrast themes to improve visibility.
+- `#I774667` - The console error will no longer occur when hovering over the trendline legend text.
+
+#### Breaking Changes
+
+- The axis label color was updated to `#FFFFFFE6` for the dark theme and `#FFFFFF` for the high contrast theme.
+
+## 31.2.2 (2025-10-15)
+
+### Chart
+
+#### Bug Fixes
+
+- `#FB70239` - Now data is displayed properly, while exporting the transposed column chart.
+- `#I773676` - DashArray is properly applied to legend for dashed line and spline series.
+- `#I769905` - Now the first x-axis label will no longer be removed when dragging the range using the range navigator in a date-time category axis.
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I770523` - Now the accumulation chart title is properly positioned when set to 'Bottom'.
+- `#I770415` - Now the trimmed legend tooltip text is displayed properly on the reversed legend.
+
 ## 31.1.23 (2025-10-07)
 
 ### Chart

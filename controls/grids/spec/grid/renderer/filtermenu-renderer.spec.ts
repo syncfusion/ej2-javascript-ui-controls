@@ -1,7 +1,7 @@
 /**
  * Grid Filtering spec document
  */
-import { EventHandler, ChildProperty, EmitType, Browser, initializeCSPTemplate } from '@syncfusion/ej2-base';
+import { EventHandler, ChildProperty, EmitType, Browser, initializeCSPTemplate, L10n } from '@syncfusion/ej2-base';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid, FilterSettings } from '../../../src/grid/base/grid';
@@ -1626,6 +1626,57 @@ describe('filter menu module =>', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;
+        });
+    });
+
+    describe('EJ2: 983924 => Locale keywords does not disable input element if locale is not equal to en =>', () => {
+        let gridObj: Grid;
+        let actionComplete: (args?: any) => void;
+        beforeAll((done: Function) => {
+            L10n.load({
+                'de-DE': {
+                    grid: {
+                        NotNull: 'Testinggg',
+                        IsNull: 'TESTTTTTTTTT',
+                    },
+                },
+            });
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    locale: 'de-DE',
+                    allowPaging: true,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', width: 100, headerText: 'Order ID', filter: { operator: 'isnotnull' } },
+                        { field: 'CustomerID', width: 120, headerText: 'Customer ID' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd' },
+                    ],
+                    actionComplete: actionComplete,
+                },
+                done
+            );
+        });
+
+        it('Check if input element is disabled in filter menu', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterAfterOpen') {
+                    const inputTextBox: NumericTextBox = document.querySelector('#numberui-' + gridObj.getColumns()[0].uid)['ej2_instances'][0];
+                    expect(inputTextBox.enabled).toBe(false);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        });
+
+        afterEach(() => {
+            destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
         });
     });
 });

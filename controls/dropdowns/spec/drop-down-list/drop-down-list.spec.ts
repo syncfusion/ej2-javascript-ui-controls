@@ -1796,6 +1796,34 @@ describe('DDList', () => {
             }
         });
     });
+
+    describe("Escaped HTML entities should display", () => {
+        let listObj: any;
+        let element: string = `<select id="select1">
+                                    <option value="P">Create a new &lt;p&gt;</option>
+                                    <option value="DIV">Create a new &lt;div&gt;</option>
+                                    <option value="BR">Create a new &lt;br&gt;</option>
+                                </select>`;
+        it('Select Rendering with options', () => {
+            document.body.innerHTML = element;
+            let select: HTMLSelectElement = document.getElementById('select1') as HTMLSelectElement;
+            listObj = new DropDownList();
+            listObj.appendTo(select);
+            listObj.value = 'option1';
+            listObj.dataBind();
+            listObj.showPopup();
+            let ele: HTMLElement = listObj.popupObj.element;
+            expect(ele.querySelectorAll('li')[0].innerText).toBe('Create a new <p>');
+        });
+        afterAll(() => {
+            let select: HTMLSelectElement = document.getElementById('select1') as HTMLSelectElement;
+            if (select) {
+                let parent: HTMLElement = select.parentElement as HTMLElement;
+                parent.remove();
+            }
+        });
+    });
+   
     describe('Rendering by UL-LI tag', () => {
         let ele: HTMLElement = document.createElement('ul');
         ele.id = 'newlist';

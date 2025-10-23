@@ -1218,6 +1218,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
         element.style.display = 'block';
+        element.style.overflow = 'hidden';
         element.style.height = (element.style.height || (this.height && this.height.indexOf('%') === -1)) ? element.style.height : 'inherit';
         let tabColor: string = '';
         switch (this.theme) {
@@ -2202,7 +2203,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             textAnchor, this.titleCollection, rotation, 'auto'
         );
         const space: number = (this.series[0].type === 'Pie' && this.visibleSeries[0].dataLabel.position === 'Outside' && this.visibleSeries[0].dataLabel.connectorStyle.length) ? stringToNumber(this.visibleSeries[0].dataLabel.connectorStyle.length, this.accBaseModule.radius) : 0;
-        if (!this.subTitle && (this.series[0].type !== 'Funnel' && this.series[0].type !== 'Pyramid')) {
+        if (!this.subTitle && (this.series[0].type !== 'Funnel' && this.series[0].type !== 'Pyramid') && this.titleStyle.position === 'Top') {
             options.y = parseInt(this.series[0].radius, 10) >= 80 ? options.y :
                 (this.accBaseModule.center.y - this.accBaseModule.radius - padding
                     - titleHeight - legendHeight - expodeValue - space);

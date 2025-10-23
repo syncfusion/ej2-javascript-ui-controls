@@ -4349,6 +4349,9 @@ export class WordExport {
                                 if (mHorizontalMerge.containsKey(j)) {
                                     prevColIndex += mHorizontalMerge.get(j) - 1;
                                     j += mHorizontalMerge.get(j);
+                                    if (j > 0 && mVerticalMerge.containsKey(j - 1)) {
+                                        j--;
+                                    }
                                 }
                             } else if (!(i === (cellLength - 1) && j < table[columnCountProperty[this.keywordIndex]])) {
                                 break;

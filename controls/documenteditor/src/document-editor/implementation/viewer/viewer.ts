@@ -657,6 +657,10 @@ export class DocumentHelper {
      * @private
      */
     public isBookmarkInserted: boolean = true;
+    /**
+     * @private
+     */
+    public isUpdatedWhileLoadAsync: boolean = false;
     private L10n: L10n;
     private isMappedContentControlUpdated: boolean = true;
     private isAutoResizeCanStart: boolean = false;
@@ -670,6 +674,16 @@ export class DocumentHelper {
     private hRuler:HTMLElement;
     private vRuler:HTMLElement;
     private markIndicator:HTMLElement
+
+    /**
+     * @private
+     */
+    public currentDocumentLoadId: number = 0;
+    private scheduledTimeouts: { [key: number]: number[] } = {};
+    /**
+     * @private
+     */
+    public isDocumentLoadAsynchronously: boolean = false;
 
     /**
      * Gets visible bounds.
@@ -710,7 +724,7 @@ export class DocumentHelper {
      * @private
      * @param {string} text - Specifies the text string.
      */
-    public openTextFile(text: string): void {
+    public async openTextFile(text: string): Promise<void> {
         this.layout.isTextFormat = true;
         let arr: string[] = [];
         text = text.replace(/\r\n/g, '\n');
@@ -768,7 +782,11 @@ export class DocumentHelper {
             paragraph.containerWidget = bodyWidget;
             bodyWidget.childWidgets.push(paragraph);
         }
-        this.onDocumentChanged([bodyWidget]);
+        if (this.owner.documentEditorSettings.openAsyncSettings.enable) {
+            await this.owner.documentHelper.onDocumentChanged([bodyWidget], undefined, true);
+        } else {
+            this.owner.documentHelper.onDocumentChanged([bodyWidget], undefined, false);
+        }
         this.layout.isTextFormat = false;
     }
     /**
@@ -1045,6 +1063,7 @@ export class DocumentHelper {
         this.editRanges.clear();
         this.headersFooters = [];
         this.fields = [];
+        this.layout.lastScrollUpdatePageIndex = -1;
         this.formFields = [];
         this.currentSelectedComment = undefined;
         this.currentSelectedRevision = undefined;
@@ -1118,6 +1137,8 @@ export class DocumentHelper {
         this.themes = new Themes();
         this.hasThemes = false;
         this.isRestartNumbering = false;
+        this.isUpdatedWhileLoadAsync = false;
+        this.isDocumentLoadAsynchronously = false;
     }
     /**
      * @private
@@ -1971,13 +1992,45 @@ export class DocumentHelper {
         }
     }
     /**
+     * Stores the setTimeOut id when asynchronous process.
+     *
+     * @private
+     * @returns {void}
+     */
+    public storeTimeoutId(loadId: number, timeoutId: number): void {
+        if (!this.scheduledTimeouts[loadId]) {
+            this.scheduledTimeouts[loadId] = [];
+        }
+        this.scheduledTimeouts[loadId].push(timeoutId);
+    }
+    /**
+     * Clears the stored setTimeOut id when suspend the asynchronous process.
+     *
+     * @private
+     * @returns {void}
+     */
+    public clearScheduledTimeouts(loadId: number): void {
+        if (this.scheduledTimeouts[loadId]) {
+            for (const id of this.scheduledTimeouts[loadId]) {
+                clearTimeout(id);
+            }
+            delete this.scheduledTimeouts[loadId];
+        }
+    }
+    /**
      * Fired when the document gets changed.
      *
      * @private
      * @param {BodyWidget[]} sections - Specified document content.
      * @returns {void}
      */
-    public onDocumentChanged(sections: BodyWidget[], iOps?: Record<string, ActionInfo[]>): void {
+    public onDocumentChanged(sections: BodyWidget[], iOps?: Record<string, ActionInfo[]>, isAsync?: boolean): void | Promise<void> {
+        if(Object.keys(this.scheduledTimeouts).length !== 0) {
+            this.clearScheduledTimeouts(this.currentDocumentLoadId);
+        }
+        if (isAsync) {
+            this.currentDocumentLoadId++;
+        }
         this.clearContent();
         if (this.owner.editorModule) {
             this.owner.editorModule.tocStyles = {};
@@ -1990,6 +2043,8 @@ export class DocumentHelper {
         this.layout.isMultiColumnDoc = false;
         this.isMappedContentControlUpdated = true;
         this.isSpellCheckPending = false;
+        this.isDocumentLoadAsynchronously = false;
+        this.isUpdatedWhileLoadAsync = false;
         this.updateAuthorIdentity();
         for (let i: number = 0; i < this.pages.length; i++) {
             for (let j: number = 0; j < this.pages[i].bodyWidgets.length; j++) {
@@ -2011,37 +2066,110 @@ export class DocumentHelper {
         this.layout.isInitialLoad = true;
         this.layout.footHeight = 0;
         this.layout.footnoteHeight = 0;
-        this.layout.layoutItems(sections, false);
+
+        // Core logic for both sync and async paths
+        const executeAfterLayout = () => {
+            if (this.owner.selectionModule) {
+                this.selection.previousSelectedFormField = undefined;
+                if (this.formFields.length > 0) {
+                    this.owner.selectionModule.highlightFormFields();
+                }
+                this.owner.selectionModule.editRangeCollection = [];
+                // Skip selection update if it has already been updated during asynchronous loading.
+                if (!this.isUpdatedWhileLoadAsync) {
+                    this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
+                }
+                if (this.isDocumentProtected && this.protectionType === 'FormFieldsOnly') {
+                    this.owner.selectionModule.navigateToNextFormField();
+                }
+                if (this.isDocumentProtected) {
+                    this.restrictEditingPane.showHideRestrictPane(true);
+                }
+            }
+            if (!isNullOrUndefined(iOps) && this.owner.editorModule) {
+                this.owner.editorModule.intializeDefaultStyles();
+            }
+            this.owner.skipStyleUpdate = false;
+            if (this.owner.enableCollaborativeEditing && this.owner.collaborativeEditingHandlerModule && this.owner.enableEditor) {
+                this.owner.editorModule.isRemoteAction = true;
+                this.owner.editorModule.isIncrementalSave = true;
+                if (iOps && !isNullOrUndefined(iOps[incrementalOps[0]]) && iOps[incrementalOps[0]].length > 0) {
+                    for (let k = 0; k < iOps[incrementalOps[0]].length; k++) {
+                        this.owner.collaborativeEditingHandlerModule.applyRemoteAction('action', iOps[incrementalOps[0]][k]);
+                    }
+                }
+                this.owner.editorModule.isRemoteAction = false;
+                this.owner.editorModule.isIncrementalSave = false;
+                this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
+            }
+
+            if (!this.isUpdatedWhileLoadAsync) {
+                this.performUpdateAfterLoad(isAsync, true);
+                this.isUpdatedWhileLoadAsync = true;
+            } // re update the track changes once document layout completed in async loading.
+            else {
+                this.owner.isUpdateTrackChanges = false;
+                this.owner.trackChangesPane.updateTrackChanges();
+                this.owner.isUpdateTrackChanges = true;
+            }
+            this.owner.notify(internalStyleCollectionChange, {});
+            this.owner.documentHelper.isDocumentLoadAsynchronously = false;
+            this.owner.fireDocumentChange();
+            this.owner.showHideRulers();
+            let picture_cc: HTMLElement = this.owner.element.querySelector('#' + this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
+            if (!isNullOrUndefined(picture_cc)) {
+                this.owner.renderPictureContentControlElement(this.owner, false, false);
+            }
+            this.layout.isInitialLoad = false;
+        };
+        // Handle synchronous path
+        const synchronousExecution = () => {
+            // Run layout synchronously
+            this.layout.layoutItems(sections, false, undefined, isAsync);
+            executeAfterLayout();
+        };
+        // Handle asynchronous path
+        const asynchronousExecution = async (): Promise<void> => {
+            const layoutPromise = this.layout.layoutItems(sections, false, undefined, isAsync);
+            if (this.owner.selectionModule) {
+                this.selection.isModifyingSelectionInternally = true;
+                this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
+                this.selection.isModifyingSelectionInternally = false;
+            }
+            if (layoutPromise instanceof Promise) {
+                await layoutPromise;
+            }
+            executeAfterLayout();
+        };
+        if (isAsync) {
+            return asynchronousExecution();
+        } else {
+            synchronousExecution();
+            return;
+        }
+    }
+    /**
+ * To update after load
+ *
+ * @private
+ * @returns {void}
+ */
+    public performUpdateAfterLoad(isAsync: boolean, skipSelection?: boolean): void {
+        if (isAsync) {
+            hideSpinner(this.owner.element);
+            if (!skipSelection && this.owner.selectionModule) {
+                this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
+            }
+            this.layout.layoutComments(this.comments);
+            if (this.owner.commentReviewPane) {
+                createSpinner({ target: this.owner.commentReviewPane.reviewPane });
+                showSpinner(this.owner.commentReviewPane.reviewPane);
+            }
+        }
         if (this.owner.selectionModule) {
-            this.selection.previousSelectedFormField = undefined;
-            if (this.formFields.length > 0) {
-                this.owner.selectionModule.highlightFormFields();
-            }
-            this.owner.selectionModule.editRangeCollection = [];
-            this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
-            if(this.isDocumentProtected && this.protectionType == 'FormFieldsOnly'){
-                this.owner.selectionModule.navigateToNextFormField();
-            }
             if (this.isDocumentProtected) {
                 this.restrictEditingPane.showHideRestrictPane(true);
             }
-        }
-        if (!isNullOrUndefined(iOps) && this.owner.editorModule) {
-            this.owner.editorModule.intializeDefaultStyles();
-        }
-        this.owner.skipStyleUpdate = false;
-        if (this.owner.enableCollaborativeEditing && this.owner.collaborativeEditingHandlerModule && this.owner.enableEditor) {
-            this.owner.editorModule.isRemoteAction = true;
-            this.owner.editorModule.isIncrementalSave = true;
-            if (iOps && !isNullOrUndefined(iOps[incrementalOps[0]]) 
-            && !isNullOrUndefined(iOps[incrementalOps[0]].length > 0)) {
-                for (let k: number = 0; k < iOps[incrementalOps[0]].length; k++) {
-                    this.owner.collaborativeEditingHandlerModule.applyRemoteAction('action', iOps[incrementalOps[0]][k]);
-                }
-            }
-            this.owner.editorModule.isRemoteAction = false;
-            this.owner.editorModule.isIncrementalSave = false;
-            this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
         }
         if (this.owner.optionsPaneModule) {
             this.owner.optionsPaneModule.showHideOptionsPane(false);
@@ -2058,39 +2186,33 @@ export class DocumentHelper {
             this.owner.selectionModule.isViewPasteOptions = false;
             this.owner.selectionModule.showHidePasteOptions(undefined, undefined);
         }
-        // setTimeout((): void => {
-            if (!isNullOrUndefined(this.owner) && this.owner.showRevisions) {
-                this.showRevisions(true);
-            } else {
-                this.owner.trackChangesPane.changes = new Dictionary<Revision, ChangesSingleView>();
-                this.owner.revisions.groupedView = new Dictionary<ChangesSingleView, Revision[]>();
-                for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
-                    let revision: Revision = this.owner.revisions.changes[i];
-                    let previousRevision: Revision = this.owner.revisions.checkAndGetPreviousRevisionToCombine(revision);
-                    if (previousRevision) {
-                        let changeSingleView: ChangesSingleView = this.owner.trackChangesPane.changes.get(previousRevision);
-                        this.owner.revisions.groupedView.get(changeSingleView).push(revision);
-                        this.owner.trackChangesPane.changes.add(revision, changeSingleView);
-                    } else {
-                        let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this.owner.trackChangesPane);
-                        this.owner.revisions.groupedView.add(currentChangeView, [revision]);
-                        this.owner.revisions.revisions.push(revision);
-                        this.owner.trackChangesPane.changes.add(revision, currentChangeView);
-                    }
+        if (!isNullOrUndefined(this.owner) && this.owner.showRevisions) {
+            this.showRevisions(true);
+            if (isAsync && this.owner.trackChangesPane) {
+                createSpinner({ target: this.owner.trackChangesPane.trackChangeDiv });
+                showSpinner(this.owner.trackChangesPane.trackChangeDiv);
+            }
+        } else {
+            this.owner.trackChangesPane.changes = new Dictionary<Revision, ChangesSingleView>();
+            this.owner.revisions.groupedView = new Dictionary<ChangesSingleView, Revision[]>();
+            for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
+                let revision: Revision = this.owner.revisions.changes[i];
+                let previousRevision: Revision = this.owner.revisions.checkAndGetPreviousRevisionToCombine(revision);
+                if (previousRevision) {
+                    let changeSingleView: ChangesSingleView = this.owner.trackChangesPane.changes.get(previousRevision);
+                    this.owner.revisions.groupedView.get(changeSingleView).push(revision);
+                    this.owner.trackChangesPane.changes.add(revision, changeSingleView);
+                } else {
+                    let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this.owner.trackChangesPane);
+                    this.owner.revisions.groupedView.add(currentChangeView, [revision]);
+                    this.owner.revisions.revisions.push(revision);
+                    this.owner.trackChangesPane.changes.add(revision, currentChangeView);
                 }
             }
+        }
         if (!isNullOrUndefined(this.owner)) {
             this.owner.isUpdateTrackChanges = true;
         }
-        this.owner.notify(internalStyleCollectionChange, {});
-        // });
-        this.owner.fireDocumentChange();
-        this.owner.showHideRulers();
-        let picture_cc: HTMLElement = this.owner.element.querySelector('#' + this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
-        if (!isNullOrUndefined(picture_cc)) {
-            this.owner.renderPictureContentControlElement(this.owner, false, false);
-        }
-        this.layout.isInitialLoad = false;
     }
     /**
      * Fires on scrolling.
@@ -3813,15 +3935,17 @@ export class DocumentHelper {
                 let shapeInfo: ShapeInfo = undefined;
                 let behindShapeInfo: ShapeInfo = undefined;
                 let isGroupChildShape: boolean = false;
-                for (var i = 0; i < this.currentPage.bodyWidgets.length; i++) {
-                    var bodyWidget = this.currentPage.bodyWidgets[i];
-                    shapeInfo = this.checkFloatingItems(bodyWidget, cursorPoint, isMouseDragged, false);
-                    behindShapeInfo = this.checkFloatingItems(bodyWidget, cursorPoint, isMouseDragged, true);
-                    if (shapeInfo.isShapeSelected || behindShapeInfo.isShapeSelected) {
-                        break;
+                if (!isNullOrUndefined(this.currentPage.bodyWidgets)) {
+                    for (var i = 0; i < this.currentPage.bodyWidgets.length; i++) {
+                        var bodyWidget = this.currentPage.bodyWidgets[i];
+                        shapeInfo = this.checkFloatingItems(bodyWidget, cursorPoint, isMouseDragged, false);
+                        behindShapeInfo = this.checkFloatingItems(bodyWidget, cursorPoint, isMouseDragged, true);
+                        if (shapeInfo.isShapeSelected || behindShapeInfo.isShapeSelected) {
+                            break;
+                        }
                     }
                 }
-                if (shapeInfo.isShapeSelected && !this.isEmptyShape(shapeInfo)) {
+                if (shapeInfo && shapeInfo.isShapeSelected && !this.isEmptyShape(shapeInfo)) {
                     if (shapeInfo.isInShapeBorder) {
                         return shapeInfo.element.line;
                     }
@@ -3866,21 +3990,31 @@ export class DocumentHelper {
                             this.isFootnoteWidget = true;
                         }
                     } else {
-                        for (let i: number = 0; i < this.currentPage.bodyWidgets.length; i++) {
-                            let bodyWidget: BodyWidget = this.currentPage.bodyWidgets[i];
-                            if (i < this.currentPage.bodyWidgets.length - 1) {
-                                if (cursorPoint.x <= bodyWidget.x + bodyWidget.width) {
-                                    //let isGetFirstChild: boolean = i === this.currentPage.bodyWidgets.length - 1;
-                                    widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
-                                    if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
-                                    && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
-                                        this.isFootnoteWidget = false;
-                                        break;
+                        if (!isNullOrUndefined(this.currentPage.bodyWidgets)) {
+                            for (let i: number = 0; i < this.currentPage.bodyWidgets.length; i++) {
+                                let bodyWidget: BodyWidget = this.currentPage.bodyWidgets[i];
+                                if (i < this.currentPage.bodyWidgets.length - 1) {
+                                    if (cursorPoint.x <= bodyWidget.x + bodyWidget.width) {
+                                        //let isGetFirstChild: boolean = i === this.currentPage.bodyWidgets.length - 1;
+                                        widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
+                                        if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
+                                            && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
+                                            this.isFootnoteWidget = false;
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-                            if (cursorPoint.x > bodyWidget.x + bodyWidget.width && this.layout.getNextWidgetHeight(bodyWidget) >= cursorPoint.y && bodyWidget.y <= cursorPoint.y) {
-                                if (isNullOrUndefined(bodyWidget.nextRenderedWidget) || !(this.layout.getNextWidgetHeight(bodyWidget.nextRenderedWidget as BodyWidget) >= cursorPoint.y && bodyWidget.nextRenderedWidget.y <= cursorPoint.y)) {
+                                if (cursorPoint.x > bodyWidget.x + bodyWidget.width && this.layout.getNextWidgetHeight(bodyWidget) >= cursorPoint.y && bodyWidget.y <= cursorPoint.y) {
+                                    if (isNullOrUndefined(bodyWidget.nextRenderedWidget) || !(this.layout.getNextWidgetHeight(bodyWidget.nextRenderedWidget as BodyWidget) >= cursorPoint.y && bodyWidget.nextRenderedWidget.y <= cursorPoint.y)) {
+                                        widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
+                                        if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
+                                            && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
+                                            this.isFootnoteWidget = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (i == this.currentPage.bodyWidgets.length - 1) {
                                     widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
                                     if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
                                         && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
@@ -3888,24 +4022,16 @@ export class DocumentHelper {
                                         break;
                                     }
                                 }
-                            }
-                            if (i == this.currentPage.bodyWidgets.length - 1) {
-                                widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
-                                if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
-                                && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
-                                    this.isFootnoteWidget = false;
-                                    break;
-                                }
-                            }
-                            if (cursorPoint.x < bodyWidget.x && i < this.currentPage.bodyWidgets.length - 1) {
-                                widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
-                                if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
-                                && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
-                                    this.isFootnoteWidget = false;
-                                    break;
-                                } else if (!isNullOrUndefined(widget) && i === this.currentPage.bodyWidgets.length - 1) {
-                                    this.isFootnoteWidget = false;
-                                    break;
+                                if (cursorPoint.x < bodyWidget.x && i < this.currentPage.bodyWidgets.length - 1) {
+                                    widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
+                                    if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
+                                        && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
+                                        this.isFootnoteWidget = false;
+                                        break;
+                                    } else if (!isNullOrUndefined(widget) && i === this.currentPage.bodyWidgets.length - 1) {
+                                        this.isFootnoteWidget = false;
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -4139,6 +4265,7 @@ export class DocumentHelper {
         }
         this.owner.focusIn();
         let isHandled: boolean = false;
+        let canSkipScrollbarUpdate: boolean = false;
         let keyEventArgs: DocumentEditorKeyDownEventArgs = { 'event': event, 'isHandled': false, source: this.owner };
         this.owner.trigger(keyDownEvent, keyEventArgs);
         if (keyEventArgs.isHandled) {
@@ -4168,9 +4295,10 @@ export class DocumentHelper {
         if (!isHandled && !isNullOrUndefined(this.selection)) {
             this.selection.caret.classList.remove("e-de-cursor-animation");
             this.isSpellCheckPending = true;
+            canSkipScrollbarUpdate = true;
             this.selection.onKeyDownInternal(event, ctrl, shift, alt);
         }
-        if (!isNullOrUndefined(this.owner.documentHelper) && this.owner.documentHelper.contentControlCollection.length > 0) {
+        if (!isNullOrUndefined(this.owner.documentHelper) && this.owner.documentHelper.contentControlCollection.length > 0 && !canSkipScrollbarUpdate) {
             //Need to work on these
             this.clearContent();
             this.owner.documentHelper.viewer.updateScrollBars();
@@ -4179,7 +4307,7 @@ export class DocumentHelper {
             event.preventDefault();
         }
         this.timer = setTimeout((): void => {
-            if (!this.isScrollHandler && !isNullOrUndefined(this.owner) && this.owner.isSpellCheck) {
+            if (!this.isScrollHandler && !isNullOrUndefined(this.owner) && this.owner.isSpellCheck && !canSkipScrollbarUpdate) {
                 this.isScrollToSpellCheck = true;
                 this.owner.viewer.updateScrollBars();
             }
@@ -4317,7 +4445,22 @@ export class DocumentHelper {
                         page.currentPageNum = page.bodyWidgets[0].sectionFormat.pageStartingNumber + page.index;
                         return this.getFieldText(fieldPattern, page.currentPageNum);
                     }
-                    if (!isNullOrUndefined(page.previousPage) && ((page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && page.previousPage.currentPageNum >= 1)
+                    let previousPage: Page = page.previousPage;
+                    let pageStartIndex: number = -1;
+                    if (previousPage && page.sectionIndex !== previousPage.sectionIndex
+                        && previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && previousPage.currentPageNum === 1) {
+                        while (previousPage) {
+                            if (!isNullOrUndefined(previousPage.previousPage) && previousPage.sectionIndex === previousPage.previousPage.sectionIndex) {
+                                previousPage = previousPage.previousPage;
+                                pageStartIndex = previousPage.index;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    if (pageStartIndex >= 0 && page.previousPage.bodyWidgets[0].sectionFormat.pageStartingNumber + (page.previousPage.index - pageStartIndex) !== page.previousPage.currentPageNum) {
+                        page.currentPageNum = page.index + 1;
+                    } else if (!isNullOrUndefined(page.previousPage) && ((page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && page.previousPage.currentPageNum >= 1)
                         || (this.isRestartNumbering && page.previousPage.currentPageNum !== 1))) {
                         if (page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering) {
                             this.isRestartNumbering = true;
@@ -4410,6 +4553,10 @@ export class DocumentHelper {
      * @returns {void}
      */
     public destroy(): void {
+        // Clear the timeouts from the previous document load before destroying the control
+        if(Object.keys(this.scheduledTimeouts).length !== 0) {
+            this.clearScheduledTimeouts(this.currentDocumentLoadId);
+        }
         if (!isNullOrUndefined(this.owner)) {
             this.unWireEvent();
         }
@@ -4686,6 +4833,7 @@ export class DocumentHelper {
         this.owner = undefined;
         this.heightInfoCollection = undefined;
         this.isRestartNumbering = false;
+        this.currentDocumentLoadId = 0;
     }
     /**
      * Un-Wires events and methods

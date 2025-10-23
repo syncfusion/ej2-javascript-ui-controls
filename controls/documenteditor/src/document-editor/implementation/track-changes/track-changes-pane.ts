@@ -9,6 +9,7 @@ import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormF
 import { WRowFormat, WCharacterFormat, SelectionSectionFormat, TextHelper, TextPosition } from '../index';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary, HeaderFooterType, RevisionType } from '../../base/index';
+import { createSpinner } from '@syncfusion/ej2-popups';
 /**
  * Track changes pane
  */
@@ -18,7 +19,10 @@ export class TrackChangesPane {
      */
     public isChangesTabVisible: boolean;
     private owner: DocumentEditor;
-    private trackChangeDiv: HTMLElement;
+    /**
+     * @private
+     */
+    public trackChangeDiv: HTMLElement;
     private toolbarElement: HTMLElement;
     public closeButton: HTMLElement;
     private noChangeDivElement: HTMLElement;

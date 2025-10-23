@@ -62,6 +62,10 @@ export class Render {
      */
     public vgenerator: VirtualRowModelGenerator;
     /**
+     * @hidden
+     */
+    public isFirstColumnHidden: boolean = false;
+    /**
      * Constructor for render module
      *
      * @param {IGrid} parent - specifies the IGrid
@@ -254,6 +258,12 @@ export class Render {
      */
     private refreshDataManager(args: NotifyArgs = {}): void {
         const gObj: IGrid = this.parent;
+        const columns: Column[] = this.parent.getColumns();
+        if (columns && columns.length && !columns[0].visible) {
+            this.isFirstColumnHidden = true;
+        } else {
+            this.isFirstColumnHidden = false;
+        }
         const maskRow: boolean = (gObj.loadingIndicator.indicatorType === 'Shimmer' && args.requestType !== 'virtualscroll'
             && args.requestType !== 'infiniteScroll') || ((args.requestType === 'virtualscroll' || args.requestType === 'infiniteScroll')
             && gObj.enableVirtualMaskRow);

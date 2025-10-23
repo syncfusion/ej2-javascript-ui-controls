@@ -132,13 +132,18 @@ export class SpreadsheetImage {
         if (eventArgs.cancel) { return; }
         let overlayProps: { element: HTMLElement, top: number, left: number } = overlayObj.insertOverlayElement(id, range, sheetIndex);
         overlayProps.element.style.backgroundImage = 'url(\'' + args.options.src + '\')';
+        const isFreezePane: number = sheet.frozenRows || sheet.frozenColumns;
         if (args.options.height || args.options.left) {
             overlayProps.element.style.height = args.options.height + 'px'; overlayProps.element.style.width = args.options.width + 'px';
             if (!isNullOrUndefined(args.options.top)) {
-                overlayProps.element.style.top = Number(addDPRValue(args.options.top).toFixed(2)) + 'px';
+                overlayProps.element.style.top = Number(addDPRValue(
+                    (!isFreezePane && args.options.preservePos && overlayProps.top > args.options.top) ? overlayProps.top :
+                        args.options.top).toFixed(2)) + 'px';
             }
             if (!isNullOrUndefined(args.options.left)) {
-                overlayProps.element.style.left = Number(addDPRValue(args.options.left).toFixed(2)) + 'px';
+                overlayProps.element.style.left = Number(addDPRValue(
+                    (!isFreezePane && args.options.preservePos && overlayProps.left > args.options.left) ? overlayProps.left :
+                        args.options.left).toFixed(2)) + 'px';
             }
             if (!args.options.preservePos && !isNullOrUndefined(args.options.top) && !isNullOrUndefined(args.options.left)) {
                 const imgTop: { clientY: number, isImage?: boolean } = { clientY: args.options.top, isImage: true };
@@ -160,16 +165,16 @@ export class SpreadsheetImage {
                 }
             }
         }
-        if (sheet.frozenRows || sheet.frozenColumns) {
+        if (isFreezePane) {
             overlayObj.adjustFreezePaneSize(args.options, overlayProps.element, range);
         }
         const imgData: ImageModel = {
             src: args.options.src, id: id, height: parseFloat(overlayProps.element.style.height.replace('px', '')),
             width: parseFloat(overlayProps.element.style.width.replace('px', '')),
-            top: sheet.frozenRows || sheet.frozenColumns ? (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) :
+            top: isFreezePane ? (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) :
                 (isNullOrUndefined(args.options.top) || (args.options.preservePos && overlayProps.top > args.options.top) ?
                     overlayProps.top : args.options.top),
-            left: sheet.frozenRows || sheet.frozenColumns ? (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) :
+            left: isFreezePane ? (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) :
                 (isNullOrUndefined(args.options.left) || (args.options.preservePos && overlayProps.left > args.options.left) ?
                     overlayProps.left : args.options.left)
         };

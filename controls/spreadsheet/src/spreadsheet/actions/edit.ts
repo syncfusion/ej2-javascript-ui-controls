@@ -225,8 +225,12 @@ export class Edit {
         if (this.isEdit) {
             const editElement: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
             if (e.altKey && e.keyCode === 13) {
-                editElement.focus();
-                this.altEnter();
+                if ((e.target as HTMLElement).classList.contains('e-formula-bar')) {
+                    this.positionEditor(true);
+                } else {
+                    editElement.focus();
+                    this.altEnter();
+                }
                 this.isAltEnter = true;
             } else if (this.isCellEdit && this.editCellData.value !== editElement.textContent && e.keyCode !== 16 && (!e.shiftKey ||
                     (e.shiftKey && !isNavigationKey(e.keyCode)))) {

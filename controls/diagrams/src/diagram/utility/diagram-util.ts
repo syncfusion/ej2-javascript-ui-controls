@@ -2652,6 +2652,9 @@ export function scaleElement(element: DiagramElement, sw: number, sh: number, re
 export function arrangeChild(obj: Node, x: number, y: number, nameTable: {}, drop: boolean, diagram: Diagram | SymbolPalette): void {
     const child: string[] = obj.children;
     let node: Node;
+    let applyPaddingX: boolean = false;
+    let applyPaddingY: boolean = false;
+    const paddingOffset: number = 1.5;
     for (let i: number = 0; i < child.length; i++) {
         node = nameTable[child[parseInt(i.toString(), 10)]];
         if (node) {
@@ -2672,9 +2675,32 @@ export function arrangeChild(obj: Node, x: number, y: number, nameTable: {}, dro
                     container.children.push(content);
                     container.measure(new Size(node.width, node.height));
                     container.arrange(container.desiredSize);
+                    if (container.bounds.x === 0) {
+                        applyPaddingX = true;
+                    }
+                    if (container.bounds.y === 0) {
+                        applyPaddingY = true;
+                    }
                 }
             }
         }
+    }
+    // Bug 984074: Group Node Bounds Clipped on Left and Top in Symbol Palette Rendering.
+    // Adjusted the bounds to avoid clipping in left and top edges of group node.
+    if (applyPaddingX || applyPaddingY) {
+        obj.children.forEach(node => {
+            const child: NodeModel = nameTable[`${node}`];
+            if (child && child.wrapper && child.wrapper.children && child.wrapper.children.length > 0) {
+                if (applyPaddingX) {
+                    child.wrapper.children[0].bounds.x += paddingOffset;
+                    child.wrapper.children[0].offsetX += paddingOffset;
+                }
+                if (applyPaddingY) {
+                    child.wrapper.children[0].bounds.y += paddingOffset;
+                    child.wrapper.children[0].offsetY += paddingOffset;
+                }
+            }
+        });
     }
 }
 /**

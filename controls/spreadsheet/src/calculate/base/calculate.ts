@@ -2406,25 +2406,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 criteria = isCountIfs ? criteria : this.getANDComputedValue(criterias[i - 1]);
             }
             let op: string = 'equal';
-            if (criteria.startsWith('<=')) {
-                op = 'lessEq';
-                criteria = criteria.substring(2);
-            } else if (criteria.startsWith('>=')) {
-                op = 'greaterEq';
-                criteria = criteria.substring(2);
-            } else if (criteria.startsWith('<>')) {
-                op = 'notEq';
-                criteria = criteria.substring(2);
-            } else if (criteria.startsWith('<')) {
-                op = 'less';
-                criteria = criteria.substring(1);
-            } else if (criteria.startsWith('>')) {
-                op = 'greater';
-                criteria = criteria.substring(1);
-            } else if (criteria.startsWith('=')) {
-                op = 'equal';
-                criteria = criteria.substring(1);
-            }
+            const updatedCriteria: { op: string, criteria: string } = this.getOperatorAndCriteria(criteria, op);
+            op = updatedCriteria.op;
+            criteria = updatedCriteria.criteria;
             if ((!isStringVal && this.isCellReference(criteria) && (!isCellReferenceValue || (newCell !== '' && !isCountIfs))) || criteria.includes(this.arithMarker)) {
                 criteria = this.getValueFromArg(criteria);
             }
@@ -2581,6 +2565,158 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (isAvgIfs === this.trueValue) { sum = sum / avgValCount; }
         return sum;
     }
+
+    public computeCountIfsFormulas(range: string[]): string | number {
+        if (isNullOrUndefined(range) || range[0] === '' || range.length < 2 || range.length > 127 ||
+            range.length % 2 !== 0) {
+            return this.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
+        }
+        const argArr: string[] = range;
+        const cellRanges: string[] = [];
+        const criterias: string[] | string = [];
+        for (let i: number = 0; i < argArr.length; i++) {
+            if (argArr[i as number].indexOf(':') > -1 && this.isCellReference(argArr[i as number])) {
+                cellRanges.push(argArr[i as number].trim());
+            } else {
+                criterias.push(argArr[i as number].trim());
+            }
+        }
+        if (cellRanges.length !== criterias.length) {
+            return this.getErrorStrings()[CommonErrors.Value];
+        }
+        const rangeIndexesArr: { startRow: number, startCol: number, endRow: number, endCol: number,
+            getCellValue: (row: number, col: number, curCell: string) => string }[] = [];
+        let grid: Object = this.grid;
+        for (let i: number = 0; i < cellRanges.length; i++) {
+            const [startRow, startCol, endRow, endCol] = getRangeIndexes(cellRanges[i as number]);
+            let sheetToken: string = '';
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(grid);
+            if (cellRanges[i as number].startsWith('!')) {
+                sheetToken = cellRanges[i as number].substring(0, cellRanges[i as number].replace('!', '').indexOf('!') + 2);
+                if (family.tokenToParentObject !== null) {
+                    grid = family.tokenToParentObject.get(sheetToken);
+                }
+            }  else if (family.parentObjectToToken !== null) {
+                sheetToken = family.parentObjectToToken.get(grid);
+            }
+            const sheetId: number = this.getSheetId(grid);
+            const sheetInfoArgs: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
+                action: 'getSheetInfo', sheetInfo: [] };
+            (this.parentObject as { notify?: Function }).notify(workbookFormulaOperation, sheetInfoArgs);
+            if (getSheetIndexByName(this.parentObject, 'Sheet' + sheetId, sheetInfoArgs.sheetInfo) === -1) {
+                return this.getErrorStrings()[CommonErrors.Ref];
+            }
+            const getCellValue: (row: number, col: number, curCell: string) => string = this.getCellValueFn(grid, this.cell, sheetId, true);
+            if (rangeIndexesArr.length > 0) {
+                const baseRange: { startRow: number, startCol: number, endRow: number,
+                    endCol: number } = rangeIndexesArr[rangeIndexesArr.length - 1];
+                const baseRowCount: number = baseRange.endRow - baseRange.startRow + 1;
+                const baseColCount: number = baseRange.endCol - baseRange.startCol + 1;
+                if ((endRow - startRow + 1) !== baseRowCount || (endCol - startCol + 1) !== baseColCount) {
+                    return this.getErrorStrings()[CommonErrors.Value];
+                }
+            }
+            rangeIndexesArr.push({ startRow, startCol, endRow, endCol, getCellValue });
+        }
+        for (let k: number = 0; k < criterias.length; k++) {
+            if (criterias[k as number] === '') {
+                return 0;
+            }
+        }
+        let filteredCells: {rowIdx: number, colIdx: number}[] = [];
+        for (let i: number = 0; i < rangeIndexesArr.length; i++) {
+            let criteria: string = criterias[i as number];
+            const isStringVal: boolean = criteria.startsWith(this.tic) && criteria.endsWith(this.tic);
+            criteria = this.getANDComputedValue(criteria.trim());
+            const isAsterisk: boolean = criteria.includes('*');
+            const isAsteriskOnly: boolean = criteria === '*' || criteria === '<>*';
+            let criteriaValue: string = isAsterisk && !isAsteriskOnly ? criteria.replace(/\*/g, '').trim() : criteria;
+            let isCellReferenceValue: boolean = false;
+            if (!isStringVal && this.isCellReference(criteriaValue)) {
+                criteriaValue = this.getValueFromArg(criteriaValue);
+                isCellReferenceValue = true;
+            }
+            if (isAsterisk && !isAsteriskOnly) {
+                const asteriskIndex: number = criteria.indexOf('*');
+                if (criteria[0] === '*') { criteriaValue = '*' + criteriaValue; }
+                if (criteria[criteria.length - 1] === '*') { criteriaValue += '*'; }
+                if (asteriskIndex > 0 && asteriskIndex < criteria.length - 1) {
+                    criteriaValue = criteria.substring(0, asteriskIndex) + '*' + criteria.substring(asteriskIndex + 1);
+                }
+            }
+            criteria = criteriaValue;
+            let op: string = 'equal';
+            const updatedCriteria: { op: string, criteria: string } = this.getOperatorAndCriteria(criteria, op);
+            op = updatedCriteria.op;
+            criteria = updatedCriteria.criteria;
+            if ((!isStringVal && this.isCellReference(criteria) && !isCellReferenceValue) || criteria.includes(this.arithMarker)) {
+                criteria = this.getValueFromArg(criteria);
+            }
+            const hasWildCards: boolean = criteria.indexOf('*') > -1 || criteria.indexOf('?') > -1;
+            const { startRow, startCol, endRow, endCol, getCellValue } = rangeIndexesArr[i as number];
+            let cellVal: string;
+            if (i === 0) {
+                for (let r: number = startRow; r <= endRow; r++) {
+                    for (let c: number = startCol; c <= endCol; c++) {
+                        cellVal = getCellValue(r + 1, c + 1, getCellAddress(r, c));
+                        if (hasWildCards) {
+                            cellVal = this.findWildCardValue(criteria.toLowerCase(), cellVal.toLowerCase());
+                        }
+                        if (this.processLogical([cellVal.toLowerCase(), criteria.toLowerCase()], op) === this.trueValue) {
+                            filteredCells.push({ rowIdx: r, colIdx: c });
+                        }
+                    }
+                }
+            } else {
+                const storedCells: { rowIdx: number, colIdx: number }[] = filteredCells;
+                const previousRangeIdx: { startRow: number, startCol: number, endRow: number, endCol: number,
+                    getCellValue: (row: number, col: number, curCell: string) => string } = rangeIndexesArr[i as number - 1];
+                filteredCells = [];
+                for (let j: number = 0; j < storedCells.length; j++) {
+                    const updatedCell: { rowIdx: number, colIdx: number } = storedCells[j as number];
+                    updatedCell.rowIdx = startRow + (updatedCell.rowIdx - previousRangeIdx.startRow);
+                    updatedCell.colIdx = startCol + (updatedCell.colIdx - previousRangeIdx.startCol);
+                    cellVal = getCellValue(updatedCell.rowIdx + 1, updatedCell.colIdx + 1,
+                                           getCellAddress(updatedCell.rowIdx, updatedCell.colIdx));
+                    if (hasWildCards) {
+                        cellVal = this.findWildCardValue(criteria.toLowerCase(), cellVal.toLowerCase());
+                    }
+                    if (this.processLogical([cellVal.toLowerCase(), criteria.toLowerCase()], op) === this.trueValue) {
+                        filteredCells.push({ rowIdx: updatedCell.rowIdx, colIdx: updatedCell.colIdx });
+                    }
+                }
+            }
+            if (filteredCells.length === 0) {
+                return 0;
+            }
+        }
+        return filteredCells.length;
+    }
+
+    private getOperatorAndCriteria(rawCriteria: string, op: string): { op: string, criteria: string } {
+        let criteria: string = rawCriteria;
+        if (criteria.startsWith('<=')) {
+            op = 'lessEq';
+            criteria = criteria.substring(2);
+        } else if (criteria.startsWith('>=')) {
+            op = 'greaterEq';
+            criteria = criteria.substring(2);
+        } else if (criteria.startsWith('<>')) {
+            op = 'notEq';
+            criteria = criteria.substring(2);
+        } else if (criteria.startsWith('<')) {
+            op = 'less';
+            criteria = criteria.substring(1);
+        } else if (criteria.startsWith('>')) {
+            op = 'greater';
+            criteria = criteria.substring(1);
+        } else if (criteria.startsWith('=')) {
+            op = 'equal';
+            criteria = criteria.substring(1);
+        }
+        return { op, criteria };
+    }
+
     private processNestedFormula(pText: string, sFormula: string, fResult: string | number): string {
         if (fResult && !fResult.toString().includes('"')) {
             const formulaEndIdx: number = pText.indexOf(sFormula) + sFormula.length;

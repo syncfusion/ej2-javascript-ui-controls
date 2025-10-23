@@ -699,15 +699,17 @@ export class VerticalView extends ViewBase implements IRenderer {
         const rows: Element[] = [];
         const tr: Element = createElement('tr');
         const td: Element = createElement('td');
-        const existingGroupIndices: number[] = this.getGroupIndices();
+        let existingIndices: number[] = [];
+        if (this.parent.virtualScrollModule && this.parent.activeViewOptions.group.resources.length > 0) {
+            existingIndices = this.parent.activeViewOptions.group.byDate ? this.getRenderedDate() : this.getGroupIndices();
+        }
         const handler: CallbackFunction = (r: TimeSlotData): TimeSlotData => {
             const ntr: Element = tr.cloneNode() as Element;
             for (const tdData of this.colLevels[this.colLevels.length - 1]) {
                 let isAllowTdCreation: boolean = true;
                 if (this.parent.virtualScrollModule && this.parent.activeViewOptions.group.resources.length > 0) {
-                    if (existingGroupIndices.indexOf(tdData.groupIndex) > -1) {
-                        isAllowTdCreation = false;
-                    }
+                    const index: number = this.parent.activeViewOptions.group.byDate ? tdData.date.getTime() : tdData.groupIndex;
+                    isAllowTdCreation = existingIndices.indexOf(index) < 0;
                 }
                 if (isAllowTdCreation) {
                     const ntd: Element = this.createContentTd(tdData, r, td);

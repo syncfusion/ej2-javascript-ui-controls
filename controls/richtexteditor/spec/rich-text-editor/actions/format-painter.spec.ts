@@ -2815,5 +2815,46 @@ describe('Format Painter Module', () => {
             }, 400);
         });
     });
+    describe('Format Painter Conditional Denied Class Behavior', () => {
+        let rteObject: RichTextEditor;
+        let domSelection: NodeSelection = new NodeSelection();
+        const innerHTML: string = `
+        <strong style="color: red;">Bold Red Text</strong><br/>
+        <strong style="color: red;" class="e-rte-strong-bg">Bold Red Text with Denied Class</strong>
+        <p>Target1</p><p>Target2</p>`;
+        beforeEach((done: Function) => {
+            rteObject = renderRTE({
+                value: innerHTML,
+                formatPainterSettings: {
+                    allowedFormats: 'p;h1;h2;h3;div;ul;ol;li;span;strong;em;code;',
+                    deniedFormats: 'strong(e-rte-strong-bg){color};'
+                },
+                toolbarSettings: {
+                    items: ['FormatPainter', 'ClearFormat']
+                }
+            });
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObject);
+            done();
+        });
+        it('Should apply all styles if denied class is not present', (done: Function) => {
+            rteObject.focusIn();
+            // Select the first <strong> without denied class
+            const sourceElement = rteObject.inputElement.querySelectorAll('strong')[0];
+            domSelection.setSelectionText(document, sourceElement.childNodes[0], sourceElement.childNodes[0], 0, 1);
+            // Simulate Format Painter copy
+            rteObject.keyDown(copyKeyBoardEventArgs);
+            // Paste into first <p>
+            const targetElement = rteObject.inputElement.querySelectorAll('p')[0];
+            domSelection.setSelectionText(document, targetElement.childNodes[0], targetElement.childNodes[0], 0, 1);
+            rteObject.keyDown(pasteKeyBoardEventArgs);
+            const pastedStrong = targetElement.querySelector('strong');
+            expect(pastedStrong).not.toBeNull();
+            expect(pastedStrong.style.color).toBe('red');
+            done();
+        });
+    });
 });
 

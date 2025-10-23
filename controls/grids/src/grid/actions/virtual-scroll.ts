@@ -69,12 +69,12 @@ export class VirtualScroll implements IAction {
         this.parent.off(events.destroy, this.destroy);
     }
 
-    private getCurrentEditedData(prevData: object): object {
+    private getCurrentEditedData(prevData: object, isNeedFullData?: boolean): object {
         const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
             virtualData: extend({}, {}, prevData, true), isAdd: false, isScroll: false, endEdit: true
         };
         this.parent.notify(events.getVirtualData, data);
-        return data.virtualData;
+        return isNeedFullData ? data : data.virtualData;
     }
 
     private createVirtualValidationForm(e: { uid: string, prevData: object, argsCreator: Function, renderer: EditRender }): void {
@@ -122,8 +122,12 @@ export class VirtualScroll implements IAction {
                 for (let i: number = 0; i < existingErrors.length; i++) {
                     remove(existingErrors[parseInt(i.toString(), 10)]);
                 }
-                this.setEditedDataToValidationForm(gObj.editModule.virtualFormObj.element, this.getCurrentEditedData(args.prevData));
+                const editedData: { virtualData: object } = this.getCurrentEditedData(args.prevData, true) as { virtualData: object };
+                this.setEditedDataToValidationForm(gObj.editModule.virtualFormObj.element, editedData.virtualData);
                 args.isValid = gObj.editModule.virtualFormObj.validate();
+                if (args.isValid) {
+                    this.parent.editModule.editModule.virtualEditValidationArgs = editedData;
+                }
                 if (!args.isValid) {
                     const tooltip: Element = gObj.editModule.virtualFormObj.element.querySelector('.e-tooltip-wrap:not([style*="display: none"])');
                     this.scrollToEdit(tooltip, { editIdx: args.editIdx, addIdx: args.addIdx });

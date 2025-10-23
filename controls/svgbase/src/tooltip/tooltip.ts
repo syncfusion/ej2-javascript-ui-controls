@@ -1371,6 +1371,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 tipLocation.y += ((location.y + height) - (boundsY + bounds.height));
                 location.y -= ((location.y + height) - (boundsY + bounds.height));
             }
+            if (location.x + width >= boundsX + bounds.width) {
+                arrowLocation.x += ((location.x + width) - (boundsX + bounds.width));
+                tipLocation.x += ((location.x + width) - (boundsX + bounds.width));
+                location.x -= ((location.x + width) - (boundsX + bounds.width));
+                location.x = location.x - this.arrowPadding - this.padding;
+            }
             if (arrowLocation.y + this.arrowPadding > height - this.ry) {
                 arrowLocation.y = height - this.ry - this.arrowPadding;
                 tipLocation.y = height;
@@ -1583,3 +1589,4 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
 }
+

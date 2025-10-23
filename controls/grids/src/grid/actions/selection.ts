@@ -2968,7 +2968,7 @@ export class Selection implements IAction {
     }
 
 
-    private actionBegin(e: { requestType: string }): void {
+    private actionBegin(e: { requestType: string, action: string, data: object }): void {
         if (e.requestType === 'save' && this.parent.isPersistSelection) {
             const editChkBox: HTMLInputElement = this.parent.element.querySelector('.e-edit-checkselect') as HTMLInputElement;
             if (!isNullOrUndefined(editChkBox)) {
@@ -2982,6 +2982,9 @@ export class Selection implements IAction {
                     this.selectedRowState[this.getPkValue(this.primaryKey, rowObj.data)] = rowObj.isSelected = editChkBox.checked;
                 } else {
                     this.isCheckedOnAdd = editChkBox.checked;
+                    if (this.isCheckedOnAdd && e.action === 'add') {
+                        this.selectedRowState[this.getPkValue(this.primaryKey, e.data)] = true;
+                    }
                 }
             }
         }
@@ -2996,15 +2999,8 @@ export class Selection implements IAction {
     private actionComplete(e: { requestType: string, action: string, selectedRow: number, data: Object[] }): void {
         if (e.requestType === 'save' && this.parent.isPersistSelection) {
             if (e.action === 'add') {
-                if (this.isCheckedOnAdd) {
-                    const rowObj: Row<Column> = this.parent.getRowObjectFromUID(
-                        this.parent.getRows()[e.selectedRow].getAttribute('data-uid'));
-                    this.selectedRowState[this.getPkValue(this.primaryKey, rowObj.data)] = rowObj.isSelected = this.isCheckedOnAdd;
-                }
                 this.isHdrSelectAllClicked = false;
-                this.setCheckAllState();
             }
-            this.refreshPersistSelection();
         }
         if (e.requestType === 'delete' && this.parent.isPersistSelection) {
             const records: object[] = e.data;
@@ -4391,8 +4387,6 @@ export class Selection implements IAction {
         this.parent.on(events.contentReady, this.checkBoxSelectionChanged, this);
         this.parent.on(events.beforeRefreshOnDataChange, this.initPerisistSelection, this);
         this.parent.on(events.onEmpty, this.setCheckAllForEmptyGrid, this);
-        this.actionCompleteFunc = this.actionCompleteHandler.bind(this);
-        this.parent.addEventListener(events.actionComplete, this.actionCompleteFunc);
         this.parent.on(events.click, this.clickHandler, this);
         this.resizeEndFn = () => {
             this.updateAutoFillPosition();
@@ -4406,7 +4400,6 @@ export class Selection implements IAction {
     public removeEventListener_checkbox(): void {
         this.parent.off(events.dataReady, this.dataReady);
         this.parent.removeEventListener(events.dataBound, this.onDataBoundFunction);
-        this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunc);
         this.parent.off(events.refreshInfinitePersistSelection, this.onDataBoundFunction);
         this.parent.off(events.onEmpty, this.setCheckAllForEmptyGrid);
         this.parent.off(events.click, this.clickHandler);

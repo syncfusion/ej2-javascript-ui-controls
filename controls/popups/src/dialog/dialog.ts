@@ -180,6 +180,7 @@ const DLG_CLOSE_ICON_CLOSED: string = 'close icon';
 const DLG_ESCAPE_CLOSED: string = 'escape';
 const DLG_OVERLAYCLICK_CLOSED: string = 'overlayClick';
 const DLG_DRAG : string = 'e-draggable';
+const FOCUSABLE_ELEMENTS_SELECTOR: string = 'input,select,textarea,button:enabled,a,[contenteditable="true"],[tabindex]';
 
 
 /**
@@ -1020,8 +1021,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
     private getFocusElement(target: HTMLElement): Button {
-        const value: string = 'input,select,textarea,button:enabled,a,[contenteditable="true"],[tabindex]';
-        const items: NodeListOf<HTMLElement> = target.querySelectorAll(value);
+        const items: NodeListOf<HTMLElement> = target.querySelectorAll(FOCUSABLE_ELEMENTS_SELECTOR);
         return { element: items[items.length - 1] as HTMLElement } as Button;
     }
     /* istanbul ignore next */
@@ -1034,6 +1034,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 }
                 if ((isNullOrUndefined(this.btnObj)) && (!isNullOrUndefined(this.ftrTemplateContent))) {
                     buttonObj = this.getFocusElement(this.ftrTemplateContent);
+                    if (isNullOrUndefined(this.btnObj) && (!buttonObj || isNullOrUndefined(buttonObj.element))) {
+                        const focusableItems: NodeListOf<HTMLElement> = this.element.querySelectorAll(FOCUSABLE_ELEMENTS_SELECTOR);
+                        if (focusableItems.length > 0 && document.activeElement === focusableItems[focusableItems.length - 1]) {
+                            event.preventDefault();
+                            this.focusableElements(this.element).focus();
+                        }
+                    }
                 }
                 if (isNullOrUndefined(this.btnObj) && isNullOrUndefined(this.ftrTemplateContent) && !isNullOrUndefined(this.contentEle)) {
                     buttonObj = this.getFocusElement(this.contentEle);

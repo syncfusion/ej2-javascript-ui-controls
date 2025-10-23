@@ -1698,7 +1698,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         this.checkDisabledState(nodeCheck);
                     }
                     this.changeState(node, 'check', null, true, true);
-                } else if (count === 0 && this.checkedNodes.length === 0) {
+                } else if (count === 0 && this.checkedNodes.length === 0 && indeterminate.length === 0) {
                     this.changeState(node, 'uncheck', null, true, true);
                 }
             }
@@ -1801,6 +1801,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const frame: Element = select('.' + CHECKBOXFRAME, checkboxEle);
             EventHandler.add(frame, 'mousedown', this.frameMouseHandler, this);
             EventHandler.add(frame, 'mouseup', this.frameMouseHandler, this);
+            EventHandler.add(frame, 'mouseleave', this.frameMouseHandler, this);
         }
         if (this.fullRowSelect) {
             this.createFullRow(e.item);
@@ -1992,6 +1993,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const dataUid: string = element.getAttribute('data-uid');
             let rootNodeChecked: boolean = true;
             let childNodeChecked: boolean = false;
+            const ChildNodeData: { [key: string]: Object }[] = this.getAllChildNodes(this.DDTTreeData, dataUid);
+            let selectedChildren: number = 0;
             nodes.forEach((childNode: HTMLElement) => {
                 if (childNode instanceof HTMLElement) {
                     const ariaChecked: string = childNode.getAttribute('aria-checked');
@@ -2021,6 +2024,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     childItems = this.getChildNodes(this.DDTTreeData, dataUid);
                 }
                 count = childItems.length;
+                ChildNodeData.forEach((child: { [key: string]: Object }) => {
+                    const childKey: string = String(child[this.fields.id]);
+                    if (this.checkedNodes.indexOf(childKey) !== -1 ||
+                        this.OldCheckedData.some((oldNode: { [key: string]: any }) => oldNode['parentID'] === childKey)) {
+                        selectedChildren++;
+                    }
+                });
             }
 
             if (this.autoCheck && this.showCheckBox && !(this.fields.dataSource instanceof DataManager)) {
@@ -2042,7 +2052,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             else if ((checkedCount > 0 && !parentNodeChecked && (this.autoCheck && this.showCheckBox))) {
                 this.changeState(checkBoxEle, 'indeterminate', null, true, true);
             }
-            else if (checkedCount > 0 || indeterminateNodes.length > 0) {
+            else if (checkedCount > 0 || indeterminateNodes.length > 0 || selectedChildren > 0) {
                 this.changeState(checkBoxEle, 'indeterminate', null, true, true);
             } else if (checkedCount === 0) {
                 this.changeState(checkBoxEle, 'uncheck', null, true, true);
@@ -2088,6 +2098,38 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 return false;
             });
     }
+    private getAllChildNodes(data: { [key: string]: Object }[], parentId: string | number): { [key: string]: Object }[] {
+        if (isNOU(data) || isNOU(parentId)) {
+            return [];
+        }
+
+        if (this.dataType === 1) {
+            const pidField: string = this.fields.parentID;
+            const target: string = parentId.toString();
+            return data.filter((item: { [key: string]: Object }) => {
+                const pidVal: Object = getValue(pidField, item);
+                return !isNOU(pidVal) && pidVal.toString() === target;
+            });
+        }
+
+        if (this.dataType === 2) {
+            const parentFieldId: string = this.fields.id;
+            const childField: string = this.fields.child.toString();
+            const target: string = parentId.toString();
+
+            const node: { [key: string]: Object } | undefined = data.find((n: { [key: string]: Object }) => {
+                const idVal: Object = getValue(parentFieldId, n);
+                return !isNOU(idVal) && idVal.toString() === target;
+            });
+
+            if (!node) {return []; }
+
+            const children: { [key: string]: Object }[] = getValue(childField, node) as { [key: string]: Object }[];
+            return Array.isArray(children) ? children : [];
+        }
+        return [];
+    }
+
     private ensureChildCheckState(element: Element | Document, e?: MouseEvent | KeyboardEventArgs, isFromExpandAll?: boolean): void {
         if (!isNOU(element)) {
             const childElement: Element = select('.' + PARENTITEM, element);

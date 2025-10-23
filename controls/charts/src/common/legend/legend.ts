@@ -1697,13 +1697,17 @@ export class BaseLegend {
                     }
                     if (this.isChartControl) {
                         showTooltip(
-                            (<Chart>this.chart).series[index as number].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip',
+                            (<Chart>this.chart).visibleSeries[index as number].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip',
                             getElement(this.chart.element.id + '_Secondary_Element'), null, null, this.legendBounds
                         );
                     } else {
+                        const legendIndex: number = this.isReverse ? ((this.legendCollections.length - 1) - index as number)
+                            : index as number;
+                        const tooltipText: string = (this.chart.getModuleName() === 'accumulationchart' ?
+                            this.legendCollections[legendIndex as number].originalText
+                            : (<CircularChart3D>this.chart).visibleSeries[0].points[index as number].x.toString());
                         showTooltip(
-                            (this.chart.getModuleName() === 'accumulationchart' ? this.legendCollections[index as number].originalText :
-                                (<CircularChart3D>this.chart).visibleSeries[0].points[index as number].x.toString()), x + 10, y + 10,
+                            tooltipText, x + 10, y + 10,
                             element.offsetWidth, element.id + '_EJ2_Legend_Tooltip',
                             getElement(this.chart.element.id + '_Secondary_Element')
                         );

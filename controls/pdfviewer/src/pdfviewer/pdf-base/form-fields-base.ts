@@ -1632,14 +1632,15 @@ export class FormFieldsBase {
                         {itemName: item[1], itemValue: item[0] }  : {itemName: '', itemValue: ''})); });
             }
         }
-        if (formFields.TextList.length === 0 ){
-            for (let i: number = 0; i < comboBoxField.itemsCount; i++) {
-                const item: PdfListFieldItem = comboBoxField.itemAt(i);
-                if (item) {
-                    formFields.TextList.push(item.text);
-                    if (i === 0) {
-                        formFields.Alignment = item.textAlignment;
-                    }
+        for (let i: number = 0; i < comboBoxField._options.length; i++) {
+            const item: any = comboBoxField._options[parseInt(i.toString(), 10)];
+            if (item) {
+                if (!formFields.TextList) {
+                    formFields.TextList = [];
+                }
+                formFields.TextList.push({ itemName: item[1], itemValue: item[0] });
+                if (i === 0) {
+                    formFields.Alignment = item.textAlignment;
                 }
             }
         }
@@ -1727,6 +1728,14 @@ export class FormFieldsBase {
         formFields.ToolTip = listBoxField.toolTip;
         formFields.Text = listBoxField.name.replace(/[^0-9a-zA-Z]+/g, '');
         formFields.ActualFieldName = listBoxField.name;
+        formFields.SelectedValue = listBoxField.selectedValue as string;
+        if (listBoxField._options.length > 0 && (typeof listBoxField._options[0] !== 'string')){
+            const selectedValue: string[][] = listBoxField._options.filter((option: string[]) => option[0] === formFields.SelectedValue);
+            if (selectedValue && selectedValue[0]) {
+                formFields.SelectedValue = selectedValue[0][1];
+            }
+        }
+        formFields.selectedIndex = listBoxField.selectedIndex as number;
         const itemCount: number = listBoxField.itemsCount;
         if (itemCount > 0) {
             const selectedIndex: number | number[] = listBoxField.selectedIndex;
@@ -1771,10 +1780,13 @@ export class FormFieldsBase {
                 formFields.SelectedValue = listBoxField.selectedValue[0];
             }
         }
-        for (let i: number = 0; i < itemCount; i++) {
-            const item: any = listBoxField._kidsCount > 0 ? listBoxField.itemAt(i) : listBoxField._options[parseInt(i.toString(), 10)];
+        for (let i: number = 0; i < listBoxField._options.length; i++) {
+            const item: any = listBoxField._options[parseInt(i.toString(), 10)];
             if (item) {
-                formFields.TextList.push(listBoxField._kidsCount > 0 ? item.text : item);
+                if (!formFields.TextList) {
+                    formFields.TextList = [];
+                }
+                formFields.TextList.push({itemName: item[1], itemValue: item[0]});
                 if (i === 0) {
                     formFields.Alignment = listBoxField.textAlignment;
                 }
@@ -2339,7 +2351,7 @@ export class PdfRenderedFields {
     public selectedIndex: number;
     public IsSignatureField: boolean;
     public IsInitialField: boolean;
-    public TextList: string[];
+    public TextList: TextItem[];
     public SelectedList: number[];
     public SelectedValue: string;
     public BackColor: any;
@@ -2403,4 +2415,9 @@ export class PdfRenderedFields {
         this.Visible = 0;
         this.CustomData = null;
     }
+}
+
+interface TextItem {
+    itemName: string;
+    itemValue: string;
 }

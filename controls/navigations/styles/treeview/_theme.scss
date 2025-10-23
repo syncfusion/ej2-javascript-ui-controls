@@ -158,13 +158,13 @@
               @include bg-border($treeview-item-active-check-bg, $treeview-item-active-check-border-color);
               color: $treeview-item-active-check-color;
             }
-            @else if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+            @else if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5.3' {
               border-color: $content-text-color-selected;
             }
           }
     
           .e-stop {
-            @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+            @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5.3' {
               border-color: $content-text-color-selected;
             }
           }
@@ -213,6 +213,11 @@
           > .e-icon-expandable {
             color: $treeview-icon-disable-color;
           }
+        }
+      }
+      @if ($theme-name == 'fluent2-highcontrast') {
+        .e-checkbox-wrapper .e-frame.e-check {
+          border-color: $content-text-color-hover;
         }
       }
     }

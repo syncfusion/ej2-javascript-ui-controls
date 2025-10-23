@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 31.1.23 (2025-10-07)
+## 31.2.3 (2025-10-22)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I765718` - Resolved an issue where the iPad keyboard would not open after selecting a date in the popup.
 
 ### DatePicker
 

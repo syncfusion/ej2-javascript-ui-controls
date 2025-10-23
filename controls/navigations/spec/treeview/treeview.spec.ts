@@ -7,8 +7,8 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, localDataHtmlAttributes, selectableFieldData, data} from '../../spec/treeview/datasource.spec';
-import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, localDataHtmlAttributes, selectableFieldData } from '../../spec/treeview/datasource.spec';
+import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, data} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, localData12, localData13, hierarchicalDataSource2, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
 import { updatedremoteNode_3, updatedremoteNode_4, updatedremoteNode_5, updatedAddNodes, updatedremoteNode_6, updatedremoteNode_7} from '../../spec/treeview/datasource.spec';
@@ -17831,12 +17831,15 @@ describe('TreeView Height Calculation Animation', () => {
             animation: { expand: { effect: 'SlideDown', duration: 400, easing: '' } }
         });
         treeObj.appendTo(ele);
+
         const parentLi = treeObj.element.querySelector('li');
         treeObj.collapseAll();
         const liText = parentLi.querySelector('.e-text-content') as HTMLElement;
         liText.style.paddingTop = '10px';
         liText.style.paddingBottom = '15px';
+
         treeObj.expandAll();
+
         setTimeout(() => {
             const computed = window.getComputedStyle(liText);
             const pt = parseFloat(computed.paddingTop);

@@ -837,16 +837,22 @@ export class Toolbar implements IToolbarHandler {
                     if (formatType === '.txt') {
                         this.container.documentEditor.documentHelper.openTextFile(fileReader.result as string);
                     } else {
-                        /* eslint-disable */
-                        this.container.documentEditor.openAsync(fileReader.result as string);
-                        /* eslint-enable */
+                        if (this.documentEditor.documentEditorSettings.openAsyncSettings.enable) {
+                            this.container.documentEditor.openAsync(fileReader.result as string);
+                        } else {
+                            this.container.documentEditor.open(fileReader.result as string);
+                        }
                     }
                 };
                 fileReader.readAsText(file);
             } else {
                 if (this.isSupportedFormatType(formatType.toLowerCase())) {
                     //this.convertToSfdt(file);
-                    this.documentEditor.open(file);
+                    if (this.container.documentEditor.documentEditorSettings.openAsyncSettings.enable) {
+                        this.container.documentEditor.openAsync(file);
+                    } else {
+                        this.container.documentEditor.open(file);
+                    }
                 }
                 else {
                     const localizeValue: L10n = new L10n('documenteditor', this.documentEditor.defaultLocale);
@@ -1020,7 +1026,8 @@ export class Toolbar implements IToolbarHandler {
                 }
             }
             if (!isNullOrUndefined(this.documentEditor)) {
-                this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable && !this.documentEditor.isReadOnlyMode);
+                this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable
+                    && (!this.documentEditor.isReadOnlyMode || this.documentEditor.documentHelper.isDocumentLoadAsynchronously));
             }
             const isPlainContetnControl: boolean = this.documentEditor.selectionModule.isPlainContentControl();
             if (this.documentEditor.selectionModule.isinFootnote || this.documentEditor.selectionModule.isinEndnote

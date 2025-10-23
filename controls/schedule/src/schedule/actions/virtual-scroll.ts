@@ -102,8 +102,14 @@ export class VirtualScroll {
 
     public setItemSize(): void {
         if (this.isHorizontalScroll) {
-            this.itemSize = util.getElementWidthFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS,
-                                                          this.parent.uiStateValues.isTransformed) || this.itemSize;
+            if (this.parent.group.byDate) {
+                const colElement: HTMLTableColElement = this.parent.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS + ' table col');
+                this.itemSize = colElement ? util.getElementWidth(colElement, this.parent.uiStateValues.isTransformed) : this.itemSize;
+            }
+            else {
+                this.itemSize = util.getElementWidthFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS,
+                                                              this.parent.uiStateValues.isTransformed) || this.itemSize;
+            }
         } else {
             this.itemSize = this.parent.getElementHeightFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS) || this.itemSize;
         }
@@ -479,12 +485,13 @@ export class VirtualScroll {
         const thead: Element = conWrap.querySelector('thead');
         const table: Element = conWrap.querySelector('table');
         this.parent.activeView.colLevels[this.parent.activeView.colLevels.length - 1] = resCollection;
-        const newGroupIndices: Set<number> = new Set(resCollection.map((data: TdData) => data.groupIndex));
+        const newIndices: Set<number> = this.parent.activeViewOptions.group.byDate
+            ? new Set(resCollection.map((data: TdData) => data.date.getTime()))
+            : new Set(resCollection.map((data: TdData) => data.groupIndex));
         renderedRows.forEach((row: Element) => {
-            const tdElements: NodeListOf<HTMLTableCellElement> = row.querySelectorAll('td');
+            const tdElements: HTMLTableCellElement[] = Array.from(row.querySelectorAll('td'));
             tdElements.forEach((td: HTMLTableCellElement) => {
-                const groupIndex: number = parseInt(td.getAttribute('data-group-index'), 10);
-                if (!newGroupIndices.has(groupIndex)) {
+                if (!newIndices.has(this.getIdentifier(td))) {
                     td.remove();
                 }
             });
@@ -507,6 +514,14 @@ export class VirtualScroll {
         this.mergeNewTdData(tbody, contentRows);
     }
 
+    private getIdentifier(td: HTMLTableCellElement): number {
+        if (this.parent.activeViewOptions.group.byDate) {
+            const date: Date = new Date(parseInt(td.getAttribute('data-date'), 10));
+            return util.resetTime(date).getTime();
+        }
+        return parseInt(td.getAttribute('data-group-index'), 10);
+    }
+
     private mergeNewTdData(tbody: Element, contentRows: Element[]): void {
         const existingRows: HTMLTableRowElement[] = Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr'));
 
@@ -517,13 +532,10 @@ export class VirtualScroll {
                 const newTds: HTMLTableCellElement[] = Array.from(newRow.querySelectorAll<HTMLTableCellElement>('td'));
 
                 newTds.forEach((newTd: HTMLTableCellElement) => {
-                    const newGroupIndex: number = parseInt(newTd.getAttribute('data-group-index').toString(), 10);
                     let inserted: boolean = false;
 
                     for (const existingTd of existingTds) {
-                        const existingGroupIndex: number = parseInt(existingTd.getAttribute('data-group-index').toString(), 10);
-
-                        if (newGroupIndex < existingGroupIndex) {
+                        if (this.getIdentifier(newTd) < this.getIdentifier(existingTd)) {
                             existingRow.insertBefore(newTd, existingTd);
                             inserted = true;
                             break;

@@ -1333,6 +1333,7 @@ export class AnnotationToolbar {
                                 }
                                 signatureImage.addEventListener('mouseover', this.hoverSignatureImage.bind(this));
                                 signatureImage.addEventListener('mouseleave', this.leaveSignatureImage.bind(this));
+                                signatureImage.addEventListener('click', this.addSavedSignature.bind(this));
                                 const signatureDeleteSpan: HTMLElement = createElement('span');
                                 signatureDeleteSpan.id = 'delete_' + signatureID;
                                 signatureDeleteSpan.classList.add('e-pv-delete');
@@ -1419,6 +1420,7 @@ export class AnnotationToolbar {
                                 }
                                 signatureImage.addEventListener('mouseover', this.hoverSignatureImage.bind(this));
                                 signatureImage.addEventListener('mouseleave', this.leaveSignatureImage.bind(this));
+                                signatureImage.addEventListener('click', this.addSavedSignature.bind(this));
                                 signatureImage.width = 80;
                                 signatureImage.height = 32;
                                 const signatureDeleteSpan: HTMLElement = createElement('span');
@@ -1606,6 +1608,11 @@ export class AnnotationToolbar {
         this.deselectAllItems();
         this.deselectAllItemsForMobile();
         this.showSignaturepanel();
+    }
+
+    private addSavedSignature(): void {
+        this.deselectAllItems();
+        this.deselectAllItemsForMobile();
     }
 
     public renderAddedSignature(): void {

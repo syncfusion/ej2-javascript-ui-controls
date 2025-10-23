@@ -2,7 +2,35 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I772904` - Resolved an issue causing the selection event to trigger multiple times when saving an editable row with checkbox selection.
+- `#I773677` - Resolved a script error that occurred when opening the filter dialog for `null` type columns.
+- `#I771544` - Fixed an issue that caused a maximum call stack size exceeded error when parsing `stringify` data using `DataUtil.parseJson` method.
+- `#I771958` - Resolved an issue where filtering a `DateOnly` column caused the filter `popup` of another column to display no matches found.
+
+## 31.2.2 (2025-10-15)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I764198` - Fixed the issue where selection events were triggered twice after updating a record with persist selection enabled.
+
 ## 31.1.23 (2025-10-07)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I770531` - Resolved the issue where the grid displayed empty data upon manual refresh after filtering on the last page with `virtualization` enabled.
+- `#I770944` - The issue where the filter input is not disabled when opening the filter menu with the operators `IsNull`, `NotNull`, `IsEmpty`, and `IsNotEmpty` across different locale has been resolved.
+
+## 31.1.22 (2025-10-01)
 
 ### Grid
 

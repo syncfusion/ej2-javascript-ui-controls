@@ -1466,6 +1466,9 @@ export class DatePicker extends Calendar implements IInput {
                             });
                     }
                 }
+                if (Browser.isDevice && this.allowEdit && !this.readonly && Browser.isIos) {
+                    this.inputElement.blur();
+                }
             }, close: () => {
                 if (this.isDateIconClicked) {
                     (this.inputWrapper.container.children[this.index] as HTMLElement).focus();
@@ -1864,6 +1867,11 @@ export class DatePicker extends Calendar implements IInput {
         EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.inputElement.removeAttribute('readonly');
+            if (Browser.isIos) {
+                setTimeout(() => {
+                    this.inputElement.focus();
+                }, 1);
+            }
         }
         this.setAllowEdit();
     }

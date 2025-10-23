@@ -1053,6 +1053,39 @@ export class Edit {
         }
         return false;
     }
+    private isTaskToMilestone(args: ITaskbarEditedEventArgs): boolean {
+        let isMilestone: boolean = false;
+        if (args && args.data) {
+            const ganttProps: ITaskData = args.data.ganttProperties;
+            const duration: number = ganttProps.duration;
+            const startDate: Date = ganttProps.startDate;
+            const endDate: Date = ganttProps.endDate;
+            if (!isNullOrUndefined(this.parent.taskFields.duration)) {
+                if (duration === 0) {
+                    isMilestone = true;
+                }
+            } else if (
+                startDate &&
+                endDate &&
+                new Date(startDate).getTime() === new Date(endDate).getTime()
+            ) {
+                isMilestone = true;
+            }
+            const previousData: IGanttData = this.parent.previousRecords && this.parent.previousRecords[ganttProps.uniqueID as string];
+            if (previousData && previousData.ganttProperties && !isNullOrUndefined(previousData.ganttProperties.isMilestone)) {
+                const prevStart: Date = previousData.ganttProperties.startDate;
+                const isSameStart: boolean = startDate && prevStart && new Date(startDate).getTime() === new Date(prevStart).getTime();
+                if (!previousData.ganttProperties.isMilestone && isMilestone && (isSameStart || !prevStart)) {
+                    isMilestone = true;
+                } else {
+                    isMilestone = false;
+                }
+            } else {
+                isMilestone = false;
+            }
+        }
+        return isMilestone;
+    }
     /**
      * Method to update all dependent record on edit action
      *
@@ -1062,6 +1095,20 @@ export class Edit {
      */
     public initiateUpdateAction(args: ITaskbarEditedEventArgs): void {
         let isValidatePredecessor: boolean = this.isCheckPredecessor(args.data);
+        const isMilestone: boolean = this.isTaskToMilestone(args);
+        if (isMilestone && args.data.ganttProperties.predecessor) {
+            const predecessorArray: IPredecessor[] = args.data.ganttProperties.predecessor;
+            const milestoneDate: Date = this.parent.predecessorModule.getPredecessorDate(args.data, predecessorArray, null);
+            if (
+                milestoneDate &&
+                new Date(milestoneDate).getTime() !==
+                new Date(args.data.ganttProperties.startDate).getTime()
+            ) {
+                this.parent.setRecordValue('startDate', new Date(milestoneDate.getTime()), args.data.ganttProperties, true);
+                this.parent.setRecordValue('endDate', new Date(milestoneDate.getTime()), args.data.ganttProperties, true);
+                this.parent.dataOperation.updateTaskData(args.data);
+            }
+        }
         let parentData: IGanttData;
         let childRecordIndex: number;
         if (!isNullOrUndefined(args.data.parentItem) && !isValidatePredecessor) {
@@ -1841,6 +1888,52 @@ export class Edit {
         this.parent.ganttChartModule.reRenderConnectorLines();
     }
 
+    private processCustomDateColumns(
+        sourceRecord: ITaskData | object | IGanttData,
+        targetRecord: ITaskData | object | IGanttData,
+        parentContext: Gantt,
+        operation: 'convert' | 'remove'
+    ): void {
+        if (!parentContext.customColumns || parentContext.customColumns.length === 0) {
+            return;
+        }
+        parentContext.customColumns.forEach((column: string) => {
+            const value: Date = sourceRecord[column as string];
+            if (value instanceof Date) {
+                const processedDate: Date = parentContext.dateValidationModule[operation as 'convert' | 'remove'](value, parentContext.timezone);
+                targetRecord[column as string] = processedDate;
+            }
+        });
+    }
+
+    private processStandardDateFields(
+        sourceRecord: ITaskData | object | IGanttData,
+        targetRecord: ITaskData | object | IGanttData,
+        parentContext: Gantt,
+        operation: 'convert' | 'remove'
+    ): void {
+        if (!parentContext.timezone) {
+            return;
+        }
+        const taskFields: TaskFieldsModel = parentContext.taskFields;
+        const fields: string[] = [
+            taskFields.startDate,
+            taskFields.endDate,
+            taskFields.baselineStartDate,
+            taskFields.baselineEndDate
+        ];
+        for (let i: number = 0; i < fields.length; i++) {
+            const field: string = fields[i as number];
+            if (field && sourceRecord[field as string] && sourceRecord[field as string] instanceof Date) {
+                targetRecord[field as string] =
+                    parentContext.dateValidationModule[operation as string](
+                        sourceRecord[field as string],
+                        parentContext.timezone
+                    );
+            }
+        }
+    }
+
     /* eslint-disable-next-line */
     private updateEditedFields(e: any) {
         let eLength: number;
@@ -1859,11 +1952,9 @@ export class Edit {
                 rec = e[parseInt(i.toString(), 10)];
             }
             if (this.parent.timezone) {
-                rec[this.parent.taskFields.startDate] = this.parent.dateValidationModule.convert(
-                    rec[this.parent.taskFields.startDate], this.parent.timezone);
-                rec[this.parent.taskFields.endDate] = this.parent.dateValidationModule.convert(
-                    rec[this.parent.taskFields.endDate], this.parent.timezone);
+                this.processStandardDateFields(rec, rec, this.parent, 'convert');
             }
+            this.processCustomDateColumns(rec, rec, this.parent, 'convert');
             const _aLength: number = Object.keys(rec).length;
             for (let j: number = 0, _a: string[] = Object.keys(rec); j < _aLength; j++) {
                 const key: string = _a[parseInt(j.toString(), 10)];
@@ -3903,19 +3994,21 @@ export class Edit {
         const serverReturnedValue: Object = e.addedRecords[0];
         const convertedRecord: Object = { ...serverReturnedValue };
         if (this.parent.timezone) {
-            convertedRecord[this.parent.taskFields.startDate] = this.parent.dateValidationModule.convert(
-                serverReturnedValue[this.parent.taskFields.startDate], this.parent.timezone);
-            convertedRecord[this.parent.taskFields.endDate] = this.parent.dateValidationModule.convert(
-                serverReturnedValue[this.parent.taskFields.endDate], this.parent.timezone);
+            this.processStandardDateFields(serverReturnedValue, convertedRecord, this.parent, 'convert');
         }
+        this.processCustomDateColumns(convertedRecord, convertedRecord, this.parent, 'convert');
+        const customColumnSet: Set<string> = new Set<string>(this.parent.customColumns || []);
         const _a: string[] = Object.keys(serverReturnedValue);
         const _aLength: number = _a.length;
         for (let j: number = 0; j < _aLength; j++) {
             const key: string = _a[j as number];
             const isStartDate: boolean = key === this.parent.taskFields.startDate;
             const isEndDate: boolean = key === this.parent.taskFields.endDate;
-
-            (args.data as IGanttData)[key as string] = isStartDate || isEndDate
+            const isCustomColumn: boolean = customColumnSet.has(key);
+            const isBaselineStartDate: boolean = key === this.parent.taskFields.baselineStartDate;
+            const isBaselineEndDate: boolean = key === this.parent.taskFields.baselineEndDate;
+            const shouldUseConverted: boolean = isStartDate || isEndDate || isBaselineStartDate || isBaselineEndDate || isCustomColumn;
+            (args.data as IGanttData)[key as string] = shouldUseConverted
                 ? convertedRecord[key as string]
                 : serverReturnedValue[key as string];
         }
@@ -3947,10 +4040,10 @@ export class Edit {
             (args.data as IGanttData).ganttProperties['parentID'] = serverReturnedValue[this.parent.taskFields.parentID];
         }
         if (this.parent.taskFields.baselineEndDate !== null) {
-            (args.data as IGanttData).ganttProperties['baselineEndDate'] = serverReturnedValue[this.parent.taskFields.baselineEndDate];
+            (args.data as IGanttData).ganttProperties['baselineEndDate'] = convertedRecord[this.parent.taskFields.baselineEndDate];
         }
         if (this.parent.taskFields.baselineStartDate !== null) {
-            (args.data as IGanttData).ganttProperties['baselineStartDate'] = serverReturnedValue[this.parent.taskFields.baselineStartDate];
+            (args.data as IGanttData).ganttProperties['baselineStartDate'] = convertedRecord[this.parent.taskFields.baselineStartDate];
         }
         if (this.parent.taskFields.resourceInfo !== null) {
             (args.data as IGanttData).ganttProperties['resources'] = serverReturnedValue[this.parent.taskFields.resourceInfo];
@@ -4072,14 +4165,12 @@ export class Edit {
                 if (!args.cancel) {
                     this.parent['showLoadingIndicator']();
                     const record: Object = {};
+                    if (this.parent.timezone) {
+                        this.processStandardDateFields(args.newTaskData, args.newTaskData, this.parent, 'remove');
+                    }
+                    this.processCustomDateColumns(args.newTaskData, args.newTaskData, this.parent, 'remove');
                     if (isRemoteData(this.parent.dataSource)) {
                         const data: DataManager = this.parent.dataSource as DataManager;
-                        if (this.parent.timezone) {
-                            args.newTaskData[this.parent.taskFields.startDate] = this.parent.dateValidationModule.remove(
-                                args.newTaskData[this.parent.taskFields.startDate], this.parent.timezone);
-                            args.newTaskData[this.parent.taskFields.endDate] = this.parent.dateValidationModule.remove(
-                                args.newTaskData[this.parent.taskFields.endDate], this.parent.timezone);
-                        }
                         const updatedData: object = {
                             addedRecords: [args.newTaskData], // to check
                             changedRecords: args.modifiedTaskData

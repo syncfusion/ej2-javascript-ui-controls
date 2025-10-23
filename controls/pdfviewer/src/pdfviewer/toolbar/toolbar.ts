@@ -309,8 +309,10 @@ export class Toolbar {
             this.annotationToolbarModule.isToolbarHidden = true;
             this.annotationToolbarModule.showAnnotationToolbar(null, false, true);
         } else {
-            this.annotationToolbarModule.isToolbarHidden = false;
-            this.annotationToolbarModule.showAnnotationToolbar(null, false, false);
+            if (this.pdfViewer.isAnnotationToolbarVisible) {
+                this.annotationToolbarModule.isToolbarHidden = false;
+                this.annotationToolbarModule.showAnnotationToolbar(null, false, false);
+            }
         }
     }
 

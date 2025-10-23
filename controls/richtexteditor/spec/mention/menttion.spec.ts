@@ -357,4 +357,56 @@ describe('Mention integration tests', () => {
             }, 200);
         });
     });
+    describe('980375: Mention Input Corruption: Typing @s After Mentions Inserts Prefix Character Before @ and Misplaces Cursor', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+               value: `<p><span contenteditable="false" class="e-mention-chip">Selma Rose</span>&ZeroWidthSpace;<span contenteditable="false" class="e-mention-chip">Selma Rose</span>&ZeroWidthSpace;@s</p>`
+            });
+            setupMention(editor, false);
+        });
+        afterAll(() => {
+            destroyMention();
+            destroy(editor);
+        });
+        it('Should open the mention popup and insert item after "@s"', (done: DoneFn) => {
+            editor.focusIn();
+            // Set cursor after "s"
+            const pElem: HTMLElement = editor.inputElement.querySelector('p');
+            const textNode = pElem.childNodes[pElem.childNodes.length - 1];
+           setCursorPoint(textNode,0);
+            // Simulate keydown and keyup for "@" and "s"
+            const atKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', AT_CHARACTER_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(atKeyDownEvent);
+            const atKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', AT_CHARACTER_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(atKeyUpEvent);
+            const S_KeyDown_Event_INIT: EventInit = {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                key: "s",
+                keyCode: 83,
+                which: 83,
+                code: "KeyS",
+                location: 0,
+                altKey: false,
+                ctrlKey: false,
+                metaKey: false,
+                shiftKey: true,
+                repeat: false,
+            } as EventInit;
+            const sKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', S_KeyDown_Event_INIT)
+            editor.inputElement.dispatchEvent(sKeyDownEvent);
+            const sKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', S_KeyDown_Event_INIT);
+            editor.inputElement.dispatchEvent(sKeyUpEvent);
+            // Wait for popup to open
+            setTimeout(() => {
+                    const range: Range = editor.inputElement.ownerDocument.getSelection().getRangeAt(0);
+                    // Validate that the cursor is after 's'
+                    expect(range.startContainer.textContent.endsWith('s')).toBe(true);
+                    expect(range.startOffset).toBe(range.endOffset);
+                    done();
+                }, 200);
+        });
+    });
 });

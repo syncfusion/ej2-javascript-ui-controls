@@ -349,6 +349,35 @@ describe('Image ->', () => {
         });
     });
 
+    describe('983493-Image Positioning Not Maintained Properly after set standart Height ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    standardHeight: 30,
+                    rows: [{
+                        index: 3,
+                        cells: [
+                            {
+                                index: 1,
+                                image : [ <ExtendedImageModel>{ src: 'https://www.w3schools.com/images/w3schools_green.jpg', height: 150, width: 180, top: 62, left: 70, preservePos: true }],
+                            }]
+                    }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Inserting image using data binding', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const image: ExtendedImageModel = spreadsheet.sheets[0].rows[3].cells[1].image[0];
+            expect(image.top).toBe(90);
+            expect(image.left).toBe(70);
+            done();
+        });
+    });
+
     describe('EJ2-931384->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);

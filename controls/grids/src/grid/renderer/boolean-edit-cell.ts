@@ -75,15 +75,9 @@ export class BooleanEditCell extends EditCellBase implements IEditCell {
     }
 
     private checkBoxChange(args: ChangeEventArgs): void {
-        if (this.editRow && this.editType !== 'Dialog') {
-            let add: boolean = false;
-            if (!args.checked) {
-                this.editRow.removeAttribute('aria-selected');
-            } else {
-                add = true;
-                this.editRow.setAttribute('aria-selected', add.toString());
-            }
-            addRemoveActiveClasses([].slice.call(this.editRow.getElementsByClassName(literals.rowCell)), add, ...this.activeClasses);
+        if (this.editRow && this.editType !== 'Dialog' && this.editRow.getAttribute('aria-rowindex')) {
+            const idx: number = parseInt(this.editRow.getAttribute('aria-rowindex'), 10) - 1;
+            this.parent.selectionModule.addRowsToSelection([idx]);
         }
     }
 }

@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 31.2.3 (2025-10-22)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I767416` - Enhanced performance for adding records to large multi-level hierarchical collections, achieving approximately 80% improvement in CRUD operation efficiency.
+- `#I770741` - Resolved an issue where the `modifiedRecords` collection was not correctly updated in the `actionComplete` event arguments.
+- `#I771215` - Corrected date and time validation for milestone tasks during initial load and conversion, ensuring accurate rendering for tasks with dependencies.
+
+## 31.2.2 (2025-10-15)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I769900` - Fixed an issue where template columns failed to display correctly after dynamically refreshing the Gantt Chart.
+- `#I769454` - Addressed inconsistent rendering of `dropdown` values in the dependency tab within both `Add` and `Edit` dialog.
+
+#### Feature
+
+- `#I765000` - Introduced seamless date object conversion and timezone handling for custom columns, editing, and CRUD operations across both remote and local data sources.
+
 ## 31.1.23 (2025-10-07)
 
 ### GanttChart

@@ -109,7 +109,7 @@ export class DateTimeCategory extends Category {
             else {
                 if (!this.sameInterval(axis.labels.map(Number)[i as number], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)
                     || axis.isIndexed) {
-                    if (withIn(i - padding, axis.visibleRange)) {
+                    if (withIn(i, axis.visibleRange)) {
                         triggerLabelRender(
                             this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i as number], axis.format) :
                                 <string>axis.format(new Date(axis.labels.map(Number)[i as number]))),

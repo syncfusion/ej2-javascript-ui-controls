@@ -1516,7 +1516,12 @@ export class Annotation {
                     this.textMarkupAnnotationModule.undoTextMarkupAction(actionObject.annotation, actionObject.pageIndex,
                                                                          actionObject.index, actionObject.action);
                 }
-                this.pdfViewer.toolbar.annotationToolbarModule.enableTextMarkupAnnotationPropertiesTools(false);
+                if (!isNullOrUndefined(this.textMarkupAnnotationModule) && this.textMarkupAnnotationModule.isTextMarkupAnnotationMode) {
+                    this.pdfViewer.toolbar.annotationToolbarModule.enableTextMarkupAnnotationPropertiesTools(true);
+                }
+                else {
+                    this.pdfViewer.toolbar.annotationToolbarModule.enableTextMarkupAnnotationPropertiesTools(false);
+                }
                 break;
             case 'Text Markup Property modified':
                 if (this.textMarkupAnnotationModule) {
@@ -3463,7 +3468,9 @@ export class Annotation {
      * @returns {void}
      */
     public onAnnotationMouseUp(): void {
-        if (this.pdfViewer.selectedItems.annotations.length !== 0) {
+        if (this.pdfViewer.selectedItems.annotations.length !== 0 && this.pdfViewer.selectedItems.annotations[0] &&
+            this.pdfViewer.selectedItems.annotations[0].annotationSettings &&
+            !(this.pdfViewer.selectedItems.annotations[0].annotationSettings as any).isLock) {
             if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule) {
                 this.enableBasedOnType();
                 this.pdfViewer.toolbar.annotationToolbarModule.selectAnnotationDeleteItem(true);
@@ -3698,18 +3705,20 @@ export class Annotation {
      */
     public onAnnotationMouseDown(): void {
         if (this.pdfViewer.selectedItems.annotations.length === 1 &&
-             this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType === null) {
+            this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType === null &&
+            this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].annotationSettings &&
+            !(this.pdfViewer.selectedItems.annotations[0].annotationSettings as any).isLock) {
             if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule) {
                 if (!isBlazor() && Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                     const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
                     if (commentPanel.style.display === 'none') {
                         if (this.pdfViewer.enableToolbar && this.pdfViewer.enableAnnotationToolbar &&
-                             (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) &&
-                              this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation)) {
+                            (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) &&
+                                this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation)) {
                             this.pdfViewer.toolbarModule.annotationToolbarModule.createPropertyTools('');
                         } else {
                             if (this.pdfViewer.enableToolbar && this.pdfViewer.enableAnnotationToolbar &&
-                                 !this.pdfViewerBase.isAddComment) {
+                                !this.pdfViewerBase.isAddComment) {
                                 this.pdfViewer.toolbarModule.annotationToolbarModule.createAnnotationToolbarForMobile();
                                 this.pdfViewer.toolbarModule.annotationToolbarModule.
                                     createPropertyTools(this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType);
@@ -3723,6 +3732,18 @@ export class Annotation {
                 }
                 this.enableBasedOnType();
                 this.pdfViewer.toolbar.annotationToolbarModule.selectAnnotationDeleteItem(true);
+            }
+        } else {
+            if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule &&
+                this.pdfViewer.toolbarModule.annotationToolbarModule.propertyToolbar &&
+                this.pdfViewer.toolbarModule.annotationToolbarModule.propertyToolbar.element.style.display !== 'none') {
+                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                    this.pdfViewer.toolbarModule.annotationToolbarModule.propertyToolbar.element.style.display = 'none';
+                    const editIcon: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationIcon');
+                    if (editIcon && editIcon.parentElement.classList.contains('e-pv-select')) {
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.createAnnotationToolbarForMobile();
+                    }
+                }
             }
         }
     }

@@ -2413,6 +2413,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private keyUp(e: KeyboardEvent): void {
+        if (this.inputElement.classList.contains('e-mention')) {
+            const mentionPopup: HTMLElement = this.element.ownerDocument.getElementById(this.inputElement.id + '_popup');
+            const slashMenuPopup: HTMLElement = this.element.ownerDocument.getElementById(this.inputElement.id + '_slash_menu_popup');
+            const isMentionPopupOpen: boolean = mentionPopup && mentionPopup.classList.contains('e-popup-open');
+            const isSlashMenuPopupOpen: boolean = slashMenuPopup && slashMenuPopup.classList.contains('e-popup-open');
+            if ((isMentionPopupOpen || isSlashMenuPopupOpen)) {
+                return;
+            }
+        }
         if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
             if (!isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete' || e.code === 'KeyX')) {
@@ -2586,7 +2595,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
 
-    private updateUndoRedoStack(e: MouseEvent | TouchEvent | KeyboardEvent): void {
+    private updateUndoRedoStack(e: MouseEvent | TouchEvent | KeyboardEvent | Event, selectionChange?: boolean): void {
         const undoRedoStack: IHtmlUndoRedoData[] | MarkdownUndoRedoData[] = this.formatter.getUndoRedoStack();
         const currentStackIndex: number = this.formatter.getCurrentStackIndex();
         const navigationKeys: string[] = [
@@ -2598,7 +2607,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (undoRedoStack.length === 0 || currentStackIndex === 0) {
             if (undoRedoStack.length === 0) {
                 this.formatter.saveData();
-            } else if (currentStackIndex === 0 && this.editorMode === 'HTML' && isNavigationKey) {
+            } else if ((currentStackIndex === 0 && this.editorMode === 'HTML') && (isNavigationKey || selectionChange)) {
                 const firstStackState: IHtmlUndoRedoData = undoRedoStack[0] as IHtmlUndoRedoData;
                 const save: NodeSelection = new NodeSelection(this.inputElement as HTMLElement)
                     .save(this.getRange(), this.contentModule.getDocument());
@@ -4527,6 +4536,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.wireContextEvent();
         this.formatter.editorManager.observer.on(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown, this);
         this.element.ownerDocument.defaultView.addEventListener('resize', this.onResizeHandler, true);
+        EventHandler.add(this.inputElement, 'drop', this.handleNonFileDrop, this);
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
@@ -4539,6 +4549,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         EventHandler.add(this.inputElement.ownerDocument, 'selectionchange', this.selectionChangeHandler, this);
         // Handle mouseup (document-wide to capture outside RTE release)
         EventHandler.add(this.inputElement.ownerDocument, 'mouseup', this.mouseUpHandlerForSelection , this);
+    }
+    private handleNonFileDrop(e: DragEvent): void {
+        if (e.dataTransfer.types[0] !== 'Files') {
+            if (this.formatter.getUndoRedoStack().length === 0 && !this.isSelectionInRTE()) {
+                this.formatter.saveData();
+            }
+            setTimeout(() => {
+                this.formatter.saveData();
+                this.formatter.enableUndo(this);
+            }, 0);
+        }
     }
     private onIframeMouseDown(e: MouseEvent): void {
         this.isBlur = false;
@@ -4626,6 +4647,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.formatter.editorManager.observer.off(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown);
         }
         this.element.ownerDocument.defaultView.removeEventListener('resize', this.onResizeHandler, true);
+        EventHandler.remove(this.inputElement, 'drop', this.handleNonFileDrop);
         this.onResizeHandler = null;
         if (this.iframeSettings.enable) {
             EventHandler.remove(this.inputElement, 'focusin', this.focusHandler);
@@ -4744,6 +4766,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private selectionChangeHandler(event: Event): void {
         if (this.isSelectionInRTE() && !this.isSelectionCollapsed() && this.isSelectionStartInRTE) {
             this.isSelecting = true;
+        }
+        if (this.isSelectionInRTE()) {
+            this.updateUndoRedoStack(event, true);
         }
     }
 
