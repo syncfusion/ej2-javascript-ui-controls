@@ -156,15 +156,6 @@ Button controls are also offered to following list of frameworks.
 * Expanse Tracker - [Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/?utm_source=npm&utm_campaign=button#/dashboard)
 * Loan Calculator - [Source](https://github.com/syncfusion/ej2-sample-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=button)
 
-## Resources
-
-* [Documentation](https://ej2.syncfusion.com/documentation/button/getting-started)
-* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
-* [Custom Resource Generator](https://crg.syncfusion.com/)
-* [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)
-* [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=github)
-* [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=github)
-
 ## Support
 
 Product support is available through following mediums.
