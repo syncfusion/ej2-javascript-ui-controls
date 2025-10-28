@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.4 (2025-10-28)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I776985` - Resolved an issue where script error occurred when `findTextAsync` was performed with the provided text in the document.
+
 ## 31.2.3 (2025-10-22)
 
 ### PDF Viewer

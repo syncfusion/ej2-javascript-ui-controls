@@ -2689,6 +2689,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         for (let i: number = 0, len: number = axes.length; i < len; i++) {
             axis = <Axis>axes[i as number]; axis.series = [];
             axis.labels = []; axis.indexLabels = {};
+            axis.orientation = (i === 0 && this.visibleSeries.length === 0) ? (this.requireInvertedAxis ? 'Vertical' : 'Horizontal') :
+                (i === 1 && this.visibleSeries.length === 0) ? (this.requireInvertedAxis ? 'Horizontal' : 'Vertical') : axis.orientation;
             for (const series of this.visibleSeries) {
                 this.initAxis(series, axis, true);
                 if (series.category === 'Pareto' && series.type === 'Line' && series.yAxis) {

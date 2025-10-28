@@ -29,7 +29,7 @@ export class PdfLayer {
     private _needInitializeGraphics: boolean;
     private _id: string;
     private _name: string;
-    private _visible: boolean = true;
+    _visible: boolean = true;
     _printOption: _PdfDictionary;
     _usage: _PdfDictionary;
     private _printState: PdfPrintState = PdfPrintState.printWhenVisible;
@@ -568,6 +568,10 @@ export class PdfLayer {
                             if (index !== -1) {
                                 ocgON.splice(index, 1);
                             }
+                        }
+                        if (typeof (ocgOFF) === 'undefined') {
+                            ocgOFF = [];
+                            defaultView.update('OFF', ocgOFF);
                         }
                         if (ocgOFF) {
                             const index: number = ocgOFF.indexOf(this._referenceHolder);

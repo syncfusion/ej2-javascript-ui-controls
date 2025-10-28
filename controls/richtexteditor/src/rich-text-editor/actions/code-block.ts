@@ -350,10 +350,10 @@ export class CodeBlock {
         ) {
             this.parent.disableToolbarItem(
                 (this.parent.toolbarSettings.items as string[])
-                    .filter((item: string) => excludeItems.indexOf(item.toLocaleLowerCase()) === -1)
+                    .filter((item: string) => typeof item === 'string' && excludeItems.indexOf(item.toLocaleLowerCase()) === -1)
             );
             this.parent.enableToolbarItem((this.parent.toolbarSettings.items as string[])
-                .filter((item: string) => disableItemsList.indexOf(item.toLocaleLowerCase()) !== -1));
+                .filter((item: string) => typeof item === 'string' && disableItemsList.indexOf(item.toLocaleLowerCase()) !== -1));
             // Disable the toolbar items when the range is inside a code block
             this.disableTextQuickToolbarItems(true);
             this.isItemsDisabled = true;
@@ -361,7 +361,7 @@ export class CodeBlock {
             const allToolbarItems: string[] = this.parent.toolbarSettings.items as string[];
             const enableItems: string[] = [...allToolbarItems];
             this.parent.enableToolbarItem(
-                (enableItems).filter((item: string) => excludeItems.indexOf(item.toLocaleLowerCase()) === -1)
+                (enableItems).filter((item: string) => typeof item === 'string' && excludeItems.indexOf(item.toLocaleLowerCase()) === -1)
             );
             // Enable the toolbar items when the range is outside of the code block
             this.disableTextQuickToolbarItems(false);

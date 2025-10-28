@@ -763,7 +763,7 @@ describe('TimePicker', () => {
             timepicker = new TimePicker();
             timepicker.appendTo(element);
             timepicker.destroy();
-            expect(element.getAttribute('tabindex') === null).toBe(true);
+            expect(element.getAttribute('tabindex') === '1').toBe(true);
             timepicker = null;
         });
     });

@@ -1532,8 +1532,12 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
             inline[widthProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.width);
             inline[heightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.height);
         }
-        inline['x'] = HelperMethods.convertPixelToPoint(element.shapeX);
-        inline['y'] = HelperMethods.convertPixelToPoint(element.shapeY);
+        if (!isNullOrUndefined(element.shapeX)) {
+            inline['x'] = HelperMethods.convertPixelToPoint(element.shapeX);
+        }
+        if (!isNullOrUndefined(element.shapeY)) {
+            inline['y'] = HelperMethods.convertPixelToPoint(element.shapeY);
+        }
     }
     private writeChartTitleArea(titleArea: ChartTitleArea, chartTitleArea: any): void {
         chartTitleArea[fontNameProperty[this.keywordIndex]] = titleArea.chartfontName;
@@ -1920,7 +1924,7 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
             isParaSelected = true;
         }
         paragraph[paragraphFormatProperty[this.keywordIndex]] = this.writeParagraphFormat(isParaSelected ? paragraphWidget.paragraphFormat : new WParagraphFormat(paragraphWidget), this.keywordIndex);
-        paragraph[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(isParaSelected ? paragraphWidget.characterFormat : new WCharacterFormat(paragraphWidget), this.keywordIndex);
+        paragraph[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(isParaSelected ? paragraphWidget.characterFormat : new WCharacterFormat(paragraphWidget, this.documentHelper.owner), this.keywordIndex);
         paragraph[inlinesProperty[this.keywordIndex]] = [];
         return paragraph;
     }

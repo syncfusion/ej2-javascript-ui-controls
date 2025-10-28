@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.4 (2025-10-28)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I775038` - Issue with "category options not translated in the Insert Function dialog when using different cultures in the Spreadsheet" has been resolved.
+
 ## 31.2.3 (2025-10-22)
 
 ### Spreadsheet

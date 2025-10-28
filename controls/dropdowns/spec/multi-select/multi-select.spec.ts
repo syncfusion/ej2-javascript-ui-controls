@@ -12027,6 +12027,80 @@ describe('MultiSelect', () => {
             listObj.updateOldPropCssClass('e-custom-class');
         });
     });
+    describe('preselect Custom value object binding', () => {
+        let listObj: any;
+        let element: HTMLElement
+        var records: {}[] = [];
+        for (var i = 1; i <= 150; i++) {
+            var item: any = {};
+            item.id = 'id' + i;
+            item.text = "Item " + i;
+            var randomGroup = Math.floor(Math.random() * 4) + 1;
+            switch (randomGroup) {
+                case 1:
+                    item.group = 'Group A';
+                    item.status = 1;
+                    break;
+                case 2:
+                    item.group = 'Group B';
+                    item.status = 2;
+                    break;
+                case 3:
+                    item.group = 'Group C';
+                    item.status = 3;
+                    break;
+                case 4:
+                    item.group = 'Group D';
+                    item.status = 4;
+                    break;
+                default:
+                    break;
+            }
+            records.push(item);
+        }
+        beforeAll(() => {
+            element = createElement('input');
+            element.setAttribute('placeholder', 'Select a game');
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            listObj.destroy();
+            element.remove();
+        });
+        it('Custom value object binding', () => {
+            listObj = new MultiSelect({
+                dataSource: records,
+                placeholder: 'Select a Item',
+                allowObjectBinding: true,
+                addTagOnBlur: false,
+                allowCustomValue: true,
+                allowFiltering: true,
+                allowResize: true,
+                closePopupOnSelect: true,
+                debounceDelay: 300,
+                enableGroupCheckBox: false,
+                enableSelectionOrder: false,
+                enableVirtualization: false,
+                fields: { text: 'text', value: 'id', },
+                filterType: "Contains",
+                floatLabelType: "Always",
+                hideSelectedItem: false,
+                ignoreCase: true,
+                openOnClick: false,
+                mode: 'Box',
+                popupHeight: '200px',
+                itemTemplate: '<div><div class="ename"> ${text} - ${status} </div></div>',
+                valueTemplate: '<div>${status}</div>',
+                showClearButton: true,
+                showSelectAll: false,
+                sortOrder: 'Ascending',
+                showDropDownIcon: false,
+                value: [{ "text": "dummy", "id": "001", "status": 10, }]
+            });
+            listObj.appendTo(element);
+            expect((<any>listObj).chipCollectionWrapper.innerText).toBe('10');
+        });
+    });
 });
 function commonFun(arg0: string) {
     throw new Error('Function not implemented.');

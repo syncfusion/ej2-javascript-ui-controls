@@ -11,6 +11,7 @@ import * as constants from './constant';
 import { RibbonFileMenu, RibbonBackstage, RibbonKeyTip } from '../modules/index';
 import { RibbonTooltipModel } from '../models/ribbon-tooltip-model';
 import { Popup } from '@syncfusion/ej2-popups';
+import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { BeforeOpenCloseMenuEventArgs, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { RibbonContextualTab } from '../modules/ribbon-contextualtab';
@@ -671,14 +672,22 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             this.scrollModule.scrollStep = scrollEle.offsetWidth;
         }
         if (this.activeLayout === 'Simplified') {
-            const activePopup: NodeListOf<Element> = document.querySelectorAll('.e-ribbon .e-dropdown-btn.e-active, .e-ribbon-group-overflow-ddb .e-dropdown-btn.e-active');
-            if (!isNullOrUndefined(activePopup) && activePopup.length) {
-                for (let i: number = 0; i < activePopup.length; i++) {
-                    const dropDownBtn: DropDownButton =
-                    getInstance(activePopup[parseInt(i.toString(), 10)] as HTMLElement, DropDownButton) as DropDownButton;
+            const activePopups: NodeListOf<Element> = document.querySelectorAll('.e-ribbon .e-dropdown-btn.e-active, .e-ribbon-group-overflow-ddb .e-dropdown-btn.e-active');
+            const colorPickerPopups: NodeListOf<Element> = document.querySelectorAll('.e-ribbon .e-colorpicker-wrapper.e-ribbon-control.e-ribbon-open .e-colorpicker, .e-ribbon-group-overflow-ddb .e-colorpicker-wrapper.e-ribbon-control.e-ribbon-open .e-colorpicker');
+            activePopups.forEach((popup: HTMLElement) => {
+                const dropDownBtn: DropDownButton = getInstance(popup as HTMLElement, DropDownButton) as DropDownButton;
+                if (dropDownBtn) {
                     dropDownBtn.toggle();
                 }
-            }
+            });
+
+            colorPickerPopups.forEach((picker: HTMLElement) => {
+                const colorPickerObj: ColorPicker = getInstance(picker as HTMLElement, ColorPicker) as ColorPicker;
+                if (colorPickerObj) {
+                    colorPickerObj.toggle();
+                    colorPickerObj.refresh();
+                }
+            });
         }
 
         const galleryPopupEle: HTMLElement = document.querySelector('.e-ribbon-gallery-popup.e-popup-open');

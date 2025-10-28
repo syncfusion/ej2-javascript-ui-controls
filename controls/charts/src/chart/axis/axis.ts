@@ -1137,9 +1137,9 @@ export class Axis extends ChildProperty<Axis> {
         }
 
         if (this.labelPosition === 'Inside') {
+            innerPadding = (chart.axes.indexOf(this) > -1) ? -5 : 5;
             if ((this.isAxisOpposedPosition && definition.farSizes.length < 1) ||
                 (!this.isAxisOpposedPosition && definition.nearSizes.length < 1)) {
-                innerPadding = (this.labelPosition === 'Inside' && (chart.axes.indexOf(this) > -1)) ? -5 : 5;
                 return titleSize + innerPadding + titlePadding;
             }
             else {

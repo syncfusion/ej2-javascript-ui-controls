@@ -438,6 +438,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
                 this.enabled = false;
             }
+            this.updateFloatLabelOverflowWidth();
             this.renderComplete();
         }
     }
@@ -1241,6 +1242,12 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             return;
         }
         this.isFocused = true;
+        if (this.floatLabelType !== 'Never' && this.inputWrapper && this.inputWrapper.container) {
+            const label: HTMLElement = this.inputWrapper.container.querySelector('.e-float-text');
+            if (label) {
+                label.removeAttribute('style');
+            }
+        }
         this.prevValue = this.value;
         if ((this.value || this.value === 0)) {
             let formatValue: string = this.formatNumber();
@@ -1299,6 +1306,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 EventHandler.remove(this.element, 'mousewheel DOMMouseScroll', this.mouseWheel);
             }
         }
+        this.updateFloatLabelOverflowWidth();
         const formElement: Element = closest(this.element, 'form');
         if (formElement) {
             const element: Element = this.element.nextElementSibling;
@@ -1661,6 +1669,25 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         } else {
             detach(this.spinUp);
             detach(this.spinDown);
+        }
+    }
+
+    private getRightIconsWidth(): number {
+        const container: HTMLElement = this.inputWrapper.container;
+        let width: number = 0;
+        const iconSelectors: string = '.e-input-group-icon, .e-clear-icon';
+        const icons: NodeListOf<HTMLElement> = container.querySelectorAll(iconSelectors);
+        for (let index: number = 0; index < icons.length; index++) {
+            width += icons[index as number].offsetWidth;
+        }
+        return width;
+    }
+    private updateFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputWrapper.container;
+        const label: HTMLElement | null = container.querySelector('.e-float-text-overflow') || container.querySelector('.e-float-text');
+        const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
+        if (label && calculateWidth) {
+            label.style.width = calculateWidth + 'px';
         }
     }
 

@@ -32,7 +32,8 @@ import { Dialog, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2
 import { ImageResizer } from '../editor/image-resizer';
 import {
     HeaderFooterType, PageFitType, TableAlignment, ProtectionType, FormFieldType,
-    FootnoteRestartIndex, FootEndNoteNumberFormat, FootnoteType, CompatibilityMode, TextWrappingStyle
+    FootnoteRestartIndex, FootEndNoteNumberFormat, FootnoteType, CompatibilityMode, TextWrappingStyle,
+    TextAlignment
 } from '../../base/types';
 import { Editor } from '../index';
 import { CaretHeightInfo } from '../editor/editor-helper';
@@ -983,8 +984,8 @@ export class DocumentHelper {
         this.lists = [];
         this.abstractLists = [];
         this.render = new Renderer(this);
-        this.characterFormat = new WCharacterFormat(this);
-        this.themeFontLanguage = new WCharacterFormat(this);
+        this.characterFormat = new WCharacterFormat(this, this.owner);
+        this.themeFontLanguage = new WCharacterFormat(this, this.owner);
         this.paragraphFormat = new WParagraphFormat(this);
         this.renderedLists = new Dictionary<WAbstractList, Dictionary<number, number>>();
         this.renderedLevelOverrides = [];
@@ -2105,15 +2106,14 @@ export class DocumentHelper {
 
             if (!this.isUpdatedWhileLoadAsync) {
                 this.performUpdateAfterLoad(isAsync, true);
-                this.isUpdatedWhileLoadAsync = true;
-            } // re update the track changes once document layout completed in async loading.
-            else {
+            } else { // re update the track changes once document layout completed in async loading.
                 this.owner.isUpdateTrackChanges = false;
                 this.owner.trackChangesPane.updateTrackChanges();
                 this.owner.isUpdateTrackChanges = true;
             }
             this.owner.notify(internalStyleCollectionChange, {});
             this.owner.documentHelper.isDocumentLoadAsynchronously = false;
+            this.isUpdatedWhileLoadAsync = false;
             this.owner.fireDocumentChange();
             this.owner.showHideRulers();
             let picture_cc: HTMLElement = this.owner.element.querySelector('#' + this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
@@ -2157,6 +2157,14 @@ export class DocumentHelper {
     public performUpdateAfterLoad(isAsync: boolean, skipSelection?: boolean): void {
         if (isAsync) {
             hideSpinner(this.owner.element);
+            if (!this.owner.isInitializedContainerComponent) {
+                createSpinner({ target: this.owner.documentHelper.optionsPaneContainer });
+                showSpinner(this.owner.documentHelper.optionsPaneContainer);
+                const spinnerPane = this.owner.documentHelper.optionsPaneContainer.querySelector('.e-spinner-pane') as HTMLElement;
+                if (spinnerPane) {
+                    spinnerPane.style.pointerEvents = 'none';
+                }
+            }
             if (!skipSelection && this.owner.selectionModule) {
                 this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
             }
@@ -2597,7 +2605,6 @@ export class DocumentHelper {
      * @returns {void}
      */
     public onWindowMouseMoveInternal = (event: MouseEvent): void => {
-        event.preventDefault();
         if (this.isMouseDown && this.isMouseLeaved) {
             this.isCompleted = false;
             clearInterval(this.scrollMoveTimer);
@@ -3115,6 +3122,9 @@ export class DocumentHelper {
             let left: number = this.getLeftValue(widget);
             let width: number = widget.children[0].width;
             let height: number = widget.children[0].height;
+            let paragraph: ParagraphWidget = widget.paragraph;
+            // if beforespacing value is applied for the paragraph, we need to add the value with line height to select the list text properly
+            height += !isNullOrUndefined(paragraph.paragraphFormat) && !paragraph.paragraphFormat.contextualSpacing ? paragraph.paragraphFormat.beforeSpacing : 0;
             if (this.isInsideRect(left, widget.paragraph.y, width, height, cursorPoint)) {
                 this.selectionLineWidget = widget;
                 return true;
@@ -5033,38 +5043,54 @@ export class DocumentHelper {
     public canRenderBorder(paragraph: ParagraphWidget): BorderRenderInfo {
         let skipTopBorder: boolean = false;
         let skipBottomBorder: boolean = false;
-        let isSamePreviousBorder: boolean;
-        let isSameNextBorder: boolean;
         let isSameTopBorder: boolean;
         let isSameBottomBorder: boolean;
         let isSameLeftBorder: boolean;
         let isSameRightBorder: boolean;
         let previousBlock: BlockWidget = paragraph.previousRenderedWidget as BlockWidget;
         let nextBlock: BlockWidget = paragraph.nextRenderedWidget as BlockWidget;
+        const previousSplitWidget: Widget = paragraph.previousSplitWidget;
+        if (!isNullOrUndefined(previousBlock) && !isNullOrUndefined(previousSplitWidget) && previousBlock === previousSplitWidget) {
+            skipTopBorder = true;
+        }
+        const nextSplitWidget: Widget = paragraph.nextSplitWidget;
+        if (!isNullOrUndefined(nextBlock) && !isNullOrUndefined(nextSplitWidget) && nextBlock === nextSplitWidget) {
+            skipBottomBorder = true;
+        }
+        if ((skipTopBorder && skipBottomBorder) ||
+            (skipTopBorder && isNullOrUndefined(nextBlock)) ||
+            (skipBottomBorder && isNullOrUndefined(previousBlock))) {
+            return { skipTopBorder, skipBottomBorder };
+        }
         let paragraphX: number = this.getParagraphLeftPosition(paragraph);
         let previousBlockX: number = 0;
         let nextBlockX: number = 0;
-        if (!isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget) {
+        if (!skipTopBorder && !isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget) {
             previousBlockX = this.getParagraphLeftPosition(previousBlock);
         }
-        if (!isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget) {
+        if (!skipBottomBorder && !isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget) {
             nextBlockX = this.getParagraphLeftPosition(nextBlock);
         }
-        if (!isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget && paragraphX === previousBlockX) {
-            isSameTopBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.top, previousBlock.paragraphFormat.borders.top);
-            isSameBottomBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.bottom, previousBlock.paragraphFormat.borders.bottom);
-            isSameLeftBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.left, previousBlock.paragraphFormat.borders.left);
-            isSameRightBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.right, previousBlock.paragraphFormat.borders.right);
+        const topBorder: WBorder = paragraph.paragraphFormat.borders.top;
+        const bottomBorder: WBorder = paragraph.paragraphFormat.borders.bottom;
+        const leftBorder: WBorder = paragraph.paragraphFormat.borders.left;
+        const rightBorder: WBorder = paragraph.paragraphFormat.borders.right;
+        if (!skipTopBorder && !isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget && paragraphX === previousBlockX) {
+            isSameTopBorder = this.checkEqualBorder(topBorder, previousBlock.paragraphFormat.borders.top);
+            isSameBottomBorder = this.checkEqualBorder(bottomBorder, previousBlock.paragraphFormat.borders.bottom);
+            isSameLeftBorder = this.checkEqualBorder(leftBorder, previousBlock.paragraphFormat.borders.left);
+            isSameRightBorder = this.checkEqualBorder(rightBorder, previousBlock.paragraphFormat.borders.right);
+            const horizontalBorder: WBorder = previousBlock.paragraphFormat.borders.horizontal;
             if (isSameTopBorder && isSameBottomBorder && isSameLeftBorder && isSameRightBorder
-                && !isNullOrUndefined(previousBlock.paragraphFormat.borders.horizontal) && previousBlock.paragraphFormat.borders.horizontal.lineStyle === 'None') {
+                && !isNullOrUndefined(horizontalBorder) && horizontalBorder.lineStyle === 'None') {
                 skipTopBorder = true;
             }
         }
-        if (!isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget && (paragraphX === nextBlockX || (this.owner.documentHelper.layout.isInitialLoad && this.skipBottomBorder(paragraph, nextBlock)))) {
-            isSameTopBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.top, nextBlock.paragraphFormat.borders.top);
-            isSameBottomBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.bottom, nextBlock.paragraphFormat.borders.bottom);
-            isSameLeftBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.left, nextBlock.paragraphFormat.borders.left);
-            isSameRightBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.right, nextBlock.paragraphFormat.borders.right);
+        if (!skipBottomBorder && !isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget && (paragraphX === nextBlockX || (this.owner.documentHelper.layout.isInitialLoad && this.skipBottomBorder(paragraph, nextBlock)))) {
+            isSameTopBorder = this.checkEqualBorder(topBorder, nextBlock.paragraphFormat.borders.top);
+            isSameBottomBorder = this.checkEqualBorder(bottomBorder, nextBlock.paragraphFormat.borders.bottom);
+            isSameLeftBorder = this.checkEqualBorder(leftBorder, nextBlock.paragraphFormat.borders.left);
+            isSameRightBorder = this.checkEqualBorder(rightBorder, nextBlock.paragraphFormat.borders.right);
             if (isSameBottomBorder && isSameTopBorder && isSameLeftBorder && isSameRightBorder) {
                 skipBottomBorder = true;
             }
@@ -5091,14 +5117,14 @@ export class DocumentHelper {
     public getParagraphLeftPosition(paragraphWidget: ParagraphWidget): number {
         let hangingIndent: number = 0;
         let startX: number = 0;
-
-        if (paragraphWidget.paragraphFormat.firstLineIndent < 0) {
-            hangingIndent = HelperMethods.convertPointToPixel(Math.abs(paragraphWidget.paragraphFormat.firstLineIndent));
+        const firstLineIndent: number = paragraphWidget.paragraphFormat.firstLineIndent;
+        if (firstLineIndent < 0) {
+            hangingIndent = HelperMethods.convertPointToPixel(Math.abs(firstLineIndent));
             hangingIndent = parseFloat(hangingIndent.toFixed(5));
         }
-
-        if (paragraphWidget.isEmpty() && ((paragraphWidget.paragraphFormat.textAlignment !== 'Left' && paragraphWidget.paragraphFormat.textAlignment !== 'Justify') 
-            || (paragraphWidget.paragraphFormat.textAlignment === 'Justify' && paragraphWidget.paragraphFormat.bidi))) {
+        const textAlignment: TextAlignment = paragraphWidget.paragraphFormat.textAlignment;
+        if (paragraphWidget.isEmpty() && ((textAlignment !== 'Left' && textAlignment !== 'Justify') 
+            || (textAlignment === 'Justify' && paragraphWidget.paragraphFormat.bidi))) {
             startX = paragraphWidget.clientX > hangingIndent ? paragraphWidget.clientX - hangingIndent : paragraphWidget.clientX;
             return startX;
         } else {

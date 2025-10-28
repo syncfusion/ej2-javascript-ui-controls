@@ -1052,6 +1052,26 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.scrollBottom(focusedItem, undefined, false, null, true);
         }
     }
+    private updatePopupHeightOnFilter(): void {
+        if (this.allowFiltering && this.allowResize && this.keyboardEvent) {
+            if (this.allowResize && this.popupObj && this.list) {
+                const filterText: string = this.inputElement && this.inputElement.value;
+                const filteredItems: any = this.list.querySelectorAll('li.e-list-item:not(.e-hide-listitem):not(.e-disabled)');
+                const isFiltering: boolean = filterText && filterText.length > 0;
+                if (isFiltering && filteredItems.length > 0) {
+                    const itemHeight: any = filteredItems[0].offsetHeight;
+                    const newHeight: number = filteredItems.length * itemHeight;
+                    this.popupObj.element.style.maxHeight = newHeight + 16 + 'px';
+                    this.list.style.maxHeight = newHeight + 'px';
+                } else if (!isFiltering) {
+                    const restoreHeight: number = this.resizeHeight || parseInt(<string>this.popupHeight, 10);
+                    this.popupObj.element.style.maxHeight = restoreHeight + 'px';
+                    this.list.style.maxHeight = restoreHeight + 'px';
+                    this.setResize();
+                }
+            }
+        }
+    }
     private focusAtFirstListItem(isOpen?: boolean): void {
         if (this.ulElement && this.ulElement.querySelector('li.'
             + dropDownBaseClasses.li)) {
@@ -1796,7 +1816,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.getFilteringSkeletonCount();
         }
         this.refreshPopup();
-        if (this.allowResize) {
+        if (this.allowResize && !this.isFilteringAction) {
             this.setResize();
         }
         if (this.mode === 'CheckBox') {
@@ -1986,6 +2006,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private keyDownStatus: boolean = false;
     private onBlurHandler(eve?: MouseEvent, isDocClickFromCheck?: boolean): void {
         let target: HTMLElement;
+        this.updatePopupHeightOnFilter();
         if (this.isBlurDispatching && this.isAngular) {
             this.isBlurDispatching = false;
             return;
@@ -2071,6 +2092,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             Input.createSpanElement(this.overAllWrapper, this.createElement);
         }
         this.calculateWidth();
+        this.updateFloatLabelOverflowWidth();
         if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] &&
           this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {
             this.overAllWrapper.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
@@ -2294,6 +2316,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.searchWrapper.classList.remove(ZERO_SIZE);
             }
             this.checkPlaceholderSize();
+            if (this.floatLabelType !== 'Never' && this.overAllWrapper) {
+                const label: HTMLElement = this.overAllWrapper.querySelector('.e-float-text');
+                if (label) {
+                    label.removeAttribute('style');
+                }
+            }
             if (this.focused) {
                 const args: FocusEventArgs = { isInteracted: e ? true : false, event: e };
                 this.trigger('focus', args);
@@ -2605,7 +2633,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!(this.mode === 'CheckBox' && this.showSelectAll)) {
             this.refreshPopup();
         }
-        if (this.allowResize) {
+        if (this.allowResize && !this.isFilterAction) {
             this.setResize();
         }
         this.isKeyBoardAction = false;
@@ -4323,6 +4351,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
         });
+        this.updatePopupHeightOnFilter();
     }
     protected search(e: KeyboardEventArgs): void {
         this.preventSetCurrentData = false;
@@ -4753,10 +4782,19 @@ export class MultiSelect extends DropDownBase implements IInput {
                         )
                     ) {
                         const indexItem: number = this.listData.length;
-                        const newValue: { [key: string]: string | Object } = {};
+                        let newValue: { [key: string]: string | Object } = {};
                         setValue(this.fields.text, value, newValue);
                         setValue(this.fields.value, value, newValue);
                         const noDataEle: HTMLElement = this.popupWrapper.querySelector('.' + dropDownBaseClasses.noData);
+                        if (newValue && this.allowObjectBinding && this.allowCustomValue && this.value.length > 0 && typeof this.value[0] === 'object') {
+                            const valueArray: any[] = this.value;
+                            const filteredItems: any[] = valueArray.filter((valObj: any) => {
+                                return (valObj as any)[this.fields.value] === value;
+                            });
+                            if (filteredItems.length > 0) {
+                                newValue = filteredItems[0]; // Take the first matching item
+                            }
+                        }
                         if (!this.enableVirtualization) {
                             this.addItem(newValue, indexItem);
                         }
@@ -6611,7 +6649,24 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.isSelectAll = true;
         this.selectAllItems(state);
     }
-
+    private getRightIconsWidth(): number {
+        const container: HTMLElement = this.overAllWrapper;
+        let width: number = 0;
+        const iconSelectors: string = '.e-input-group-icon, .e-clear-icon';
+        const icons: NodeListOf<HTMLElement> = container.querySelectorAll(iconSelectors);
+        for (let index: number = 0; index < icons.length; index++) {
+            width += icons[index as number].offsetWidth;
+        }
+        return width;
+    }
+    private updateFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.overAllWrapper;
+        const label: HTMLElement | null = container.querySelector('.e-float-text');
+        const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
+        if (label && calculateWidth) {
+            label.style.width = calculateWidth + 'px';
+        }
+    }
     /**
      * Return the module name of this component.
      *
@@ -6780,6 +6835,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }
+        this.updateFloatLabelOverflowWidth();
         this.wireEvent();
         this.enable(this.enabled);
         this.enableRTL(this.enableRtl);

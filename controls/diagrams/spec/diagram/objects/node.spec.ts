@@ -1530,7 +1530,7 @@ describe('Diagram Control', () => {
             let diagramlayer: HTMLElement = document.getElementById(diagram.element.id + '_diagramLayer');
             diagram.select([diagram.nodes[2], diagram.nodes[0], diagram.nodes[1]], true);
             diagram.distribute("RightToLeft", diagram.selectedItems.nodes);
-            expect(diagram.nodes[1].offsetX === 350 || diagram.nodes[0].offsetX === 600).toBe(true);
+            expect(diagram.nodes[1].offsetX === 550).toBe(true);
             done();
         });
         it('Checking distribution of nodes with righttoleft', (done: Function) => {

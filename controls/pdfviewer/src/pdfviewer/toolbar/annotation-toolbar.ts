@@ -3786,6 +3786,7 @@ export class AnnotationToolbar {
                 this.drawInkAnnotation();
             } else {
                 this.inkAnnotationSelected = false;
+                this.selectAnnotationDeleteItem(true);
             }
             break;
         case this.pdfViewer.element.id + '_annotation_shapesIcon':

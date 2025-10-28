@@ -87,13 +87,11 @@ export class CellEdit {
                 args.columnObject.edit.params['dataSource'] = constraintTypeDataSource;
             }
         }
-        if (data.hasChildRecords && !this.parent.allowParentDependency && ((field === taskSettings.endDate &&
+        if (data.hasChildRecords && ((field === taskSettings.endDate &&
             ((!isNullOrUndefined(data[taskSettings.manual]) && data[taskSettings.manual] === false) ||
-            this.parent.taskMode === 'Auto')) || field === taskSettings.duration || field === taskSettings.dependency ||
-            field === taskSettings.progress || field === taskSettings.work || field === taskSettings.type || field === 'taskType')) {
-            if ((field === taskSettings.dependency && !this.parent.allowParentDependency) || field !== taskSettings.dependency) {
-                args.cancel = true;
-            }
+                this.parent.taskMode === 'Auto')) || field === taskSettings.duration ||
+            field === taskSettings.progress || field === taskSettings.work || field === taskSettings.type || field === 'taskType' || (field === taskSettings.dependency && !this.parent.allowParentDependency))) {
+            args.cancel = true;
         } else {
             const callBackPromise: Deferred = new Deferred();
             const parentReference: Gantt = this.parent;

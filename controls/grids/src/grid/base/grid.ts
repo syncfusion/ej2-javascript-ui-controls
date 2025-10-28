@@ -8454,7 +8454,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.allowPaging) {
             if ((this.allowTextWrap && this.textWrapSettings.wrapMode === 'Header') || (!this.allowTextWrap)) {
                 let pagesize: number = 0;
-                if ((containerHeight as string).indexOf('%') !== -1) {
+                if (typeof containerHeight === 'string' && (containerHeight as string).indexOf('%') !== -1) {
                     containerHeight = parseInt(containerHeight as string, 10) / 100 * this.element.clientHeight;
                 }
                 const nonContentHeight: number = this.getNoncontentHeight() + this.getRowHeight();

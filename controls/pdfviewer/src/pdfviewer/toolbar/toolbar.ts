@@ -1851,6 +1851,7 @@ export class Toolbar {
             if (!this.isSelectionToolDisabled) {
                 this.pdfViewerBase.initiateTextSelectMode();
                 this.updateInteractionTools(true);
+                this.annotationToolbarModule.selectAnnotationDeleteItem(true);
             }
             break;
         case this.pdfViewer.element.id + '_handTool':
@@ -1859,6 +1860,7 @@ export class Toolbar {
             if (!(this.isScrollingToolDisabled || this.getStampMode())) {
                 this.pdfViewerBase.initiatePanning();
                 this.updateInteractionTools(false);
+                this.annotationToolbarModule.selectAnnotationDeleteItem(true);
             }
             break;
         case this.pdfViewer.element.id + '_search':

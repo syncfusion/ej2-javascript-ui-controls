@@ -461,7 +461,7 @@ export class ListDialog {
     }
     private updateDialogValues(): void {
         if (isNullOrUndefined(this.listLevel.characterFormat)) {
-            this.listLevel.characterFormat = new WCharacterFormat(this.viewModel.listLevel);
+            this.listLevel.characterFormat = new WCharacterFormat(this.viewModel.listLevel, this.documentHelper.owner);
         }
         if (isNullOrUndefined(this.listLevel.paragraphFormat)) {
             this.listLevel.paragraphFormat = new WParagraphFormat(this.viewModel.listLevel);

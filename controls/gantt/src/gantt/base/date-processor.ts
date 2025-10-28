@@ -598,12 +598,14 @@ export class DateProcessor {
             if (!isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read)) {
                 const dialog: HTMLElement = this.parent.editModule.dialogModule.dialog;
                 if (!isNullOrUndefined(dialog)) {
-                    const textBox: TextBox = isBaseline ? <TextBox>(<EJ2Instance>dialog.querySelector('#' + this.parent.element.id + 'BaselineDuration'))
-                        .ej2_instances[0] : <TextBox>(<EJ2Instance>dialog.querySelector('#' + this.parent.element.id + 'Duration'))
-                            .ej2_instances[0];
-                    if (!isNullOrUndefined(textBox) && textBox.value !== tDuration.toString()) {
-                        textBox.value = tDuration.toString();
-                        textBox.dataBind();
+                    const textBoxElement: Element = isBaseline ? dialog.querySelector('#' + this.parent.element.id + 'BaselineDuration') :
+                        dialog.querySelector('#' + this.parent.element.id + 'Duration');
+                    if (!isNullOrUndefined(textBoxElement)) {
+                        const textBox: TextBox = <TextBox>(<EJ2Instance>textBoxElement).ej2_instances[0];
+                        if (!isNullOrUndefined(textBox) && textBox.value !== tDuration.toString()) {
+                            textBox.value = tDuration.toString();
+                            textBox.dataBind();
+                        }
                     }
                 }
             }

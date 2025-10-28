@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 31.2.4 (2025-10-28)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I761423` - AutoFocus behaviour updated when `enableAutoFocus` is set to false.
+- `#I772600` - Resolved performance issue when inserting text with a large number of DOM elements.
+- `#I774527` - Toggling paragraph marks now correctly maintains bookmark visibility.
+- `#I773462` - Fixed a null reference exception that occurred on the server when downloading a document containing a chart.
+- `#I772069` - Resolved endless selection issue when applying a toolbar tool to a text selection.
+- `#I771551` - Font-family now updates correctly for list text, addressing incorrect cursor positioning related to paragraph before spacing.
+- `#I763642` - Fixed layout issues caused by split paragraphs across pages.
+
 ## 31.2.3 (2025-10-22)
 
 ### DocumentEditor

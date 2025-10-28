@@ -491,7 +491,7 @@ describe('DateRangePicker', () => {
                         daterangepicker = new DateRangePicker();
                         daterangepicker.appendTo(element);
                         daterangepicker.destroy();
-                        expect(element.getAttribute('tabindex') === null).toBe(true);
+                        expect(element.getAttribute('tabindex') === '1').toBe(true);
                         daterangepicker = null;
                     });
                     it('inputFormats testing', () => {

@@ -801,47 +801,49 @@ export class TextSearch {
                 }
                 else if (specialcharcterIndex !== -1) {
                     arrayReturns = this.correctLinetext(inputString, matchIndex, pageTextData);
-                    matchIndex = -arrayReturns[0].length;
-                    for (let i: number = 0; i < arrayReturns.length; i++) {
-                        matchIndex = pageTextData.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(),
-                                                          matchIndex + (arrayReturns[i - 1] === undefined ||
+                    if (arrayReturns.length > 0) {
+                        matchIndex = -arrayReturns[0].length;
+                        for (let i: number = 0; i < arrayReturns.length; i++) {
+                            matchIndex = pageTextData.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(),
+                                                              matchIndex + (arrayReturns[i - 1] === undefined ||
                                 null ? arrayReturns[0].length : arrayReturns[i - 1].length));
-                        matchedArray.push(matchIndex);
-                        if (matchedArray.length > 1) {
-                            if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
-                                matches.push(matchedArray);
-                                this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
-                            }
-                            else {
-                                i = -1;
-                                matchIndex = matchedArray[0] + arrayReturns[0].length;
-                                matchedArray.splice(0, matchedArray.length);
+                            matchedArray.push(matchIndex);
+                            if (matchedArray.length > 1) {
+                                if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
+                                    matches.push(matchedArray);
+                                    this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
+                                }
+                                else {
+                                    i = -1;
+                                    matchIndex = matchedArray[0] + arrayReturns[0].length;
+                                    matchedArray.splice(0, matchedArray.length);
 
+                                }
                             }
                         }
                     }
                 }
                 else if (MultilineIndex !== -1) {
                     arrayReturns = this.correctLinetext(inputString, matchIndex, pageTextData);
-                    matchIndex = -arrayReturns[0].length;
-                    for (let i: number = 0; i < arrayReturns.length; i++) {
-                        matchIndex = pageTextData.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(),
-                                                          matchIndex + (arrayReturns[i - 1] === undefined ||
+                    if (arrayReturns.length > 0) {
+                        matchIndex = -arrayReturns[0].length;
+                        for (let i: number = 0; i < arrayReturns.length; i++) {
+                            matchIndex = pageTextData.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(),
+                                                              matchIndex + (arrayReturns[i - 1] === undefined ||
                                 null ? arrayReturns[0].length : arrayReturns[i - 1].length));
-                        matchedArray.push(matchIndex);
-                        if (matchedArray.length > 1) {
-                            if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
-                                matches.push(matchedArray);
-                                this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
-                            } else {
-                                i = -1;
-                                matchIndex = matchedArray[0] + arrayReturns[0].length;
-                                matchedArray.splice(0, matchedArray.length);
+                            matchedArray.push(matchIndex);
+                            if (matchedArray.length > 1) {
+                                if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
+                                    matches.push(matchedArray);
+                                    this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
+                                } else {
+                                    i = -1;
+                                    matchIndex = matchedArray[0] + arrayReturns[0].length;
+                                    matchedArray.splice(0, matchedArray.length);
+                                }
                             }
                         }
-
                     }
-
                 }
                 if (matches.length > 1) {
                     matches.splice(1, matches.length);

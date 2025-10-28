@@ -91,6 +91,14 @@ These components are available in following list of frameworks.
 
 * [**Accessibility**](https://ej2.syncfusion.com/documentation/button-group/accessibility#accessibility) - Built-in accessibility features to access all the button group using the keyboard, screen readers, or other assistive technology devices.
 
+## Resources
+
+* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
+* [Custom Resource Generator](https://crg.syncfusion.com/)
+* [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)
+* [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=github)
+* [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=github)
+
 ## Support
 
 Product support is available for through following mediums.
@@ -107,4 +115,4 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/splitbuttons/CHANGELOG.md?utm_source=npm&utm_campaign=split-button)
 
-© Copyright 2024 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential<sup>®</sup> Studio license and copyright applies to this distribution.
+&copy; Copyright 2025 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.

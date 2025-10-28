@@ -5393,5 +5393,43 @@ describe('Uploader Control', () => {
             expect(customButtonuploadObj.uploadWrapper.querySelector('.upload.e-icons').innerHTML).toBe('Upload All');
         });
     });
+
+    describe('Auto-upload hidden input count', () => {
+        let uploadObj: any;
+        let formEl: HTMLElement;
+        let inputEl: HTMLElement;
+        beforeEach((): void => {
+            formEl = createElement('form', { attrs: { id: 'form-auto' } });
+            inputEl = createElement('input', { id: 'fileupload' });
+            inputEl.setAttribute('type', 'file');
+            formEl.appendChild(inputEl);
+            document.body.appendChild(formEl);
+            uploadObj = new Uploader({
+                autoUpload: false,
+                multiple: false
+            });
+            uploadObj.appendTo('#fileupload');
+        });
+        afterEach((): void => {
+            if (uploadObj) { uploadObj.destroy(); }
+            document.body.innerHTML = '';
+        });
+        it("should not create multiple hidden inputs on consecutive selections", () => {
+            const file1: File = new File(["a"], "a.txt", { lastModified: 0, type: "text/plain" });
+            const file2: File = new File(["b"], "b.txt", { lastModified: 0, type: "text/plain" });
+
+            // First selection
+            const evt1: any = { type: 'click', target: { files: [file1] }, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(evt1);
+            let hiddenCount1 = document.querySelectorAll('input.e-control.e-uploader.e-lib.e-hidden-file-input').length;
+            expect(hiddenCount1).toBe(1);
+
+            // Second selection
+            const evt2: any = { type: 'click', target: { files: [file2] }, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(evt2);
+            let hiddenCount2 = document.querySelectorAll('input.e-control.e-uploader.e-lib.e-hidden-file-input').length;
+            expect(hiddenCount2).toBe(1);
+        });
+    });
 });
 

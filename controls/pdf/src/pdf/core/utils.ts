@@ -2268,6 +2268,9 @@ export function _mapGraphicsUnit(unitString: string): _PdfGraphicsUnit {
  * @returns {PdfRubberStampAnnotationIcon} Rubber stamp icon.
  */
 export function _mapRubberStampIcon(iconString: string): PdfRubberStampAnnotationIcon {
+    if (iconString.includes('23')) {
+        iconString = iconString.replace('23', '');
+    }
     let icon: PdfRubberStampAnnotationIcon;
     switch (iconString) {
     case '#Approved':
@@ -3800,7 +3803,7 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
                         textFontStyle = _getFontStyle(baseFont.name);
                         if (form && form._fontCache && form._fontCache.has(cacheKey) && fontSize !== 0) {
                             font = form._fontCache.get(cacheKey);
-                            if (field._dictionary && field._dictionary.has('V') && font instanceof PdfTrueTypeFont) {
+                            if (field && field._dictionary && field._dictionary.has('V') && font instanceof PdfTrueTypeFont) {
                                 font._isUnicode = _checkUnicodeString(field._dictionary);
                             }
                         }

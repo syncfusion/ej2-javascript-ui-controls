@@ -913,7 +913,9 @@ export class PdfGraphics {
                 this._page.rotation &&
                 template._isSignature &&
                 this._page._size[0] > this._page._size[1] &&
-                this._page.rotation === PdfRotationAngle.angle270) {
+                this._page.rotation === PdfRotationAngle.angle270 && template._content &&
+                template._content.dictionary &&
+                template._content.dictionary.has('Matrix')) {
                 scaleX = (template && template._size[0] > 0) ? bounds.width / template._size[1] : 1;
                 scaleY = (template && template._size[1] > 0) ? bounds.height / template._size[0] : 1;
             } else {

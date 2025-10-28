@@ -118,6 +118,7 @@ export class ZoomGroup extends RibbonGroupBase {
      * @returns {void}
      */
     private fitOnePageHandler(): void {
+        this.documentEditor.isClientCall = true;
         this.documentEditor.fitPage('FitOnePage');
     }
 
@@ -134,6 +135,7 @@ export class ZoomGroup extends RibbonGroupBase {
      * @returns {void}
      */
     private pageWidthHandler(): void {
+        this.documentEditor.isClientCall = true;
         this.documentEditor.fitPage('FitPageWidth');
     }
 

@@ -2,21 +2,13 @@
 
 ## [Unreleased]
 
-## 31.2.3 (2025-10-22)
+## 31.1.22 (2025-10-01)
 
 ### Ribbon
 
 #### Bug Fixes
 
-`#I744491` - Now the script error raised in Ribbon on window resizing with minimal layout has been resolved.
-
-## 30.1.39 (2025-07-08)
-
-### Ribbon
-
-#### Bug Fixes
-
-`#I736914` - Now the issue with script error raised on window resizing, after the ribbon is destroyed has been resolved.
+`#I769183` - Now the issue with `beforeOpen` event was not triggered and multiple instances of the Color Picker popup were rendered after the page resizing in the Ribbon has been resolved.
 
 ## 25.1.35 (2024-03-15)
 

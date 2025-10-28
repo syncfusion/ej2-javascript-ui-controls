@@ -6670,4 +6670,67 @@ describe('QueryBuilder', () => {
             }, done);
         });
     });
+
+    describe('EJ2-771577 - Default JS sample verification', () => {
+        const columnData = [
+            { field: 'EmployeeID', label: 'Employee ID', type: 'number', values: [20, 30], value: 10 },
+            { field: 'FirstName', label: 'First Name', type: 'string', value: 'Syncfusion', values: ['10/01/2025', '10/31/2025'] },
+            { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
+            { field: 'HireDate', label: 'Hire Date', type: 'date', values: ['10/10/2025', '31/10/2025'], format: 'dd/MM/yyyy', value: '15/10/2025' }
+        ];
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
+        });
+
+        it('Verify HireDate value binding from column definition', () => {
+            const dateRules: RuleModel = {
+                'condition': 'Equal',
+                'rules': [{
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'equal',
+                    'value': '15/10/2025'
+                }]
+            };
+            queryBuilder = new QueryBuilder({
+                columns: columnData,
+                rule: dateRules
+            }, '#querybuilder');
+            expect(queryBuilder.rule.rules.length).toBe(1);
+            const actualHireDateRule = queryBuilder.rule.rules.find((r: any) => r.field === 'HireDate');
+            expect(actualHireDateRule.value).toBe('15/10/2025');
+        });
+        it('Verify HireDate values with between operation from column definitions of DatePickers', () => {
+            const dateRules: RuleModel = {
+                'condition': 'Between',
+                'rules': [{
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'between',
+                    'value': ['10/10/2025', '31/10/2025']
+                }]
+            };
+            queryBuilder = new QueryBuilder({
+                columns: columnData,
+                rule: dateRules
+            }, '#querybuilder');
+            expect(queryBuilder.rule.rules.length).toBe(1);
+            expect(queryBuilder.rule.rules[0].value[0]).toBe('10/10/2025');
+            expect(queryBuilder.rule.rules[0].value[1]).toBe('31/10/2025');
+            const dtObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+            dtObj[0].value = new Date('11/02/2025');
+            dtObj[0].dataBind();
+            queryBuilder.refresh();
+            expect(queryBuilder.rule.rules[0].value[0]).toEqual('02/11/2025');
+        });
+    });
 });

@@ -1029,6 +1029,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Property(true)
     public enableLayout: boolean;
     /**
+     * Set to true when fitpage method is not called via API.
+     *
+     * @default false
+     */
+    @Property(false)
+    public isClientCall: boolean;
+    /**
      * Defines the settings for DocumentEditor customization.
      *
      * @default {}
@@ -1343,6 +1350,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public enableContentControlPropertiesDialog: boolean;
+    /**
+     * @private
+     */
+    public isInitializedContainerComponent: boolean = false;
     /**
      * @private
      */
@@ -2349,6 +2360,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.trackChangesPane) {
             hideSpinner(this.trackChangesPane.trackChangeDiv);
         }
+        hideSpinner(this.documentHelper.optionsPaneContainer);
         const eventArgs: DocumentChangeEventArgs = { source: this };
         this.trigger(documentChangeEvent, eventArgs);
     }
@@ -4354,6 +4366,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.viewer) {
             this.viewer.pageFitType = pageFitType;
         }
+        if (!this.documentHelper.owner.enableAutoFocus && !this.isClientCall) {
+            this.documentHelper.onFocusOut();
+        }
+        this.isClientCall = false;
     }
 
     /**
@@ -4454,6 +4470,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         fileName = fileName || 'Untitled';
         if (isNullOrUndefined(this.documentHelper)) {
             throw new Error('Invalid operation.');
+        } else if (this.documentHelper.isDocumentLoadAsynchronously) {
+            return;
         }
         if (formatType === 'Docx' || formatType === 'Dotx') {
             if (this.wordExportModule) {
@@ -4857,7 +4875,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         const paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.index = 0;
         paragraph.paragraphFormat = new WParagraphFormat(paragraph);
-        paragraph.characterFormat = new WCharacterFormat(paragraph);
+        paragraph.characterFormat = new WCharacterFormat(paragraph, this);
         section.childWidgets.push(paragraph);
         paragraph.containerWidget = section;
         return section;
@@ -4960,7 +4978,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 'sty': [styleData]
             };
             if (this.editorModule.isLinkedStyle((style as WStyle).name)) {
-                const linkedStyle: WStyle = this.documentHelper.styles.findByName((style as WStyle).link.name) as WStyle;
+                const linkedStyle: WStyle = this.documentHelper.styles.findByName((style as WStyle).name + ' Char') as WStyle;
                 const linkedStyleData: any = this.documentHelper.owner.sfdtExportModule.writeStyle(linkedStyle);
                 styleObject.sty.push(linkedStyleData);
             }

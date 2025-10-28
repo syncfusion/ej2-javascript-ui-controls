@@ -617,6 +617,7 @@ export class DialogEdit {
             this.destroyDialogInnerElements();
             this.dialogObj.destroy();
             remove(this.dialog);
+            this.dialog = null;
         }
     }
 
@@ -1211,7 +1212,7 @@ export class DialogEdit {
                     }
                     else {
                         numeric.decimals = 0;
-                        numeric.format = 'n0';
+                        numeric.format = 'n2';
                         numeric.validateDecimalOnType = true;
                     }
                 }

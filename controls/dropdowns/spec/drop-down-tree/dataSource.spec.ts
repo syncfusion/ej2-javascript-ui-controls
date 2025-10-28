@@ -676,3 +676,34 @@ export let popupClosedata: { [key: string]: Object }[] = [
       },
     }
 ];
+
+export let nestedHierarchicalData: { [key: string]: Object }[] = [
+    {
+        code: "AF", name: "Africa",  expanded: true, countries: [
+            { code: "NGA", name: "Nigeria", countries: [
+                { code: "DNK", name: "Denmark" },
+                { code: "FNL", name: "Finland" },
+            ] },
+            { code: "EGY", name: "Egypt" },
+        ]
+    },
+    {
+        code: "AS", name: "Asia", countries: [
+            { code: "CHN", name: "China" },
+            { code: "IND", name: "India" },
+            { code: "JPN", name: "Japan" }
+        ]
+    }
+];
+
+export let nestedListData: { [key: string]: Object }[] =  [
+    { id: 1, name: 'Discover Music', hasChild: true, expanded: true },
+    { id: 2, pid: 1, name: 'Hot Singles', hasChild: true, expanded: true },
+    { id: 3, pid: 1, name: 'Rising Artists' },
+    { id: 4, pid: 2, name: 'Live Music' },
+    { id: 6, pid: 2, name: 'Best of 2017 So Far' },
+    { id: 7, name: 'Sales and Events', hasChild: true },
+    { id: 8, pid: 7, name: '100 Albums - $5 Each' },
+    { id: 9, pid: 7, name: 'Hip-Hop and R&B Sale' },
+    { id: 10, pid: 7, name: 'CD Deals' }
+];

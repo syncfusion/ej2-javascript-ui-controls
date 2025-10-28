@@ -2,8 +2,8 @@
  * Gantt taskbaredit spec
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
-import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs, UndoRedo  } from '../../src/index';
-import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue, resourceResources, data931222, resource931222, baselinedurationdata, t974566} from '../base/data-source.spec';
+import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs, UndoRedo, IGanttData  } from '../../src/index';
+import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue, resourceResources, data931222, resource931222, baselinedurationdata, t974566, data987636} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -11350,13 +11350,13 @@ describe('validate end date', () => {
         ganttObj.editModule.dialogModule.openEditDialog(ganttObj.flatData[5]);
     });
     it('validate end date', () => {
-        ganttObj['closeGanttActions']();
         let args = {};
         args['requestType'] = "save";
         args['rows'] = {};
         args['rows'].length = 6;
         ganttObj.editModule.dialogModule['preTableCollection'] = [0, 1, 2, 3, 4, 5] as any;
         ganttObj.editModule.dialogModule['gridActionComplete'](args);
+        ganttObj['closeGanttActions']();
     });
     afterAll(() => {
         if (ganttObj) {
@@ -15094,3 +15094,92 @@ describe('actionComplete event\'s modifiedRecords property not showing data prop
           }
         });
     });
+
+describe('Script error occurs when using a duration field template in the Gantt chart', () => {
+    let ganttObj: Gantt;
+    let durationFields = (field: any, data: any, column: any) => {
+      const factor = Math.pow(10, 0);
+      const duration = Math.trunc(data.Duration * factor) / factor;
+      const suffix = duration <= 1 ? 'day' : 'days';
+      return `${duration} ${suffix}`;
+    };
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data987636,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'ParentId',
+                    notes: 'info',
+                    resourceInfo: 'resources',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    baselineDuration: 'baselineDur',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns:[ 
+                    { field: 'TaskID', width:80 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'Duration', headerText: 'Duration', valueAccessor: "durationFields", edit:{
+                        create:  (): any=> {
+                            let elem = document.createElement('input')
+                            return elem;
+                        },
+                        read: function (): any {
+                            return '';
+                        },
+                        } 
+                    },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                labelSettings:{
+                    leftLabel: 'TaskName',
+                },
+                editDialogFields: [{type: 'General', fields:['TaskName']}],
+                contextMenuItems: [
+                  {
+                    text: 'Edit a record',
+                    target: '.e-content, .e-chart-row ',
+                    id: 'editRecord',
+                  },
+                ],
+                contextMenuClick(args?: any): void {
+                    let record: IGanttData = args.rowData;
+                    if (record && (args as any).item.id === 'editRecord') {
+                      ganttObj.openEditDialog(record.ganttProperties.taskId);
+                    }
+                },
+                projectStartDate: new Date('03/25/2025'),
+                projectEndDate: new Date('09/01/2025'),
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+        ganttObj.openEditDialog(2);
+    });
+    it('check dialog element', () => {
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+        let dialog: HTMLElement = (document.getElementById(ganttObj.element.id + '_dialog'));
+        expect(dialog).toBe(null);            
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+});

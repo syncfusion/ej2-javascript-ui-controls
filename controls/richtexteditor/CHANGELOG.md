@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.4 (2025-10-28)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I776604` - Now, unnecessary toolbar items are properly disabled when a custom toolbar item is added while focusing inside a code block.
+
 ## 31.2.3 (2025-10-22)
 
 ### RichTextEditor

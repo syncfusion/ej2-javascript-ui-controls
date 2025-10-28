@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
-## 31.2.3 (2025-10-22)
+## 31.2.4 (2025-10-28)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#I771080` - Fixed an issue where the float label text was overlapping with the icon of the numeric textbox component when long text was used.
+
+## 31.2.2 (2025-10-15)
 
 ### Uploader
 
 #### Bug Fixes
 
 - `#I767047` - Resolved an issue with the CSP that occurred during file uploads in the Uploader.
+
+- `#I773297` - Fixed an issue where the uploader input element was not being destroyed when both `multiple` and `autoUpload` features were disabled in the form.
 
 ## 31.1.23 (2025-10-07)
 

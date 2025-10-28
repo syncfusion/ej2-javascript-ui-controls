@@ -579,6 +579,7 @@ export class DateTimePicker extends DatePicker {
     }
 
     private focusHandler(): void {
+        this.clearLabelOverflowWidth();
         if (!this.enabled) {
             return;
         }
@@ -607,6 +608,7 @@ export class DateTimePicker extends DatePicker {
     }
 
     protected blurHandler(e: MouseEvent): void {
+        this.updateLabelOverflowWidth();
         if (!this.enabled) {
             return;
         }
@@ -917,6 +919,7 @@ export class DateTimePicker extends DatePicker {
         addClass([this.inputWrapper.container], DATETIMEWRAPPER);
         addClass([this.inputElement], ROOT);
         this.renderTimeIcon();
+        this.updateLabelOverflowWidth();
     }
     private renderTimeIcon(): void {
         this.timeIcon = Input.appendSpan(INPUTWRAPPER + ' ' + TIMEICON + ' ' + ICONS, this.inputWrapper.container);
@@ -2190,6 +2193,29 @@ export class DateTimePicker extends DatePicker {
                 this.hide(null);
             }
             this.isDynamicValueChanged = false;
+        }
+    }
+    private updateLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputWrapper.container;
+        const label: HTMLElement = container.querySelector('.e-float-text.e-label-bottom');
+        let width: number = 0;
+        const iconSelectors: string = '.e-input-group-icon, .e-clear-icon';
+        const icons: NodeListOf<HTMLElement> = container.querySelectorAll(iconSelectors);
+        for (let index: number = 0; index < icons.length; index++) {
+            width += icons[index as number].offsetWidth;
+        }
+        if (label) {
+            const labelWidth: number = (this.element.parentElement.offsetWidth) - width;
+            if (labelWidth) {
+                label.style.width = `${labelWidth}px`;
+            }
+        }
+    }
+    private clearLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputWrapper.container;
+        const label: HTMLElement = container.querySelector('.e-float-text.e-label-top');
+        if (label) {
+            label.removeAttribute('style');
         }
     }
     /**

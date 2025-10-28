@@ -1585,6 +1585,7 @@ export class Selection {
                     if (this.documentHelper.isComposingIME) {
                         this.renderDashLine(canvasContext, page, widget, left, top, width, height);
                     } else {
+                        canvasContext.clearRect(left, this.documentHelper.render.getScaledValue(top, 2), width, height);
                         canvasContext.globalAlpha = 0.4;
                         canvasContext.fillStyle = 'gray';
                         canvasContext.fillRect(left, this.documentHelper.render.getScaledValue(top, 2), width, height);
@@ -1610,7 +1611,7 @@ export class Selection {
         const fillColor: string = fontColor ? HelperMethods.getColor(fontColor) : '#000000';
         ctx.globalAlpha = 1;
         // Get character format copied from selection format
-        const format: WCharacterFormat = this.owner.editorModule.copyInsertFormat(new WCharacterFormat(), false);
+        const format: WCharacterFormat = this.owner.editorModule.copyInsertFormat(new WCharacterFormat(undefined, this.owner), false);
         const heightInfo: TextSizeInfo = this.documentHelper.textHelper.getHeight(format);
         const pageTop: number = this.getPageTop(page);
         const descent: number = heightInfo.Height - heightInfo.BaselineOffset;
@@ -1640,6 +1641,7 @@ export class Selection {
                     const top: number = this.documentHelper.render.getScaledValue(tableCellWidget.y, 2);
                     const width: number = this.documentHelper.render.getScaledValue(selectedWidgetInfoCollection[i].width);
                     const height: number = this.documentHelper.render.getScaledValue(tableCellWidget.height);
+                    canvasContext.clearRect(left, top, width, height);
                     canvasContext.fillStyle = 'gray';
                     if (isNullOrUndefined(page)) {
                         page = this.owner.selectionModule.getPage(tableCellWidget);

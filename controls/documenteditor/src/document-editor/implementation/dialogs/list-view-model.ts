@@ -106,7 +106,7 @@ export class ListViewModel {
         listLevel.paragraphFormat = new WParagraphFormat(listLevel);
         listLevel.paragraphFormat.leftIndent = 48;
         listLevel.paragraphFormat.firstLineIndent = -24;
-        listLevel.characterFormat = new WCharacterFormat(listLevel);
+        listLevel.characterFormat = new WCharacterFormat(listLevel, this.dialog.documentHelper.owner);
         listLevel.numberFormat = '%1.';
         listLevel.startAt = 1;
         abstractList.levels.push(listLevel);
@@ -116,7 +116,7 @@ export class ListViewModel {
         if (!isNullOrUndefined(this.list) && !isNullOrUndefined(this.list.abstractListId)) {
             for (let i: number = this.dialog.documentHelper.getAbstractListById(this.list.abstractListId).levels.length; i < 9; i++) {
                 const listLevelAdv: WListLevel = new WListLevel(this.dialog.documentHelper.getAbstractListById(this.list.abstractListId));
-                listLevelAdv.characterFormat = new WCharacterFormat(listLevelAdv);
+                listLevelAdv.characterFormat = new WCharacterFormat(listLevelAdv, this.dialog.documentHelper.owner);
                 listLevelAdv.paragraphFormat = new WParagraphFormat(listLevelAdv);
                 listLevelAdv.paragraphFormat.leftIndent = (i + 1) * 48;
                 listLevelAdv.paragraphFormat.firstLineIndent = -24;

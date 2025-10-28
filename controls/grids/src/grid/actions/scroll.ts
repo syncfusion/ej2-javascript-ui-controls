@@ -172,7 +172,7 @@ export class Scroll implements IAction {
         if (appName === 'mozilla') {
             return 0.5;
         }
-        return 1;
+        return 1 + (1 - window.devicePixelRatio);
     }
 
     /**

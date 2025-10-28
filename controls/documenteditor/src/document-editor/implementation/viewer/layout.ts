@@ -1970,7 +1970,7 @@ export class Layout {
                 }
                 if (i === 0) {
                     let newPara: ParagraphWidget = new ParagraphWidget();
-                    newPara.characterFormat = new WCharacterFormat();
+                    newPara.characterFormat = new WCharacterFormat(undefined, this.documentHelper.owner);
                     newPara.paragraphFormat = new WParagraphFormat();
                     newPara.index = 0;
                     let lineWidget: LineWidget = new LineWidget(newPara);
@@ -2423,7 +2423,8 @@ export class Layout {
     }
     private moveElementFromNextLine(line: LineWidget): void {
         let nextLine: LineWidget = line.nextLine;
-        if (nextLine && !line.paragraph.bodyWidget.sectionFormat.equalWidth && line.paragraph.bodyWidget.columnIndex !== nextLine.paragraph.bodyWidget.columnIndex) {
+        const bodyWidget: BodyWidget= line.paragraph.bodyWidget
+        if (nextLine && !bodyWidget.sectionFormat.equalWidth && bodyWidget.columnIndex !== nextLine.paragraph.bodyWidget.columnIndex) {
             nextLine = undefined;
         }
         while (nextLine instanceof LineWidget) {
@@ -2463,8 +2464,6 @@ export class Layout {
         }
         this.clearLineMeasures();
         line.marginTop = 0;
-        let bodyIndex: number = paragraph.bodyWidget.indexInOwner;
-        let lineIndex: number = line.indexInOwner;
         while (element instanceof ElementBox) {
             if(!(element instanceof ListTextElementBox)) {
                 element.padding.left = 0;
@@ -3964,7 +3963,7 @@ export class Layout {
                 footnote.footNoteType = 'Footnote';
                 footnote.page = bodyWidget.page;
                 let newParagraph: ParagraphWidget = new ParagraphWidget();
-                newParagraph.characterFormat = new WCharacterFormat();
+                newParagraph.characterFormat = new WCharacterFormat(undefined, this.documentHelper.owner);
                 newParagraph.paragraphFormat = new WParagraphFormat();
                 newParagraph.index = 0;
                 let lineWidget: LineWidget = new LineWidget(newParagraph);
@@ -11365,7 +11364,7 @@ export class Layout {
         viewer.updateClientAreaForCell(cell, true);
         if (cell.childWidgets.length === 0) {
             const paragraphWidget: ParagraphWidget = new ParagraphWidget();
-            paragraphWidget.characterFormat = new WCharacterFormat();
+            paragraphWidget.characterFormat = new WCharacterFormat(undefined, this.documentHelper.owner);
             paragraphWidget.paragraphFormat = new WParagraphFormat();
             paragraphWidget.index = 0;
             const lineWidget: LineWidget = new LineWidget(paragraphWidget);
@@ -12668,7 +12667,7 @@ export class Layout {
         footnoteWidget.footNoteType = 'Footnote';
         footnoteWidget.page = bodyWidget.page;
         const newParagraph: ParagraphWidget = new ParagraphWidget();
-        newParagraph.characterFormat = new WCharacterFormat();
+        newParagraph.characterFormat = new WCharacterFormat(undefined, this.documentHelper.owner);
         newParagraph.paragraphFormat = new WParagraphFormat();
         newParagraph.index = 0;
         const lineWidget: LineWidget = new LineWidget(newParagraph);

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 31.2.4 (2025-10-28)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I771301` - Resolved a console error that occurred during the update of duration field for CRUD and row drag drop actions.
+- `#I778336` - The issue with inconsistent behaviour for editing parent tasks between cell edit and dialog edit modes has been resolved.
+
 ## 31.2.3 (2025-10-22)
 
 ### GanttChart

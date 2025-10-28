@@ -753,6 +753,43 @@ describe('Grid base module', () => {
             document.getElementById('template').remove();
         });
     });
+
+    
+    describe('EJ2-985936 - setRowData Breaks Frozen Border Styling with Fixed Freeze Direction =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [
+                        {
+                            OrderID: 10248, CustomerID: 'VINET', Freight: 32.38
+                        },
+                        {
+                            OrderID: 10249, CustomerID: 'TOMSP', Freight: 11.61
+                        },
+                        {
+                            OrderID: 10250, CustomerID: 'HANAR', Freight: 65.83
+                        }],
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'Freight', format: 'C2', type: 'number', freeze: 'Fixed' },
+                        { field: 'CustomerID', type: 'string' },
+                    ],
+                },
+                done);
+        });
+        it('update particular row and check the left and right border', () => {
+            gridObj.setRowData(10249, { OrderID: 10249, Freight: 1, CustomerID: 'ANATR' });
+            const updatedRow: HTMLTableRowElement = gridObj.getRows()[1] as HTMLTableRowElement;
+            const fixedCell = updatedRow.querySelector('.e-fixedfreeze');
+            expect(fixedCell.classList.contains('e-freezeleftborder')).toBeTruthy();
+            expect(fixedCell.classList.contains('e-freezerightborder')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
     // describe('media columns testing', () => {
     //     let gridObj: Grid;
     //     let elem: HTMLElement = createElement('div', { id: 'Grid' });
@@ -5406,6 +5443,33 @@ describe('979939: Need to remove "aria-selected" attribute from detail template 
     it('Check the attribute', (done: Function) => {
         expect(gridObj.getContentTable().querySelector('.e-detailrowcollapse.e-selectionbackground').getAttribute('aria-selected')).toBeFalsy();
         done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-986366: calculatePageSizeByParentHeight not working with number value', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', width: 150 },
+                    { headerText: 'CustomerID', field: 'CustomerID', width: 150 },
+                    { headerText: 'EmployeeID', field: 'EmployeeID', width: 150 },
+                    { headerText: 'ShipCountry', field: 'ShipCountry', width: 150 },
+                    { headerText: 'ShipCity', field: 'ShipCity', width: 150 },
+                ],
+            }, done);
+    });
+
+    it('should not throw error when passing integer value', () => {
+        expect(() => gridObj.calculatePageSizeByParentHeight(400)).not.toThrow();
     });
 
     afterAll(() => {

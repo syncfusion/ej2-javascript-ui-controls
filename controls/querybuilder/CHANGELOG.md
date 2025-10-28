@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.4 (2025-10-28)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I771577` - Implemented default value setting support and column validation for the `DatePicker` component to ensure the start date is always less than the end date when between operators is selected.
+
 ## 31.1.22 (2025-10-01)
 
 ### QueryBuilder

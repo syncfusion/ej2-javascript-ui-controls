@@ -438,7 +438,9 @@ export class ComboBox extends DropDownList {
                                         this.fields.value : '', this.value) : this.value;
                                 if ((valueFieldValue === dataItem.value && this.text !== dataItem.text.toString()) ||
                                     (valueFieldValue !== dataItem.value && this.text === dataItem.text.toString())) {
-                                    this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
+                                    this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value }, true);
+                                    this.setHiddenValue();
+                                    Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
                                 }
                             }
                             else if (this.allowCustom) {

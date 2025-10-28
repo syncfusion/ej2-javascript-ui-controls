@@ -189,7 +189,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         let column: Column = cell.column;
         let fData: Object;
         if (cell.isForeignKey) {
-            fData = cell.foreignKeyData[0] || { [column.foreignKeyValue]: column.format ? null : '' };
+            fData = cell.foreignKeyData && cell.foreignKeyData[0] ? cell.foreignKeyData[0] : { [column.foreignKeyValue]: column.format ? null : '' };
         }
         //Prepare innerHtml
         let innerHtml: string = <string>this.getGui();

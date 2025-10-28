@@ -198,6 +198,61 @@ describe('Code Block Module', () => {
             done();
         });
     });
+    describe('Code Block Edit Behavior', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [
+                    'Bold',
+                    'Italic',
+                    'Underline',
+                    'CodeBlock',
+                    'SourceCode',
+                    {
+                        tooltipText: 'Insert Symbol',
+                        template:
+                        '<button class="e-tbar-btn e-btn" tabindex="-1" id="custom_tbar"  style="width:100%">' +
+                        '<div class="e-tbar-btn-text" style="font-weight: 400;"> Ω</div></button>',
+                    },
+                    '|',
+                    'Undo',
+                    'Redo',
+                    ],
+                },
+                codeBlockSettings: {
+                    languages: [
+                        { language: 'javascript', label: 'JavaScript' },
+                        { language: 'typescript', label: 'TypeScript' },
+                        { language: 'html', label: 'HTML' }
+                    ]
+                }
+            });
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+        it('should disable formatting buttons when cursor is inside code block', (done) => {
+            const contentEle = rteObj.contentModule.getEditPanel();
+            contentEle.innerHTML = '<pre data-language="JavaScript"><code>Test code</code></pre>';
+            setCursorPoint(contentEle.querySelector('code').firstChild as Element, 5);
+            const letter = new KeyboardEvent('keyup', {
+                key: 'i',
+                bubbles: true
+            });
+            contentEle.querySelector('code').dispatchEvent(letter);
+            const boldButton = rteObj.element.querySelectorAll('.e-toolbar-item')[0];
+            const italicButton = rteObj.element.querySelectorAll('.e-toolbar-item')[1];
+            const underlineButton = rteObj.element.querySelectorAll('.e-toolbar-item')[2];
+            const codeBlockButton = rteObj.element.querySelectorAll('.e-toolbar-item')[3];
+            expect(boldButton.classList.contains('e-overlay')).toBeTruthy();
+            expect(italicButton.classList.contains('e-overlay')).toBeTruthy();
+            expect(underlineButton.classList.contains('e-overlay')).toBeTruthy();
+            expect(codeBlockButton.classList.contains('e-overlay')).toBeFalsy();
+            done();
+        });
+    });
     describe('Code Block Paste Functionality', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {

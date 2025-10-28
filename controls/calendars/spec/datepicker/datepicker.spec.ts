@@ -504,7 +504,7 @@ describe('Datepicker', () => {
             datepicker = new DatePicker();
             datepicker.appendTo(element);
             datepicker.destroy();
-            expect(element.getAttribute('tabindex') === null ).toBe(true);
+            expect(element.getAttribute('tabindex') === '1' ).toBe(true);
             datepicker = null;
         });
         /**

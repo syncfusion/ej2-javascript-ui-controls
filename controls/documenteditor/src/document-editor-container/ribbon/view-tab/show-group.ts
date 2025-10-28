@@ -75,6 +75,7 @@ export class ShowGroup extends RibbonGroupBase {
 
     private bookmarkMarkersChangeHandler(args: ChangeEventArgs): void {
         this.documentEditor.documentEditorSettings.showBookmarks = args.checked;
+        this.container.documentEditorSettings.showBookmarks = args.checked;
         this.documentEditor.focusIn();
     }
 

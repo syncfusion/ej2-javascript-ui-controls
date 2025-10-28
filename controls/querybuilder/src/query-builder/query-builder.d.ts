@@ -679,6 +679,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private changeValue;
     private filterValue;
     private changeValueSuccessCallBack;
+    private setSecondDateMinFromFirst;
     private fieldClose;
     private changeField;
     private changeRule;

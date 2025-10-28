@@ -1030,6 +1030,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                             this.showHideSpinner(false);
                             if (!this.isMainDataUpdated) {
                                 this.mainData = this.gridData;
+                                this.remoteDataLength = (this.gridData as any).length;
                                 this.isMainDataUpdated = true;
                             }
                             if (this.popupDiv) {
@@ -1047,6 +1048,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     this.trigger('actionComplete', { result: listItems }, (e: Object) => {
                         if (!this.isMainDataUpdated) {
                             this.mainData = this.gridData;
+                            this.remoteDataLength = (this.gridData as any).length;
                             this.isMainDataUpdated = true;
                         }
                         if (this.popupDiv) {
@@ -1977,7 +1979,10 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                                 isKeyDown: boolean = false): void {
         const e: MouseEvent | KeyboardEventArgs = mouseEvent ? mouseEvent : keyEvent;
         const val: { [key: string]: Object } = isKeyDown ? this.matchedContent : this.exactMatchedContent;
-        if (!val && (e as KeyboardEventArgs).code !== 'Enter') { this.inputEle.value = this.value = this.index = this.text = null; }
+        if (!val && (e as KeyboardEventArgs).code !== 'Enter') {
+            this.inputEle.value = null;
+            this.setProperties({ value: null, index: null, text: null }, true);
+        }
         this.hidePopup(e);
         if (this.matchedRowEle && !isClearValues && val) {
             const prevOnChange: boolean = this.isProtectedOnChange;
@@ -2207,7 +2212,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 this.isPopupOpen = true;
                 this.popupObj.refreshPosition();
                 addClass([this.inputWrapper], [ICONANIMATION]);
-                attributes(this.inputEle, { 'aria-expanded': 'true', 'aria-owns': this.element.id + '_popup', 'aria-controls': this.element.id });
+                attributes(this.inputEle, { 'aria-expanded': 'true', 'aria-owns': this.element.id + '_options', 'aria-controls': this.element.id });
                 if (!isInputOpen) {
                     if ((this.value || this.text || this.index)) {
                         this.gridObj.selectRow(this.selectedRowIndex);
@@ -2219,12 +2224,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     const firstRow: HTMLElement | null = contentEle.querySelector('.e-row');
                     if (activeRow) { this.inputEle.setAttribute('aria-activedescendant', activeRow.parentElement.getAttribute('data-uid')); }
                     else if (firstRow) { this.inputEle.setAttribute('aria-activedescendant', firstRow.getAttribute('data-uid')); }
-                }
-                if (!isNOU(this.dataSource) && this.dataSource instanceof DataManager) {
-                    (this.dataSource as DataManager).executeQuery(new Query).then((e: Object) => {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        this.remoteDataLength = (e as any).result.length;
-                    });
                 }
                 this.popupObj.show(new Animation(eventArgs.animation), this.popupEle.firstElementChild as HTMLElement);
             }

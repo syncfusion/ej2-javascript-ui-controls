@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## 31.2.4 (2025-10-28)
+### Common
+#### Bug Fixes
+- `#768133` - Resolved a bug in the `processFraction` method that mishandled scientific notation which works fine for "5e-11" and improper for Decimal Cases like "5.7e-11".
+
 ## 31.2.2 (2025-10-15)
 
 ### Common

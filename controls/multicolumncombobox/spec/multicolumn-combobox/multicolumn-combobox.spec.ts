@@ -470,7 +470,7 @@ describe('MultiColumnComboBox control', () => {
             clickEvent.initEvent('mousedown', true, true);
             (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             setTimeout(() => {
-                expect(multiColObj.element.getAttribute("aria-owns")).toEqual("basic_rendering_attributes_popup");
+                expect(multiColObj.element.getAttribute("aria-owns")).toEqual("basic_rendering_attributes_options");
                 expect(multiColObj.element.getAttribute("aria-controls")).toEqual("basic_rendering_attributes");
                 (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
                 setTimeout(() => {
@@ -1712,9 +1712,9 @@ describe('MultiColumnComboBox control', () => {
                     setTimeout(() => {
                         expect(multiColObj.gridObj.element.querySelectorAll('.e-row')[0].classList.contains('e-row-focus')).toBe(false);
                         done();
-                    }, 1000);
-                }, 1200);
-            }, 1500);
+                    }, 1200);
+                }, 1500);
+            }, 2000);
         });   
         it(' Enable Virtualization property  ', (done) => {
             multiColObj = new MultiColumnComboBox({
@@ -3378,5 +3378,49 @@ describe('MultiColumnComboBox control', () => {
                 }, 1200);
             }, 1000);
         });
+    });
+    describe('Aria-owns function', () => {
+        let multiColObj: MultiColumnComboBox;
+        let element: HTMLInputElement;
+
+        // Sample data for testing
+        const languageData = [
+            { id: 1, text: 'English' },
+            { id: 2, text: 'Spanish' },
+            { id: 3, text: 'French' }
+        ];
+
+        beforeEach((): void => {
+            element = <HTMLInputElement>createElement('input', { id: 'multicolumn-combobox' });
+            document.body.appendChild(element);
+        });
+
+        afterEach((): void => {
+            if (multiColObj) {
+                multiColObj.destroy();
+                multiColObj = undefined;
+            }
+            remove(element);
+        });
+
+        it('should set correct aria-owns to the popup element', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [
+                    { field: 'id', header: 'ID', width: 100 },
+                    { field: 'text', header: 'Text', width: 150 }
+                ]
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                multiColObj.showPopup();
+                const popupId = multiColObj.element.id + '_options';
+                expect((multiColObj as any).inputEle.getAttribute('aria-owns')).toBe(popupId);
+                expect(document.getElementById(popupId)).toBeTruthy(); // Verify popup element exists
+                done();
+            }, 100); 
+        });
+       
     });
 });

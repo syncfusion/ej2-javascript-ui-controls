@@ -635,9 +635,12 @@ export class _PdfMergeHelper {
         return array;
     }
     _mergeFormFieldsWithDocument(): void {
-        let pdfFields: _PdfReference[];
+        let pdfFields: _PdfReference[] = [];
         if (this._formFieldsCollection.size > 0) {
-            pdfFields = this._destinationDocument.form._dictionary.get('Fields');
+            const formDictionary: _PdfDictionary = this._destinationDocument.form._dictionary;
+            if (formDictionary && formDictionary.has('Fields')) {
+                pdfFields = formDictionary.get('Fields');
+            }
             this._formFieldsCollection.forEach((value: _PdfReference, key: number) => {
                 pdfFields[<number>key] = value;
             });

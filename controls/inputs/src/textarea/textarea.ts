@@ -434,6 +434,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         this.element.defaultValue = this.element.value;
         Input.setWidth(this.width, this.textareaWrapper.container);
         this.setWrapperWidth();
+        this.updateFloatLabelOverflowWidth();
         this.renderComplete();
     }
 
@@ -548,6 +549,12 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
             event: args,
             value: this.value
         };
+        if (this.floatLabelType !== 'Never' && this.textareaWrapper && this.textareaWrapper.container) {
+            const label: HTMLElement = this.textareaWrapper.container.querySelector('.e-float-text');
+            if (label) {
+                label.removeAttribute('style');
+            }
+        }
         this.trigger('focus', eventArgs);
     }
 
@@ -561,6 +568,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
             event: args,
             value: this.value
         };
+        this.updateFloatLabelOverflowWidth();
         this.trigger('blur', eventArgs);
     }
 
@@ -808,5 +816,23 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
 
     private getCurrentResizeClass(resizeMode: string): string {
         return resizeMode === 'None' ? RESIZE_NONE : (resizeMode === 'Both' ? RESIZE_XY : resizeMode === 'Horizontal' ? RESIZE_X : RESIZE_Y );
+    }
+    private getRightIconsWidth(): number {
+        const container: HTMLElement = this.textareaWrapper.container;
+        let width: number = 0;
+        const iconSelectors: string = '.e-input-group-icon, .e-clear-icon';
+        const icons: NodeListOf<HTMLElement> = container.querySelectorAll(iconSelectors);
+        for (let index: number = 0; index < icons.length; index++) {
+            width += icons[index as number].offsetWidth;
+        }
+        return width;
+    }
+    private updateFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.textareaWrapper.container;
+        const label: HTMLElement | null = container.querySelector('.e-float-text-overflow') || container.querySelector('.e-float-text');
+        const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
+        if (label && calculateWidth) {
+            label.style.width = calculateWidth + 'px';
+        }
     }
 }

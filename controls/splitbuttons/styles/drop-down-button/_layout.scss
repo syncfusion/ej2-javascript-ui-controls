@@ -9,7 +9,7 @@
     @if $skin-name == 'Material3' {
       border-radius: $btn-border-radius;
       box-shadow: $drop-down-btn-box-shadow;
-      padding: 7px 16px;
+      line-height: 1;
     }
 
     &:hover {

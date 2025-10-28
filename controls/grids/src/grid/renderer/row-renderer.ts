@@ -4,7 +4,10 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
 import { rowDataBound, queryCellInfo } from '../base/constant';
-import { setStyleAndAttributes, getObject, extendObjWithFn, applyStickyLeftRightPosition, groupCaptionRowLeftRightPos, resetColspanGroupCaption, resetColandRowSpanStickyPosition } from '../base/util';
+import {
+    setStyleAndAttributes, getObject, extendObjWithFn, applyStickyLeftRightPosition, groupCaptionRowLeftRightPos,
+    resetColspanGroupCaption, resetColandRowSpanStickyPosition, addFixedColumnBorder
+} from '../base/util';
 import { ICellRenderer, IRowRenderer, IRow, QueryCellInfoEventArgs, RowDataBoundEventArgs, IGrid } from '../base/interface';
 import { CellType } from '../base/enum';
 import { CellRendererFactory } from '../services/cell-render-factory';
@@ -73,6 +76,9 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
         const node: Element = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
         const tr: Element = this.refreshRow(row, columns, attributes, rowTemplate, null, isChanged);
+        if (isChanged) {
+            addFixedColumnBorder(tr);
+        }
         const cells: HTMLTableDataCellElement[] = [].slice.call((tr as HTMLTableRowElement).cells);
         const tempCells: HTMLTableDataCellElement[] =  [].slice.call(node.querySelectorAll('.e-templatecell'));
         if (this.parent.isReact && tempCells.length) {

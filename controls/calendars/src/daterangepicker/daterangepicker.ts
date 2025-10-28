@@ -828,8 +828,14 @@ export class DateRangePicker extends CalendarBase {
         if (this.inputFormats) {
             this.checkInputFormats();
         }
-        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-        this.element.removeAttribute('tabindex');
+        if (this.angularTag !== null) {
+            this.tabIndex = this.inputElement.hasAttribute('tabindex') ? this.inputElement.getAttribute('tabindex') : '0';
+            this.inputElement.removeAttribute('tabindex');
+        }
+        else {
+            this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+            this.element.removeAttribute('tabindex');
+        }
         super.preRender();
         this.navNextFunction = this.navNextMonth.bind(this);
         this.navPrevFunction = this.navPrevMonth.bind(this);
@@ -1553,6 +1559,7 @@ export class DateRangePicker extends CalendarBase {
             this.trigger('focus', focusArguments);
         }
         this.updateClearIconState();
+        this.clearFloatLabelOverflowWidth();
         if (this.openOnFocus && !this.preventFocus) {
             this.preventFocus = true;
             this.show();
@@ -1562,6 +1569,7 @@ export class DateRangePicker extends CalendarBase {
     }
 
     private inputBlurHandler(e: MouseEvent | KeyboardEvent): void {
+        this.updateFloatLabelOverflowWidth();
         if (!this.enabled) {
             return;
         }
@@ -4078,6 +4086,7 @@ export class DateRangePicker extends CalendarBase {
         } else {
             this.inputWrapper.container.style.width = '100%';
         }
+        this.updateFloatLabelOverflowWidth();
     }
 
     private adjustLongHeaderWidth(): void {
@@ -4567,6 +4576,29 @@ export class DateRangePicker extends CalendarBase {
      */
     protected getModuleName(): string {
         return 'daterangepicker';
+    }
+    private updateFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputWrapper.container;
+        const label: HTMLElement = container.querySelector('.e-float-text.e-label-bottom');
+        let width: number = 0;
+        const iconSelectors: string = '.e-input-group-icon, .e-clear-icon';
+        const icons: NodeListOf<HTMLElement> = container.querySelectorAll(iconSelectors);
+        for (let index: number = 0; index < icons.length; index++) {
+            width += icons[index as number].offsetWidth;
+        }
+        if (label) {
+            const labelWidth: number = (this.element.parentElement.offsetWidth) - width;
+            if (labelWidth) {
+                label.style.width = `${labelWidth}px`;
+            }
+        }
+    }
+    private clearFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputWrapper.container;
+        const label: HTMLElement = container.querySelector('.e-float-text.e-label-top');
+        if (label) {
+            label.removeAttribute('style');
+        }
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
     /**

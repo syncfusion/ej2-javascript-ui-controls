@@ -775,7 +775,7 @@ export class Mention extends DropDownBase {
                 : lastWordRange.replace(this.mentionChar, '');
         }
         if (this.mentionChar.charCodeAt(0) === lastWordRange.charCodeAt(0) &&
-            this.queryString !== '' && e.keyCode !== 38 && e.keyCode !== 40 && !this.lineBreak) {
+            this.queryString !== '' && e.keyCode !== 38 && e.keyCode !== 40 && e.keyCode !== 8 && !this.lineBreak) {
             this.searchLists(e);
             if (!this.isPopupOpen && this.queryString.length >= this.minLength) {
                 if (!this.isContentEditable(this.inputElement)) {

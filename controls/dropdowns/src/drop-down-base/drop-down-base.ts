@@ -1178,6 +1178,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                 if (this.isVirtualizationEnabled && ((e as any).count !== 0 && (e as any).count < (this.itemCount * 2))) {
                                     if (newQuery) {
                                         for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
+                                            if (this.getModuleName() === 'multiselect' && this.isCheckBoxSelection && (newQuery.queries[queryElements as number].e && (newQuery.queries[queryElements as number].e.operator === 'notequal' ||
+                                                newQuery.queries[queryElements as number].e.operator === 'equal' || newQuery.queries[queryElements as number].e.condition === 'or' || newQuery.queries[queryElements as number].e.condition === 'and') && !this.isCustomFiltering)) {
+                                                isReOrder = false;
+                                                break;
+                                            }
                                             if (newQuery.queries[queryElements as number].fn === 'onTake') {
                                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                                 newQuery.queries[queryElements as number].e.nos = (e as any).count;
@@ -1289,6 +1294,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                 (listItems as any).count < (this.itemCount * 2)) && !this.appendUncheckList) {
                                 if (newQuery) {
                                     for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
+                                        if (this.getModuleName() === 'multiselect' && this.isCheckBoxSelection && (newQuery.queries[queryElements as number].e && (newQuery.queries[queryElements as number].e.operator === 'notequal' ||
+                                            newQuery.queries[queryElements as number].e.operator === 'equal' || newQuery.queries[queryElements as number].e.condition === 'or' || newQuery.queries[queryElements as number].e.condition === 'and') && !this.isCustomFiltering)) {
+                                            isReOrder = false;
+                                            break;
+                                        }
                                         if (newQuery.queries[queryElements as number].fn === 'onTake') {
                                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                             newQuery.queries[queryElements as number].e.nos = (listItems as any).count;

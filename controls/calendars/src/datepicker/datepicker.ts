@@ -1079,6 +1079,7 @@ export class DatePicker extends Calendar implements IInput {
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
         this.updateIconState();
+        this.clearFloatLabelOverflowWidth();
         if (this.openOnFocus && !this.isIconClicked) {
             this.show();
         }
@@ -1104,6 +1105,7 @@ export class DatePicker extends Calendar implements IInput {
         const dateSame: boolean = this.value && this.previousDate
             ? this.value.getTime() === this.previousDate.getTime()
             : this.value === this.previousDate;
+        this.updateFloatLabelOverflowWidth();
         if (!this.enabled || (inputSame && dateSame)) {
             return;
         }
@@ -1730,6 +1732,7 @@ export class DatePicker extends Calendar implements IInput {
         } else {
             this.inputWrapper.container.style.width = '100%';
         }
+        this.updateFloatLabelOverflowWidth();
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-param */
     /**
@@ -2063,8 +2066,14 @@ export class DatePicker extends Calendar implements IInput {
         if (this.inputFormats) {
             this.checkInputFormats();
         }
-        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-        this.element.removeAttribute('tabindex');
+        if (this.ngTag !== null) {
+            this.tabIndex = this.inputElement.hasAttribute('tabindex') ? this.inputElement.getAttribute('tabindex') : '0';
+            this.inputElement.removeAttribute('tabindex');
+        }
+        else {
+            this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+            this.element.removeAttribute('tabindex');
+        }
         super.preRender();
     }
     protected getDefaultKeyConfig(): { [key: string]: string } {
@@ -2248,6 +2257,29 @@ export class DatePicker extends Calendar implements IInput {
      */
     protected getModuleName(): string {
         return 'datepicker';
+    }
+    private updateFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputWrapper.container;
+        const label: HTMLElement = container.querySelector('.e-float-text.e-label-bottom');
+        let width: number = 0;
+        const iconSelectors: string = '.e-input-group-icon, .e-clear-icon';
+        const icons: NodeListOf<HTMLElement> = container.querySelectorAll(iconSelectors);
+        for (let index: number = 0; index < icons.length; index++) {
+            width += icons[index as number].offsetWidth;
+        }
+        if (label) {
+            const labelWidth: number = (this.element.parentElement.offsetWidth) - width;
+            if (labelWidth) {
+                label.style.width = `${labelWidth}px`;
+            }
+        }
+    }
+    private clearFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputWrapper.container;
+        const label: HTMLElement = container.querySelector('.e-float-text.e-label-top');
+        if (label) {
+            label.removeAttribute('style');
+        }
     }
     private disabledDates(isDynamic: boolean = false, isBlur: boolean = false): void {
         let formatOptions: DateFormatOptions;

@@ -6,17 +6,20 @@
       box-shadow: $btn-box-shadow;
     }
     .e-split-btn {
-      @if $skin-name == 'Material3' {
+      @if $skin-name == 'Material3' or $skin-name == 'Material3-dark' {
         border-radius: 4px;
         box-shadow: none;
+        padding: 9px 4px;
       }
       @if $skin-name == 'bootstrap4'or $skin-name == 'FluentUI' {
+        padding: 7px 4px;
         padding-left: $split-btn-icon-btn-padding-bigger;
         padding-right: $split-btn-icon-btn-padding-bigger;
       }
       @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
         padding-left: 16px;
         padding-right: 16px;
+        line-height: 1.781em;
       }
       @else {
         padding-left: 12px;
@@ -62,6 +65,9 @@
       @if $skin-name == 'bootstrap4' {
         padding-left: 10px;
         padding-right: 10px;
+      }
+      @if $skin-name == 'Material3' or $skin-name == 'Material3-dark' {
+        padding: 9px 4px;
       }
       @else {
         padding-left: 4px;

@@ -4349,7 +4349,7 @@ export class WordExport {
                                 if (mHorizontalMerge.containsKey(j)) {
                                     prevColIndex += mHorizontalMerge.get(j) - 1;
                                     j += mHorizontalMerge.get(j);
-                                    if (j > 0 && mVerticalMerge.containsKey(j - 1)) {
+                                    if (j > 0) {
                                         j--;
                                     }
                                 }

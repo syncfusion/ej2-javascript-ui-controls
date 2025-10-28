@@ -893,6 +893,10 @@
         .e-split-btn-wrapper.e-rtl .e-split-colorpicker.e-split-btn {
           padding: 0;
         }
+        .e-colorpicker-popup.e-ribbon-control
+        {
+          z-index: unset !important; /* stylelint-disable-line declaration-no-important */
+        }
       }
 
       .e-split-btn-wrapper {
@@ -1087,6 +1091,9 @@
       .e-ribbon-item > .e-checkbox-wrapper {
         margin: $ribbon-checkbox-margin;
         padding: 0;
+        .e-frame {
+          margin: unset;
+        }
       }
 
       .e-ribbon-item.e-ribbon-medium-item {

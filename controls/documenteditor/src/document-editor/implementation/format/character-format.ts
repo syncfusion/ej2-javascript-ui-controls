@@ -8,6 +8,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Revision } from '../track-changes/track-changes';
 import { CharacterFormatInfo, CharacterFormatProperties } from '../editor';
 import { DocumentHelper } from '../viewer';
+import { DocumentEditor } from '../../document-editor';
 /* eslint-disable */
 /**
  * @private
@@ -18,6 +19,7 @@ export class WCharacterFormat {
     private static uniqueFormatType: number = 2;
     public ownerBase: Object = undefined;
     public baseCharStyle: WStyle = undefined;
+    private owner: DocumentEditor = undefined;
     /**
      * @private
      */
@@ -232,8 +234,25 @@ export class WCharacterFormat {
     public set fontFamilyNonFarEast(value: string) {
         this.setPropertyValue('fontFamilyNonFarEast', value);
     }  
-    public constructor(node?: Object) {
+    public constructor(node?: Object, owner?: DocumentEditor) {
         this.ownerBase = node;
+        // To optimize the performance to get the documentHelper instance used this logic.
+        if (!isNullOrUndefined(owner)) {
+            this.owner = owner;
+        } else {
+            let paragraph: ParagraphWidget;
+            if (this.ownerBase instanceof ElementBox) {
+                paragraph = this.ownerBase.paragraph;
+            } else if (this.ownerBase instanceof ParagraphWidget) {
+                paragraph = this.ownerBase;
+            }
+            if (!isNullOrUndefined(paragraph)) {
+                let bodyWidget: BlockContainer = paragraph.bodyWidget;
+                if (bodyWidget && bodyWidget.page && bodyWidget.page.documentHelper) {
+                    this.owner = bodyWidget.page.documentHelper.owner;
+                }
+            }
+        } 
     }
     public getPropertyValue(property: string): Object {
         if (!this.hasValue(property)) {
@@ -301,6 +320,9 @@ export class WCharacterFormat {
         if (isNullOrUndefined(this.ownerBase)) {
             return undefined;
         }
+        if (!isNullOrUndefined(this.owner)) {
+            return { editorFormat: this.owner.characterFormat, documentFormat: this.owner.documentHelper.characterFormat };
+        }
         let paragraph: ParagraphWidget;
         if (this.ownerBase instanceof ElementBox) {
             paragraph = this.ownerBase.paragraph;
@@ -311,6 +333,7 @@ export class WCharacterFormat {
             let bodyWidget: BlockContainer = paragraph.bodyWidget;
             if (bodyWidget && bodyWidget.page && bodyWidget.page.documentHelper) {
                 const documentHelper: DocumentHelper = bodyWidget.page.documentHelper;
+                this.owner = documentHelper.owner;
                 return { editorFormat: documentHelper.owner.characterFormat, documentFormat: documentHelper.characterFormat };
             }
         }
@@ -558,7 +581,7 @@ export class WCharacterFormat {
             this.uniqueCharacterFormat === format.uniqueCharacterFormat;
     }
     public cloneFormat(): WCharacterFormat {
-        const format: WCharacterFormat = new WCharacterFormat(undefined);
+        const format: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
         format.uniqueCharacterFormat = this.uniqueCharacterFormat;
         format.baseCharStyle = this.baseCharStyle;
         if (this.revisions.length > 0) {
@@ -590,6 +613,7 @@ export class WCharacterFormat {
         this.uniqueCharacterFormat = undefined;
         this.baseCharStyle = undefined;
         this.ownerBase = undefined;
+        this.owner = undefined;
     }
     public copyFormat(format: WCharacterFormat): void {
         if (!isNullOrUndefined(format)) {

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 31.2.4 (2025-10-28)
+
+### Grid
+
+#### Bug Fixes
+
+- `#FB70538` - Resolved an issue where the custom filter for a date column did not function correctly with the AND operator in column filtering.
+- `#I775824` - Fixed a script error that occurred when adding a record with both `virtualization` and a foreign key column enabled.
+
 ## 31.2.3 (2025-10-22)
 
 ### Grid

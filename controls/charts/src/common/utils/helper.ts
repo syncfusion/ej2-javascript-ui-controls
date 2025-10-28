@@ -2858,6 +2858,7 @@ export function createSvg(chart: Chart | AccumulationChart | RangeNavigator | Ch
                 width: chart.availableSize.width,
                 height: chart.availableSize.height
             });
+            (chart.svgObject as HTMLElement).setAttribute('aria-label', 'Interactive chart');
         }
     }
     if ((chart as Chart).enableCanvas) {

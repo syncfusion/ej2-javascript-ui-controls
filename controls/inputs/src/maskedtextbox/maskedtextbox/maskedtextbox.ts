@@ -351,6 +351,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder') && !this.element.hasAttribute('aria-label')) {
                 this.element.setAttribute('aria-label', 'maskedtextbox');
             }
+            this.updateFloatLabelOverflowWidth();
             this.renderComplete();
         }
     }
@@ -627,6 +628,25 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             this.isFocus = false;
             this.element.blur();
             removeClass([this.inputObj.container], [MASKINPUT_FOCUS]);
+        }
+    }
+
+    private getRightIconsWidth(): number {
+        const container: HTMLElement = this.inputObj.container;
+        let width: number = 0;
+        const iconSelectors: string = '.e-input-group-icon, .e-clear-icon';
+        const icons: NodeListOf<HTMLElement> = container.querySelectorAll(iconSelectors);
+        for (let index: number = 0; index < icons.length; index++) {
+            width += icons[index as number].offsetWidth;
+        }
+        return width;
+    }
+    private updateFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputObj.container;
+        const label: HTMLElement | null = container.querySelector('.e-float-text-overflow') || container.querySelector('.e-float-text');
+        const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
+        if (label && calculateWidth) {
+            label.style.width = calculateWidth + 'px';
         }
     }
 

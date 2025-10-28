@@ -2708,9 +2708,32 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private changeValueSuccessCallBack(args: ChangeEventArgs, element: Element, i: number, groupID: string, ruleID: string): void {
         if (!args.cancel) {
             this.updateRules(element, args.value, i);
+            this.setSecondDateMinFromFirst(element, i);
             if (!this.isImportRules) {
                 this.trigger('change', { groupID: groupID, ruleID: ruleID, value: args.value, cancel: false, type: 'value' });
             }
+        }
+    }
+
+    private setSecondDateMinFromFirst(element: any, valueIndex: number): void {
+        if (valueIndex !== 0) { return; }
+        const ruleElem: Element = closest(element, '.e-rule-container'); if (!ruleElem) { return; }
+        const operatorDropdownElement: HTMLElement = ruleElem.querySelector('.e-rule-operator .e-dropdownlist');
+        if (!operatorDropdownElement) { return; }
+        const operatorDropdown: any = getComponent(operatorDropdownElement, 'dropdownlist');
+        const operatorValue: any = operatorDropdown && operatorDropdown.value ? operatorDropdown.value.toString().toLowerCase() : '';
+        if (operatorValue.indexOf('between') < 0) { return; }
+        const firstDateElement: HTMLElement = document.getElementById(ruleElem.id + '_valuekey0');
+        const secondDateElement: HTMLElement = document.getElementById(ruleElem.id + '_valuekey1');
+        if (!firstDateElement || !secondDateElement) { return; }
+        const firstDatePicker: any = getComponent(firstDateElement, 'datepicker');
+        const secondDatePicker: any = getComponent(secondDateElement, 'datepicker');
+        if (!firstDatePicker || !secondDatePicker || !(firstDatePicker.value instanceof Date)) { return; }
+        const nextDay: Date = new Date(firstDatePicker.value.getTime());
+        nextDay.setDate(nextDay.getDate() + 1);
+        secondDatePicker.min = nextDay;
+        if (secondDatePicker.value instanceof Date && secondDatePicker.value.getTime() < nextDay.getTime()) {
+            secondDatePicker.value = nextDay;
         }
     }
 
@@ -3633,6 +3656,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             selVal = (length > 1) ? rule.value[i as number] as string : rule.value as string;
                             selectedValue = this.parseDate(selVal, format) || new Date();
                         }
+                        if ( !isNullOrUndefined(itemData) && itemData.value && !isTemplate){
+                            const parsedDate: Date = this.parseDate(itemData.value.toString(), itemData.format);
+                            if (parsedDate && !isNaN(parsedDate.getTime())) {
+                                selectedValue = parsedDate;
+                            }
+                        }
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         if (!itemData.field && !(itemData as any).key && itemData.value) {
                             if (itemData.value instanceof Date) {
@@ -3669,6 +3698,19 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                     value: selectedValue, locale: this.getLocale(), placeholder: place,
                                     format: formatObj.format, change: this.changeValue.bind(this, i)
                                 };
+                                if (!isNullOrUndefined(column) && !isNullOrUndefined(column.values) && column.values.length > 0) {
+                                    const parsedDate: Date = this.parseDate(column.values[i as number] as string, format);
+                                    if (!isNullOrUndefined(parsedDate) && parsedDate instanceof Date) {
+                                        datePicker.value = parsedDate;
+                                        if (i === 1) {
+                                            const parsedMinDate: Date = this.parseDate(column.values[0] as string, format);
+                                            if (parsedMinDate instanceof Date && !isNaN(parsedMinDate.getTime())) {
+                                                parsedMinDate.setDate(parsedMinDate.getDate() + 1);
+                                                datePicker.min = parsedMinDate;
+                                            }
+                                        }
+                                    }
+                                }
                                 if (this.valueModel && this.valueModel.datePickerModel) {
                                     datePicker = { ...datePicker, ...this.valueModel.datePickerModel };
                                 }

@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+## 31.2.4 (2025-10-28)
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I771070` - Fixed an issue where the Clear button was not in a disabled state when the `e-static-clear` class was used with the enabled property set to False.
+
+- `#I771080` - Fixed an issue where the float label text was overlapping with the icon of the dropdown list component when long text was used.
+
 ## 31.2.3 (2025-10-22)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I762066` - The issue with the Dropdown Tree Component with filtering and `treeSettings.autoCheck` supports has been resolved.
+
+## 31.2.2 (2025-10-15)
 
 ### DropdownList
 

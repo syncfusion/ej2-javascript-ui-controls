@@ -4864,7 +4864,7 @@ export class CommandHandler {
         // EJ2-65063 - Added below code to check condition if connector segment length can be changed or not.
         // If inconnect and outconnect removed from node constraints
         const canChangeSegment: boolean = target ? this.canConnect(connector, target) : true;
-        if (connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null
+        if (connector.segments && (connector.segments[0] as OrthogonalSegment).direction
             && ((!target && connector.sourceID === '') || isDragSource) && canChangeSegment) {
             const firstSegment: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
             /// Clears the segment if its direction is opposite to the actual direction
@@ -4957,7 +4957,7 @@ export class CommandHandler {
                 }
             }
         } else {
-            if (connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null) {
+            if (connector.segments && (connector.segments[0] as OrthogonalSegment).direction) {
                 if (target && target instanceof Node && !targetPortId) {
                     const firstSegment: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
                     const secondSegment: OrthogonalSegment = connector.segments[1] as OrthogonalSegment;
@@ -4998,7 +4998,7 @@ export class CommandHandler {
                     }
 
                     firstSegment.length = Point.distancePoints(firstSegment.points[0], lastFirstPoint);
-                    if (secondSegment.direction !== null) {
+                    if (secondSegment.direction) {
                         const lastSecondPoint = secondSegment.points[secondSegment.points.length - 1];
                         secondSegment.length = Point.distancePoints(lastFirstPoint, lastSecondPoint);
                         secondSegment.direction = Point.direction(lastFirstPoint, lastSecondPoint) as Direction;
@@ -5047,7 +5047,7 @@ export class CommandHandler {
             }
 
             firstSegment.length = Point.distancePoints(firstSegment.points[0], lastFirstPoint);
-            if (secondSegment.direction !== null) {
+            if (secondSegment.direction) {
                 const lastSecondPoint: PointModel = secondSegment.points[secondSegment.points.length - 1];
                 secondSegment.length = Point.distancePoints(lastFirstPoint, lastSecondPoint);
                 secondSegment.direction = Point.direction(lastFirstPoint, lastSecondPoint) as Direction;
@@ -5074,7 +5074,7 @@ export class CommandHandler {
                     }
 
                     firstSegment.length = Point.distancePoints(firstSegment.points[0], lastFirstPoint);
-                    if (secondSegment.direction !== null) {
+                    if (secondSegment.direction) {
                         const lastSecondPoint: PointModel = secondSegment.points[secondSegment.points.length - 1];
                         secondSegment.length = Point.distancePoints(lastFirstPoint, lastSecondPoint);
                         secondSegment.direction = Point.direction(lastFirstPoint, lastSecondPoint) as Direction;
@@ -5109,7 +5109,7 @@ export class CommandHandler {
             }
 
             firstSegment.length = Point.distancePoints(firstPoint, lastFirstPoint);
-            if (secondSegment.direction !== null) {
+            if (secondSegment.direction) {
                 const lastSecondPoint: PointModel = secondSegment.points[secondSegment.points.length - 1];
                 secondSegment.length = Point.distancePoints(lastFirstPoint, lastSecondPoint);
                 secondSegment.direction = Point.direction(lastFirstPoint, lastSecondPoint) as Direction;
@@ -5146,7 +5146,7 @@ export class CommandHandler {
         }
 
         firstSegment.length = Point.distancePoints(firstSegment.points[0], lastFirstPoint);
-        if (secondSegment.direction === null) {
+        if (secondSegment.direction) {
             const lastSecondPoint: PointModel = secondSegment.points[secondSegment.points.length - 1];
             secondSegment.length = Point.distancePoints(lastFirstPoint, lastSecondPoint);
             secondSegment.direction = Point.direction(lastFirstPoint, lastSecondPoint) as Direction;
@@ -5156,7 +5156,7 @@ export class CommandHandler {
             ? Math.abs(oldLastPoint.y - lastFirstPoint.y)
             : Math.abs(oldLastPoint.x - lastFirstPoint.x);
 
-        if (thirdSegment && thirdSegment.direction !== null) {
+        if (thirdSegment && thirdSegment.direction) {
             if (firstSegment.direction === thirdSegment.direction) {
                 thirdSegment.length += additionalLength;
             } else {

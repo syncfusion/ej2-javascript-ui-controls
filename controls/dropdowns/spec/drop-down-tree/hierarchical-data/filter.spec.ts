@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { DropDownTree, DdtFilteringEventArgs  } from '../../../src/drop-down-tree/drop-down-tree';
-import { hierarchicalData3,filteredhierarchicalData3,hierarchicalData3filtering, filterData} from '../dataSource.spec';
+import { hierarchicalData3,filteredhierarchicalData3,hierarchicalData3filtering, filterData, nestedHierarchicalData} from '../dataSource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
 describe('Hierarchial data filter testing', () => {
@@ -2186,6 +2186,121 @@ describe('Hierarchial data filter testing', () => {
                 done();
             }, 350);
         });  
+         it('Select a node and perform filter the nested nodes and ensure the parent node check state', (done) => {
+             ddtreeObj = new DropDownTree({
+                fields: { dataSource: nestedHierarchicalData, value: "code", text: "name", child: "countries" },
+                allowFiltering: true,
+                treeSettings: { autoCheck: true},
+                showCheckBox: true,
+                allowMultiSelection: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+            let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.ctrlKey = true;
+            mouseEventArgs.target = li[2].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(ddtreeObj.value.length).toBe(1);
+            expect(ddtreeObj.treeObj.checkedNodes.indexOf('DNK') !== -1).toBe(true);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active').length).toBe(1);
+            expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active')[0].querySelector('.e-list-text') as HTMLElement).innerText).toBe("Denmark");
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'fin';
+            filterObj.value = 'fin';
+            let eventArgs: any = { value: 'fin', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(function () {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(3);
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-stop').length).toBe(2);
+                done();
+            },350);
+        });
+        it('Select a node and perform filter the nested node, select the filtered node and ensure the parent node check state', (done) => {
+             ddtreeObj = new DropDownTree({
+                fields: { dataSource: nestedHierarchicalData, value: "code", text: "name", child: "countries" },
+                allowFiltering: true,
+                treeSettings: { autoCheck: true},
+                showCheckBox: true,
+                allowMultiSelection: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+            let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.ctrlKey = true;
+            mouseEventArgs.target = li[2].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(ddtreeObj.value.length).toBe(1);
+            expect(ddtreeObj.treeObj.checkedNodes.indexOf('DNK') !== -1).toBe(true);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active').length).toBe(1);
+            expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active')[0].querySelector('.e-list-text') as HTMLElement).innerText).toBe("Denmark");
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'fin';
+            filterObj.value = 'fin';
+            let eventArgs: any = { value: 'fin', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(function () {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(3);
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-stop').length).toBe(2);
+                setTimeout(function () {
+                    li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+                    mouseEventArgs.ctrlKey = true;
+                    mouseEventArgs.target = li[2].querySelector('.e-list-text');
+                    tapEvent.tapCount = 1;
+                    (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+                    expect(ddtreeObj.value.length).toBe(3);
+                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('FNL') !== -1).toBe(true);
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active').length).toBe(1);
+                    expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active')[0].querySelector('.e-list-text') as HTMLElement).innerText).toBe("Finland");
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(3);
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-stop').length).toBe(1);
+                    done();
+                },350);
+            },350);
+        });
+        it('Select a node and perform filter the child node and ensure the parent node check state', (done) => {
+             ddtreeObj = new DropDownTree({
+                fields: { dataSource: nestedHierarchicalData, value: "code", text: "name", child: "countries" },
+                allowFiltering: true,
+                treeSettings: { autoCheck: true},
+                showCheckBox: true,
+                allowMultiSelection: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+            let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.ctrlKey = true;
+            mouseEventArgs.target = li[2].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(ddtreeObj.value.length).toBe(1);
+            expect(ddtreeObj.treeObj.checkedNodes.indexOf('DNK') !== -1).toBe(true);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active').length).toBe(1);
+            expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active')[0].querySelector('.e-list-text') as HTMLElement).innerText).toBe("Denmark");
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'egypt';
+            filterObj.value = 'egypt';
+            let eventArgs: any = { value: 'egypt', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(function () {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(2);
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-stop').length).toBe(1);
+                done();
+            },350);
+        });
     });
 });
 

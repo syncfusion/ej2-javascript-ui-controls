@@ -180,6 +180,10 @@
     display: flex;
   }
 
+  .e-disabled.e-ddl.e-static-clear .e-clear-icon {
+    pointer-events: none;
+  }
+
   .e-ddl.e-input-group {
     .e-input-value,
     .e-input-value:focus {

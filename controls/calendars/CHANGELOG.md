@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.3 (2025-10-22)
+## 31.2.4 (2025-10-28)
 
 ### DatePicker
 
 #### Bug Fixes
 
 - `#I765718` - Resolved an issue where the iPad keyboard would not open after selecting a date in the popup.
+
+- `#I771080` - Fixed an issue where the float label text was overlapping with the icon of the DatePicker component when long text was used.
 
 ### DatePicker
 

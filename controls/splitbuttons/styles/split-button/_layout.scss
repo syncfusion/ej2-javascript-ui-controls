@@ -12,20 +12,24 @@
       border-bottom-right-radius: 0;
       border-top-right-radius: 0;
       text-transform: none;
-      z-index: 1;
       @if $skin-name == 'bootstrap4' {
         padding-left: $split-btn-icon-btn-padding;
         padding-right: $split-btn-icon-btn-padding;
       }
-      @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-        padding-left: 12px;
-        padding-right: 12px;
-      }
       @else if $skin-name == 'FluentUI' {
         padding: 3px 7px;
       }
-      @if $skin-name == 'Material3' {
+      @if $skin-name == 'Material3' or $skin-name == 'Material3-dark' {
+        padding: 7px 16px;
+        line-height: 1.28572em;
         box-shadow: none;
+        z-index: 1;
+      }
+      @if $skin-name == 'bootstrap5.3' {
+        border: 0;
+      }
+      @if $skin-name == 'bootstrap5' or $skin-name == 'fluent2' or $skin-name == 'tailwind3' or $skin-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        padding: 3.75px 11px;
       }
       @else {
         padding-left: 10px;
@@ -98,7 +102,9 @@
       &.e-icon-btn {
         padding-left: $split-btn-icon-btn-padding;
         padding-right: $split-btn-icon-btn-padding;
-
+        @if $skin-name == 'bootstrap5' {
+          padding: 3.75px 11px;
+        }
         .e-btn-icon {
           padding-right: 0;
         }
@@ -122,9 +128,6 @@
       @else {
         padding-left: 4px;
         padding-right: 4px;
-      }
-      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-        z-index: 1;
       }
 
       &:focus,
@@ -269,9 +272,6 @@
         @if $skin-name == 'Material3' {
           border-radius: 4px;
           box-shadow: none;
-        }
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          z-index: 1;
         }
       }
     }

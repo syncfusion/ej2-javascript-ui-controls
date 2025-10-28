@@ -841,7 +841,7 @@ export class TableResizer {
                         newRightWidth = HelperMethods.round(nextCellWidget.cellFormat.preferredWidth - dragValue, 2);
                         if (newRightWidth >= nextCellWidget.ownerColumn.minimumWidth) {
                             nextCellWidget.cellFormat.preferredWidth = newRightWidth;
-                            cell.cellFormat.preferredWidth = preferredWidth + dragValue;
+                            cell.cellFormat.preferredWidth = HelperMethods.round(preferredWidth + dragValue, 2);
                             isRightCellResized = true;
                             isContinue = false;
                         } else {
@@ -868,7 +868,7 @@ export class TableResizer {
                     newRightWidth = HelperMethods.round(previousCellWidget.cellFormat.preferredWidth + dragValue, 2);
                     if (newRightWidth >= previousCellWidget.ownerColumn.minimumWidth) {
                         previousCellWidget.cellFormat.preferredWidth = newRightWidth;
-                        cell.cellFormat.preferredWidth = preferredWidth - dragValue;
+                        cell.cellFormat.preferredWidth = HelperMethods.round(preferredWidth - dragValue, 2);
                         isContinue = false;
                     } else {
                         dragValue -= newRightWidth - previousCellWidget.ownerColumn.minimumWidth;

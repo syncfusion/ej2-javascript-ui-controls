@@ -534,7 +534,7 @@ export class Editor {
                 }
 
                 const paragraph: ParagraphWidget = new ParagraphWidget();
-                let insertFormat: WCharacterFormat = new WCharacterFormat();
+                let insertFormat: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
                 let startParagraph: ParagraphWidget = this.selection.start.paragraph;
                 if (!this.selection.isForward) {
                     startParagraph = this.selection.end.paragraph;
@@ -2486,7 +2486,7 @@ export class Editor {
      * @returns {void}
      */
     public copyInsertFormat(format: WCharacterFormat, copy: boolean, widget?:ParagraphWidget): WCharacterFormat {
-        let insertFormat: WCharacterFormat = widget ? new WCharacterFormat(widget) : new WCharacterFormat();
+        let insertFormat: WCharacterFormat = widget ? new WCharacterFormat(widget, this.owner) : new WCharacterFormat(undefined, this.owner);
         let sFormat: SelectionCharacterFormat = this.selection.characterFormat;
         if (copy) {
             insertFormat.copyFormat(format);
@@ -3903,7 +3903,7 @@ export class Editor {
                         if (hasPlaceHolderText) {
                             tempSpan.characterFormat.copyFormat(inline.characterFormat);
                         } else {
-                            tempSpan.characterFormat = this.copyInsertFormat(new WCharacterFormat(), false);
+                            tempSpan.characterFormat = this.copyInsertFormat(new WCharacterFormat(undefined, this.owner), false);
                         }
                     } else {
                         tempSpan.characterFormat.copyFormat(insertFormat);
@@ -5614,7 +5614,7 @@ export class Editor {
 
         // Preserves the character format for hyperlink field.
         let temp: WCharacterFormat = this.getCharacterFormat(selection);
-        let format: WCharacterFormat = new WCharacterFormat();
+        let format: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
         format.copyFormat(temp);
 
         let fieldEnd: FieldElementBox = this.createHyperlinkElement(url, startPosition, endPosition, format);
@@ -5873,7 +5873,7 @@ export class Editor {
             fieldStartPosition.setPositionInternal(startPosition);
 
             let temp: WCharacterFormat = this.getCharacterFormat(selection);
-            let format: WCharacterFormat = new WCharacterFormat(undefined);
+            let format: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
             format.copyFormat(temp);
             this.initComplexHistory('InsertHyperlink');
             let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
@@ -5934,7 +5934,7 @@ export class Editor {
             this.owner.enableTrackChanges = isTrackEnabled;
         }
         if (isRemoved) {
-            let format: WCharacterFormat = new WCharacterFormat();
+            let format: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
             format.copyFormat(temp);
             this.insertHyperlinkByFormat(selection, url, displayText, format, isBookmark);
         }
@@ -6046,7 +6046,7 @@ export class Editor {
         let isNestedField: boolean = false;
         // Preserves the character format for hyperlink field.
         let temp: WCharacterFormat = this.getCharacterFormat(selection);
-        let format: WCharacterFormat = new WCharacterFormat();
+        let format: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
         format.copyFormat(temp);
         let fieldSeparator: FieldElementBox = undefined;
         if (!isNullOrUndefined(fieldBegin.fieldSeparator)) {
@@ -6381,7 +6381,7 @@ export class Editor {
             }
             this.copiedTextContent = textContent = HelperMethods.sanitizeString(clipbordData.getData('Text'));
 
-            this.previousCharFormat = new WCharacterFormat();
+            this.previousCharFormat = new WCharacterFormat(undefined, this.owner);
             this.previousCharFormat.copyFormat(this.selection.start.paragraph.characterFormat);
             this.previousParaFormat = new WParagraphFormat();
             this.previousParaFormat.copyFormat(this.selection.start.paragraph.paragraphFormat);
@@ -6937,9 +6937,9 @@ export class Editor {
         let startParagraph: ParagraphWidget = this.selection.start.paragraph;
         let currentInline: ElementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
         let element: ElementBox = this.selection.getPreviousValidElement(currentInline.element);
-        let insertFormat: WCharacterFormat = new WCharacterFormat();
+        let insertFormat: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
         if (!isNullOrUndefined(element) && element.contentControlProperties) {
-            insertFormat = this.copyInsertFormat(new WCharacterFormat(), false);
+            insertFormat = this.copyInsertFormat(new WCharacterFormat(undefined, this.owner), false);
         } else {
             insertFormat = element ? element.characterFormat : this.copyInsertFormat(startParagraph.characterFormat, true, startParagraph);
         }
@@ -9097,6 +9097,7 @@ export class Editor {
                     image.addEventListener('load', function (): void {
                         this.width = isNullOrUndefined(width) ? this.width : width;
                         this.height = isNullOrUndefined(height) ? this.height : height;
+                        this.alt = isNullOrUndefined(alternateText) ? this.alt : alternateText;
                         editor.insertPicture(imageString, this.width, this.height, this.alt, true);
                         resolve();
                     });
@@ -16061,7 +16062,7 @@ export class Editor {
     private splitParagraph(paragraphAdv: ParagraphWidget, startLine: LineWidget, startOffset: number, endLine: LineWidget, endOffset: number, removeBlock: boolean, skipElementRemoval?: boolean, isSelectionInsideTable?: boolean): ParagraphWidget {
         let paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.paragraphFormat = new WParagraphFormat(paragraph);
-        paragraph.characterFormat = new WCharacterFormat(paragraph);
+        paragraph.characterFormat = new WCharacterFormat(paragraph, this.owner);
         paragraph.paragraphFormat.copyFormat(paragraphAdv.paragraphFormat);
         paragraph.characterFormat.copyFormat(paragraphAdv.characterFormat);
         paragraph.characterFormat.removedIds = [];
@@ -17274,6 +17275,10 @@ export class Editor {
                         this.removeInlines(paragraph, paragraph.firstChild as LineWidget, 0, paragraph.lastChild as LineWidget, (paragraph.lastChild as LineWidget).getEndOffset(), editAction);
                         // Recombine cell widget due to relayout after inline removal.
                         cell = cell.combineWidget(this.owner.viewer) as TableCellWidget;
+                        if (cell.childWidgets.length === 1) {
+                            selection.editPosition = this.selection.getHierarchicalIndex(cell.childWidgets[0] as Widget, '0');
+                            this.updateHistoryPosition(selection.editPosition, true);
+                        }
                     }
                     continue;
                 }
@@ -18084,7 +18089,7 @@ export class Editor {
             destination.paragraphFormat.copyFormat(listLevel.paragraphFormat);
         }
         if (!isNullOrUndefined(listLevel.characterFormat)) {
-            destination.characterFormat = new WCharacterFormat(destination);
+            destination.characterFormat = new WCharacterFormat(destination, this.owner);
             destination.characterFormat.copyFormat(listLevel.characterFormat);
         }
         if (!isNullOrUndefined(listLevel.followCharacter)) {
@@ -24659,7 +24664,7 @@ export class Editor {
         this.updateInsertPosition();
         const element: ElementBox[] = [];
         const temp: WCharacterFormat = this.getCharacterFormat(this.selection);
-        const format: WCharacterFormat = new WCharacterFormat(undefined);
+        const format: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
         format.copyFormat(temp);
         const fieldBegin: FieldElementBox = new FieldElementBox(0);
         fieldBegin.formFieldData = this.getFormFieldData(type);
@@ -24807,7 +24812,7 @@ export class Editor {
             || (this.editorHistory && isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo));
         // Preserves the character format for hyperlink field.
         const temp: WCharacterFormat = begin.characterFormat.cloneFormat();
-        const format: WCharacterFormat = new WCharacterFormat();
+        const format: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
         format.copyFormat(temp);
         const textFormat: WCharacterFormat = begin.fieldSeparator.nextElement.characterFormat.cloneFormat();
         let currentOffset: number = begin.line.getOffset(begin, 0);
@@ -25492,7 +25497,7 @@ export class Editor {
                     endnoteWidget.footNoteType = 'Endnote';
                     endnoteWidget.page = bodyWidget.page;
                     const newParagraph: ParagraphWidget = new ParagraphWidget();
-                    newParagraph.characterFormat = new WCharacterFormat();
+                    newParagraph.characterFormat = new WCharacterFormat(undefined, this.owner);
                     newParagraph.paragraphFormat = new WParagraphFormat();
                     newParagraph.index = 0;
                     const lineWidget: LineWidget = new LineWidget(newParagraph);

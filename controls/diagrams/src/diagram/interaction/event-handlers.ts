@@ -2174,6 +2174,10 @@ export class DiagramEventHandler {
             // 971487 - fix for Displaying same tooltip content for different group nodes.
             let content: string | HTMLElement = this.getContent();
             let children: NodeModel | ConnectorModel;
+            // 986407 - Tooltip content is hidden when displaying large amounts of text
+            if (this.diagram.tooltipObject) {
+                this.diagram.tooltipObject.windowCollision = true;
+            }
             if (this.hoverElement && (this.hoverElement as NodeModel).children && (this.hoverElement as NodeModel).children.length > 0) {
                 // EJ2-56981 - Below method is used to check if the mouse pointer position and group children node gets intersect or not
                 children = this.findIntersectChild(this.hoverElement as NodeModel);

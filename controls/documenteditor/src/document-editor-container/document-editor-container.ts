@@ -1077,6 +1077,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.showPane = this.showPropertiesPane;
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
         this.setFormat();
+        this.documentEditor.isInitializedContainerComponent = true;
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
     }

@@ -992,7 +992,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                     if (this.createPopupOnClick) { this.destroyPopup(); }
                 }
             } else {
-                if (ul) {
+                if (observedArgs.element) {
                     ul.focus();
                 }
             }

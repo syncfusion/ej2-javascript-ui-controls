@@ -7664,3 +7664,93 @@ describe('CR-Task-979885: Code coverage for edit dialog null startdate', () => {
         expect(ganttObj.currentViewData[1].ganttProperties.startDate).toBe(null);
     });
 })
+
+describe('The behavior for editing parent tasks differs between cell edit and dialog edit modes ', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 1,
+            TaskName: 'Planning and Permits',
+            StartDate: new Date('04/02/2025'),
+            EndDate: new Date('04/10/2025'),
+            Duration: 7,
+            Progress: 100,
+            resources: [1, 2, 3],
+        },
+        {
+            TaskID: 2,
+            TaskName: 'Site Evaluation',
+            StartDate: new Date('04/02/2025'),
+            EndDate: new Date('04/04/2025'),
+            Duration: 2,
+            Progress: 100,
+            ParentId: 1,
+            resources: [1],
+            BaselineStartDate: new Date("04/02/2025"), BaselineEndDate: new Date("04/02/2025"),
+            baselineDur: 3
+        },
+        {
+            TaskID: 3,
+            TaskName: 'Obtain Permits',
+            StartDate: new Date('04/07/2025'),
+            EndDate: new Date('04/09/2025'),
+            Duration: 3,
+            Progress: 100,
+            ParentId: 1,
+            resources: [2, 4],
+        },
+        {
+            TaskID: 4,
+            TaskName: 'Finalize Planning',
+            StartDate: new Date('04/10/2025'),
+            EndDate: new Date('04/11/2025'),
+            Duration: 2,
+            Progress: 100,
+            ParentId: 1,
+            resources: [3],
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: data,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                parentID:'ParentId',
+                notes: 'info',
+                resourceInfo: 'resources'
+            },
+            treeColumnIndex: 1,
+            splitterSettings: {
+                columnIndex: 5
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+            enableUndoRedo: true,
+            height: '450px',
+            projectStartDate: new Date('03/26/2025'),
+            projectEndDate: new Date('09/10/2025')
+            }, done);
+        });
+    it('checking endDate is editable or not for parent record', function () {
+        let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(endDate, 'dblclick');
+        expect(endDate.classList.contains('e-editedbatchcell')).toBe(false)
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

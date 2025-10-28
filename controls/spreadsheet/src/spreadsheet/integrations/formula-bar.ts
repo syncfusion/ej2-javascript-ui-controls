@@ -468,7 +468,9 @@ export class FormulaBar {
                 headerContent.innerText = l10n.getConstant('InsertFunction');
                 const categoryArgs: { action: string, categoryCollection: string[] } = { action: 'getFormulaCategory', categoryCollection: [] };
                 this.parent.notify(workbookFormulaOperation, categoryArgs);
-                this.categoryCollection = categoryArgs.categoryCollection;
+                this.categoryCollection = categoryArgs.categoryCollection.map((category: string): string => {
+                    return !isNullOrUndefined(category) ? l10n.getConstant(category.split(' ').join('').replace('&', '')) : category;
+                });
                 let categoryPopupOpen: boolean;
                 this.categoryList = new DropDownList({
                     dataSource: this.categoryCollection, cssClass: 'e-ss-formula-category', index: 0, width: '285px', popupHeight: '210px',
@@ -603,11 +605,12 @@ export class FormulaBar {
     }
     private dropDownSelect(args: SelectEventArgs): void {
         this.formulaCollection = [];
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const listArgs: { action: string, formulaCollection: string[] } = {
             action: 'getLibraryFormulas',
             formulaCollection: []
         };
-        if (args.item.textContent === 'All') {
+        if (args.item.textContent === l10n.getConstant('All')) {
             this.parent.notify(workbookFormulaOperation, listArgs);
             this.formulaCollection = listArgs.formulaCollection;
         } else {

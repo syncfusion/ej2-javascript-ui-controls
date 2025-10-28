@@ -7566,7 +7566,7 @@ export class PdfSignatureField extends PdfField {
             } else if (graphicsRotation === 270) {
                 graphics.translateTransform(0, template._size[0]);
                 graphics.rotateTransform(270);
-                if (page._size[0] > page._size[1]) {
+                if (page._size[0] > page._size[1] && template._content && template._content.dictionary && template._content.dictionary.has('Matrix')) {
                     x = -(page._size[0] - bounds.x - template.size[0]);
                     y = bounds.y - bounds.height;
                 } else {

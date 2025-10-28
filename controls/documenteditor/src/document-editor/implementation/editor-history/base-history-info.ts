@@ -1274,7 +1274,12 @@ export class BaseHistoryInfo {
                     }
                     let elementInfo: ElementInfo = this.owner.selectionModule.start.currentWidget.getInline(this.owner.selectionModule.start.offset, 0);
                     let elementBox: ElementBox = elementInfo.element;
-                    let lastLine: LineWidget = ((this.owner.selectionModule.start.paragraph.combineWidget(this.viewer) as ParagraphWidget).lastChild as LineWidget);
+                    let lastLine: LineWidget;
+                    if (this.owner.selectionModule.sectionFormat.numberOfColumns > 1) {
+                        lastLine = ((this.owner.selectionModule.start.paragraph.combineWidget(this.viewer) as ParagraphWidget).lastChild as LineWidget);
+                    } else {
+                        lastLine = (this.owner.selectionModule.start.paragraph.lastChild as LineWidget);
+                    }
                     if (this.owner.selectionModule.start.currentWidget.isEndsWithLineBreak && this.owner.selectionModule.start.offset > 0
                         && this.owner.documentHelper.layout.isConsiderAsEmptyLineWidget(lastLine) && !isNullOrUndefined(lastLine.previousLine)) {
                         lastLine = lastLine.previousLine;
@@ -1550,7 +1555,7 @@ export class BaseHistoryInfo {
                     this.modifiedNodeLength[this.currentPropertyIndex] = (format.ownerBase as ElementBox).length;
                     this.modifiedNodeLength.splice(this.currentPropertyIndex + 1, 0, prevLength - (format.ownerBase as ElementBox).length);
                     //Adds a copy of character format at next position for splitted inline.
-                    let nextFormat: WCharacterFormat = new WCharacterFormat(undefined);
+                    let nextFormat: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
                     nextFormat.copyFormat(previousFormat);
                     this.modifiedProperties.splice(this.currentPropertyIndex + 1, 0, nextFormat);
                 }
@@ -1578,7 +1583,7 @@ export class BaseHistoryInfo {
             if (isNullOrUndefined(property)) {
                 this.modifiedProperties.push(format.cloneFormat());
             } else {
-                let currentFormat: WCharacterFormat = new WCharacterFormat(undefined);
+                let currentFormat: WCharacterFormat = new WCharacterFormat(undefined, this.owner);
                 currentFormat.copyFormat(format);
                 this.modifiedProperties.push(currentFormat);
             }

@@ -627,8 +627,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.inputElement = <HTMLInputElement>this.createElement('input');
             this.element.appendChild(this.inputElement);
         }
-        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-        this.element.removeAttribute('tabindex');
         this.openPopupEventArgs = {
             appendTo: document.body
         };
@@ -750,6 +748,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         const localeText: { placeholder: string } = { placeholder: this.placeholder };
         this.l10n = new L10n('timepicker', localeText, this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+        if (this.angularTag !== null) {
+            this.tabIndex = this.inputElement.hasAttribute('tabindex') ? this.inputElement.getAttribute('tabindex') : '0';
+            this.inputElement.removeAttribute('tabindex');
+        }
+        else {
+            this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+            this.element.removeAttribute('tabindex');
+        }
         this.initValue = this.checkDateValue(this.value);
         this.initMin = this.checkDateValue(this.min);
         this.initMax = this.checkDateValue(this.max);
@@ -819,6 +825,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.createElement
         );
         this.inputWrapper.container.style.width = this.setWidth(this.width);
+        this.updateFloatLabelOverflowWidth();
         attributes(this.inputElement, {
             'aria-autocomplete': 'list', 'tabindex': '0',
             'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
@@ -2508,6 +2515,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.checkValueChange(null, false);
     }
     protected inputBlurHandler(e: MouseEvent): void {
+        this.updateFloatLabelOverflowWidth();
         if (!this.enabled) {
             return;
         }
@@ -2587,6 +2595,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
         this.trigger('focus', focusArguments);
         this.clearIconState();
+        this.clearFloatLabelOverflowWidth();
         if (this.openOnFocus) {
             this.show();
         }
@@ -2765,6 +2774,29 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      */
     protected getModuleName(): string {
         return 'timepicker';
+    }
+    private updateFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputWrapper.container;
+        const label: HTMLElement = container.querySelector('.e-float-text.e-label-bottom');
+        let width: number = 0;
+        const iconSelectors: string = '.e-input-group-icon, .e-clear-icon';
+        const icons: NodeListOf<HTMLElement> = container.querySelectorAll(iconSelectors);
+        for (let index: number = 0; index < icons.length; index++) {
+            width += icons[index as number].offsetWidth;
+        }
+        if (label) {
+            const labelWidth: number = (this.element.parentElement.offsetWidth) - width;
+            if (labelWidth) {
+                label.style.width = `${labelWidth}px`;
+            }
+        }
+    }
+    private clearFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputWrapper.container;
+        const label: HTMLElement = container.querySelector('.e-float-text.e-label-top');
+        if (label) {
+            label.removeAttribute('style');
+        }
     }
     /**
      * Called internally if any of the property value changed.

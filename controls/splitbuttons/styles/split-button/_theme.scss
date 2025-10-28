@@ -1,14 +1,12 @@
 @include export-module('split-button-theme') {
   .e-split-btn-wrapper {
     .e-split-btn {
-      @if $skin-name == 'Material3' {
+      @if $skin-name != 'tailwind3' {
+        border-right-color: $split-btn-seperator-border-color;
+      }
+      @if $skin-name == 'Material3' or $skin-name == 'Material3-dark' {
         border-image: $split-btn-seperator-border-color;
         border-width: 0 1px 0 0;
-      }
-      @else {
-        @if $skin-name != 'tailwind3' {
-          border-right-color: $split-btn-seperator-border-color;
-        }
       }
 
       &:focus {

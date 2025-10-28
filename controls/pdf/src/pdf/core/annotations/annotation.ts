@@ -3022,6 +3022,9 @@ export abstract class PdfAnnotation {
                                 template._size = [rectangle[2], rectangle[3]];
                                 template._templateOriginalSize = [rect.width, rect.height];
                             }
+                            if (appearanceStream && typeof appearanceStream.offset === 'number' && appearanceStream.offset !== 0) {
+                                appearanceStream.offset = 0;
+                            }
                         } else if (bounds && (bounds[2] === this.bounds.width && bounds[3] === this.bounds.height) || _areArrayEqual(this._dictionary.get('Rect'), bounds)) {
                             templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
                             if (this._dictionary.has('Vertices')) {

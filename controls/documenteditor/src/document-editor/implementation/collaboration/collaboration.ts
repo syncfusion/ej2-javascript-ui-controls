@@ -150,11 +150,13 @@ export class CollaborativeEditingHandler {
     private handleAcknowledgementReceived(action: ActionInfo): void {
         let versionDiff = this.getVersionDifference(action);
         if (versionDiff > 1) {
+            this.logMessage('Ack version diff to server: ' + versionDiff);
             this.checkAndRetriveChangesFromServer();
         } else {
-            this.logMessage('Ack received: ' + action.version);
+            this.logMessage('Ack received: ' + action.version); 
             this.logMessage('Ack version diff: ' + versionDiff);
             if (action.version > this.version) {
+                this.logMessage('Resend operation');
                 this.updateVersion(action.version);
                 this.acknowledgementReceived();
                 this.sendLocalOperation();
@@ -209,11 +211,11 @@ export class CollaborativeEditingHandler {
         }
         let versionDiff = this.getVersionDifference(action);
         if (versionDiff <= 0 && !this.documentEditor.editor.isIncrementalSave) {
-            this.logMessage('SignalR return diff:<=0' + action.version);
+            this.logMessage('SignalR return diff:<=0-' + action.version);
             return;
         }
         if (versionDiff > 1 && !this.documentEditor.editor.isIncrementalSave) {
-            this.logMessage('SignalR return diff:>=1' + action.version);
+            this.logMessage('SignalR return diff:>=1-' + action.version);
             this.checkAndRetriveChangesFromServer();
             return;
         }
@@ -240,13 +242,14 @@ export class CollaborativeEditingHandler {
         let localStartOffset = this.documentEditor.selectionModule.getAbsolutePositionFromRelativePosition(this.documentEditor.selectionModule.start);
         let selectionLength = this.documentEditor.selectionModule.getAbsolutePositionFromRelativePosition(this.documentEditor.selectionModule.end) - localStartOffset;
         if (!isNullOrUndefined(this.acknowledgmentPending)) {
-            this.logMessage('Acknowledge transform:' + this.acknowledgmentPending[0].text + 'version:' + action.version);
+            this.logMessage('Acknowledge transform:' + this.acknowledgmentPending[0].text + '-version:' + action.version);
             this.transform([this.acknowledgmentPending], action.operations)
         }
         if (this.pendingOps.length > 0) {
-            this.logMessage('Pending transform:' + this.pendingOps.length + 'version:' + action.version);
-        }
+            this.logMessage('Pending transform:' + this.pendingOps.length + '-version:' + action.version);
+        }   
         this.transform(this.pendingOps, action.operations);
+        this.logMessage('Applying remote operation-' + this.version);
         this.applyRemoteOperation(action, localStartOffset, selectionLength);
         this.updateVersion(action.version);
         this.documentEditor.editorModule.isRemoteAction = false;
@@ -257,7 +260,7 @@ export class CollaborativeEditingHandler {
             this.documentEditor.editorHistoryModule.redoStack.length = 0;
         }
     }
-    private transform(operation: Operation[], remoteOperation: Operation[]): void {
+    private transform(operation: Operation[][], remoteOperation: Operation[]): void {
         for (let i: number = 0; i < remoteOperation.length; i++) {
             let remoteData: Operation = remoteOperation[i];
             if (operation.length > 0) {
@@ -452,7 +455,7 @@ export class CollaborativeEditingHandler {
                                 this.documentEditor.parser.parseFormFieldData(0, JSON.parse(markerData.formFieldData), formFieldData);
                                 field.formFieldData = formFieldData;
                             }
-                            let characterFormat: WCharacterFormat = new WCharacterFormat();
+                            let characterFormat: WCharacterFormat = new WCharacterFormat(undefined, this.documentEditor);
                             if (op2.format) {
                                 let data: object = JSON.parse(op2.format);
                                 this.documentEditor.parser.parseCharacterFormat(0, data, characterFormat);
@@ -555,7 +558,7 @@ export class CollaborativeEditingHandler {
                     this.documentEditor.editorModule.insertColumnBreak();
                 } else {
                     if (op2.format) {
-                        let characterFormat: WCharacterFormat = new WCharacterFormat();
+                        let characterFormat: WCharacterFormat = new WCharacterFormat(undefined, this.documentEditor);
                         var data: object = JSON.parse(op2.format);
                         this.documentEditor.parser.parseCharacterFormat(0, data, characterFormat);
                         this.documentEditor.selectionModule.isRetrieveFormatting = true;
@@ -939,6 +942,10 @@ export class CollaborativeEditingHandler {
             // Local selection fully encompasses the conflicting selection
             else if (operation1.offset > operation2.offset && operation1.offset < (operation2.offset + operation2.length)) {
                 operation2.length += operation1.length;
+                if (operation2.action === 'Delete') {
+                    this.logMessage('Case 1 transform operation: true');
+                    operation1.skipOperation = true;
+                }
             }
         } else if (operation1.action === 'Delete' && (operation2.action === 'Insert' || operation2.action === 'Format')) {
             if (operation1.offset <= operation2.offset && (operation1.offset + operation1.length) <= operation2.offset) {
@@ -946,6 +953,7 @@ export class CollaborativeEditingHandler {
             } else if (operation1.offset < operation2.offset && (operation1.offset + operation1.length) >= (operation2.offset + operation2.length)) {
                 if (!isNullOrUndefined(operation2.markerData) && !isNullOrUndefined(operation2.markerData.type) && operation2.markerData.type !== 'Field' && (operation2.text === CONTROL_CHARACTERS.Marker_End || operation2.text === CONTROL_CHARACTERS.Marker_Start)) {
                     if (!isNullOrUndefined(operation2.markerData.commentId) && operation2.text === CONTROL_CHARACTERS.Marker_End) {
+                        this.logMessage('Case 2 transform operation: true');
                         this.skipAction(action);
                         return [operation1, operation2];
                     }
@@ -954,12 +962,14 @@ export class CollaborativeEditingHandler {
                 } else {
                     //Skip insert operation
                     operation2.length = 0;
+                    this.logMessage('Case 3 transform operation: true');
                     operation2.skipOperation = true;
                     if (!isNullOrUndefined(operation2.markerData) && !isNullOrUndefined(operation2.markerData.type) && operation2.markerData.type === 'Field' && (operation2.text === CONTROL_CHARACTERS.Marker_Start || operation2.text === CONTROL_CHARACTERS.Marker_End)) {
                         this.skipAction(action);
                     }
                 }
             } else if (operation1.offset <= operation2.offset && operation2.action == "Insert" && (operation1.offset + operation1.length) >= operation2.offset) {
+                this.logMessage('Case 4 transform operation: true');
                 this.skipAction(action);
             }
             else if (operation1.offset > operation2.offset && operation2.action !== 'Format') {
@@ -1468,6 +1478,7 @@ export class CollaborativeEditingHandler {
                 conflictingOperation.length -= operation.length;
                 if (conflictingOperation.length <= 0) {
                     conflictingOperation.skipOperation = true;
+                    this.logMessage('Case 2 selection operation: true');
                 }
                 return;
             }
@@ -1489,6 +1500,7 @@ export class CollaborativeEditingHandler {
                 conflictingSelection.offset = operation.offset;
                 conflictingSelection.length = 0;
                 conflictingOperation.skipOperation = true;
+                this.logMessage('Case 5 selection operation: true');
                 return;
             }
         }
@@ -1542,6 +1554,7 @@ export class CollaborativeEditingHandler {
                     }
                 }
             };
+            this.logMessage('Changes from sever Sent: ' + JSON.stringify(action));
             httpRequest.send(JSON.stringify(action));
             this.isSyncServerChanges = true;
         }
@@ -1553,10 +1566,10 @@ export class CollaborativeEditingHandler {
                 let data: ActionInfo = dataObject[i]
                 if (data.connectionId === this.connectionId) {
                     this.acknowledgementReceived();
-                    this.logMessage(this.isSyncServerChanges ? 'SignalR Server sync' + data.version : 'SignalR Same user sync:' + data.version);
+                    this.logMessage(this.isSyncServerChanges ? 'SignalR Server sync from server' + data.version : 'SignalR Same user sync from server:' + data.version);
                 } else {
+                    this.logMessage('change from server Received: ' + JSON.stringify(JSON.stringify(data)));
                     this.handleRemoteOperation(data);
-                    this.logMessage('Received: ' + JSON.stringify(JSON.stringify(data)));
                 }
                 this.updateVersion(data.version);
                 this.logMessage('Server sync ack:' + data.version);
@@ -1570,7 +1583,7 @@ export class CollaborativeEditingHandler {
         this.sendLocalOperation()
     }
     private insertCharaterFormat(type: string, characterData: string): void {
-        let format: WCharacterFormat = new WCharacterFormat(undefined);
+        let format: WCharacterFormat = new WCharacterFormat(undefined, this.documentEditor);
         let characterFormat: any = JSON.parse(characterData);
         let keys = Object.keys(characterFormat);
         this.documentEditor.documentHelper.owner.parser.parseCharacterFormat(0, characterFormat, format);

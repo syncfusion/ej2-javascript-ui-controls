@@ -245,7 +245,7 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
     }
 
     private updateToggleButtonState(buttonId: string, isActive: boolean): void {
-        const buttonElement: HTMLButtonElement = document.querySelector('#' + buttonId);
+        const buttonElement: HTMLElement = document.getElementById(buttonId);
         if (buttonElement) {
             if (isActive) {
                 buttonElement.classList.add('e-active');

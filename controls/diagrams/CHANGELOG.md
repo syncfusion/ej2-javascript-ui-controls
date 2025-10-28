@@ -11,6 +11,7 @@
 - `#I771011` - Child nodes are now positioned correctly when dropped inside a nested container.
 - `#I771107` - Tooltips are now displayed correctly for Swimlane children.
 - `#I739181` - The issue "Nodes Overlap in Organizational Chart Layout with Multiple Roots" has been fixed.
+- `#I769690` - Group node bounds will no longer clipped on Left and Top.
 
 ## 31.1.22 (2025-10-01)
 

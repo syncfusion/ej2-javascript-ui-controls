@@ -2,7 +2,7 @@
 
 # JavaScript Rich Text Editor | JavaScript Markdown Editor
 
-The [JavaScript RichTextEditor](https://www.syncfusion.com/javascript-ui-controls/js-wysiwyg-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=javascript-richtexteditor-npm) is a feature-rich WYSIWYG HTML editor and WYSIWYG Markdown editor. The Rich Text Editor is widely used to create blogs, forum posts, notes sections, comment sections, messaging applications, and more. The control provides an efficient user interface for a better editing experience with mobile support. It has a variety of tools to edit and format rich content, and it return a valid HTML markup or Markdown (MD) content. It allows users to insert images, links, tables, media files and lists with modular architectures.
+The [JavaScript RichTextEditor](https://www.syncfusion.com/javascript-ui-controls/js-wysiwyg-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=javascript-richtexteditor-npm) is a feature-rich WYSIWYG HTML editor and Markdown editor. The Rich Text Editor is widely used to create blogs, forum posts, notes sections, comment sections, messaging applications, and more. The control provides an efficient user interface for a better editing experience with mobile support. It has a variety of tools to edit and format rich content, and it return a valid HTML markup or Markdown (MD) content. It allows users to insert images, links, tables, media files and lists with modular architectures.
 
 <div align="center">
   <h4> <a href="https://ej2.syncfusion.com/documentation/rich-text-editor/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-richtexteditor-npm">📖Getting started</a> &#x2022; 
@@ -17,11 +17,12 @@ The [JavaScript RichTextEditor](https://www.syncfusion.com/javascript-ui-control
 <p align="center">
 Trusted by the world's leading companies
   <a href="https://www.syncfusion.com">
-    <img src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/syncfusion/syncfusion-trusted-companies.webp" alt="Bootstrap logo">
+    <img src="https://ej2.syncfusion.com/home/images/trusted_companies.png" alt="Bootstrap logo">
   </a>
 </p>
 
 ## ⚡️ Quick Start
+
 The JavaScript Rich Text Editor is easy to set up. Simply install the package, import the module, and add the editor to your app.
 
 ### Installation
@@ -50,6 +51,7 @@ npm install @syncfusion/ej2-richtexteditor --save
 ```
 
 ### Import the Module
+
 Import the Rich Text Editor module into your application:
 
 ```ts
@@ -74,6 +76,7 @@ editor.appendTo('#richTextEditor');
  ```
 
 ### Run the Application
+
 Now, open your project in a browser, and the Rich Text Editor will be displayed! 🚀
 
 <blockquote>
@@ -107,7 +110,7 @@ Rich Text Editor control is also offered in following list of frameworks.
 
 * [Accessibility & WCAG 2.0 Compliance](https://ej2.syncfusion.com/documentation/rich-text-editor/accessibility/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-richtexteditor-npm) - Ensures full accessibility support, making it user-friendly for people who rely on assistive technologies (AT) or keyboard navigation.
 
-* [Preventing Cross-Site Scripting (XSS)](https://ej2.syncfusion.com/aspnetcore/documentation/rich-text-editor/prevent-cross-site-scripting/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-richtexteditor-npm) The Rich Text Editor allows users to edit the content with security by preventing cross-site scripting (XSS).
+* [Preventing Cross-Site Scripting (XSS)](https://ej2.syncfusion.com/aspnetcore/documentation/rich-text-editor/prevent-cross-site-scripting/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-richtexteditor-npm) - The Rich Text Editor allows users to edit the content with security by preventing cross-site scripting (XSS).
 
 * [HTML code editing](https://ej2.syncfusion.com/documentation/rich-text-editor/miscellaneous/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-rich-text-editor-npm/#code-view) - The rich text editor allows users to edit the HTML code directly in the HTML code view.
 
@@ -116,6 +119,7 @@ Rich Text Editor control is also offered in following list of frameworks.
 * [Markdown content preview](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-rich-text-editor-npm/#/bootstrap5/rich-text-editor/markdown-editor-preview.html) - Preview of the modified Markdown content in the editor, you can give users the ability to see what the formatted content will look like before they save it.
 
 * [Tools](https://ej2.syncfusion.com/documentation/rich-text-editor/tools.html?utm_source=npm&utm_medium=listing&utm_campaign=javascript-rich-text-editor-npm/#built-in-tools) - The rich text editor handles a wide range of features, including inserting images, hyperlinks, tables, formatting tools, and more.
+
 * [Toolbar appearance](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-rich-text-editor-npm/#/bootstrap5/rich-text-editor/types.html) - The rich text editor can provide a fully customizable toolbar that allows users to access the various formatting and editing options that are available.
 
 * [Export and Import](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-rich-text-editor-npm/#/bootstrap5/rich-text-editor/export-word.html) - Supports exporting content to PDF, and Word formats.
@@ -127,6 +131,15 @@ Rich Text Editor control is also offered in following list of frameworks.
 * [Module injection](https://ej2.syncfusion.com/documentation/rich-text-editor/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-rich-text-editor-npm/#module-injection) - It is possible to create a editor that utilizes a modular library to load the necessary functionality on demand. This can be useful for optimizing the performance of the editor.
 
 * [Third-party integration](https://ej2.syncfusion.com/documentation/rich-text-editor/third-party-integration/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-rich-text-editor-npm) - It is possible to integrate a third-party library into a rich text editor to add additional functionality or features to the editor like `Code-mirror`, `Embedly` and more.
+
+## 📚 Resources
+
+* [Documentation](https://ej2.syncfusion.com/documentation/rich-text-editor/getting-started)
+* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
+* [Custom Resource Generator](https://crg.syncfusion.com/)
+* [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)
+* [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=github)
+* [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=github)
 
 ## 🤝 Support
 
@@ -144,7 +157,7 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 ## ⚖️ License and copyright
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this component, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this component, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 140+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
 
 > A [free community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 

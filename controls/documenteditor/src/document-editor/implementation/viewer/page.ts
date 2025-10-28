@@ -4765,7 +4765,8 @@ export class LineWidget implements IWidget {
      */
     public isFirstLine(): boolean {
         let index: number = this.indexInOwner;
-        if (index > -1 && (this.paragraph.previousSplitWidget === undefined || (this.paragraph.previousSplitWidget instanceof ParagraphWidget && ((this.paragraph.previousSplitWidget as ParagraphWidget).isEndsWithColumnBreak || (this.paragraph.previousSplitWidget as ParagraphWidget).isEndsWithPageBreak)))) {
+        const previousSplitWidget: Widget = this.paragraph.previousSplitWidget;
+        if (index > -1 && (previousSplitWidget === undefined || (previousSplitWidget instanceof ParagraphWidget && ((previousSplitWidget as ParagraphWidget).isEndsWithColumnBreak || (previousSplitWidget as ParagraphWidget).isEndsWithPageBreak)))) {
             return index === 0;
         }
         return false;

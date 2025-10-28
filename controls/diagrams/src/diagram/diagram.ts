@@ -13363,7 +13363,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.bpmnModule.updateBPMNConnector(actualObject, oldProp, newProp, this);
         }
         if (actualObject.constraints !== undefined) {
-            this.updateThumbConstraints(this.selectedItems.connectors, this.selectedItems);
+            // 986582 - Locked Shape can be Resized After Moving Multi-Selected Objects.
+            this.updateThumbConstraints(this.selectedItems.connectors, this.selectedItems, true);
             return updateSelector = true;
         }
         return updateSelector;

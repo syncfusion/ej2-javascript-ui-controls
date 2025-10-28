@@ -359,6 +359,9 @@ export class NumberFormat {
     }
 
     private static processFraction(value: number, min: number, max: number, option ?: NumberFormatOptions): string {
+        if (value != null && (value.toString().indexOf('e') !== -1 || value.toString().indexOf('E') !== -1)) {
+            return value.toFixed(min);
+        }
         const temp: string = (value + '').split('.')[1];
         const length: number = temp ? temp.length : 0;
         if (min && length < min) {

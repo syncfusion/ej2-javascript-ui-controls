@@ -946,6 +946,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.onChangeEvent(e);
         }
         this.floatLabelChange();
+        this.updateFloatLabelOverflowWidth();
         this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');
         if (this.getModuleName() === 'dropdownlist' && this.element.tagName !== 'INPUT') {
             this.dispatchEvent(this.inputElement as HTMLElement, 'blur');
@@ -963,6 +964,12 @@ export class DropDownList extends DropDownBase implements IInput {
             this.trigger('focus', args);
         }
         this.updateIconState();
+        if (this.floatLabelType !== 'Never' && this.inputWrapper && this.inputWrapper.container) {
+            const label: HTMLElement = this.inputWrapper.container.querySelector('.e-float-text');
+            if (label) {
+                label.removeAttribute('style');
+            }
+        }
         this.isFocused = true;
     }
 
@@ -2840,7 +2847,7 @@ export class DropDownList extends DropDownBase implements IInput {
                             isNullOrUndefined(x[checkField as string]) && fieldValue.length > 1 ?
                                 this.checkFieldValue(x, fieldValue) === value : x[checkField as string] === value);
                     }
-                    if (!checkVal) {
+                    if (!checkVal && !this.enableVirtualization) {
                         this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', value)))
                             .then((e: Object) => {
                                 if ((e as ResultData).result.length > 0) {
@@ -3993,6 +4000,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.inputWrapper.container.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never') {
             this.inputWrapper.container.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
         }
+        this.updateFloatLabelOverflowWidth();
         this.wireEvent();
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.removeAttribute('tabindex');
@@ -4529,6 +4537,24 @@ export class DropDownList extends DropDownBase implements IInput {
         Input.setCssClass(newClass, [this.inputWrapper.container], oldClass);
         if (this.popupObj) {
             Input.setCssClass(newClass, [this.popupObj.element], oldClass);
+        }
+    }
+    private getRightIconsWidth(): number {
+        const container: HTMLElement = this.inputWrapper.container;
+        let width: number = 0;
+        const iconSelectors: string = '.e-input-group-icon, .e-clear-icon';
+        const icons: NodeListOf<HTMLElement> = container.querySelectorAll(iconSelectors);
+        for (let index: number = 0; index < icons.length; index++) {
+            width += icons[index as number].offsetWidth;
+        }
+        return width;
+    }
+    private updateFloatLabelOverflowWidth(): void {
+        const container: HTMLElement = this.inputWrapper.container;
+        const label: HTMLElement | null = container.querySelector('.e-float-text');
+        const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
+        if (label && calculateWidth) {
+            label.style.width = calculateWidth + 'px';
         }
     }
     /**

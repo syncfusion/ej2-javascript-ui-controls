@@ -922,8 +922,9 @@ export function sort(objects: (NodeModel | ConnectorModel)[], option: Distribute
     let j: number = 0;
     let temp: NodeModel | ConnectorModel;
     for (i = 0; i < objects.length; i++) {
-        const b: Rect = getBounds(objects[parseInt(i.toString(), 10)].wrapper);
         for (j = i + 1; j < objects.length; j++) {
+            // 986178 - Distribution of Objects Updates Incorrectly
+            const b: Rect = getBounds(objects[parseInt(i.toString(), 10)].wrapper);
             const bounds: Rect = getBounds(objects[parseInt(j.toString(), 10)].wrapper);
             if (option === 'Top' || option === 'Bottom' || option === 'BottomToTop' || option === 'Middle') {
                 if (b.center.y > bounds.center.y) {

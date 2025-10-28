@@ -307,6 +307,12 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
     if (!this.isClicked) {
         triggerFocus.call(this, eventArgs, inputElement);
     }
+    if (this.floatLabelType !== 'Never' && this.inputObj && this.inputObj.container) {
+        const label: HTMLElement = this.inputObj.container.querySelector('.e-float-text');
+        if (label) {
+            label.removeAttribute('style');
+        }
+    }
     if (this.mask) {
         if (!(!(modelValue === null || modelValue === '') || this.floatLabelType === 'Always' ||
             this.placeholder === null || this.placeholder === '')) {
@@ -407,6 +413,7 @@ export function maskInputBlurHandler(event: MouseEvent | FocusEvent | TouchEvent
         container: !isNullOrUndefined(this.inputObj) ?  this.inputObj.container : this.inputObj
     };
     this.trigger('blur', this.blurEventArgs);
+    this.updateFloatLabelOverflowWidth();
     if (this.mask) {
         this.isFocus = false;
         if (this.placeholder && this.element.value === this.promptMask && this.floatLabelType !== 'Always') {

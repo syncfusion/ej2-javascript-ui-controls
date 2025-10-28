@@ -660,6 +660,13 @@ export interface DocumentEditorModel extends ComponentModel{
     enableLayout?: boolean;
 
     /**
+     * Set to true when fitpage method is not called via API.
+     *
+     * @default false
+     */
+    isClientCall?: boolean;
+
+    /**
      * Defines the settings for DocumentEditor customization.
      *
      * @default {}

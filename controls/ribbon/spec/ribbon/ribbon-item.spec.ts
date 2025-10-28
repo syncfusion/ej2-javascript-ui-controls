@@ -1426,6 +1426,66 @@ describe('Ribbon Items', () => {
             expect(document.querySelector('#item2_container').classList.contains('e-ribbon-medium-item')).toBe(true);
             expect(document.querySelector('#item3_container').classList.contains('e-ribbon-medium-item')).toBe(true);
         });
+        it('Colorpicker resize in simplified', () => {
+             let isColorPickerOpen: boolean = false;
+            ribbon = new Ribbon({
+                activeLayout: RibbonLayout.Simplified,
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Column',
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Small,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            },{
+                                type: RibbonItemType.ColorPicker,
+                                id: 'fontcolors',
+                                colorPickerSettings: {
+                                    cssClass: 'test-css',
+                                    change: (args: ChangeEventArgs)=>{
+                                        outputEle.innerText = ("Font " + args.value);
+                                    },
+                                    beforeOpen: (args: BeforeCloseEventArgs) => {
+                                        isColorPickerOpen = true;
+                                    },
+                                    value: '#123456',
+                                    htmlAttributes: { 'data-id': 'fontcolor' }
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '200px';
+            ribbon.refreshLayout();
+            expect(isColorPickerOpen).toBe(false);
+            let splitBtn: HTMLElement = document.getElementById('fontcolors').parentElement.querySelector('.e-split-colorpicker');
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(isColorPickerOpen).toBe(true);
+            expect(document.querySelectorAll('.e-colorpicker-popup.e-ribbon-control.e-popup-open').length).toBe(1);
+            containerEle.style.width = '250px';
+            ribbon.refreshLayout();            
+            expect(document.querySelectorAll('.e-colorpicker-popup.e-ribbon-control.e-popup-open').length).toBe(0);
+            splitBtn = document.getElementById('fontcolors').parentElement.querySelector('.e-split-colorpicker');
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();            
+            expect(document.querySelectorAll('.e-colorpicker-popup.e-ribbon-control.e-popup-open').length).toBe(1);
+            containerEle.style.width = '200px';
+            ribbon.refreshLayout();
+            expect(document.querySelectorAll('.e-colorpicker-popup.e-ribbon-control.e-popup-open').length).toBe(0);
+        });
     });
     describe('Overflow items interaction', () => {   
 

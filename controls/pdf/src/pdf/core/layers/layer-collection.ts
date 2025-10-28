@@ -835,9 +835,9 @@ export class PdfLayerCollection {
                         const layerDictionary: Map<_PdfReference, PdfLayer> = this._layerDictionary;
                         if (layerDictionary && layerDictionary.size > 0 && visibleReference && layerDictionary.has(visibleReference)) {
                             const pdfLayer: PdfLayer = layerDictionary.get(visibleReference) as PdfLayer;
-                            if (pdfLayer) {
-                                pdfLayer.visible = false;
-                                if (pdfLayer._dictionary && pdfLayer._dictionary.has('Visible')) {
+                            if (pdfLayer && pdfLayer._visible) {
+                                pdfLayer._visible = false;
+                                if (pdfLayer._dictionary) {
                                     pdfLayer._dictionary.set('Visible', false);
                                 }
                             }

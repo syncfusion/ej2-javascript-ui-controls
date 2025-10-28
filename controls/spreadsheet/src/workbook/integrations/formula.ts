@@ -3,13 +3,14 @@ import { getCell, getSheetIndex, NumberFormatArgs, checkFormulaRef, parseFormula
 import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, clearFormulaDependentCells, formulaInValidation, ValidationModel, LocaleNumericSettings, applyCF, getCellRefValue, commputeFormulaValue, getAutoDetectFormatParser, calculateFormula } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
-import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getNumericObject, L10n } from '@syncfusion/ej2-base';
 import { Deferred } from '@syncfusion/ej2-data';
 import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol, checkUniqueRange } from '../common/index';
 import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete, getUpdatedFormulaOnInsertDelete } from '../common/index';
 import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula, getSwapRange } from '../common/index';
 import { FormulaCalculateArgs, updateSheetFromDataSource, ExtendedRange, importModelUpdate } from '../common/index';
 import { formulaBarOperation } from '../../spreadsheet/common/event';
+import { locale } from '../../spreadsheet/common/constant';
 
 /**
  * @hidden
@@ -169,6 +170,7 @@ export class WorkbookFormula {
         }
         let collection: string[];
         const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(args.sheetId);
+        let l10n: L10n;
         switch (action) {
         case 'getLibraryFormulas':
             args.formulaCollection = Array.from(formulas.keys());
@@ -182,8 +184,11 @@ export class WorkbookFormula {
             }
             args.categoryCollection = collection; break;
         case 'dropDownSelectFormulas':
+            l10n = this.parent.serviceLocator.getService(locale);
             for (let i: number = 0; i < Array.from(formulas.values()).length; i++) {
-                if (args.selectCategory === formulaInfo[i as number].category) {
+                const category: string = formulaInfo[i as number].category &&
+                l10n.getConstant(formulaInfo[i as number].category.split(' ').join('').replace('&', ''));
+                if (args.selectCategory === category) {
                     args.formulaCollection[i as number] = Array.from(formulas.keys())[i as number];
                 }
             }

@@ -939,7 +939,7 @@ export class SfdtReader {
                     const writeInlineFormat: boolean = false;
                     //writeInlineFormat = this.isPasting && i === data.length - 1;
                     const paragraph: ParagraphWidget = new ParagraphWidget();
-                    paragraph.characterFormat = new WCharacterFormat(paragraph);
+                    paragraph.characterFormat = new WCharacterFormat(paragraph, this.documentHelper.owner);
                     paragraph.paragraphFormat = new WParagraphFormat(paragraph);
                     let line: LineWidget = this.documentHelper.layout.addLineWidget(paragraph);
                     if (block[inlinesProperty[this.keywordIndex]].length > 0) {
@@ -1299,7 +1299,7 @@ export class SfdtReader {
         if (indexOf !== -1) {
             const characterCode = code[indexOf + 1];
             let textElement: any = new TextElementBox();
-            textElement.characterFormat = new WCharacterFormat(textElement);
+            textElement.characterFormat = new WCharacterFormat(textElement, this.documentHelper.owner);
             textElement.text = String.fromCharCode(parseInt(characterCode));
             const fontIndex = code.indexOf('\\f');
             if (fontIndex !== -1) {
@@ -1352,7 +1352,7 @@ export class SfdtReader {
             }
             if (isCreateTextEleBox && this.documentHelper.isPageField) {
                 let textElement: any = new FieldTextElementBox();
-                textElement.characterFormat = new WCharacterFormat(textElement);
+                textElement.characterFormat = new WCharacterFormat(textElement, this.documentHelper.owner);
                 textElement.text = "";
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
@@ -1390,7 +1390,7 @@ export class SfdtReader {
                         }
                     }
                 }
-                textElement.characterFormat = new WCharacterFormat(textElement);
+                textElement.characterFormat = new WCharacterFormat(textElement, this.documentHelper.owner);
                 this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], textElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, textElement);
                 textElement.text = textElement instanceof BreakElementBox ? "\v" : inline[textProperty[this.keywordIndex]].replace(/\n/g, ' ');
@@ -1482,7 +1482,7 @@ export class SfdtReader {
                 footnoteElement.symbolCode = inline[symbolCodeProperty[this.keywordIndex]];
                 footnoteElement.symbolFontName = inline[symbolFontNameProperty[this.keywordIndex]];
                 footnoteElement.customMarker = inline[customMarkerProperty[this.keywordIndex]];
-                footnoteElement.characterFormat = new WCharacterFormat(footnoteElement);
+                footnoteElement.characterFormat = new WCharacterFormat(footnoteElement, this.documentHelper.owner);
                 this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], footnoteElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, footnoteElement);
                 this.checkAndApplyRevision(this.keywordIndex, inline, footnoteElement, paragraph);
@@ -1861,7 +1861,7 @@ export class SfdtReader {
         image.isMetaFile = HelperMethods.parseBoolValue(inline[isMetaFileProperty[this.keywordIndex]]);
         image.isCompressed = inline[isCompressedProperty[this.keywordIndex]];
         image.metaFileImageString = inline[metaFileImageStringProperty[this.keywordIndex]];
-        image.characterFormat = new WCharacterFormat(image);
+        image.characterFormat = new WCharacterFormat(image, this.documentHelper.owner);
         image.line = lineWidget;
         if(!(isGroupShape)){  
             this.checkAndApplyRevision(this.keywordIndex, inline, image, lineWidget.paragraph);

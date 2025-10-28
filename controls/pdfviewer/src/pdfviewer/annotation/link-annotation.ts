@@ -92,80 +92,37 @@ export class LinkAnnotation {
             const rect: any = hyperlinksBounds[parseInt(i.toString(), 10)];
             aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
             aTag.title = hyperlinks[parseInt(i.toString(), 10)];
-            if (hyperlinks[parseInt(i.toString(), 10)] && hyperlinks[parseInt(i.toString(), 10)].split('http').length === 1) {
-                const hyperlinkText: string = 'http://' + hyperlinks[parseInt(i.toString(), 10)];
-                aTag.setAttribute('href', hyperlinkText);
+            const href: string = hyperlinks[parseInt(i.toString(), 10)];
+            if (href && href.split('http').length === 1) {
+                aTag.setAttribute('href', 'http://' + href);
             } else {
-                aTag.setAttribute('href', hyperlinks[parseInt(i.toString(), 10)]);
+                aTag.setAttribute('href', href);
             }
-            if (this.pdfViewer.hyperlinkOpenState === 'CurrentTab') {
-                aTag.target = '_self';
-                aTag.onclick = async (e: any) => {
-                    if ( !isHyperlinkClicked)   {
-                        e.preventDefault();
-                        if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
-                            return false;
-                        } else {
-                            const isCancel: boolean =
-                             await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[parseInt(i.toString(), 10)], aTag);
-                            if (isCancel && this.pdfViewer.selectedItems.annotations.length === 0 &&
-                                 this.pdfViewer.selectedItems.formFields.length === 0) {
-                                isHyperlinkClicked = true;
-                                aTag.click();
-                            }
-                            return isCancel;
-                        }
-                    }else{
-                        isHyperlinkClicked = false;
-                        return true;
-                    }
-                };
-                aTag.onmouseover = () => {
-                    proxy.triggerHyperlinkEvent(aTag);
-                };
-            } else if (this.pdfViewer.hyperlinkOpenState === 'NewTab') {
-                aTag.target = '_blank';
-                aTag.onclick = async (e: any) => {
-                    if ( !isHyperlinkClicked)   {
-                        e.preventDefault();
-                        if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
-                            return false;
-                        } else {
-                            const isCancel: boolean =
-                             await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[parseInt(i.toString(), 10)], aTag);
-                            if (isCancel && this.pdfViewer.selectedItems.annotations.length === 0 &&
-                                 this.pdfViewer.selectedItems.formFields.length === 0) {
-                                isHyperlinkClicked = true;
-                                aTag.click();
-                            }
-                            return isCancel;
-                        }
-                    }else{
-                        isHyperlinkClicked = false;
-                        return true;
-                    }
-                };
-                aTag.onmouseover = () => {
-                    proxy.triggerHyperlinkEvent(aTag);
-                };
-            } else if (this.pdfViewer.hyperlinkOpenState === 'NewWindow') {
-                aTag.onclick = async (e: any) => {
-                    e.preventDefault();
-                    if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
-                        return false;
+            aTag.onclick = async (e: any) => {
+                if (isHyperlinkClicked) {
+                    isHyperlinkClicked = false;
+                    return true;
+                }
+                e.preventDefault();
+                if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
+                    return false;
+                }
+                const isCancel: boolean = await proxy.pdfViewer.fireHyperlinkClick(href, aTag);
+                if (isCancel && this.pdfViewer.selectedItems.annotations.length === 0 &&
+                    this.pdfViewer.selectedItems.formFields.length === 0) {
+                    if (this.pdfViewer.hyperlinkOpenState === 'NewWindow') {
+                        window.open(aTag.href, '_blank', 'scrollbars=yes,resizable=yes');
                     } else {
-                        const isCancel: boolean =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[parseInt(i.toString(), 10)], aTag);
-                        if (isCancel && this.pdfViewer.selectedItems.annotations.length === 0 &&
-                             this.pdfViewer.selectedItems.formFields.length === 0) {
-                            window.open(aTag.href, '_blank', 'scrollbars=yes,resizable=yes');
-                        }
-                        return false;
+                        isHyperlinkClicked = true;
+                        aTag.target = (this.pdfViewer.hyperlinkOpenState === 'CurrentTab') ? '_self' : '_blank';
+                        aTag.click();
                     }
-                };
-                aTag.onmouseover = () => {
-                    proxy.triggerHyperlinkEvent(aTag);
-                };
-            }
+                }
+                return isCancel;
+            };
+            aTag.onmouseover = () => {
+                proxy.triggerHyperlinkEvent(aTag);
+            };
             const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
             if (!isNullOrUndefined(pageDiv)) {
                 pageDiv.appendChild(aTag);

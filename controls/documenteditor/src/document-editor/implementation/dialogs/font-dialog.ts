@@ -426,7 +426,7 @@ export class FontDialog {
         if (this.characterFormat) {
             format = this.characterFormat;
         } else {
-            format = new WCharacterFormat(undefined);
+            format = new WCharacterFormat(undefined, this.documentHelper.owner);
         }
         if (!isNullOrUndefined(this.bold)) {
             format.bold = this.bold;

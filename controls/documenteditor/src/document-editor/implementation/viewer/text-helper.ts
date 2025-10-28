@@ -235,7 +235,7 @@ export class TextHelper {
         if (elementBox.characterFormat.hidden && paragraph.height === 0) {
             return;
         }
-        const format: WCharacterFormat = new WCharacterFormat(undefined);
+        const format: WCharacterFormat = new WCharacterFormat(undefined, this.documentHelper.owner);
         const listCharacterFormat: WCharacterFormat = elementBox.listLevel.characterFormat;
         const breakCharacterFormat: WCharacterFormat = paragraph.characterFormat;
         format.fontSize = listCharacterFormat.hasValue('fontSize') ? listCharacterFormat.fontSize : breakCharacterFormat.fontSize;

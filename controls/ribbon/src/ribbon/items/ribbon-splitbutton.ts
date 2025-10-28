@@ -115,6 +115,9 @@ export class RibbonSplitButton {
             }
         };
         let target: HTMLElement;
+        splitbutton.beforeOpen = (e: BeforeOpenCloseMenuEventArgs) => {
+            if (item.splitButtonSettings.beforeOpen) { item.splitButtonSettings.beforeOpen.call(this, e); }
+        };
         splitbutton.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
             if (item.splitButtonSettings.beforeClose) { item.splitButtonSettings.beforeClose.call(this, e); }
             target = e.event ? e.event.target as HTMLElement : null;
@@ -150,6 +153,9 @@ export class RibbonSplitButton {
         cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);
         splitbutton.cssClass = cssClass.join(SPACE);
         splitbutton.dataBind();
+        splitbutton.beforeOpen = (e: BeforeOpenCloseMenuEventArgs) => {
+            if (item.splitButtonSettings.beforeOpen) { item.splitButtonSettings.beforeOpen.call(this, e); }
+        };
         splitbutton.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
             if (item.splitButtonSettings.beforeClose) { item.splitButtonSettings.beforeClose.call(this, e); }
         };
@@ -227,6 +233,7 @@ export class RibbonSplitButton {
                 (VERTICAL_DDB + SPACE + prop.cssClass).trim() : prop.cssClass;
             control.cssClass = prop.cssClass;
         }
+        delete prop.beforeOpen;
         delete prop.open;
         delete prop.click;
         delete prop.close;

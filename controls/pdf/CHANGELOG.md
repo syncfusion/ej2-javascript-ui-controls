@@ -2,7 +2,28 @@
 
 ## [Unreleased]
 
-## 31.2.3 (2025-10-22)
+## 31.2.4 (2025-10-28)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Addressed an issue related to parsing the visibility property of layers in a specific PDF document.
+- Fixed a script error encountered during the import of a PDF document when the group form fields option was enabled.
+- Corrected the functionality where the stamp icon was not preserved during the second save operation.
+- Handled a script error that occurred while parsing font information from a text box field in a particular PDF document.
+
+## 31.2.2 (2025-10-15)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed the issue where the signature appearance was not preserved after flattening a specific PDF document.
+- Resolved an issue where a script error was thrown while updating the layer's visible property.
+- Fixed an issue where the custom template of a stamp annotation was not preserved when it was created multiple times.
+
+## 31.1.23 (2025-10-07)
 
 ### PDF Parser
 
