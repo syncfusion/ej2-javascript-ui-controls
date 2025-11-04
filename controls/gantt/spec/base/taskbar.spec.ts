@@ -1583,7 +1583,7 @@ describe('MT:943439- Code coverage for resourceview offset calculate', () => {
         }, done);
     });
     it('Verifying the offset call for resource view', () => {
-        ganttObj.connectorLineEditModule['calculateOffset'](ganttObj.currentViewData[1]);
+        ganttObj.predecessorModule['calculateOffset'](ganttObj.currentViewData[1]);
         expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].offset).toBe(0);
     });
     afterAll(() => {

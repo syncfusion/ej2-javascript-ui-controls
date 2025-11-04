@@ -1431,6 +1431,32 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('Bug 988999: Insert Link Dialog Header doesn"t show tooltip in the RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateLink']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' check the dialog header has title attribute in it', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(() => {
+                const dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+                const headerEle: Element = dialogEle.querySelector('.e-dlg-header');
+                expect(headerEle.textContent.trim() === headerEle.getAttribute('title')).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
      describe('888656 - Script error throws when we insert table into the RichTextEditor', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -1981,8 +2007,9 @@ describe('RTE CR issues ', () => {
             });
         });
         it('should have aria-multiline attribute for iframe', () => {
-            const contentDiv = rteObj.element.querySelector('iframe').contentDocument.body;
-            expect(contentDiv.getAttribute('aria-multiline')).toBe('true');
+            const contentBody = rteObj.element.querySelector('iframe').contentDocument.body;
+            expect(contentBody.getAttribute('aria-multiline')).toBe(null);
+            expect(contentBody.getAttribute('role')).toBe(null);
         });
         afterAll(() => {
             destroy(rteObj);
@@ -2000,7 +2027,8 @@ describe('RTE CR issues ', () => {
         });
         it('should have aria-multiline attribute for markdown editor', () => {
             const contentDiv = rteObj.contentModule.getPanel().querySelector('.e-content');
-            expect(contentDiv.getAttribute('aria-multiline')).toBe('true');
+            expect(contentDiv.getAttribute('aria-multiline')).toBe(null);
+            expect(contentDiv.getAttribute('role')).toBe(null);
         });
         afterAll(() => {
             destroy(rteObj);
@@ -2834,6 +2862,28 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('Bug 989404: Tooltips are not shown when dynamically enabling the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold']
+                },
+                enabled: false
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' title attributte should be added to toolbar items irrespective to rte enabled or disabled state', () => {
+            const boldToolbarItem: HTMLElement = rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement;
+            expect(boldToolbarItem.getAttribute("title")).not.toBe(null);
+            rteObj.enabled = true;
+            rteObj.dataBind();
+            expect(boldToolbarItem.getAttribute("title")).not.toBe(null);
+        });
+    });
+
     describe('966050 - Modified aria-label value gets reverted after reloading in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         const initialValue = `<p><a class="e-rte-anchor" href="https://ftngd" title="https://ftngd" target="_blank" aria-label="Open in new window">Link</a></p>`;
@@ -3012,6 +3062,26 @@ describe('RTE CR issues ', () => {
         });
         it('Rich Text Editor works properly when a binding value is wrapped with a `<div>`, and no extra `<p>` tags are added', (done) => {
             expect((rteObj as any).inputElement.innerHTML === '<div><p>123</p></div>').toBe(true);
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('Bug 989226: Script error thrown while using RichTextEditor with value binding', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                enterKey: 'P',
+                value: `﻿<div><p>123</p></div>`,
+            });
+            done();
+        });
+        it(' when value is set to undefined RTE should render without throwing any error', (done) => {
+            rteObj.value = undefined;
+            rteObj.dataBind();
+            expect((rteObj as any).inputElement.innerHTML === '<p><br></p>').toBe(true);
             done();
         });
         afterAll((done: DoneFn) => {

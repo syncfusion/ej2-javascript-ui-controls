@@ -374,7 +374,10 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
  */
 export function measureHtmlText(style: TextStyleModel, content: string, width: number, height: number, maxWidth?: number): Size {
     const bounds: Size = new Size();
-    const text: HTMLElement = createHtmlElement('span', { 'style': 'display:inline-block; line-height: normal' });
+    // 986032 - Annotation text field size updates incorrectly when the display style is set to flex on the body element
+    const text: HTMLElement = createHtmlElement('span', {
+        'style': 'position:absolute; display:inline-block; line-height:normal; left:0px; top:0px'
+    });
     if (style.bold) {
         text.style.fontWeight = 'bold';
     }

@@ -411,7 +411,7 @@ export function toObjectLowerCase(obj: { [key: string]: IToolsItemConfigs }): { 
  */
 export function getEditValue(value: string, rteObj: IRichTextEditor): string {
     let val: string;
-    if (value !== null && value !== '') {
+    if (!isNOU(value) && value !== '') {
         val = rteObj.enableHtmlEncode ? formatRTEContent(decode(value), rteObj) : formatRTEContent(value, rteObj);
         rteObj.setProperties({ value: val }, true);
     } else {

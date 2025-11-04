@@ -533,7 +533,7 @@ export class ScrollBar {
             currentEnd = currentStart + zoomFactor * range.delta;
         }
         if (currentEnd) {
-            args = { axis: (this.component.isBlazor ? {} : this.axis) as Axis, currentRange:
+            args = { axis: this.axis as Axis, currentRange:
             this.getStartEnd(currentStart, currentEnd, true),
             previousAxisRange: previousRange };
         }
@@ -706,7 +706,7 @@ export class ScrollBar {
                 this.previousXY = mouseXY;
                 this.setZoomFactorPosition(currentX, currentWidth);
                 const argsData: IScrollEventArgs = {
-                    axis: (this.component.isBlazor ? {} : this.axis) as Axis,
+                    axis: this.axis as Axis,
                     name: scrollChanged,
                     range: this.axis.visibleRange,
                     zoomFactor: this.zoomFactor,
@@ -738,7 +738,7 @@ export class ScrollBar {
                 this.setZoomFactorPosition(this.startX, currentWidth);
             }
             const argsData: IScrollEventArgs = {
-                axis: (this.component.isBlazor ? {} : this.axis) as Axis,
+                axis: this.axis as Axis,
                 name: scrollChanged,
                 range: this.axis.visibleRange,
                 zoomFactor: this.zoomFactor,
@@ -814,7 +814,9 @@ export class ScrollBar {
         this.height = this.axis.scrollbarSettings.height;
         const currentX: number = this.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
         const minThumbX: number = (this.width - minThumbWidth - circleRadius);
-        this.scrollElements.thumbRectX = currentX > minThumbX ? minThumbX : currentX < circleRadius ? circleRadius : currentX;
+        this.scrollElements.thumbRectX = currentX > minThumbX ? minThumbX : currentX < circleRadius ?
+            (!this.isVertical && this.axis.scrollbarSettings.enableZoom ? circleRadius + this.svgExtraWidth / 2 : circleRadius)
+            : (!this.isVertical && this.axis.scrollbarSettings.enableZoom ? (currentX + this.svgExtraWidth / 2) : currentX);
         this.scrollElements.thumbRectWidth = this.isThumbDrag ? this.scrollElements.thumbRectWidth :
             ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
                 ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;
@@ -927,7 +929,7 @@ export class ScrollBar {
         zoomFactor?: number, currentRanges?: ScrollbarSettingsRangeModel
     ): IScrollEventArgs {
         const scrollArgs: IScrollEventArgs = {
-            axis: (this.component.isBlazor ? {} : this.axis) as Axis,
+            axis: this.axis as Axis,
             name: eventName,
             range: this.axis.visibleRange,
             zoomFactor: this.axis.zoomFactor,

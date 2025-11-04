@@ -287,6 +287,18 @@ export class DateParser {
                             return null;
                         }
                     }
+                    if (key === 'hour') {
+                        var is12h: boolean = options.hour12;
+                        if (is12h) {
+                            if (tValue < 1 || tValue > 12) { return null; }
+                        } else {
+                            if (tValue < 0 || tValue > 23) { return null; }
+                        }
+                    } else if (key === 'minute' || key === 'second') {
+                        if (tValue < 0 || tValue > 59) { return null; }
+                    } else if (key === 'milliseconds') {
+                        if (tValue < 0 || tValue > 999) { return null; }
+                    }
                     (<any>res)[`${(<any>timeSetter)[`${key}`]}`](tValue);
                 }
             }

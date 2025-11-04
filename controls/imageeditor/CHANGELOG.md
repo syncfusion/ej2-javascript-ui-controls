@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.4 (2025-10-28)
+## 31.2.5 (2025-11-04)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I780544` - Resolved an issue on mobile devices where tapping a text shape while editing another would unintentionally delete the most recently added text shape.
+
+## 31.2.2 (2025-10-15)
 
 ### Image Editor
 

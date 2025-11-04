@@ -299,10 +299,6 @@ export class CollaborativeEditingHandler {
         let currentUser: string = this.documentEditor.currentUser;
         let currentEditMode: boolean = this.documentEditor.commentReviewPane.commentPane.isEditMode;
         let currenteditorHistory = this.documentEditor.editorHistoryModule.lastOperation;
-        let currentTextArea: HTMLTextAreaElement;
-        if (!isNullOrUndefined(this.documentEditor.commentReviewPane.commentPane.currentEditingComment)) {
-            currentTextArea = this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea as HTMLTextAreaElement;
-        }
         let contentControl: ContentControl;
         for (let i: number = 0; i < action.operations.length; i++) {
             let markerData: MarkerInfo = action.operations[i].markerData;
@@ -758,9 +754,6 @@ export class CollaborativeEditingHandler {
         this.documentEditor.currentUser = currentUser;
         this.documentEditor.commentReviewPane.commentPane.isEditMode = currentEditMode;
         this.documentEditor.editorHistoryModule.lastOperation = currenteditorHistory;
-        if (!isNullOrUndefined(this.documentEditor.commentReviewPane.commentPane.currentEditingComment)) {
-            this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea = currentTextArea;
-        }
     }
     private updateOperation(operation: Operation): void {
         let markerData = operation.markerData;
@@ -774,8 +767,9 @@ export class CollaborativeEditingHandler {
             if (!isNullOrUndefined(commentToDelete) && !(!isNullOrUndefined(markerData.done) && isNullOrUndefined(markerData.date)) && isNullOrUndefined(markerData.isReply)) {
                 if (commentToDelete.text !== markerData.text) {
                     let commentView: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(commentToDelete);
-                    commentView.commentText.innerText = markerData.text;
+                    commentView.commentText.innerHTML = markerData.text;
                     commentToDelete.text = markerData.text;
+                    commentView.textArea.innerHTML = markerData.text;
                     this.parseCommentMentions(markerData.text, commentToDelete);
                     return;
                 }

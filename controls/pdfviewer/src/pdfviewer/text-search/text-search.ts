@@ -1873,7 +1873,7 @@ export class TextSearch {
         for (v = v; v < queryLength; v++) {
             if (characterBounds[parseInt(count.toString(), 10)]) {
                 const charBound: any = characterBounds[parseInt(count.toString(), 10)];
-                if (left > charBound.X + charBound.Width) {
+                if (charBound.Width !== 0 && left > charBound.X + charBound.Width) {
                     isRTL = true;
                 }
                 top = (top < charBound.Y) ? top : charBound.Y;

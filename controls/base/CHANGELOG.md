@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.5 (2025-11-04)
+
+### Common
+
+#### Bug Fixes
+
+- `#I780829` - Resolved the issue of unexpected auto-correction of invalid time input on blur in the DateTimePicker and TimePicker components.
+
 ## 31.2.4 (2025-10-28)
 ### Common
 #### Bug Fixes

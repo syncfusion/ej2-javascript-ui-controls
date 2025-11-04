@@ -120,7 +120,8 @@ export class DataBind {
                     }
                     dataManager.executeQuery(query.requiresCount()).then((e: ReturnOption) => {
                         if (!this.parent || this.parent.isDestroyed) { return; }
-                        result = (e.result && e.result.result ? e.result.result : e.result) as Object[];
+                        result = (e.result && (e.result as { result?: Object[] }).result ? (e.result as { result?: Object[] }).result
+                            : e.result as Object[]);
                         sCellIdx = getRangeIndexes(range.startCell);
                         sRowIdx = sCellIdx[0]; sColIdx = sCellIdx[1];
                         if (result && result.length) {

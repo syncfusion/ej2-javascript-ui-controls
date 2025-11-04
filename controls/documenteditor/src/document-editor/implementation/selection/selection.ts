@@ -3015,7 +3015,8 @@ export class Selection {
     public triggerContentControlFillEvent(): void {
         let currentContentControl = this.currentContentControl;
         let previousContentControl = this.previousSelectedContentControl;
-        if (!isNullOrUndefined(previousContentControl) && previousContentControl.contentControlProperties) {
+        if (!isNullOrUndefined(previousContentControl) && previousContentControl.contentControlProperties
+            && previousContentControl.contentControlProperties.xmlMapping) {
             let data = { 'Text': this.owner.editor.getResultContentControlText(previousContentControl) };
             this.owner.trigger(aftercontentControlFillEvent, data);
             if (!isNullOrUndefined(previousContentControl.contentControlProperties.xmlMapping)) {
@@ -3023,7 +3024,8 @@ export class Selection {
                 this.owner.xmlPaneModule.updateContent(data.Text, xpath);
             }
         }
-        if (!isNullOrUndefined(currentContentControl) && currentContentControl.contentControlProperties) {
+        if (!isNullOrUndefined(currentContentControl) && currentContentControl.contentControlProperties
+            && currentContentControl.contentControlProperties.xmlMapping) {
             let data = { 'Text': this.owner.editor.getResultContentControlText(currentContentControl) };
             this.owner.trigger(beforecontentControlFillEvent, data);
         }
@@ -9340,9 +9342,15 @@ export class Selection {
                     if (!isNullOrUndefined(this.getPreviousTextElement(inline))) {
                         let element: ElementBox = this.getPreviousTextElement(inline);
                         this.characterFormat.copyFormat(element.characterFormat, this.documentHelper.textHelper.getFontNameToRender((element as TextElementBox).scriptType, inline.characterFormat));
+                        if (inline instanceof EditRangeStartElementBox) {    
+                            this.characterFormat.highlightColor = inline.characterFormat.highlightColor;
+                        }
                     } else if (!isNullOrUndefined(this.getNextTextElement(inline))) {
                         let element: ElementBox = this.getNextTextElement(inline);
                         this.characterFormat.copyFormat(element.characterFormat, this.documentHelper.textHelper.getFontNameToRender((element as TextElementBox).scriptType, inline.characterFormat));
+                        if (inline instanceof EditRangeEndElementBox) {
+                            this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as any).scriptType, inline.characterFormat));
+                        }
                     } else {
                         this.characterFormat.copyFormat(para.characterFormat);
                     }

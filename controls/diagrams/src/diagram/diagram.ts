@@ -12886,7 +12886,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             if (this.diagramActions & DiagramAction.PreventZIndexOnDragging) {
                                 this.updateDiagramObject(parent, true);
                             }
-                            else {
+                            // 988178:Performance impact when moving multiselected nodes inside a SwimLane
+                            else if (!parent.isLane) {
                                 this.updateDiagramObject(parent);
                             }
                         }
@@ -13390,7 +13391,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const node: Object = cloneObject(actualObject);
             this.insertValue(node, false);
         }
-        const existingBounds: Rect = actualObject.wrapper.bounds; let updateSelector: boolean = false; let points: PointModel[] = [];
+        let existingBounds: Rect;
+        if (actualObject && actualObject.wrapper !== undefined) {
+            existingBounds = actualObject.wrapper.bounds;
+        } else {
+            return;
+        }
+        let updateSelector: boolean = false; let points: PointModel[] = [];
         updateSelector = this.connectorProprtyChangeExtend(actualObject, oldProp, newProp, updateSelector);
         let inPort: PointPortModel; let outPort: PointPortModel; let source: Canvas; let target: Canvas;
         if (newProp.visible !== undefined) { this.updateElementVisibility(actualObject.wrapper, actualObject, actualObject.visible); }

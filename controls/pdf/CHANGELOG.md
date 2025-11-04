@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 31.2.5 (2025-11-04)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where the unit of the line measurement annotation was not correctly preserved when updating its text content.
+- Resolved an issue where custom stamp annotations were not properly preserved when updating their rotation angle.
+
 ## 31.2.4 (2025-10-28)
 
 ### PDF Parser

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 31.2.5 (2025-11-04)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I762462` - Fixed a scrolling issue in Safari for grids using frozen columns and column `virtualization`.
+- `#I777595` - Fixed focus border styling problem in the column chooser's search input for the Fluent 2 theme.
+
 ## 31.2.4 (2025-10-28)
 
 ### Grid

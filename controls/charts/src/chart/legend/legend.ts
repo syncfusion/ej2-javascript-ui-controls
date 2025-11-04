@@ -7,7 +7,7 @@ import { ChartSeriesType, ChartDrawType } from '../utils/enum';
 import { LegendOptions, BaseLegend } from '../../common/legend/legend';
 import { Chart, Indexes, Points } from '../../chart';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
-import { textTrim, ChartLocation, removeElement, RectOption, withInBounds, blazorTemplatesReset} from '../../common/utils/helper';
+import { textTrim, ChartLocation, removeElement, RectOption, withInBounds} from '../../common/utils/helper';
 import { getUnicodeText} from '../../common/utils/helper';
 import { Size, measureText, Rect, CanvasRenderer, getElement } from '@syncfusion/ej2-svg-base';
 import { ILegendRegions } from '../../common/model/interface';
@@ -414,7 +414,7 @@ export class Legend extends BaseLegend {
         if (chart.legendSettings.mode === 'Series') {
             const legendClickArgs: ILegendClickEventArgs = {
                 legendText: legend.text, legendShape: legend.shape,
-                chart: chart.isBlazor ? {} as Chart : chart, series: series, points: series.points, name: legendClick, cancel: false
+                chart: chart, series: series, points: series.points, name: legendClick, cancel: false
             };
             this.chart.trigger(legendClick, legendClickArgs);
             series.legendShape = legendClickArgs.legendShape;
@@ -451,7 +451,7 @@ export class Legend extends BaseLegend {
             const point: Points = series.points[index as number];
             const legendClickArgs: ILegendClickEventArgs = {
                 legendText: legend.text, legendShape: legend.shape,
-                chart: chart.isBlazor ? {} as Chart : chart, series: series, points: [point], name: legendClick, cancel: false
+                chart: chart, series: series, points: [point], name: legendClick, cancel: false
             };
             this.chart.trigger(legendClick, legendClickArgs);
             if (chart.legendSettings.toggleVisibility && !legendClickArgs.cancel) {
@@ -470,7 +470,7 @@ export class Legend extends BaseLegend {
             }
             const legendClickArgs: ILegendClickEventArgs = {
                 legendText: legend.text, legendShape: legend.shape,
-                chart: chart.isBlazor ? {} as Chart : chart, series: series, points: points, name: legendClick, cancel: false
+                chart: chart, series: series, points: points, name: legendClick, cancel: false
             };
             this.chart.trigger(legendClick, legendClickArgs);
             if (chart.legendSettings.toggleVisibility && !legendClickArgs.cancel) {
@@ -499,7 +499,6 @@ export class Legend extends BaseLegend {
         series.isLegendClicked = true;
         chart.rotatedDataLabelCollections = [];
         removeElement(getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]);
-        blazorTemplatesReset(chart);
         this.redrawSeriesElements(series, chart);
         chart.removeSvg();
         chart.refreshAxis();

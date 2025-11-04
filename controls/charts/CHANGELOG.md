@@ -2,7 +2,20 @@
 
 ## [Unreleased]
 
-## 31.2.4 (2025-10-28)
+## 31.2.5 (2025-11-04)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I757693` - Extra space will no longer be added to the axis label during dynamic updates.
+- `#I777050` - Grid lines are now rendered for empty charts.
+
+#### Feature
+
+- `#I776271` - Support for accessibility labels has been added to the chart SVG.
+
+## 31.2.3 (2025-10-22)
 
 ### Chart
 

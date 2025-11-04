@@ -4261,19 +4261,23 @@ export class CommandHandler {
             this.clearSelection();
             connector = this.diagram.currentDrawingObject as Connector;
         }
-        if (endPoint === 'BezierSourceThumb' || endPoint === 'BezierTargetThumb') {
-            checkBezierThumb = true;
-            connector.isBezierEditing = true;
-        }
-        if (endPoint === 'ConnectorSourceEnd' || endPoint === 'BezierSourceThumb') {
-            tx = point.x - (checkBezierThumb ? (segment as BezierSegment).bezierPoint1.x : connector.sourcePoint.x);
-            ty = point.y - (checkBezierThumb ? (segment as BezierSegment).bezierPoint1.y : connector.sourcePoint.y);
-            return this.dragSourceEnd(
-                connector, tx, ty, null, point, endPoint, undefined, target as Node, targetPortId, undefined, segment);
+        if (connector && connector instanceof Connector) {
+            if (endPoint === 'BezierSourceThumb' || endPoint === 'BezierTargetThumb') {
+                checkBezierThumb = true;
+                connector.isBezierEditing = true;
+            }
+            if (endPoint === 'ConnectorSourceEnd' || endPoint === 'BezierSourceThumb') {
+                tx = point.x - (checkBezierThumb ? (segment as BezierSegment).bezierPoint1.x : connector.sourcePoint.x);
+                ty = point.y - (checkBezierThumb ? (segment as BezierSegment).bezierPoint1.y : connector.sourcePoint.y);
+                return this.dragSourceEnd(
+                    connector, tx, ty, null, point, endPoint, undefined, target as Node, targetPortId, undefined, segment);
+            } else {
+                tx = point.x - (checkBezierThumb ? (segment as BezierSegment).bezierPoint2.x : connector.targetPoint.x);
+                ty = point.y - (checkBezierThumb ? (segment as BezierSegment).bezierPoint2.y : connector.targetPoint.y);
+                return this.dragTargetEnd(connector, tx, ty, null, point, endPoint, undefined, segment);
+            }
         } else {
-            tx = point.x - (checkBezierThumb ? (segment as BezierSegment).bezierPoint2.x : connector.targetPoint.x);
-            ty = point.y - (checkBezierThumb ? (segment as BezierSegment).bezierPoint2.y : connector.targetPoint.y);
-            return this.dragTargetEnd(connector, tx, ty, null, point, endPoint, undefined, segment);
+            return false;
         }
     }
 

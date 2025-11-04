@@ -2,7 +2,7 @@ import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Eve
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
-import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend, asyncPagesVisible } from './index';
+import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
 import { Print, SearchResultsChangeEventArgs, SelectionWidgetInfo, Dictionary, ElementBox } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
@@ -1293,12 +1293,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public documentLoadFailed: EmitType<DocumentLoadFailedEventArgs>;
     /**
      * @private
-     * Triggers when pages loads asynchronously in the document editor
-     */
-    @Event()
-    public asyncPagesVisible: EmitType<void>;
-    /**
-     * @private
      */
     public externalFonts: ExternalFontInfo[];
     /**
@@ -1875,6 +1869,20 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     this.showHideRulers();
                     break;
                 case 'currentUser':
+                    // Reset spell checker collections when switching users with user dictionary enabled
+                    // because spelling errors need to be re-evaluated using the new user's custom dictionary
+                    if (this.spellCheckerModule && this.spellCheckerModule.enableUserDictionary) {
+                        this.documentHelper.triggerSpellCheck = true;
+                        this.documentHelper.triggerElementsOnLoading = true;
+                        this.spellCheckerModule.resetSpellCheckState();
+                    }
+                    if (this.selectionModule && this.documentHelper.isDocumentProtected) {
+                        this.selectionModule.highlightEditRegion();
+                    }
+                    this.viewer.updateScrollBars();
+                    this.documentHelper.triggerSpellCheck = false;
+                    this.documentHelper.triggerElementsOnLoading = false;
+                    break;
                 case 'userColor':
                     if (this.selectionModule && this.documentHelper.isDocumentProtected) {
                         this.selectionModule.highlightEditRegion();
@@ -4978,7 +4986,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 'sty': [styleData]
             };
             if (this.editorModule.isLinkedStyle((style as WStyle).name)) {
-                const linkedStyle: WStyle = this.documentHelper.styles.findByName((style as WStyle).name + ' Char') as WStyle;
+                let linkedStyle: WStyle = this.documentHelper.styles.findByName((style as WStyle).name + ' Char') as WStyle;
+                if (isNullOrUndefined(linkedStyle)) {
+                    const charStyle: WCharacterStyle = new WCharacterStyle();
+                    charStyle.type = 'Character';
+                    charStyle.name = (style as WStyle).name + ' Char';
+                    charStyle.characterFormat = (((style as WParagraphStyle).characterFormat) as WCharacterFormat).cloneFormat();
+                    this.documentHelper.styles.push(charStyle);
+                    linkedStyle = charStyle;
+                }
                 const linkedStyleData: any = this.documentHelper.owner.sfdtExportModule.writeStyle(linkedStyle);
                 styleObject.sty.push(linkedStyleData);
             }

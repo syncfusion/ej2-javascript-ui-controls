@@ -6413,7 +6413,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.setNodeFocusable();
         }
         this.updateCheckedStateFromDS();
-        if (this.showCheckBox && dropLi) {
+        if (this.showCheckBox && dropLi && this.autoCheck) {
             this.ensureParentCheckState(dropLi);
         }
         if ((this.fields.dataSource instanceof DataManager === false)) {

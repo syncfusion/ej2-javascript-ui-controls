@@ -9,7 +9,7 @@ import { AccumulationType } from '../model/enum';
 import { BaseLegend, LegendOptions } from '../../common/legend/legend';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
 import { Rect, Size, measureText } from '@syncfusion/ej2-svg-base';
-import { ChartLocation, textTrim, getElement, blazorTemplatesReset} from '../../common/utils/helper';
+import { ChartLocation, textTrim, getElement} from '../../common/utils/helper';
 import { IAccLegendRenderEventArgs, IAccLegendClickEventArgs } from '../../accumulation-chart/model/pie-interface';
 import { LegendTitlePosition } from '../../common/utils/enum';
 import { textWrap } from '../../common/utils/helper';
@@ -564,7 +564,7 @@ export class AccumulationLegend extends BaseLegend {
                     const legendOption: LegendOptions = this.legendByIndex(pointIndex, this.legendCollections);
                     const legendClickArgs: IAccLegendClickEventArgs = {
                         legendText: legendOption.text, legendShape: legendOption.shape,
-                        chart: chart.isBlazor ? {} as AccumulationChart : chart, series: currentSeries, point: point,
+                        chart: chart, series: currentSeries, point: point,
                         name: legendClick, cancel: false
                     };
                     this.chart.trigger(legendClick, legendClickArgs);
@@ -575,8 +575,6 @@ export class AccumulationLegend extends BaseLegend {
                         chart.redraw = chart.enableAnimation;
                         this.sliceVisibility(pointIndex, point.visible);
                         chart.removeSvg();
-                        //To remove the blazor templates
-                        blazorTemplatesReset(chart);
                         (<AccumulationChart>this.chart).refreshPoints(currentSeries.points);
                         (<AccumulationChart>this.chart).calculateBounds();
                         const borderElement: Element = document.getElementById(this.chart.element.id + 'PointHover_Border');

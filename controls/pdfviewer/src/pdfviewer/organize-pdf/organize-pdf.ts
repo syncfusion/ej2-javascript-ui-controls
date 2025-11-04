@@ -1582,7 +1582,33 @@ export class PageOrganizer {
         { return item.currentPageIndex === pageOrder; }))) {
             rotateAngle = this.tempOrganizePagesCollection.find((item: OrganizeDetails): boolean =>
             { return item.currentPageIndex === pageOrder; }).rotateAngle;
-            this.imageContainer.style.transform = 'rotate(' + rotateAngle + 'deg)';
+            if (!isNullOrUndefined(pageSize.rotation) && (pageSize.rotation === 1 || pageSize.rotation === 3) &&
+                pageSize.height > pageSize.width) {
+                const tempWidth: any = this.thumbnailImage.style.width;
+                this.thumbnailImage.style.width = this.thumbnailImage.style.height;
+                this.thumbnailImage.style.height = tempWidth;
+                let element: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_organize_image_' + pageIndex);
+                if (isNullOrUndefined(element)) {
+                    if (targetElement) {
+                        const imageElement: HTMLElement = targetElement.querySelector('.e-pv-organize-image') as HTMLElement;
+                        element = document.getElementById(imageElement.id);
+                    } else {
+                        element = this.thumbnailImage;
+                    }
+                }
+                const style: CSSStyleDeclaration = window.getComputedStyle(element);
+                const transform: any = style.getPropertyValue('transform');
+                let angle: any = 0;
+                if (transform !== 'none' && transform !== '') {
+                    const values: any = transform.split('(')[1].split(')')[0].split(',');
+                    const cos: any = parseFloat(values[0]);
+                    const sin: any = parseFloat(values[1]);
+                    angle = Math.round(Math.atan2(sin, cos) * (180 / Math.PI));
+                }
+                (this.imageContainer.childNodes[0] as HTMLElement).style.transform = 'rotate(' + angle + 'deg)';
+            } else {
+                this.imageContainer.style.transform = 'rotate(' + rotateAngle + 'deg)';
+            }
         }
         this.thumbnail.appendChild(this.imageContainer);
         const thumbnailPageNumber: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_tile_pagenumber_' + pageIndex, className: 'e-pv-tile-number' });

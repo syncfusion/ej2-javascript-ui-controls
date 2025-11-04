@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 31.2.5 (2025-11-04)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I775337` - Node distribution functionality has been corrected and now works as expected.
+- `#I775236` - Tooltip content is now fully visible, even when displaying large amounts of text.
+- `#I774007` - Annotation text field sizing now renders correctly when the body element uses display flex.
+- `#I775354` - Locked nodes stay fixed and are no longer resized with unlocked nodes.
+- `#I775726` - Connector segments no longer jump when the source end is dragged and continuously connected to a node.
+- `#I776101` - The allowDrag property now functions correctly when updated dynamically.
+- `#I776677` - Saving diagram with fixedUserHandleTemplate no longer throws errors in Angular.
+- `#I776814` - Improved performance when moving multiple selected nodes within a SwimLane.
+
 ## 31.2.3 (2025-10-22)
 
 ### Diagram

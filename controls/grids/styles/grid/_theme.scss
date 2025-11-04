@@ -61,7 +61,9 @@
       }
     
       .e-cc-searchdiv.e-input-focus {
-        border-color: $grid-columnchooser-search-border-fcolor;
+        @if $grid-skin != 'fluent2' {
+          border-color: $grid-columnchooser-search-border-fcolor;
+        }
       }
     }
   }

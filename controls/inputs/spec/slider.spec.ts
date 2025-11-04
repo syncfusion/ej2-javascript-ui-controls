@@ -5100,3 +5100,33 @@ describe('Slider handles event list testing for dynamic updates of the showButto
         slider.destroy();
     });
 });
+
+describe('BZ-986692 isInteracted Property in Change Event Returns false for Keyboard and Slider Button Actions', () => {
+    let slider: any;
+    let element: HTMLElement;
+
+    beforeEach((): void => {
+        slider = undefined;
+        element = createElement('div', { id: 'slider' });
+        document.body.appendChild(element);
+    });
+    afterEach((): void => {
+        element.remove();
+        document.body.innerHTML = '';
+    });
+
+    it('Range Slider: isInteracted Property value for keyboard arrow key', (done) => {
+        slider = new Slider({
+            value: 10,
+            showButtons: true,
+            change: (args: any) => {
+                expect(args.isInteracted).toBe(true);
+                expect(args.value).toBe(11);
+                done();
+            }
+        });
+        slider.appendTo('#slider');
+        let eventArgs = { keyCode: 39, currentTarget: slider.element, target: slider.element, preventDefault: (): void => { } };
+        slider.keyDown(eventArgs);
+    });
+});

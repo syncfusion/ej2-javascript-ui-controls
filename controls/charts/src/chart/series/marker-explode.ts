@@ -370,7 +370,7 @@ export class MarkerExplode extends ChartData {
                 (<HTMLElement>elements).style.visibility = '';
                 elements.setAttribute('transform', transform);
                 if (!isLabel && (pointIndex === series.points.length - 1)) {
-                    series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
+                    series.chart.trigger('animationComplete', { series: series });
                 }
                 if (isRemove || endAnimate) {
                     remove(elements);

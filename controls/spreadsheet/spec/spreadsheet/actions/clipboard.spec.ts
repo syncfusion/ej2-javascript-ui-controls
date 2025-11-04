@@ -1897,4 +1897,33 @@ describe('Clipboard ->', () => {
             });
         });
     });
+    describe('EJ2-987921 -> Formula Reference Incorrectly Updated Causing #REF Errors When Copy-Pasting in Spreadsheet0', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {}], activeSheetIndex: 0 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Reference should Update correctly without any incorrect or #REF error', (done: Function) => {
+            helper.edit('I2', '=SUM(D2,E2)');
+            helper.invoke('copy', ['I2']).then(() => {
+                setTimeout(() => {
+                    helper.invoke('paste', ['I2:I20']);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[8].formula).toBe('=SUM(D3,E3)');
+                    expect(helper.getInstance().sheets[0].rows[3].cells[8].formula).toBe('=SUM(D4,E4)');
+                    expect(helper.getInstance().sheets[0].rows[4].cells[8].formula).toBe('=SUM(D5,E5)');
+                    expect(helper.getInstance().sheets[0].rows[5].cells[8].formula).toBe('=SUM(D6,E6)');
+                    expect(helper.getInstance().sheets[0].rows[6].cells[8].formula).toBe('=SUM(D7,E7)');
+                    expect(helper.getInstance().sheets[0].rows[7].cells[8].formula).toBe('=SUM(D8,E8)');
+                    expect(helper.getInstance().sheets[0].rows[8].cells[8].formula).toBe('=SUM(D9,E9)');
+                    expect(helper.getInstance().sheets[0].rows[9].cells[8].formula).toBe('=SUM(D10,E10)');
+                    expect(helper.getInstance().sheets[0].rows[10].cells[8].formula).toBe('=SUM(D11,E11)');
+                    expect(helper.getInstance().sheets[0].rows[11].cells[8].formula).toBe('=SUM(D12,E12)');
+                    expect(helper.getInstance().sheets[0].rows[12].cells[8].formula).toBe('=SUM(D13,E13)');
+                    expect(helper.getInstance().sheets[0].rows[13].cells[8].formula).toBe('=SUM(D14,E14)');
+                    done();
+                });
+            });
+        });
+    });
 });

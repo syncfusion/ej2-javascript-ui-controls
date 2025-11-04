@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 31.2.5 (2025-11-04)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I776058` - Resolved a performance issue when opening PDFs with a large number of free text annotations.
+- `#I776718` - Resolved an issue where some special characters were not being searched properly in the provided PDF document.
+- `#I776711` - Resolved an issue where text editing in the search input box was not working properly after selecting text in the PDF Viewer.
+
 ## 31.2.4 (2025-10-28)
 
 ### PDF Viewer

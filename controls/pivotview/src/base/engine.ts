@@ -2026,7 +2026,8 @@ export class PivotEngine {
         field.filter = filter;
         field.filterType = type;
         field.isExcelFilter = isLabelFilter;
-        const members: IMembers = PivotUtil.getFormattedMembers(field.members, name, this);
+        const isGroupedField: boolean = name in this.groupingFields;
+        const members: IMembers = PivotUtil.getFormattedMembers(field.members, name, this, isLabelFilter, isGroupedField);
         const allowFil: boolean = isInclude;
         const final: IIterator = {};
         const filterObj: IStringIndex = {};
@@ -5825,7 +5826,7 @@ export class PivotEngine {
                 levelName = firstRow.valueSort.levelName as string;
                 levelNameParts = levelName.split(this.dataSourceSettings.valueSortSettings.headerDelimiter);
                 if (((!this.dataSourceSettings.showSubTotals && firstRow.type !== 'value') ||
-                    (this.dataSourceSettings.showColumnSubTotals && !this.dataSourceSettings.showRowSubTotals)) &&
+                    (!this.dataSourceSettings.showRowSubTotals)) &&
                     firstRow.formattedText !== this.localeObj.getConstant('grandTotal')) {
                     if (firstRow.isSum) {
                         isValue = false;

@@ -51,7 +51,7 @@ export class RibbonStateManager {
      * @private
      */
     public enableDisableRibbonItem(ribbon: Ribbon, enable: boolean): void {
-        if (!ribbon.tabs || !ribbon.tabs.length) {
+        if (!isNullOrUndefined(ribbon) && (!ribbon.tabs || !ribbon.tabs.length)) {
             return;
         }
 
@@ -68,24 +68,26 @@ export class RibbonStateManager {
         }
 
         // When disabling (enable === false)
-        for (const tab of ribbon.tabs) {
-            const tabId: string = tab.id;
-            const isViewTab: boolean = tabId.indexOf('view') !== -1;
-            const isHomeTab: boolean = tabId.indexOf('home') !== -1;
-            const isReviewTab: boolean = tabId.indexOf('review') !== -1;
+        if (!isNullOrUndefined(ribbon) && !isNullOrUndefined(ribbon.tabs)) {
+            for (const tab of ribbon.tabs) {
+                const tabId: string = tab.id;
+                const isViewTab: boolean = tabId.indexOf('view') !== -1;
+                const isHomeTab: boolean = tabId.indexOf('home') !== -1;
+                const isReviewTab: boolean = tabId.indexOf('review') !== -1;
 
-            if (isReviewTab) {
-                ribbon.enableTab(tabId);
-                this.handleReviewTabProtection(ribbon, tab);
-            } else if (isViewTab) {
-                ribbon.enableTab(tabId);
-                ribbon.disableGroup(this.container.element.id + RIBBON_ID + '_showGroup');
-            } else if (isHomeTab) {
-                ribbon.enableTab(tabId);
-                this.handleHomeTabProtection(ribbon, tab);
-            } else {
-                for (const group of tab.groups) {
-                    ribbon.disableGroup(group.id);
+                if (isReviewTab) {
+                    ribbon.enableTab(tabId);
+                    this.handleReviewTabProtection(ribbon, tab);
+                } else if (isViewTab) {
+                    ribbon.enableTab(tabId);
+                    ribbon.disableGroup(this.container.element.id + RIBBON_ID + '_showGroup');
+                } else if (isHomeTab) {
+                    ribbon.enableTab(tabId);
+                    this.handleHomeTabProtection(ribbon, tab);
+                } else {
+                    for (const group of tab.groups) {
+                        ribbon.disableGroup(group.id);
+                    }
                 }
             }
         }

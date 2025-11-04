@@ -265,10 +265,25 @@ export class FocusModule {
         }
         case 'tab':
         case 'shiftTab':
+        {
+            let target: Element = e.target as Element;
+            if (this.parent.element.querySelectorAll('.e-focused').length > 0) {
+                target = this.parent.element.querySelectorAll('.e-focused')[0];
+            }
+            const nextElement: Element | string  = this.parent.ganttChartModule['getNextElement'](target, e.action === 'tab' ? true : false, false);
             if (!ganttObj.element.classList.contains('e-scroll-disabled')) {
+                if ((target.classList.contains('e-headercell') && !nextElement) || (target.classList.contains('e-rowcell') && !nextElement)) {
+                    this.parent.treeGrid.grid.notify('key-pressed', e);
+                    return;
+                }
+                else if (target.classList.contains('e-headercell')){
+                    this.parent.treeGrid.grid.notify('key-pressed', e);
+                    return;
+                }
                 ganttObj.ganttChartModule.onTabAction(e);
             }
             break;
+        }
         case 'contextMenu':
         {
             const contextMenu: ContextMenu = <ContextMenu>(<EJ2Instance>document.getElementById(this.parent.element.id +
@@ -331,14 +346,16 @@ export class FocusModule {
         e.preventDefault();
         const ganttObj: Gantt = this.parent;
         let expandedRecords: IGanttData[];
-        if ((e.action === 'downArrow' || e.action === 'upArrow') && this.parent.selectionModule && this.parent.allowSelection && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
-            expandedRecords = ganttObj.getExpandedRecords(ganttObj.flatData);
-        }
-        else {
-            expandedRecords = ganttObj.expandedRecords;
-        }
+        const target : Element = e.target as Element;
         if (ganttObj.selectionModule) {
-            if (ganttObj.selectionSettings.mode !== 'Cell' && ganttObj.selectedRowIndex !== -1) {
+            if (ganttObj.selectedRowIndex !== -1 && (!target || ((!target.classList.contains('e-rowcell') &&
+                !target.classList.contains('e-headercell')) || (this.parent.contextMenuModule && this.parent.contextMenuModule.isOpen)))) {
+                if ((e.action === 'downArrow' || e.action === 'upArrow') && this.parent.selectionModule && this.parent.allowSelection && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+                    expandedRecords = ganttObj.getExpandedRecords(ganttObj.flatData);
+                }
+                else {
+                    expandedRecords = ganttObj.expandedRecords;
+                }
                 let selectedItem: IGanttData;
                 if ((e.action === 'downArrow' || e.action === 'upArrow') && this.parent.selectionModule && this.parent.allowSelection && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
                     selectedItem = ganttObj.flatData[ganttObj.selectedRowIndex];
@@ -362,21 +379,12 @@ export class FocusModule {
                         ganttObj.selectionModule.selectRow(ganttObj.currentViewData.indexOf(currentSelectingRecord), false, true);
                     }
                 }
-            } else if (ganttObj.selectionSettings.mode === 'Cell' && ganttObj.selectionModule.getSelectedRowCellIndexes().length > 0) {
-                const selectCellIndex: ISelectedCell[] = ganttObj.selectionModule.getSelectedRowCellIndexes();
-                const selectedCellItem: ISelectedCell = selectCellIndex[selectCellIndex.length - 1];
-                const currentCellIndex: number = selectedCellItem.cellIndexes[selectedCellItem.cellIndexes.length - 1];
-                const selectedItem: IGanttData = ganttObj.currentViewData[selectedCellItem.rowIndex];
-                const selectingRowIndex: number = expandedRecords.indexOf(selectedItem);
-                const currentSelectingRecord: IGanttData = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
-                    expandedRecords[selectingRowIndex - 1];
-                const cellInfo: IIndex = {
-                    rowIndex: ganttObj.currentViewData.indexOf(currentSelectingRecord),
-                    cellIndex: currentCellIndex
-                };
-                ganttObj.selectionModule.selectCell(cellInfo);
+            }  else {
+                this.parent.treeGrid.grid.notify('key-pressed', e);
             }
             this.parent.ganttChartModule.focusedRowIndex = this.parent.selectedRowIndex;
+        } else {
+            this.parent.treeGrid.grid.notify('key-pressed', e);
         }
     }
     private expandCollapseKey(e: KeyboardEventArgs): void {

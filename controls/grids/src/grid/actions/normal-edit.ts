@@ -330,7 +330,7 @@ export class NormalEdit {
         const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean, isCancel?: boolean } = {
             virtualData: extend({}, {}, this.previousData, true), isAdd: false, isScroll: false, endEdit: true
         };
-        if (!this.parent.enableVirtualization) {
+        if (!(this.parent.enableVirtualization && this.parent.editSettings && this.parent.editSettings.mode === 'Normal')) {
             this.parent.notify(events.getVirtualData, data);
         } else {
             data.virtualData = this.virtualEditValidationArgs.virtualData;

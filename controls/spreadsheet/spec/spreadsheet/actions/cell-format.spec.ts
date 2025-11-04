@@ -976,7 +976,7 @@ describe('Cell Format ->', () => {
                 });
             });
         });
-        describe('EJ2-49588, EJ2-46530, EJ2-51216, EJ2-52952, EJ2-53948, EJ2-53048, EJ2-54306, EJ2-56161, EJ2-51575, EJ2-50222 ->',() => {
+        describe('EJ2-49588, EJ2-46530, EJ2-51216, EJ2-52952, EJ2-53948, EJ2-53048, EJ2-54306, EJ2-56161, EJ2-51575, EJ2-50222,EJ2-987493 ->',() => {
             beforeAll((done: Function) =>{
                 helper.initializeSpreadsheet({ sheets: [{ rows: [{ index: 3, cells:[{ index: 3, value: 'Style' }] }], selectedRange: 'D4' }, 
                 { rows: [{ index: 3, cells: [{ index: 3, style: { fontSize: '14pt', fontFamily: 'Georgia', fontWeight: 'bold' } }] }], selectedRange: 'D4' },
@@ -1127,6 +1127,14 @@ describe('Cell Format ->', () => {
                 expect(helper.getInstance().sheets[1].rows[1].cells[14].style.textDecoration).toBeNull;
                 expect(helper.invoke('getCell', [0, 14]).style.backgroundColor).toBeNull;
                 expect(helper.invoke('getCell', [1, 14]).style.backgroundColor).toBeNull;
+                done();
+            });
+            it('EJ2-987493 -> Right Borders Incorrectly Applied on Changing style', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.selectRange('B1:G9');
+                spreadsheet.cellFormat({ fontFamily: 'Arial Black', fontSize: '14pt' }, 'B1:G9');
+                expect(helper.getInstance().sheets[0].rows[3].cells[3].style.borderRight).toBe(undefined);
+                expect(helper.getInstance().sheets[0].rows[3].cells[3].style.borderBottom).toBe(undefined);
                 done();
             });
             it('EJ2-50222 - cell border issue while applying Merge and wrap text', (done: Function) => {

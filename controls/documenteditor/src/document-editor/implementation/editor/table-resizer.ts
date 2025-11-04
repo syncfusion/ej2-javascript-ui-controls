@@ -378,8 +378,9 @@ export class TableResizer {
             return;
         }
         const cellwidget: TableCellWidget = this.getTableCellWidget(this.startingPoint) as TableCellWidget;
+        const spannedCell: TableCellWidget = this.isCellSpannedFromPreviousRows(cellwidget) as TableCellWidget;
         if (this.resizerPosition === 0 || (!isNullOrUndefined(cellwidget) && isNullOrUndefined(cellwidget.previousWidget)
-            && cellwidget.x >= this.startingPoint.x)) {
+            && cellwidget.x >= this.startingPoint.x) && !spannedCell) {
             // Todo: need to handle the resizing of first column and table indent.
             const columnIndex: number = this.resizerPosition;
             const rightColumn: WColumn = table.tableHolder.columns[parseInt(columnIndex.toString(), 10)];
@@ -469,7 +470,7 @@ export class TableResizer {
             this.updateGridValue(table, true, dragOffset);
         } else if (table !== null && this.resizerPosition === table.tableHolder.columns.length ||
             (!isNullOrUndefined(cellwidget) && isNullOrUndefined(cellwidget.nextWidget) && cellwidget.x <= this.startingPoint.x
-                && cellwidget.columnIndex !== this.resizerPosition)) {
+                && cellwidget.columnIndex !== this.resizerPosition) && !spannedCell) {
             // Todo: need to handle the resizing of last column and table width.
             this.resizeColumnAtLastColumnIndex(table, dragValue);
         } else {
@@ -904,7 +905,7 @@ export class TableResizer {
                     }
                 }
                 isRightCellWidthUpdated = this.increaseOrDecreaseWidth(cell, dragValue, true, isRightCellWidthUpdated);
-                if (cell.cellIndex === cell.ownerRow.childWidgets.length - 1) {
+                if (cell.cellIndex === cell.ownerRow.childWidgets.length - 1 && !this.isCellSpannedFromPreviousRows(cell)) {
                     flag = true;
                 }
             }
@@ -962,6 +963,31 @@ export class TableResizer {
         }
         return dragValue;
     }
+
+    private isCellSpannedFromPreviousRows(cell: TableCellWidget): TableCellWidget {
+        if (isNullOrUndefined(cell) || isNullOrUndefined(cell.ownerRow) || isNullOrUndefined(cell.ownerRow.ownerTable)) {
+            return undefined;
+        }
+        const table: TableWidget = cell.ownerRow.ownerTable as TableWidget;
+        const currentRowIndex: number = cell.ownerRow.rowIndex;
+        for (let i: number = 1; i <= currentRowIndex; i++) {
+            const prevRow: TableRowWidget = table.childWidgets[currentRowIndex - i] as TableRowWidget;
+            if (isNullOrUndefined(prevRow) || prevRow.childWidgets.length === 0) {
+                return undefined;
+            }
+            for (let j: number = 0; j < prevRow.childWidgets.length; j++) {
+                const prevCell: TableCellWidget = prevRow.childWidgets[parseInt(j.toString(), 10)] as TableCellWidget;
+                const rowSpan: number = prevCell.cellFormat.rowSpan;
+                if (rowSpan > 1) {
+                    if ((prevCell.rowIndex + rowSpan - 1) >= currentRowIndex) {
+                        return prevCell;
+                    }
+                }
+            }
+        }
+        return undefined;
+    }
+
     private updateRowsGridAfterWidth(table: TableWidget): void {
         const maxRowWidth: number = this.getMaxRowWidth(table, true);
         for (let i: number = 0; i < table.childWidgets.length; i++) {
@@ -983,6 +1009,12 @@ export class TableResizer {
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             const cell: TableCellWidget = row.childWidgets[parseInt(i.toString(), 10)] as TableCellWidget;
             rowWidth += cell.cellFormat.preferredWidth;
+            if (cell.cellIndex === row.childWidgets.length - 1) {
+                const spannedCell: TableCellWidget = this.isCellSpannedFromPreviousRows(cell) as TableCellWidget;
+                if (!isNullOrUndefined(spannedCell)) {
+                    rowWidth += spannedCell.cellFormat.preferredWidth;
+                }
+            }
         }
         return rowWidth;
     }

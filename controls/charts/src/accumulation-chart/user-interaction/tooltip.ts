@@ -105,7 +105,7 @@ export class AccumulationTooltip extends BaseTooltip {
         const tooltip: TooltipSettingsModel = this.chart.tooltip;
         const argsData: ITooltipRenderEventArgs = {
             cancel: false, name: tooltipRender, text: textCollection, point: point.point, textStyle: this.textStyle,
-            series: this.accumulation.isBlazor ? {} as AccumulationSeries : point.series, headerText: headerText,
+            series: point.series, headerText: headerText,
             data: {
                 pointX: point.point.x, pointY: point.point.y as Object, seriesIndex: point.series.index,
                 pointIndex: point.point.index, pointText: point.point.text, seriesName: point.series.name

@@ -373,6 +373,32 @@ describe('Paste CR issues ', ()=> {
         });
     });
 
+    describe('Bug 988347: Incorrect Pasting of Bullet Points from External Sources', () => {
+        let rteObject : RichTextEditor ;
+        let innerHTML: string =`<html>\r\n<body>\r\n\x3C!--StartFragment--><li>Item one</li>\n<li>Item two</li>\x3C!--EndFragment-->\r\n</body>\r\n</html>`; 
+        beforeAll( () => {
+            rteObject = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: false
+                }, value: ''
+        });
+        });
+        afterAll( () => {
+            destroy(rteObject);
+        });
+        it(' should wrap ul when clipboard data has unstructured li in it', (done : Function) => {
+            setCursorPoint((rteObject as any).inputElement.firstElementChild, 0);
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', innerHTML);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObject.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(rteObject.inputElement.querySelectorAll('ul').length === 1).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
     describe('890154: Plain text in pasteCleanupSettings adding unwanted styles in the RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -450,6 +476,79 @@ describe('Paste CR issues ', ()=> {
             setTimeout(() => {
                 const expectedElem: string = ' is ';
                 expect(rteObj.inputElement.textContent).toBe(expectedElem);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Bug 986532: Issues with pasted Numbering list in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: "",
+                pasteCleanupSettings: {
+                    prompt: false
+                },
+                toolbarSettings: {
+                    items: ['Bold', 'Outdent']
+                }
+            });
+        });
+        it(' should paste nested li properly not to create separate li element for the nested list content', (done: DoneFn) => {
+            rteObj.focusIn();
+            const clipBoardData: string = '\x3C!--StartFragment--> <ol type="1" style="direction: ltr; margin-top: 0in; margin-bottom: 0in; font-family: Calibri; font-size: 11pt; font-weight: normal; font-style: normal;" class="pasteContent_RTE"> <li value="1" style="margin-top: 0px; margin-bottom: 0px; vertical-align: middle;"><span style="font-weight: normal; font-style: normal; font-family: Calibri; font-size: 11pt;">List1</span></li> <ol type="a" style="direction: ltr; margin-top: 0in; margin-bottom: 0in; font-family: Calibri; font-size: 11pt; font-weight: normal; font-style: normal;"> <li value="1" style="margin-top: 0px; margin-bottom: 0px; vertical-align: middle;"><span style="font-weight: normal; font-style: normal; font-family: Calibri; font-size: 11pt;">List2</span></li> </ol> <li style="margin-top: 0px; margin-bottom: 0px; vertical-align: middle;"><span style="font-family: Calibri; font-size: 11pt;">List3</span></li> </ol> \x3C!--EndFragment-->';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const liElements: NodeListOf<HTMLElement> = rteObj.inputElement.querySelectorAll('li');
+                expect(liElements.length).toBe(3);
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, liElements[0], liElements[2], 0, 1);
+                const toolbarElems: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-toolbar-item');
+                toolbarElems[1].click();
+                toolbarElems[0].click();
+                toolbarElems[1].click();
+                toolbarElems[0].click();
+                expect(rteObj.inputElement.querySelectorAll('[style*="font-weight: bold"]').length).toBe(0);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Bug 989044: Inline styles are not properly applied to the nested list', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: "",
+                pasteCleanupSettings: {
+                    prompt: false
+                },
+                toolbarSettings: {
+                    items: ['Bold', 'Outdent']
+                }
+            });
+        });
+        it(' should apply inline style to lists and it should be applied properly for the nested li elements', (done: DoneFn) => {
+            rteObj.focusIn();
+            const clipBoardData: string = '\x3C!--StartFragment--> <ol type="1" style="direction: ltr; margin-top: 0in; margin-bottom: 0in; font-family: Calibri; font-size: 11pt; font-weight: normal; font-style: normal;" class="pasteContent_RTE"> <li value="1" style="margin-top: 0px; margin-bottom: 0px; vertical-align: middle;"><span style="font-weight: normal; font-style: normal; font-family: Calibri; font-size: 11pt;">List1</span></li> <ol type="a" style="direction: ltr; margin-top: 0in; margin-bottom: 0in; font-family: Calibri; font-size: 11pt; font-weight: normal; font-style: normal;"> <li value="1" style="margin-top: 0px; margin-bottom: 0px; vertical-align: middle;"><span style="font-weight: normal; font-style: normal; font-family: Calibri; font-size: 11pt;">List2</span></li> </ol> <li style="margin-top: 0px; margin-bottom: 0px; vertical-align: middle;"><span style="font-family: Calibri; font-size: 11pt;">List3</span></li> </ol> \x3C!--EndFragment-->';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const liElements: NodeListOf<HTMLElement> = rteObj.inputElement.querySelectorAll('li');
+                expect(liElements.length).toBe(3);
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, liElements[0], liElements[2], 0, 1);
+                const toolbarElems: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-toolbar-item');
+                toolbarElems[0].click();
+                expect(rteObj.inputElement.querySelectorAll('[style*="font-weight: bold"]').length).toBe(3);
                 done();
             }, 100);
         });

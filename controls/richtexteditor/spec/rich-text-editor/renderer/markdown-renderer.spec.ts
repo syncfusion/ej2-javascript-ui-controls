@@ -47,7 +47,6 @@ describe('Markdown renderer module', () => {
         it('should have correct accessibility attributes in Markdown editor', () => {
             const textarea = rteObj.contentModule.getPanel().querySelector('.e-content');
             expect(textarea.getAttribute('aria-label')).toBe('Markdown Editor');
-            expect(textarea.getAttribute('role')).toBe('textbox');
             expect(textarea.getAttribute('lang')).toBe('en');
             expect(textarea.getAttribute('dir')).toBe('ltr');
         });

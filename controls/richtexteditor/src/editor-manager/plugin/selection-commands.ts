@@ -197,7 +197,8 @@ export class SelectionCommands {
                         value,
                         painterValues,
                         domNode,
-                        endNode);
+                        endNode,
+                        domSelection);
                     counter++;
                 }
                 if (nodes.length === counter) {
@@ -667,7 +668,8 @@ export class SelectionCommands {
         value: string,
         painterValues: FormatPainterValue,
         domNode: DOMNode,
-        endNode: Node): Node {
+        endNode: Node,
+        domSelection: NodeSelection): Node {
         if (!isCursor) {
             if ((formatNode === null && isFormat) || isFontStyle) {
                 if (!isTableSelect && nodes[index as number].nodeName !== 'BR' ) {
@@ -794,9 +796,13 @@ export class SelectionCommands {
                         if (!isNOU(liElement) && liElement.tagName.toLowerCase() !== 'li'){
                             liElement = closest(liElement, 'li') as HTMLElement;
                         }
+                        if (format === 'bold' && liElement) {
+                            domSelection.restore();
+                        }
+                        const selection: Selection = domSelection.get(docElement);
                         if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                         (liElement.textContent.trim() === nodes[index as number].textContent.trim() ||
-                        (liElement.innerText.split('\n').length === nodes.length && liElement.innerText.split('\n')[0] === nodes[index as number].textContent.trim()))) {
+                        ((liElement.innerText.split('\n').length === nodes.length || selection.containsNode(liElement, true)) && liElement.innerText.split('\n')[0] === nodes[index as number].textContent.trim()))) {
                             if (format === 'bold') {
                                 liElement.style.fontWeight = 'bold';
                             } else if (format === 'italic') {

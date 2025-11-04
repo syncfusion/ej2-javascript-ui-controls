@@ -10,7 +10,7 @@ import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, localDataHtmlAttributes, selectableFieldData } from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, data} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
-import { localData7, localData8, localData9, localData12, localData13, hierarchicalDataSource2, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
+import { localData7, localData8, localData9, localData12, localData13, localData14, hierarchicalDataSource2, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
 import { updatedremoteNode_3, updatedremoteNode_4, updatedremoteNode_5, updatedAddNodes, updatedremoteNode_6, updatedremoteNode_7} from '../../spec/treeview/datasource.spec';
 import {  deletedRemoteData, updatedAddNodes1, autoCheckData, autoCheckHierarcialData, hierarchicalData7, localDataSource, hierarchicalDataSource, hierarchicalDataSource1} from '../../spec/treeview/datasource.spec';
 import { remoteData4, remoteData4_1, remoteData4_2, remoteData4_3 } from '../../spec/treeview/datasource.spec';
@@ -15108,6 +15108,19 @@ describe('Drag and drop with different TreeView functionality testing with empty
             expect(treeObj.getTreeData()[25]["isChecked"]).toBe(true);
             expect(treeObj.getTreeData()[24]["isChecked"]).toBe(true);
             done();
+            }, 100);
+        });
+        it('Addnodes when autocheck is set to false', (done: Function) => {
+            treeObj = new TreeView({
+                fields: { dataSource: localData14, id: 'id', text: 'name', parentID: 'pid', isChecked: 'isChecked', hasChildren: 'hasChild' },
+                showCheckBox: true,
+                autoCheck: false
+            }, '#tree1');
+            const newNode = [{ id: 'new', name: 'New Folder', isChecked: true }];
+            treeObj.addNodes(newNode, '1');
+            setTimeout(function() {
+                expect(treeObj.element.querySelectorAll('.e-check').length).toBe(5);
+                done();
             }, 100);
         });
         it('autoCheck false and showCheckBox enable', () => {

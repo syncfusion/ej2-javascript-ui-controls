@@ -507,7 +507,7 @@ export class DataManager {
                 if (query.isCountRequired) {
                     count = result.count;
                     aggregates = result.aggregates;
-                    result = result.result;
+                    result = result.result as ReturnOption;
                 }
                 if (!query.subQuery) {
                     process(result, count, request.fetchRequest, request.type, data, aggregates, virtualRecords);
@@ -551,14 +551,14 @@ export class DataManager {
                     let count: number = 0;
                     if (query.isCountRequired) {
                         count = pResult.count;
-                        pResult = pResult.result;
+                        pResult = pResult.result as ReturnOption;
                     }
                     let cResult: ReturnOption = this.adaptor.processResponse(
                         result[1], this, query.subQuery, this.requests[1].fetchRequest, this.requests[1]);
                     count = 0;
                     if (query.subQuery.isCountRequired) {
                         count = cResult.count;
-                        cResult = cResult.result;
+                        cResult = cResult.result as ReturnOption;
                     }
                     DataUtil.buildHierarchy(query.subQuery.fKey, query.subQuery.fromTable, pResult, cResult, query.subQuery.key);
                     isSelector = false;
@@ -970,7 +970,7 @@ export interface DataOptions {
  * @hidden
  */
 export interface ReturnOption {
-    result?: ReturnOption;
+    result?: Object[] | Object;
     count?: number;
     url?: string;
     aggregates?: Aggregates;

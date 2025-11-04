@@ -3379,11 +3379,9 @@ export class TaskProcessor extends DateProcessor {
             this.updateTaskLeftWidth(task, parentTaskMap);
         }
         if (this.parent.isLoad || this.parent.isFromOnPropertyChange) {
-            if (
-                this.offsetUpdateParentList && this.parent.connectorLineEditModule
-            ) {
+            if (this.offsetUpdateParentList) {
                 this.offsetUpdateParentList.forEach((ganttRecord: IGanttData) => {
-                    this.parent.connectorLineEditModule['calculateOffset'](ganttRecord);
+                    this.parent.predecessorModule['calculateOffset'](ganttRecord);
                 });
             }
         }

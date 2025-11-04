@@ -595,7 +595,7 @@ export class EventBase {
                     engineModule.getFormattedValue(actualText, fieldName).formattedText,
                 isSelected: isInclude ? false : true
             };
-            const memberText: string | number = this.parent.dataSourceSettings.mode === 'Server' ? member.actualText : member.formattedText;
+            const memberText: string | number = member.actualText;
             if (filterObj[this.parent.isDateField ? memberText as string : memberName as string] !== undefined) {
                 obj.isSelected = isInclude ? true : false;
             }

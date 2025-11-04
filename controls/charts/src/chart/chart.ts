@@ -1,10 +1,10 @@
 import { Component, Property, NotifyPropertyChanges, Internationalization, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { ModuleDeclaration, L10n, setValue, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, L10n, setValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';
 import { remove, extend } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, Browser, Touch } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';
-import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset, withInBounds, getValueXByPoint, getValueYByPoint } from '../common/utils/helper';
+import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, withInBounds, getValueXByPoint, getValueYByPoint } from '../common/utils/helper';
 import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement, getTextAnchor } from '../common/utils/helper';
 import { appendClipElement, ChartLocation } from '../common/utils/helper';
 import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel, RangeColorSettingModel } from './chart-model';
@@ -1708,8 +1708,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /** @private */
     public svgId: string;
     /** @private */
-    public isBlazor: boolean;
-    /** @private */
     public isRedrawSelection: boolean;
     /**
      * Touch object to unwire the touch event from element
@@ -1806,9 +1804,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     protected preRender(): void {
         this.element.id = this.isIdHasSpecialCharacter(this.element.id);
-        // It is used for checking blazor framework or not.
-        const blazor: string = 'Blazor';
-        this.isBlazor = window[blazor as string];
         this.allowServerDataBinding = false;
         this.markerIndex = 0;
         this.unWireEvents();
@@ -1870,7 +1865,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     protected render(): void {
         this.svgRenderer = new SvgRenderer(this.element.id);
         const loadEventData: ILoadedEventArgs = {
-            chart: this.isBlazor ? {} as Chart : this, theme: this.theme, name: load, cancel: false
+            chart: this, theme: this.theme, name: load, cancel: false
         };
         if (!this.stockChart) {
             /**
@@ -1891,8 +1886,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
 
     private cartesianChartRendering(beforeRenderData: ILoadedEventArgs): void {
-
-        this.theme = this.isBlazor ? beforeRenderData.theme : this.theme;
 
         this.setTheme();
 
@@ -2124,10 +2117,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.performSelection();
 
         this.setSecondaryElementPosition();
-
-        for (const value of this.visibleSeries) {
-            updateBlazorTemplate(this.element.id + '_DataLabel', 'Template', value.marker.dataLabel);
-        }
 
         this.renderAnnotation();
         if (this.stackLabels.visible && this.visibleSeries.some((series: Series) => series.type && series.type.indexOf('Stacking') > -1) && this.dataLabelModule) {
@@ -2488,7 +2477,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         if (render && (!this.visibleSeries.length || this.visibleSeriesCount === this.visibleSeries.length && check)) {
             this.refreshBound();
-            this.trigger('loaded', { chart: this.isBlazor ? {} : this });
+            this.trigger('loaded', { chart: this });
         }
 
         if (!this.stockChart && this.visibleSeries.length > 0) {
@@ -3139,10 +3128,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public addAxes(axisCollection: AxisModel[]): void {
         for (let axis of axisCollection) {
             axis = new Axis(this, 'axes', axis);
-            if (this.isBlazor) {
-                axis.interval = isNaN(axis.interval) ? null : axis.interval;
-                axis.desiredIntervals = isNaN(axis.desiredIntervals) ? null : axis.desiredIntervals;
-            }
             this.axes.push(axis);
         }
         this.refresh();
@@ -3438,7 +3423,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     this.trigger(resized, arg);
                     this.refreshAxis();
                     this.refreshBound();
-                    this.trigger('loaded', { chart: this.isBlazor ? {} : this });
+                    this.trigger('loaded', { chart: this });
                 },
                 500);
         }
@@ -4024,7 +4009,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         const pointData: PointData = data.getData();
         if (pointData.series && pointData.point) {
             this.trigger(event, {
-                series: this.isBlazor ? {} : pointData.series,
+                series: pointData.series,
                 point: pointData.point,
                 seriesIndex: pointData.series.index, pointIndex: pointData.point.index,
                 x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY
@@ -4601,7 +4586,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.redraw) {
             return null;
         }
-        blazorTemplatesReset(this);
         if (this.enableCanvas && this.svgObject && (this.svgObject as HTMLElement).tagName === 'CANVAS' ) {
             (this.renderer as CanvasRenderer).clearRect(new Rect(0, 0, this.availableSize.width, this.availableSize.height));
             if (this.svgObject.parentNode) { remove(this.svgObject); }
@@ -4615,19 +4599,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.zoomModule.pinchTarget.setAttribute('opacity', '0');
             this.svgObject.appendChild(this.zoomModule.pinchTarget);
             removeLength = 1;
-        }
-        // Fix for blazor resize issue
-        if (!isNullOrUndefined(this.resizeTo)) {
-            if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
-                const containerCollection: NodeListOf<Element> = document.querySelectorAll('.e-chart');
-                for (let index: number = 0; index < containerCollection.length; index++) {
-                    const container: Element = containerCollection[index as number];
-                    while (container.firstChild) {
-                        remove(container.firstChild);
-                    }
-                }
-            }
-            this.checkResize = this.resizeTo;
         }
 
         if (this.svgObject) {
@@ -4712,18 +4683,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.refreshDefinition(<Row[]>this.rows);
         this.calculateVisibleAxis();
         this.processData(false);
-        if (!this.isBlazor) {
-            if (this.enableCanvas) {
-                this.createChartSvg();
-            }
-            else {
-                this.removeSvg();
-            }
-            // this.enableCanvas ? this.createChartSvg() : this.removeSvg();
-            this.refreshAxis();
-            this.refreshBound();
-            this.trigger('loaded', { chart: this.isBlazor ? {} : this });
-        }
     }
 
     /**
@@ -4975,7 +4934,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     const len: number = this.series.length;
                     let seriesRefresh: boolean = false;
                     let series: SeriesModel;
-                    let blazorProp: boolean;
                     for (let i: number = 0; i < len; i++) {
                         series = newProp.series[i as number];
                         // I264774 blazor series visible property binding not working issue fixed.
@@ -4997,18 +4955,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             removeElement((this.series[i as number] as Series).lastValueLabelElement.id);
                             (this.series[i as number] as Series).lastValueLabelElement = null;
                         }
-                        if (series && ((series.visible !== (oldProp.series[i as number] && oldProp.series[i as number].visible)) ||
-                            series.isClosed || series.marker || series.emptyPointSettings || series.type || series.boxPlotMode ||
-                            series.showMean) && this.isBlazor) {
-                            blazorProp = true;
-                        }
                         if (!isNullOrUndefined(series) && (series.dataSource || series.query || series.errorBar || series.xName ||
                             series.yName || series.size || series.high || series.low || series.open || series.close || series.trendlines ||
                             series.fill || series.name || series.marker || series.width || series.binInterval || series.type ||
                             (series.visible !== oldProp.series[i as number].visible) ||
                             series.legendShape || series.emptyPointSettings || series.opacity ||
                             series.columnWidth || series.columnSpacing || series.opacity || series.dashArray ||
-                            series.bearFillColor || series.bullFillColor || blazorProp)) {
+                            series.bearFillColor || series.bullFillColor)) {
                             extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                             seriesRefresh = true;
                         }
@@ -5094,12 +5047,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 case 'enableRtl':
                 case 'locale':
                 case 'currencyCode':
-                    if (this.isBlazor) {
-                        this.setCulture();
-                        renderer = true;
-                    } else {
-                        this.refresh();
-                    }
+                    this.refresh();
                     break;
                 case 'tooltip':
                     if (this.tooltipModule) { // To check the tooltip enable is true.
@@ -5115,7 +5063,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.rotatedDataLabelCollections = [];
                 this.removeSvg();
                 this.renderElements();
-                this.trigger('loaded', { chart: this.isBlazor ? {} : this });
+                this.trigger('loaded', { chart: this });
             }
             if (refreshBounds) {
                 if (this.enableCanvas) {
@@ -5129,7 +5077,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.dragY = null;
                 this.refreshAxis();
                 this.refreshBound();
-                this.trigger('loaded', { chart: this.isBlazor ? {} : this });
+                this.trigger('loaded', { chart: this });
                 this.redraw = false;
                 this.animated = false;
             }

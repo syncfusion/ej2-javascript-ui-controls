@@ -2987,6 +2987,23 @@ export class Selection {
         const cursor: string = parent.activeObj.shape && parent.activeObj.shape === 'text' ?
             parent.cursor : 'default';
         const tempCursor: string = parent.upperCanvas.style.cursor;
+        const textArea: HTMLInputElement = document.querySelector('#' + parent.element.id + '_textArea');
+        if (textArea.style.display === 'block' || textArea.style.display === 'inline-block') {
+            let isShapeUnderCursor: boolean = false;
+            for (let i: number = 0; i < parent.objColl.length; i++) {
+                const actObj: SelectionPoint = parent.objColl[i as number];
+                if (actObj && actObj.shape && actObj.activePoint) {
+                    const activePoint: ActivePoint = actObj.activePoint;
+                    const startX: number = activePoint.startX; const startY: number = activePoint.startY;
+                    const endX: number = activePoint.endX; const endY: number = activePoint.endY;
+                    const radius: number = actObj.topLeftCircle && actObj.topLeftCircle.radius ? actObj.topLeftCircle.radius : 0;
+                    let isCursorWithinBounds: boolean = (x >= (startX - (radius * 2)) && x <= (endX + (radius * 2)) &&
+                        y >= (startY - (radius * 2)) && y <= (endY + (radius * 2)));
+                    if (isCursorWithinBounds) { isShapeUnderCursor = true; }
+                }
+            }
+            if (isShapeUnderCursor) { parent.okBtn(); }
+        }
         if (parent.isResize) {
             this.performEnterAction(e);
             parent.upperCanvas.style.cursor = 'default';

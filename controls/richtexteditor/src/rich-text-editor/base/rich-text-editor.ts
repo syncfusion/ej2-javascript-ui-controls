@@ -3312,7 +3312,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private updatePanelValue(): void {
         this.setProperties({ value: this.replaceEntities(this.value) }, true);
-        let value: string = this.editorMode === 'HTML' ? this.listOrderCorrection(this.value) : this.value;
+        let value: string = this.editorMode === 'HTML' && !isNOU(this.value) ? this.listOrderCorrection(this.value) : this.value;
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
         const getTextArea: HTMLInputElement = this.element.querySelector('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA);
         if (value) {

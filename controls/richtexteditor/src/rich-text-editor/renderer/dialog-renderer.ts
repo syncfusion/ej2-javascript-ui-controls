@@ -70,6 +70,10 @@ export class DialogRenderer {
                 this.dialogEle.addEventListener('keydown', this.handleEnterKeyDown);
             }
         }
+        const headerEl: HTMLElement = args.element.querySelector('.e-dlg-header');
+        if (headerEl) {
+            headerEl.setAttribute('title', headerEl.textContent.trim());
+        }
         this.parent.trigger(events.beforeDialogOpen, args, this.beforeOpenCallback.bind(this, args));
     }
     private handleEnterKeyDown(args: KeyboardEventArgs): void {

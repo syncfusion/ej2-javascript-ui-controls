@@ -1253,6 +1253,31 @@ export class Lists {
         }
     }
 
+    // This method identifies unique list items and their top-level UL/OL parents from a given set of elements, returning both in separate arrays.
+    private commonRevertList(elements: HTMLElement[]): { commonList: HTMLElement[]; commonListParent: HTMLElement[] } {
+        const commonList: HTMLElement[] = [];
+        const commonListParent: HTMLElement[] = [];
+        let commonElement: HTMLElement;
+        for (let i: number = 0; i < elements.length; i++) {
+            let commonParentULorOL: HTMLElement = elements[i as number].parentElement;
+            while (this.isListTag(commonParentULorOL.parentElement.nodeName)) {
+                commonParentULorOL = commonParentULorOL.parentElement;
+            }
+            if (i === 0) {
+                commonList.push(elements[i as number]);
+                commonElement = commonParentULorOL;
+                commonListParent.push(commonElement);
+                continue;
+            }
+            if (commonParentULorOL !== commonElement) {
+                commonList.push(elements[i as number]);
+                commonElement = commonParentULorOL;
+                commonListParent.push(commonElement);
+            }
+        }
+        return { commonList, commonListParent };
+    }
+
     private applyLists(elements: HTMLElement[], type: string, selector?: string,
                        item?: IAdvanceListItem, e?: IHtmlSubCommands, checkCursorPointer?: boolean): void {
         let isReverse: boolean = true;
@@ -1260,8 +1285,8 @@ export class Lists {
             type = 'UL';
         }
         if (this.isRevert(elements, type, item, e.subCommand) && isNOU(item)) {
-            this.revertList(elements, e);
-            this.removeEmptyListElements();
+            const revertListELements: { commonList: HTMLElement[]; commonListParent: HTMLElement[] } = this.commonRevertList(elements);
+            this.completeRevertList(revertListELements, e.enterAction);
         } else {
             this.checkLists(elements, type, item, checkCursorPointer, e.subCommand);
             const targetEl: HTMLElement = elements[0];
@@ -1472,14 +1497,6 @@ export class Lists {
             });
         });
         return tempDiv.innerHTML;
-    }
-    private removeEmptyListElements(): void {
-        const listElem: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('ol, ul');
-        for (let i: number = 0; i < listElem.length; i++) {
-            if (listElem[i as number].textContent.trim() === '') {
-                detach(listElem[i as number]);
-            }
-        }
     }
     private isRevert(nodes: Element[], tagName: string, item?: IAdvanceListItem, subCommand?: string): boolean {
         let isRevert: boolean = true;
@@ -1774,6 +1791,417 @@ export class Lists {
             li.parentElement.classList.remove('e-rte-checklist');
         }
     }
+
+    // This method checks if a given tag name is a list-related element (UL, OL, or LI).
+    private isListTag(elementName: string): boolean {
+        return elementName === 'OL' || elementName === 'UL' || elementName === 'LI';
+    }
+
+    // This method inserts closing tags for all ancestor lists above a selected list item until reaching the specified main list, ensuring proper HTML structure.
+    private closeAncestorsBeforeSelection(selectionLi: HTMLElement, parentOfMainUlorOL: HTMLElement): void {
+        const parentOfSelectionLi: HTMLElement = selectionLi.parentElement;
+        const insertBeforElement: HTMLElement = selectionLi;
+        while (this.isListTag(selectionLi.parentElement.nodeName) && selectionLi.parentElement !== parentOfMainUlorOL) {
+            parentOfSelectionLi.insertBefore(this.closeTag(selectionLi.parentElement.nodeName), insertBeforElement);
+            selectionLi = selectionLi.parentElement;
+        }
+    }
+
+    // This method inserts closing tags for list elements after the end of a selection, climbing up until the common parent or main list, then reopens the list structure to maintain valid HTML.
+    private closeAncestorsAfterSelection(endElement: HTMLElement, endSelectionLi: HTMLElement,
+                                         startLi: HTMLElement, endLi: HTMLElement, parentOfMainUlorOL: HTMLElement): void {
+        let endInsertAfterElement: HTMLElement = endElement;
+        this.domNode.insertAfter(this.closeTag(endSelectionLi.nodeName), endInsertAfterElement);
+        endInsertAfterElement = endInsertAfterElement.nextSibling as HTMLElement;
+        let endSelectionElement: HTMLElement = endSelectionLi.parentElement;
+        let allClosed: boolean = false;
+        if (startLi !== endLi) {
+            // Close until we reach the common parent with the start LI
+            if (endSelectionElement === startLi.parentElement || endSelectionElement === parentOfMainUlorOL) {
+                allClosed = true;
+            }
+            while (!allClosed) {
+                this.domNode.insertAfter(this.closeTag(endSelectionElement.nodeName), endInsertAfterElement);
+                endInsertAfterElement = endInsertAfterElement.nextSibling as HTMLElement;
+                endSelectionElement = endSelectionElement.parentElement;
+                if (endSelectionElement === startLi.parentElement || endSelectionElement === parentOfMainUlorOL) {
+                    allClosed = true;
+                }
+            }
+        }
+        this.reopenListStructure(endSelectionLi, endInsertAfterElement, parentOfMainUlorOL);
+    }
+    // This method inserts opening tags for ancestor lists after a selection to restore the original nested list structure and adjusts classes for proper formatting.
+    private reopenListStructure(endSelectionLi: HTMLElement, endInsertAfterElement: HTMLElement, parentOfMainUlorOL: HTMLElement): void {
+        while (this.isListTag(endSelectionLi.parentElement.nodeName) && endSelectionLi.parentElement !== parentOfMainUlorOL) {
+            this.domNode.insertAfter(this.openTag(endSelectionLi.parentElement.nodeName), endInsertAfterElement);
+            endSelectionLi = endSelectionLi.parentElement;
+            endInsertAfterElement = endInsertAfterElement.nextSibling as HTMLElement;
+            const closeClasses: string[] = ['e-rte-list-close-li', 'e-rte-list-close-ol', 'e-rte-list-close-ul'];
+            const openClasses: string[] = ['e-rte-list-open-ol', 'e-rte-list-open-ul'];
+            const hasCloseClass: boolean = endInsertAfterElement.previousElementSibling &&
+                closeClasses.indexOf(endInsertAfterElement.previousElementSibling.classList[0]) > -1;
+            const hasOpenClass: boolean = openClasses.indexOf(endInsertAfterElement.classList[0]) > -1;
+            if (hasCloseClass && hasOpenClass) {
+                // To mark the beginning of a reopened list structure after a selection operation. This class is added
+                endInsertAfterElement.classList.add('e-rte-list-start');
+            }
+        }
+    }
+    // This Method completely revert the selected List items
+    private completeRevertList(elements: { commonList: HTMLElement[]; commonListParent: HTMLElement[] }, enterAction: string = 'P'): void {
+        for (let i: number = 0; i < elements.commonList.length; i++) {
+            // Find the top-most UL/OL/LI ancestor that owns the selection
+            const mainParentULorOL: HTMLElement = elements.commonListParent[i as number];
+
+            const classListOfMainUlorOl: string = mainParentULorOL.getAttribute('class');
+            const styleListOfMainUlorOl: string = mainParentULorOL.getAttribute('style');
+            const parentOfMainUlorOL: HTMLElement = mainParentULorOL.parentElement;
+            // Locate selection start and normalize to its LI container
+            const startElement: HTMLElement = mainParentULorOL.querySelector('.e-editor-select-start');
+            let selectionLi: HTMLElement = startElement ? startElement.parentElement : null;
+            if (isNOU(selectionLi)) {
+                selectionLi = elements.commonList[i as number];
+            }
+            while (selectionLi && selectionLi.nodeName !== 'LI') {
+                selectionLi = selectionLi.parentElement;
+            }
+            selectionLi.classList.add('e-rte-select-list-start');
+            const startLi: HTMLElement = selectionLi;
+            this.closeAncestorsBeforeSelection(selectionLi, parentOfMainUlorOL);
+            // Locate selection end marker; fallback to start if missing
+            let endElement: HTMLElement = mainParentULorOL.querySelector('.e-editor-select-end');
+            if (isNullOrUndefined(endElement) && elements.commonList.length === 1) {
+                endElement = startElement;
+            }
+            // Normalize to the containing LI for the end marker
+            let endSelectionLi: HTMLElement = endElement ? endElement.parentElement : null;
+            if (isNOU(endSelectionLi)) {
+                endSelectionLi = mainParentULorOL.lastElementChild as HTMLElement;
+                endElement = endSelectionLi.childNodes[endSelectionLi.childNodes.length - 1] as HTMLElement;
+            }
+            while (endSelectionLi.nodeName !== 'LI') {
+                endSelectionLi = endSelectionLi.parentElement;
+            }
+            endSelectionLi.classList.add('e-rte-select-list-end');
+            const endLi: HTMLElement = endSelectionLi;
+            // Expand endElement to the nearest block boundary, then to the last inline sibling in that block
+            while (!this.parent.domNode.isBlockNode(endElement)) {
+                if (endElement.parentElement.tagName !== 'LI') {
+                    endElement = endElement.parentElement;
+                } else {
+                    break;
+                }
+            }
+            while (endElement.nextSibling && !this.isListTag(endElement.nextSibling.nodeName)) {
+                endElement = endElement.nextSibling as HTMLElement;
+            }
+            if (endElement.nodeName === 'TD' || endElement.nodeName === 'TH') {
+                endElement = endLi.childNodes[endLi.childNodes.length - 1] as HTMLElement;
+                while (endElement && this.isListTag(endElement.nodeName)) {
+                    endElement = endElement.previousSibling as HTMLElement;
+                }
+            }
+            this.closeAncestorsAfterSelection(endElement, endSelectionLi, startLi, endLi, parentOfMainUlorOL);
+            mainParentULorOL.outerHTML = this.processSplitedList(
+                this.replaceCustomSpans(mainParentULorOL.outerHTML, classListOfMainUlorOl, styleListOfMainUlorOl), enterAction);
+        }
+    }
+    // This method merges new attributes into an element, avoids duplicates for class and style, removes unnecessary classes and list-related styles, and cleans up empty attributes.
+    private addAllAttributes(element: HTMLElement, attributes: Record<string, string>): void {
+        Object.keys(attributes).forEach((key: string) => {
+            const newValue: string = attributes[key as string];
+            // Check if the attribute already exists
+            const existingValue: string = element.getAttribute(key);
+            if (existingValue) {
+                // Merge values for attributes like class, style, etc.
+                if (key === 'class' || key === 'style') {
+                    // Avoid duplicate values
+                    const mergedValue: string = Array.from(new Set((existingValue + ' ' + newValue).trim().split(/\s+/))).join(' ');
+                    element.setAttribute(key, mergedValue);
+                } else {
+                    // For other attributes, you can decide to overwrite or merge based on your needs
+                    element.setAttribute(key, newValue); // Overwrite by default
+                }
+            } else {
+                // If attribute doesn't exist, just set it
+                element.setAttribute(key, newValue);
+            }
+        });
+        const classesToRemove: string[] = [ 'e-rte-checklist', 'e-rte-select-list-start', 'e-rte-select-list-end', 'e-rte-checklist-checked' ];
+        let classRemoved: boolean = false;
+        classesToRemove.forEach((cls: string) => {
+            if (element.classList.contains(cls)) {
+                element.classList.remove(cls);
+                classRemoved = true;
+            }
+        });
+        // Remove 'class' attribute if no classes remain
+        if (classRemoved && element.classList.length === 0) {
+            element.removeAttribute('class');
+        }
+        if (element.style) {
+            const styles: CSSStyleDeclaration = element.style;
+            for (let i: number = 0; i < styles.length; i++) {
+                if (styles[i as number] === 'list-style-image' || styles[i as number] === 'list-style-type') {
+                    element.style.removeProperty(styles[i as number]);
+                    i--;
+                }
+            }
+            if (element.style.length === 0) {
+                element.removeAttribute('style');
+            }
+        }
+    }
+    // This method processes a split list by wrapping selected items, preserving attributes, cleaning up empty lists, and applying styles before returning the updated HTML content.
+    private processSplitedList(content: string, enterAction: string): string {
+        const tempElement: HTMLElement  = createElement('div');
+        tempElement.innerHTML = content;
+        const startLi: HTMLElement = tempElement.querySelector('.e-rte-select-list-start');
+        let startElement: HTMLElement = startLi;
+        let mainUlOlAttributes: Record<string, string>;
+        if (startLi.previousElementSibling && (startLi.previousElementSibling.nodeName === 'OL' || startLi.previousElementSibling.nodeName === 'UL')) {
+            mainUlOlAttributes = this.extractAllAttributes(startLi.previousElementSibling as HTMLElement);
+        }
+        if (startLi) {
+            // Adding the class for processing the list element
+            startLi.classList.add('e-rte-insertAfterElement');
+            this.wrapperAction(startLi, enterAction, tempElement, mainUlOlAttributes);
+            startElement = startLi.nextElementSibling as HTMLElement;
+            detach(startLi);
+        }
+        while (startElement  && !(startElement.nodeName === 'OL' || startElement.nodeName === 'UL')) {
+            if (startElement.nodeName === 'LI') {
+                startElement.classList.add('e-rte-insertAfterElement');
+                this.wrapperAction(startElement, enterAction, tempElement, mainUlOlAttributes);
+                const nextLi: HTMLElement = startElement.nextElementSibling as HTMLElement;
+                detach(startElement);
+                startElement = nextLi;
+            } else {
+                startElement = startElement.nextElementSibling as HTMLElement;
+            }
+        }
+        const element: HTMLElement = tempElement.querySelector('.e-rte-insertAfterElement');
+        if (element) {
+            element.classList.remove('e-rte-insertAfterElement');
+            const classAttribute: string = element.getAttribute('class');
+            if (!classAttribute) {
+                element.removeAttribute('class');
+            }
+        }
+        // Adding style for nested list of lastly splitted list elements
+        this.addStyleForNestedList(tempElement);
+        this.clearEmptyList(tempElement);
+        return tempElement.innerHTML.trim();
+    }
+    // This method applies the style of the last nested list to its parent list element if the parent lacks that style, ensuring consistent formatting for deeply nested lists.
+    private addStyleForNestedList(tempElement: HTMLElement): void {
+        if (tempElement.lastElementChild && (tempElement.lastElementChild.nodeName === 'OL' || tempElement.lastElementChild.nodeName === 'UL')) {
+            const lastItem: HTMLElement = tempElement.lastElementChild.firstElementChild as HTMLElement;
+            const textNode: Node = !isNOU(lastItem) ? this.getFirstTextNode(lastItem) : null;
+            if (!isNOU(textNode)) {
+                let parentOfTextNode: HTMLElement = textNode.parentNode as HTMLElement;
+                if (parentOfTextNode.nodeName !== 'OL' && parentOfTextNode.nodeName !== 'UL') {
+                    while (parentOfTextNode && parentOfTextNode.nodeName !== 'LI') {
+                        parentOfTextNode = parentOfTextNode.parentElement as HTMLElement;
+                    }
+                    parentOfTextNode = parentOfTextNode.parentElement as HTMLElement;
+                }
+                const styles: string = lastItem.parentElement.getAttribute('style');
+                if ((!parentOfTextNode.getAttribute('style') || !parentOfTextNode.getAttribute('style').includes(styles)) && !isNOU(styles)) {
+                    parentOfTextNode.setAttribute('style', styles);
+                }
+            }
+        }
+    }
+    // This method removes empty <ul>, <ol>, and <li> elements from the container unless they contain media elements, ensuring clean and valid HTML structure.
+    private clearEmptyList(tempElement: HTMLElement): void {
+        const emptyListElements: NodeListOf<HTMLElement> = tempElement.querySelectorAll('ul, ol');
+        for (let i: number = 0; i < emptyListElements.length; i++) {
+            const element: HTMLElement = emptyListElements[i as number];
+            const hasMediaElem: HTMLElement = element.querySelector('img, video, audio, table');
+            const isEmptyText: boolean = element.textContent.trim() === '';
+            if (isEmptyText && !hasMediaElem) {
+                detach(element);
+            }
+        }
+        const emptyList: NodeListOf<HTMLElement> = tempElement.querySelectorAll('li:empty');
+        for (let i: number = 0; i < emptyList.length; i++) {
+            detach(emptyList[i as number]);
+        }
+    }
+    // This method moves the marker class from the current element to its next sibling, ensuring the correct position for subsequent insertions.
+    private updateInsertAfterMarker(marker: HTMLElement): void {
+        const nextElement: HTMLElement = marker.nextElementSibling as HTMLElement;
+        marker.classList.remove('e-rte-insertAfterElement');
+        const classAttribute: string = marker.getAttribute('class');
+        if (!classAttribute) {
+            marker.removeAttribute('class');
+        }
+        if (nextElement) {
+            nextElement.classList.add('e-rte-insertAfterElement');
+        }
+    }
+    // This method appends collected inline nodes into a wrapper element (or inserts them with a <br> if needed), places it after the marker in the container, and resets the inline node list.
+    private flushWrap(wrapElement: HTMLElement, inlineNodes: Node[], container: HTMLElement): Node[] {
+        if (inlineNodes.length === 0) { return []; }
+        if (wrapElement.nodeName !== 'BR') {
+            for (let i: number = 0; i < inlineNodes.length; i++) {
+                wrapElement.appendChild(inlineNodes[i as number]);
+            }
+            if (wrapElement.innerHTML.trim() !== '') {
+                const marker: HTMLElement = container.querySelector('.e-rte-insertAfterElement');
+                if (marker) {
+                    this.domNode.insertAfter(wrapElement, marker);
+                    this.updateInsertAfterMarker(marker);
+                }
+            }
+        } else {
+            const marker: HTMLElement = container.querySelector('.e-rte-insertAfterElement');
+            let needToinsertBr: boolean = false;
+            for (let i: number = 0; i < inlineNodes.length; i++) {
+                if (inlineNodes[i as number].textContent.trim() !== '') {
+                    container.insertBefore(inlineNodes[i as number], marker);
+                    needToinsertBr = true;
+                }
+            }
+            if (needToinsertBr) {
+                container.insertBefore(wrapElement, marker);
+            }
+        }
+        return [];
+    }
+    // This method creates a new wrapper element based on the specified tag (enterAction), applies attributes from the main list and the current element, and returns it for use in wrapping content.
+    private createWrapElement(enterAction: string, mainUlOlAttributes: Record<string, string>, element: HTMLElement): HTMLElement {
+        const wrapElement: HTMLElement = createElement(enterAction);
+        if (wrapElement.nodeName !== 'BR') {
+            if (!isNOU(mainUlOlAttributes)) {
+                this.applyAllAttributes(wrapElement, mainUlOlAttributes);
+            }
+            const allAttributes: Record<string, string> = this.extractAllAttributes(element);
+            this.addAllAttributes(wrapElement, allAttributes);
+        }
+        if (wrapElement.getAttribute('style')) {
+            const removableStyles: string[] = ['color', 'font-size', 'font-family', 'font-weight', 'font-style'];
+            removableStyles.forEach((prop: string) => {
+                if (wrapElement.style.getPropertyValue(prop)) {
+                    wrapElement.style.removeProperty(prop);
+                }
+            });
+            // Remove the style attribute if no styles remain
+            if (wrapElement.style.length === 0) {
+                wrapElement.removeAttribute('style');
+            }
+        }
+        return wrapElement;
+    }
+    // This method processes the child nodes of a list item, wrapping inline content into blocks, handling nested lists recursively, and preserving attributes for proper structure and formatting.
+    private wrapperAction(element: HTMLElement, enterAction: string, tempElement: HTMLElement,
+                          mainUlOlAttributes: Record<string, string>): void {
+        const childNodes: Node[] = Array.from(element.childNodes);
+        let inlineNodes: Node[] = [];
+        for (let i: number = 0; i < childNodes.length; i++) {
+            const node: Node = childNodes[i as number];
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const liChildNodes: HTMLElement = node as HTMLElement;
+                if (this.domNode.isBlockNode(liChildNodes) && !this.isListTag(liChildNodes.nodeName)) {
+                    // Output collected inline nodes as a wrapped block, then emit the block element
+                    const wrapElement: HTMLElement = this.createWrapElement(enterAction, mainUlOlAttributes, element);
+                    inlineNodes = this.flushWrap(wrapElement, inlineNodes, tempElement);
+                    const marker: HTMLElement = tempElement.querySelector('.e-rte-insertAfterElement');
+                    if (marker) {
+                        if (liChildNodes.innerHTML.trim() !== '') {
+                            if (!isNOU(mainUlOlAttributes)) {
+                                this.addAllAttributes(liChildNodes, mainUlOlAttributes);
+                            }
+                            let parentLi: HTMLElement = liChildNodes.parentElement as HTMLElement;
+                            while (parentLi && parentLi.nodeName !== 'LI' && parentLi.nodeName !== 'OL' && parentLi.nodeName !== 'UL') {
+                                parentLi = parentLi.parentElement as HTMLElement;
+                            }
+                            const allAttributes: Record<string, string> = this.extractAllAttributes(parentLi);
+                            this.addAllAttributes(liChildNodes, allAttributes);
+                            this.domNode.insertAfter(liChildNodes, marker);
+                            this.updateInsertAfterMarker(marker);
+                        }
+                    }
+                } else if (this.isListTag(liChildNodes.nodeName)) {
+                    // Finish current inline run, then recurse into nested lists
+                    const wrapElement: HTMLElement = this.createWrapElement(enterAction, mainUlOlAttributes, element);
+                    inlineNodes = this.flushWrap(wrapElement, inlineNodes, tempElement);
+                    this.wrapperAction(liChildNodes, enterAction, tempElement, mainUlOlAttributes);
+                } else {
+                    inlineNodes.push(node);
+                }
+            } else {
+                inlineNodes.push(node);
+            }
+        }
+        // Flush any remaining inline nodes
+        const wrapElement: HTMLElement = this.createWrapElement(enterAction, mainUlOlAttributes, element);
+        this.flushWrap(wrapElement, inlineNodes, tempElement);
+    }
+    // This method replaces placeholder <span> tags in the input string with actual <ul>, <ol>, and <li> tags, applying optional classes and styles for proper list rendering.
+    private replaceCustomSpans(input: string, mainListClass: string, mainListStyle: string): string {
+        const hasStyle: boolean = !isNOU(mainListStyle);
+        const hasClass: boolean = !isNOU(mainListClass);
+        let openUlReplacement: string = '<ul';
+        if (hasClass) {
+            openUlReplacement += ' class="' + mainListClass + '"';
+        }
+        if (hasStyle) {
+            openUlReplacement += ' style="' + mainListStyle + '"';
+        }
+        openUlReplacement += '>';
+        let openOlReplacement: string = '<ol';
+        if (hasClass) {
+            openOlReplacement += ' class="' + mainListClass + '"';
+        }
+        if (hasStyle) {
+            openOlReplacement += ' style="' + mainListStyle + '"';
+        }
+        openOlReplacement += '>';
+        const openLiReplacement: string = (!isNOU(mainListClass) && mainListClass.indexOf('e-rte-checklist-hidden') >= 0) ? '<li class="e-rte-checklist-hidden" style="list-style-type: none;">' : '<li style="list-style-type: none;">';
+        const replacements: { pattern: RegExp, replacement: string }[] = [
+            {
+                pattern: /<span class="e-rte-list-close-ul"><\/span>/g,
+                replacement: '</ul>'
+            },
+            {
+                pattern: /<span class="e-rte-list-close-li"><\/span>/g,
+                replacement: '</li>'
+            },
+            {
+                pattern: /<span class="e-rte-list-close-ol"><\/span>/g,
+                replacement: '</ol>'
+            },
+            {
+                pattern: /<span class="e-rte-list-open-ul e-rte-list-start"><\/span>/g,
+                replacement: openUlReplacement
+            },
+            {
+                pattern: /<span class="e-rte-list-open-ol e-rte-list-start"><\/span>/g,
+                replacement: openOlReplacement
+            },
+            {
+                pattern: /<span class="e-rte-list-open-ul"><\/span>/g,
+                replacement: '<ul>'
+            },
+            {
+                pattern: /<span class="e-rte-list-open-li"><\/span>/g,
+                replacement: openLiReplacement
+            },
+            {
+                pattern: /<span class="e-rte-list-open-ol"><\/span>/g,
+                replacement: '<ol>'
+            }
+        ];
+        let output: string = input;
+        for (let i: number = 0; i < replacements.length; i++) {
+            output = output.replace(replacements[i as number].pattern, replacements[i as number].replacement);
+        }
+        return output;
+    }
+
     private revertList(elements: HTMLElement[], e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         const temp: Element[] = [];
         for (let i: number = elements.length - 1; i >= 0; i--) {
@@ -1836,8 +2264,18 @@ export class Lists {
                         }
                     }
                     const wrapperTag: string = isNullOrUndefined(e.enterAction) ? CONSTANT.DEFAULT_TAG : e.enterAction;
-                    if ((element as HTMLElement).style.color) {
-                        (element as HTMLElement).style.removeProperty('color');
+                    const targetElement: HTMLElement = element as HTMLElement;
+                    if (targetElement.getAttribute('style')) {
+                        const removableStyles: string[] = ['color', 'font-size', 'font-family', 'font-weight', 'font-style'];
+                        removableStyles.forEach((prop: string) => {
+                            if (targetElement.style.getPropertyValue(prop)) {
+                                targetElement.style.removeProperty(prop);
+                            }
+                        });
+                        // Remove the style attribute if no styles remain
+                        if (targetElement.style.length === 0) {
+                            targetElement.removeAttribute('style');
+                        }
                     }
                     const wrapper: string = '<' + wrapperTag + wrapperclass + this.domNode.attributes(element) + '></' + wrapperTag + '>';
                     const tempElement: HTMLElement = document.createElement('div');

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.5 (2025-11-04)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- `#778916` - Addressed an issue where the color picker would trigger events even when the same value was selected.
+
 ## 31.2.4 (2025-10-28)
 
 ### NumericTextBox

@@ -67,6 +67,8 @@ export const internalDocumentEditorSettingsChange: string = 'internalDocumentEdi
 /** @hidden */
 export const internalStyleCollectionChange: string = 'internalStyleCollectionChange';
 /** @hidden */
+export const internalAsyncPagesVisible: string = 'internalAsyncPagesVisible';
+/** @hidden */
 export const defaultFont: string = 'Times New Roman';
 /** @hidden */
 export const internalAutoResize: string = 'internalAutoResize';
@@ -89,8 +91,3 @@ export const fileMenuItemClickEvent: string = 'fileMenuItemClick';
  * @hidden
  */
 export const beforePaste: string = 'beforePaste';
-/**
- * Triggers when pages loads asynchronously in the document editor
- * @hidden
- */
-export const asyncPagesVisible: string = 'asyncPagesVisible';

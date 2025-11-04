@@ -1352,15 +1352,26 @@ export class InsertHtml {
         let nonLiElementCollection: ChildNode[] = [];
         const replacements: { elements: ChildNode[] }[] = [];
         if (!isNOU(parentList)) {
-            parentList.childNodes.forEach((childNode: ChildNode) => {
-                if ((childNode as HTMLElement).nodeName.toLocaleUpperCase() !== 'LI') {
+            for (let i: number = 0; i < parentList.childNodes.length; i++) {
+                const childNode: ChildNode = parentList.childNodes[i as number];
+                const isListNode: boolean = ['UL', 'OL'].indexOf(childNode.nodeName) !== -1;
+                const hasEmptyTextSibling: boolean = isNOU(childNode.previousSibling) || (childNode.previousSibling &&
+                    childNode.previousSibling.nodeType === Node.TEXT_NODE &&
+                    childNode.previousSibling.textContent.trim() === '');
+                const prevElement: Element = (childNode as HTMLElement).previousElementSibling;
+                const isPrevLi: boolean = prevElement && prevElement.nodeName.toUpperCase() === 'LI';
+                if (isListNode && hasEmptyTextSibling && isPrevLi) {
+                    prevElement.appendChild(childNode);
+                    this.cleanUpListContainer(childNode as HTMLElement);
+                    i--;
+                } else if ((childNode as HTMLElement).nodeName.toLocaleUpperCase() !== 'LI') {
                     nonLiElementCollection.push(childNode);
                 }
                 if (((childNode as HTMLElement).nodeName.toLocaleUpperCase() === 'LI' || parentList.lastChild === childNode) && nonLiElementCollection.length > 0) {
                     replacements.push({ elements: [...nonLiElementCollection] });
                     nonLiElementCollection = [];
                 }
-            });
+            }
             replacements.forEach(({ elements }: { elements: ChildNode[] }) => {
                 const newListItem: HTMLElement = document.createElement('li');
                 elements[0].parentNode.replaceChild(newListItem, elements[0]);
@@ -1524,6 +1535,7 @@ export class InsertHtml {
 
     // Processes list items in a node being inserted inside a list context.
     private static processListItemsInNode(blockNode: Node, insertedNode: Node, editNode: Element): void {
+        this.wrapUnstructedLiWithUl(insertedNode);
         // Only process if we're in a list item and inserting a list
         if (!this.shouldProcessListItems(blockNode, insertedNode, editNode)) {
             return;
@@ -1538,6 +1550,26 @@ export class InsertHtml {
             this.removeChecklistStyle(blockNode, liNode);
             this.removeListItemMargins(liNode);
             insertedNodeAsHtml.firstElementChild.insertAdjacentElement('afterend', liNode);
+        }
+    }
+    /*
+    * Wraps loose `<li>` elements within a `<ul>` container to ensure proper list structure.
+    */
+    private static wrapUnstructedLiWithUl(insertedNode: Node): void {
+        const orphanLIs: HTMLLIElement[] = Array.from((insertedNode as HTMLElement).querySelectorAll('li')).filter((li: HTMLLIElement) => {
+            return ['UL', 'OL'].indexOf(li.parentNode.nodeName) === -1;
+        });
+        let ul: HTMLElement | null = null;
+        let siblingFlag: boolean;
+        for (let i: number = 0; i < orphanLIs.length; i++) {
+            const currentLi: HTMLLIElement = orphanLIs[i as number];
+            const isSibling: boolean = orphanLIs[i + 1] && currentLi.nextSibling === orphanLIs[i + 1];
+            if (isNOU(ul) || !siblingFlag) {
+                ul = createElement('ul');
+                insertedNode.insertBefore(ul, currentLi);
+            }
+            ul.appendChild(currentLi);
+            siblingFlag = isSibling;
         }
     }
     /*

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.4 (2025-10-28)
+## 31.2.5 (2025-11-04)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I776799` - Resolved typing issue in `ReturnOption` interface.
+
+## 31.2.3 (2025-10-22)
 
 ### DataManager
 

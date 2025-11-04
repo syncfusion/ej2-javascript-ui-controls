@@ -215,6 +215,12 @@ export class StylesDialog {
             styleName = 'Header';
         } else if (localValue.getConstant('Footer') === styleName) {
             styleName = 'Footer';
+        } else if (localValue.getConstant('Heading 7') === styleName) {
+            styleName = 'Heading 7';
+        } else if (localValue.getConstant('Heading 8') === styleName) {
+            styleName = 'Heading 8';
+        } else if (localValue.getConstant('Heading 9') === styleName) {
+            styleName = 'Heading 9';
         }
         return styleName;
     }

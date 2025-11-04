@@ -1,5 +1,5 @@
 import { Animation, AnimationOptions, compile as templateComplier, Browser } from '@syncfusion/ej2-base';
-import { merge, Effect, extend, isNullOrUndefined, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { merge, Effect, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Index } from '../../common/model/base';
 import { TextAttributes } from '@syncfusion/ej2-svg-base';
@@ -1224,7 +1224,7 @@ export function markerAnimate(
             }
             element.setAttribute('transform', transform ? transform : '');
             if ((series.type === 'Scatter' || series.type === 'Bubble') && !isLabel && (pointIndex === series.points.length - 1)) {
-                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
+                series.chart.trigger('animationComplete', { series: series });
             }
 
         }
@@ -1851,9 +1851,7 @@ export function createTemplate(
     const templateFn: Function = getTemplateFunction(content);
     let templateElement: HTMLCollection;
     try {
-        const blazor: string = 'Blazor';
-        const tempObject: Object = window[blazor as string] ? (dataLabelId ? point : { point: point }) :
-            { chart: chart, series: series, point: point };
+        const tempObject: Object = { chart: chart, series: series, point: point };
         const templateId: string = dataLabelId ? dataLabelId + '_template' : 'template';
         const elementData: Element[] = templateFn ? templateFn(tempObject, chart, templateId, dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
@@ -3049,23 +3047,6 @@ export function getUnicodeText(text: string, regexp: RegExp): string {
         }
     }
     return convertedText.trim();
-}
-
-/**
- * Resets the Blazor templates of the given control (Chart or AccumulationChart).
- *
- * @param {Chart | AccumulationChart} control - The control to reset Blazor templates for.
- * @returns {void}
- */
-export function blazorTemplatesReset(control: Chart | AccumulationChart): void {
-    for (let i: number = 0; i < (control as Chart | AccumulationChart).annotations.length; i++) {
-        resetBlazorTemplate((control.element.id + '_Annotation_' + i).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate');
-    }
-    //This reset the tooltip templates
-    resetBlazorTemplate(control.element.id + '_tooltipparent_template' + '_blazorTemplate', 'Template');
-
-    //Datalabel templates reset
-    resetBlazorTemplate(control.element.id + '_DataLabel');
 }
 
 /** @private */

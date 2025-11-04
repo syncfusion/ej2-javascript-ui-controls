@@ -17,7 +17,7 @@ The [JavaScript Spreadsheet](https://www.syncfusion.com/javascript-ui-controls/j
 <p align="center">
 Trusted by the world's leading companies
   <a href="https://www.syncfusion.com">
-    <img src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/syncfusion/syncfusion-trusted-companies.webp" alt="Bootstrap logo">
+    <img src="https://ej2.syncfusion.com/home/images/trusted_companies.png" alt="Bootstrap logo">
   </a>
 </p>
 
@@ -82,6 +82,14 @@ Spreadsheet control is also offered in the following list of frameworks.
 * [Globalization](https://ej2.syncfusion.com/documentation/spreadsheet/global-local/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-spreadsheet-npm#localization): Personalize the Spreadsheet control with different languages, as well as culture-specific number, date, and time formatting.
 * [Accessibility](https://ej2.syncfusion.com/documentation/spreadsheet/accessibility/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-spreadsheet-npm): Provides with built-in accessibility support which helps to access all the Spreadsheet control features through the keyboard, screen readers, or other assistive technology devices.
 
+## Resources
+
+* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
+* [Custom Resource Generator](https://crg.syncfusion.com/)
+* [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)
+* [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=github)
+* [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=github)
+
 ## Support
 
 Product support is available through the following mediums.
@@ -98,10 +106,10 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 ## License and copyright
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this control, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this control, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 140+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
 
 > A [free community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_medium=listing&utm_campaign=javascript-spreadsheet-npm) for more info.
 
-&copy; Copyright 2022 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.
+&copy; Copyright 2025 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.

@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 31.2.5 (2025-11-04)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F197675` - Now, the Rich Text Editor works properly by showing tooltips when dynamically setting the `enabled` property to `true`.
+
+- `#I780766` - Now, the Rich Text Editor works properly when the `value` is bound as `undefined`, without throwing script errors.
+
+- `#I776059` - Now, pasting nested lists from `OneNote` into the Rich Text Editor works correctly, with styles applying and reverting as expected.
+
+- `#I778189` - Now, pasting lists from `Copilot` into the Rich Text Editor works correctly, with no misalignment issues.
+
+- `#I779872` - Now, the Rich Text Editor works properly when hovering over the dialog header to show the tooltip.
+
+- `#I770551` - Now, reverting the indented list items in Rich Text Editor works properly.
+
 ## 31.2.4 (2025-10-28)
 
 ### RichTextEditor

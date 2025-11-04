@@ -114,7 +114,10 @@ export class Editor {
     private checkLastLetterSpace: string = '';
     private checkLastLetterSpaceDot: string = '';
     private pasteFootNoteType: string = '';
-    private isInsertingText: boolean = false;
+    /**
+     * @private
+     */
+    public isInsertingText: boolean = false;
     private isInternalPaste: boolean = false;
     private guid: string;
     private type: string = null;
@@ -15401,6 +15404,7 @@ export class Editor {
                                 if (this.owner.enableTrackChanges && this.checkIsNotRedoing()) {
                                     this.trackRowDeletion(tableRow, true, false);
                                 } else {
+                                    this.removeFieldInBlock(tableRow);
                                     this.removeFieldInBlock(tableRow, true);
                                     this.removeFieldInBlock(tableRow, undefined, true);
                                     let prevRenderedRow: TableRowWidget = tableRow.previousRenderedWidget as TableRowWidget;
@@ -15432,6 +15436,7 @@ export class Editor {
                                             }
                                         }
                                         tableRow.childWidgets.splice(j, 1);
+                                        cell.destroy();
                                         j--;
                                     }
                                     tableRow.destroy();
@@ -19558,6 +19563,7 @@ export class Editor {
                 return;
             }
             if (inline instanceof EditRangeStartElementBox && !(inline.previousNode instanceof EditRangeEndElementBox)) {
+                selection.skipFormatRetrieval = false;
                 return;
             }
             if (this.documentHelper.isDocumentProtected &&
@@ -19766,17 +19772,13 @@ export class Editor {
                     } //When deleteing at para start, 2 nodes should be added in the removed nodes.
                     if (checkCombine) {
                         previousParagraph = previousParagraph.combineWidget(this.owner.viewer) as ParagraphWidget;
+                        let offset: number = this.documentHelper.selection.getParagraphLength(previousParagraph);
+                        let index: string = this.selection.getHierarchicalIndex(previousParagraph, offset.toString());
                         let currentParagraph: ParagraphWidget = this.splitParagraph(previousParagraph, previousParagraph.firstChild as LineWidget, 0, selection.start.currentWidget, selection.start.offset, true);
-                        let blocks: BlockWidget[] = currentParagraph.getSplitWidgets() as BlockWidget[];
-                        let splittedWidget: ParagraphWidget = blocks[blocks.length - 1] as ParagraphWidget;
-                        let endOffset: number = this.documentHelper.selection.getLineLength(splittedWidget.lastChild as LineWidget);
-                        let prevLastLineIndex: number = splittedWidget.childWidgets.length - 1;
                         this.removePrevParaMarkRevision(previousParagraph, true, true);
                         this.deleteParagraphMark(currentParagraph, selection, 0);
                         this.addRemovedNodes(previousParagraph);
-                        blocks = currentParagraph.getSplitWidgets() as BlockWidget[];
-                        splittedWidget = blocks[blocks.length - 1] as ParagraphWidget;
-                        selection.selects(splittedWidget.childWidgets[prevLastLineIndex] as LineWidget, endOffset, true);
+                        selection.selectByHierarchicalIndex(index, index);
                     }
                     else {
                         let endOffset: number = this.documentHelper.selection.getLineLength(previousParagraph.lastChild as LineWidget);
@@ -20815,12 +20817,13 @@ export class Editor {
                     selection.selectParagraphInternal(nextParagraph, true);
                 } else {
                     paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
+                    let offset: number = this.documentHelper.selection.getParagraphLength(paragraph);
+                    let index: string = this.selection.getHierarchicalIndex(paragraph, offset.toString());
                     let currentParagraph: ParagraphWidget = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, selection.start.currentWidget, selection.start.offset, true);
                     this.removePrevParaMarkRevision(paragraph, true, true);
                     this.deleteParagraphMark(currentParagraph, selection, 0);
                     this.addRemovedNodes(paragraph);
-                    this.setPositionForCurrentIndex(selection.start, selection.editPosition);
-                    selection.selectContent(selection.start, true);
+                    selection.selectByHierarchicalIndex(index, index);
                 }
             }
             // if (!isRedoing) {
@@ -24858,7 +24861,12 @@ export class Editor {
                 if (formData.type === 'Text') {
                     span.text = HelperMethods.formatText(formData.format, formData.defaultValue);
                 } else if (formData.type === 'Number') {
-                    span.text = HelperMethods.formatNumber(formData.format, formData.defaultValue);
+                    if (formData.format === '0%' && formData.defaultValue.charAt(formData.defaultValue.length - 1) === '%') {
+                        span.text = formData.defaultValue;
+                    }
+                    else {
+                        span.text = HelperMethods.formatNumber(formData.format, formData.defaultValue);
+                    }
                 } else {
                     span.text = HelperMethods.formatDate(formData.format, formData.defaultValue);
                 }

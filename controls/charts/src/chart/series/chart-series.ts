@@ -1365,12 +1365,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             if (this.xAxis.valueType === 'DateTime') {
                 point.xValue = Date.parse(point.x.toString());
             } else {
-                if (this.chart.isBlazor) {
-                    this.pushCategoryData(point, index, Date.parse(point.x.toString()).toString());
-                }
-                else {
-                    this.pushCategoryData(point, index, Date.parse(dateParser(dateFormatter(point.x))).toString());
-                }
+                this.pushCategoryData(point, index, Date.parse(dateParser(dateFormatter(point.x))).toString());
             }
             this.pushData(point, index);
             this.setEmptyPoint(point, index);
@@ -1442,11 +1437,17 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         const currentViewData: Object = this.currentViewData[i as number];
         const getObjectValueByMappingString: Function = this.enableComplexProperty ? getValue : this.getObjectValue;
         point.x = getObjectValueByMappingString(xName, currentViewData);
-        point.high = getObjectValueByMappingString(this.high, currentViewData);
-        point.low = getObjectValueByMappingString(this.low, currentViewData);
-        point.open = getObjectValueByMappingString(this.open, currentViewData);
-        point.close = getObjectValueByMappingString(this.close, currentViewData);
-        point.volume = getObjectValueByMappingString(this.volume, currentViewData);
+        const isDateTime: boolean = this.yAxis.valueType.indexOf('DateTime') > -1;
+        point.high = isDateTime ? new Date(getObjectValueByMappingString(this.high, currentViewData)) :
+            getObjectValueByMappingString(this.high, currentViewData);
+        point.low = isDateTime ? new Date(getObjectValueByMappingString(this.low, currentViewData)) :
+            getObjectValueByMappingString(this.low, currentViewData);
+        point.open = isDateTime ? new Date(getObjectValueByMappingString(this.open, currentViewData)) :
+            getObjectValueByMappingString(this.open, currentViewData);
+        point.close = isDateTime ? new Date(getObjectValueByMappingString(this.close, currentViewData)) :
+            getObjectValueByMappingString(this.close, currentViewData);
+        point.volume = isDateTime ? new Date(getObjectValueByMappingString(this.volume, currentViewData)) :
+            getObjectValueByMappingString(this.volume, currentViewData);
         point.interior = getObjectValueByMappingString(this.pointColorMapping, currentViewData) as string;
         if (this instanceof Series) {
             if (this.errorBar.visible) {
@@ -1458,7 +1459,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                 point.horizontalNegativeError = typeof this.errorBar.horizontalNegativeError == 'string' ? getObjectValueByMappingString(this.errorBar.horizontalNegativeError, currentViewData) : this.errorBar.horizontalNegativeError;
                 point.horizontalPositiveError = typeof this.errorBar.horizontalPositiveError == 'string' ? getObjectValueByMappingString(this.errorBar.horizontalPositiveError, currentViewData) : this.errorBar.horizontalPositiveError;
             }
-            point.y = getObjectValueByMappingString(this.yName, currentViewData);
+            point.y = isDateTime ? new Date(getObjectValueByMappingString(this.yName, currentViewData)) :
+                getObjectValueByMappingString(this.yName, currentViewData);
             point.size = getObjectValueByMappingString(this.size, currentViewData);
             point.text = getObjectValueByMappingString(textMappingName, currentViewData) as string;
             point.tooltip = getObjectValueByMappingString(this.tooltipMappingName, currentViewData) as string;
@@ -1766,7 +1768,6 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         this.processJsonData();
         this.recordsCount = e.count;
         this.refreshChart(isRemoteData);
-        this.currentViewData = null;
     }
 
     private refreshChart(isRemoteData: boolean): void {
@@ -1783,7 +1784,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         //if (chart.visibleSeries.length === (chart.visibleSeriesCount - chart.indicators.length)) {
         if (chart.visibleSeries.length === (chart.visibleSeriesCount)) {
             chart.refreshBound();
-            chart.trigger('loaded', { chart: chart.isBlazor ? {} : chart });
+            chart.trigger('loaded', { chart: chart });
             if (this.chart.stockChart && this.chart.stockChart.initialRender) {
                 this.chart.stockChart.initialRender = false;
                 this.chart.stockChart.stockChartDataManagerSuccess();

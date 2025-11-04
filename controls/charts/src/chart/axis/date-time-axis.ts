@@ -71,7 +71,7 @@ export class DateTime extends NiceInterval {
         const dateFormatter: Function = this.chart.intl.getDateFormat(option);
         // Axis min
         if ((axis.minimum) !== null) {
-            this.min = this.chart.isBlazor ? Date.parse(axis.minimum.toString()) : Date.parse(dateParser(dateFormatter(new Date(
+            this.min = Date.parse(dateParser(dateFormatter(new Date(
                 DataUtil.parse.parseJson({ val: axis.minimum }).val
             ))));
         } else if (this.min === null || this.min === Number.POSITIVE_INFINITY) {
@@ -79,7 +79,7 @@ export class DateTime extends NiceInterval {
         }
         // Axis Max
         if ((axis.maximum) !== null) {
-            this.max = this.chart.isBlazor ? Date.parse(axis.maximum.toString()) : Date.parse(dateParser(dateFormatter(new Date(
+            this.max = Date.parse(dateParser(dateFormatter(new Date(
                 DataUtil.parse.parseJson({ val: axis.maximum }).val
             ))));
         } else if (this.max === null || this.max === Number.NEGATIVE_INFINITY) {
@@ -306,7 +306,6 @@ export class DateTime extends NiceInterval {
         let tempInterval: number = axis.visibleRange.min;
         let labelStyle: Font;
         let previousValue: number;
-        const isBlazor: boolean = chart.getModuleName () === 'chart' ? (chart as Chart).isBlazor : false;
         const axisLabels: VisibleLabels[] = axis.visibleLabels;
         if (axis.minimum === null) {
             tempInterval = this.alignRangeStart(axis, tempInterval, axis.visibleRange.interval).getTime();
@@ -321,9 +320,9 @@ export class DateTime extends NiceInterval {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
             previousValue = axisLabels.length ? axis.visibleLabels[axisLabels.length - 1].value : tempInterval;
             axis.format = chart.intl.getDateFormat({
-                format: this.findCustomFormats(axis) || this.blazorCustomFormat(axis),
+                format: this.findCustomFormats(axis),
                 type: firstToLowerCase(axis.skeletonType),
-                skeleton: this.getSkeleton(axis, tempInterval, previousValue, isBlazor)
+                skeleton: this.getSkeleton(axis, tempInterval, previousValue)
             });
             axis.startLabel = axis.format(new Date(axis.visibleRange.min));
             axis.endLabel = axis.format(new Date(axis.visibleRange.max));
@@ -351,22 +350,6 @@ export class DateTime extends NiceInterval {
             axis.getMaxLabelWidth(this.chart);
         }
 
-    }
-
-    /**
-     * Calculate the Blazor custom format for axis.
-     *
-     * @param {Axis} axis - The axis for which the custom format is calculated.
-     * @returns {string} - The custom format string.
-     * @private
-     */
-    private blazorCustomFormat(axis: Axis): string {
-        if (this.chart.isBlazor) {
-            return axis.actualIntervalType === 'Years' ? (axis.isIntervalInDecimal ? 'yyyy' : 'MMM y') :
-                (axis.actualIntervalType === 'Days' && !axis.isIntervalInDecimal) ? 'ddd HH tt' : '';
-        } else {
-            return '';
-        }
     }
 
     /**

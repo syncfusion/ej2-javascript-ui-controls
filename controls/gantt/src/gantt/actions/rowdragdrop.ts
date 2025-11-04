@@ -270,6 +270,9 @@ export class RowDD {
                 } else {
                     dragRecords = args.data;
                 }
+                if (args.dropPosition === 'bottomSegment') {
+                    dragRecords.reverse();
+                }
                 let count: number = 0;
                 const dragLength: number = dragRecords.length;
                 for (let i: number = 0; i < dragLength; i++) {

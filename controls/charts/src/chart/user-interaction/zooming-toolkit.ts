@@ -420,19 +420,12 @@ export class Toolkit {
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
                 axisRange: axis.visibleRange
             });
-            if (chart.zoomModule.isDevice && !this.chart.isBlazor) {
+            if (chart.zoomModule.isDevice) {
                 chart.trigger(zoomComplete, argsData);
             }
         }
         const zoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, zoomingEventArgs, () => {
-                this.setDefferedZoom(chart);
-            });
-            return false;
-        } else {
-            return (this.setDefferedZoom(chart));
-        }
+        return (this.setDefferedZoom(chart));
     }
 
     private setDefferedZoom(chart: Chart): boolean  {

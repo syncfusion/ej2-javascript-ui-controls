@@ -1356,3 +1356,14 @@ export const data: { [key: string]: Object }[] = [
         ]
     }
 ];
+export const localData14: { [key: string]: Object }[] = [
+    { id: 1, name: 'Australia', hasChild: true, expanded: true },
+    { id: 2, pid: 1, name: 'New South Wales', isChecked: true },
+    { id: 3, pid: 1, name: 'Victoria', isChecked: true },
+    { id: 4, pid: 1, name: 'South Australia', isChecked: true },
+    { id: 6, pid: 1, name: 'Western Australia', isChecked: true },
+    { id: 7, name: 'Brazil', hasChild: true },
+    { id: 8, pid: 7, name: 'Paraná' },
+    { id: 9, pid: 7, name: 'Ceará' },
+    { id: 10, pid: 7, name: 'Acre' },
+];

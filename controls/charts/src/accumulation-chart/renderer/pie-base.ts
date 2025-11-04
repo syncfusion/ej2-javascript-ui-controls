@@ -366,8 +366,7 @@ export class PieBase extends AccumulationBase {
             end: () => {
                 this.pieBaseCenter.x -= 1;
                 slice.setAttribute('d', this.getPathArc(this.pieBaseCenter, 0, 359.99999, radius, 0, borderRadius, false, seriesPoints));
-                this.accumulation.trigger(animationComplete, this.accumulation.isBlazor ? {} :
-                    { series: series, accumulation: this.accumulation, chart: this.accumulation });
+                this.accumulation.trigger(animationComplete, { series: series, accumulation: this.accumulation, chart: this.accumulation });
                 const datalabelGroup: Element = getElement(this.accumulation.element.id + '_datalabel_Series_' + series.index);
                 if (datalabelGroup) {
                     markerAnimate(datalabelGroup, series.animation.delay, series.animation.duration, series, null, null, false);

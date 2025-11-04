@@ -83,6 +83,7 @@ export abstract class PdfAnnotation {
     _boundsCollection: Array<number[]> = [];
     _points: number[];
     _customTemplate: Map<string, PdfTemplate> = new Map();
+    _isTextUpdated: boolean = false;
     /**
      * Gets the author of the annotation.
      *
@@ -870,6 +871,16 @@ export abstract class PdfAnnotation {
         if (typeof value === 'string') {
             this._text = this._dictionary.get('Contents');
             if (value !== this._text) {
+                if ((this instanceof PdfLineAnnotation || this instanceof PdfCircleAnnotation
+                    || this instanceof PdfSquareAnnotation) && this.measure) {
+                    if (typeof this._unit === 'undefined' || this._isLoaded) {
+                        if (this._dictionary.has('Contents')) {
+                            this._isTextUpdated = true;
+                            const text: string = this._dictionary.get('Contents');
+                            this._unit = _mapMeasurementUnit(text.substring(text.length - 2));
+                        }
+                    }
+                }
                 this._dictionary.update('Contents', value);
                 this._text = value;
             }
@@ -3646,12 +3657,16 @@ export class PdfLineAnnotation extends PdfComment {
      * ```
      */
     get unit(): PdfMeasurementUnit {
+        if (this._isTextUpdated) {
+            return this._unit;
+        }
         if (typeof this._unit === 'undefined' || this._isLoaded) {
-            this._unit = PdfMeasurementUnit.centimeter;
             if (this._dictionary.has('Contents')) {
                 const text: string = this._dictionary.get('Contents');
                 this._unitString = text.substring(text.length - 2);
                 this._unit = _mapMeasurementUnit(this._unitString);
+            } else {
+                this._unit = PdfMeasurementUnit.centimeter;
             }
         }
         return this._unit;
@@ -4517,12 +4532,16 @@ export class PdfCircleAnnotation extends PdfComment {
      * ```
      */
     get unit(): PdfMeasurementUnit {
+        if (this._isTextUpdated) {
+            return this._unit;
+        }
         if (typeof this._unit === 'undefined' || this._isLoaded) {
-            this._unit = PdfMeasurementUnit.centimeter;
             if (this._dictionary.has('Contents')) {
                 const text: string = this._dictionary.get('Contents');
                 this._unitString = text.substring(text.length - 2);
                 this._unit = _mapMeasurementUnit(this._unitString);
+            } else {
+                this._unit = PdfMeasurementUnit.centimeter;
             }
         }
         return this._unit;
@@ -5184,6 +5203,9 @@ export class PdfSquareAnnotation extends PdfComment {
      * ```
      */
     get unit(): PdfMeasurementUnit {
+        if (this._isTextUpdated) {
+            return this._unit;
+        }
         if (typeof this._unit === 'undefined') {
             this._unit = PdfMeasurementUnit.centimeter;
             if (this._dictionary.has('Contents')) {
@@ -10874,7 +10896,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
         if (!this._dictionary.has('C')) {
             this._isTransparentColor = true;
         }
-        if (this._dictionary.has('AP') && this._isLoaded && !this._isRotated) {
+        if (this._dictionary.has('AP') && this._isLoaded) {
             this._parseStampAppearance();
         } else {
             this._appearanceTemplate = this._createRubberStampAppearance();

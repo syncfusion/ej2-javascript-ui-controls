@@ -2,39 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.4 (2025-10-28)
+## 31.1.21 (2025-09-23)
 
 ### HeatMap
 
 #### Bug fixes
 
-- `#F69008` - Now, a unique ID is generated for each heatmap when multiple heatmap are rendered.
-- `#F69017` - Now, the scroll does not appear when the axis label trim tooltip is triggered on the heatmap.
+- `#I767114` - The loaded event will now trigger as expected when the HeatMap is rendered.
 
-## 30.2.4 (2025-08-07)
-
-### HeatMap
-
-#### Bug fixes
-
-- `#T752738` - Now, the scroll does not appear when setting overflow to auto in the HeatMap component.
-
-## 30.1.42 (2025-07-29)
-
-### HeatMap
-
-#### Bug fixes
-
-- `#F69000` - The loaded event will now trigger as expected when the HeatMap is rendered.
-- `#F68977` - Now, the HeatMap component renders when the palette property is set to Fixed during argument rendering.
-
-### HeatMap
-
-#### Bug fixes
-
-- `#I744075` - Now, the heat map component renders the series for any number of data sources.
-
-## 30.1.37 (2025-06-25)
+## 31.1.17 (2025-09-05)
 
 ### HeatMap
 

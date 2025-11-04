@@ -327,13 +327,13 @@ export class BookmarkView {
         if (this.treeObj) {
             let element: any = this.treeObj.element;
             if (this.treeObj.fullRowSelect) {
-                if (element.classList.contains('e-treeview') && element.classList.contains('.e-active')) {
+                if (element && element.classList.contains('e-treeview') && element.classList.contains('.e-active')) {
                     element = element.querySelector('.e-active').querySelector('.e-fullrow');
                 }
-                else if (element.classList.contains('e-treeview')) {
+                else if (element && element.classList.contains('e-treeview')) {
                     element = element.querySelector('.e-fullrow');
                 }
-                if (element.nextElementSibling) {
+                if (element && element.nextElementSibling) {
                     element.style.height = element.nextElementSibling.offsetHeight + 'px';
                 }
             }

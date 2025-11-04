@@ -115,8 +115,6 @@ export class StickyNotesAnnotation {
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
-        const opacity: number = this.pdfViewer.stickyNotesSettings.opacity;
-        this.opacity =  (!isNullOrUndefined(opacity) && opacity >= 0 && opacity <= 1)  ? opacity : 1;
     }
 
     /**
@@ -280,7 +278,9 @@ export class StickyNotesAnnotation {
                 const annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ?
                     this.pdfViewer.stickyNotesSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                 const isPrint: boolean = this.pdfViewer.stickyNotesSettings.isPrint;
-                annotOpacity = (!isNullOrUndefined(this.opacity) && this.opacity >= 0 && this.opacity <= 1) ? this.opacity : 1;
+                annotOpacity = (!isNullOrUndefined(this.pdfViewer.stickyNotesSettings.opacity) &&
+                    this.pdfViewer.stickyNotesSettings.opacity >= 0 &&
+                    this.pdfViewer.stickyNotesSettings.opacity <= 1) ? this.pdfViewer.stickyNotesSettings.opacity : 1;
                 annot = {
                     bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src,
                     modifiedDate: this.getDateAndTime(), annotationSettings: annotationSettings,
@@ -1074,7 +1074,6 @@ export class StickyNotesAnnotation {
             submitOnEnter: true
         });
         commentObj.appendTo(newCommentDiv);
-        newCommentDiv.lastChild.firstChild.click();
         this.getButtonState(commentObj, newCommentDiv);
         if (args.valueEle) {
             if (this.pdfViewer.enableHtmlSanitizer && args.value){
@@ -3692,7 +3691,6 @@ export class StickyNotesAnnotation {
         this.isAddAnnotationProgramatically = null;
         this.accordionContainer = null;
         this.mainContainer = null;
-        this.opacity = null;
         this.globalize = null;
         this.textFromCommentPanel = null;
     }

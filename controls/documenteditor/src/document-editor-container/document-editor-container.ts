@@ -14,7 +14,7 @@ import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditor
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs, BeforePasteEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
-import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange, beforePaste, asyncPagesVisible } from '../document-editor/base/constants';
+import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange, beforePaste, internalAsyncPagesVisible } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DialogUtility } from '@syncfusion/ej2-popups';
@@ -313,12 +313,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Event()
     public beforeXmlHttpRequestSend: EmitType<XmlHttpRequestEventArgs>;
-    /**
-     * @private
-     * Triggers when pages loads asynchronously in the document editor
-     */
-    @Event()
-    public asyncPagesVisible: EmitType<void>;
     /**
      * Document editor container's toolbar module
      *
@@ -1053,7 +1047,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             trackChange: this.onTrackChange.bind(this),
             serviceFailure: this.fireServiceFailure.bind(this),
             beforeXmlHttpRequestSend: this.beforeXmlHttpSend.bind(this),
-            asyncPagesVisible: this.onAsyncPagesVisible.bind(this),
             locale: this.locale,
             acceptTab: true,
             zIndex: this.zIndex,
@@ -1088,6 +1081,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.on(protectionTypeChangeEvent, this.onProtectionChange, this);
         this.documentEditor.on(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks, this);
         this.documentEditor.on(internalStyleCollectionChange, this.updateStyleCollection, this);
+        this.documentEditor.on(internalAsyncPagesVisible, this.onAsyncPagesVisible, this);
         // Internal event to trigger auto resize.
         this.documentEditor.on(internalAutoResize, this.triggerAutoResize, this)
         this.documentEditor.on(beforeAutoResize, this.onBeforeAutoResize, this);
@@ -1139,6 +1133,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.off(protectionTypeChangeEvent, this.onProtectionChange);
         this.documentEditor.off(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks);
         this.documentEditor.off(internalStyleCollectionChange, this.updateStyleCollection);
+        this.documentEditor.off(internalAsyncPagesVisible, this.onAsyncPagesVisible);
     }
     private onCommentBegin(): void {
         if (this.toolbarHandler) {

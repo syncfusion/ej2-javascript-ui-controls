@@ -10,6 +10,7 @@ import { IPDFArgs, IExportEventArgs } from '../../common/model/interface';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { ErrorBarSettingsModel, Series, SeriesModel, AxisModel } from '../../chart';
 import { getValue } from '@syncfusion/ej2-base';
+import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * Defines the cell style in an Excel export.
@@ -464,14 +465,17 @@ export class Export {
                     (this.series[seriesCount as number] as Series).category === 'TrendLine' || (this.series[seriesCount as number] as Series).type === 'Histogram')) {
                     continue;
                 }
-                for (let dataCount: number = 0; dataCount < (this.series[seriesCount as number].dataSource as Object[]).length;
+                const dataSource: Object[] | Object = (this.series[seriesCount as number].dataSource instanceof DataManager) ?
+                    (isAccumulation ? (this.series[seriesCount as number] as AccumulationSeries).resultData as Object[] :
+                        (this.series[seriesCount as number] as Series).currentViewData) :
+                    this.series[seriesCount as number].dataSource as Object[];
+                for (let dataCount: number = 0; dataCount < (dataSource as Object[]).length;
                     dataCount++) {
                     if (isAccumulation && !(this.series[seriesCount as number] as AccumulationSeries).points[dataCount as number].visible) {
                         continue;
                     }
-                    xValue.push((valueType.indexOf('DateTime') > -1) ? new Date(this.series[seriesCount as number].
-                        dataSource[dataCount as number][requiredValues[seriesCount as number][0]]).getTime() :
-                        this.series[seriesCount as number].dataSource[dataCount as number][requiredValues[seriesCount as number][0]]);
+                    xValue.push((valueType.indexOf('DateTime') > -1) ? new Date(dataSource[dataCount as number][requiredValues[seriesCount as number][0]]).getTime() :
+                        dataSource[dataCount as number][requiredValues[seriesCount as number][0]]);
                 }
             }
             xValues.push(xValue);
@@ -502,57 +506,60 @@ export class Export {
         let index: number = 0;
         for (let axisCount: number = 0; axisCount < this.axisCollection.length; axisCount++) {
             const valueType: string = isAccumulation ? '' : isRangeNavigator ? (controls[0] as RangeNavigator).valueType : this.axisCollection[axisCount as number].valueType;
-            for (let xValueLength: number = 0; xValueLength < xValues[axisCount as number].length; xValueLength++) {
-                index = startIndex ? startIndex : 1;
-                const cells: ExcelCell[] = [];
-                let isXValue: boolean = true;
-                for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
-                    const axisName: string = this.axisCollection[axisCount as number] !== null ? (this.axisCollection[axisCount as number].name === 'primaryXAxis' || (this.axisCollection[axisCount as number].name === 'primaryYAxis' && this.series[seriesCount as number].type.indexOf('Bar') > -1)) ? null : this.axisCollection[axisCount as number].name : '';
-                    if ((!isRangeNavigator && ((!isAccumulation &&
+            for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
+                const axisName: string = this.axisCollection[axisCount as number] !== null ? (this.axisCollection[axisCount as number].name === 'primaryXAxis' || (this.axisCollection[axisCount as number].name === 'primaryYAxis' && this.series[seriesCount as number].type.indexOf('Bar') > -1)) ? null : this.axisCollection[axisCount as number].name : '';
+                if ((!isRangeNavigator &&
+                    ((!isAccumulation &&
                         (this.series[seriesCount as number] as SeriesModel | StockSeriesModel).xAxisName !== axisName) ||
-                        !(this.series[seriesCount as number] as SeriesModel | AccumulationSeriesModel | StockSeriesModel).visible) ||
-                        (this.series[seriesCount as number] as Series).category === 'TrendLine' || (this.series[seriesCount as number] as Series).type === 'Histogram')) {
-                        continue;
-                    }
-                    let isExist: boolean = false;
-                    const dataSource: Object[] = this.series[seriesCount as number].dataSource as Object[];
-                    for (let dataCount: number = 0; dataCount < dataSource.length; dataCount++) {
-                        const xValue: number = (valueType.indexOf('DateTime') > -1) ? (this.series[seriesCount as number] as Series).category === 'Pareto' ? new Date((this.series[seriesCount as number] as Series).points[dataCount as number][requiredValues[seriesCount as number][0]]).getTime() :
-                            new Date(dataSource[dataCount as number][requiredValues[seriesCount as number][0]]).getTime() :
-                            (this.series[seriesCount as number] as Series).category === 'Pareto' ? (this.series[seriesCount as number] as Series).points[dataCount as number][requiredValues[seriesCount as number][0]] : dataSource[dataCount as number][requiredValues[seriesCount as number][0]];
-                        if (xValues[axisCount as number][xValueLength as number] === xValue) {
-                            let usedValueCount: number = isXValue ? 0 : 1;
-                            const usedValueLength: number = this.series[seriesCount as number].type === 'BoxAndWhisker' ? requiredValues[seriesCount as number].length - 1 : requiredValues[seriesCount as number].length;
-                            for (; usedValueCount < usedValueLength; usedValueCount++) {
-                                const cellValue: Object = (this.series[seriesCount as number] as Series).enableComplexProperty ?
-                                    getValue(requiredValues[seriesCount as number][usedValueCount as number],
-                                             dataSource[dataCount as number]) :
-                                    dataSource[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]];
-                                let value: string | boolean | number | Date = (usedValueCount !== 0 && (this.series[seriesCount as number].type === 'BoxAndWhisker' || (this.series[seriesCount as number] as Series).category === 'Pareto')) ? (this.series[seriesCount as number] as Series).points[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]] : cellValue;
-                                if (value === null && type === 'CSV') {
-                                    value = '';
-                                }
-                                cells.push({
-                                    index: (usedValueCount === 0 ? startIndex === 0 ? 1 : startIndex : index), value: value,
-                                    colSpan: 1, rowSpan: 1, style: usedValueCount === 0 ? headerStyle : {}
-                                });
-                                index++;
+                        !(this.series[seriesCount as number] as SeriesModel | AccumulationSeriesModel | StockSeriesModel).visible)) ||
+                    (this.series[seriesCount as number] as Series).category === 'TrendLine' ||
+                    (this.series[seriesCount as number] as Series).type === 'Histogram') {
+                    continue;
+                }
+                const dataSource: Object[] | Object = (this.series[seriesCount as number].dataSource instanceof DataManager) ?
+                    (isAccumulation ? (this.series[seriesCount as number] as AccumulationSeries).resultData as Object[] :
+                        (this.series[seriesCount as number] as Series).currentViewData) :
+                    this.series[seriesCount as number].dataSource as Object[];
+                for (let dataCount: number = 0; dataCount < (dataSource as Object[]).length; dataCount++) {
+                    const xValue: number = (valueType.indexOf('DateTime') > -1)
+                        ? (this.series[seriesCount as number] as Series).category === 'Pareto'
+                            ? new Date((this.series[seriesCount as number] as Series).
+                                points[dataCount as number][requiredValues[seriesCount as number][0]]).getTime()
+                            : new Date(dataSource[dataCount as number][requiredValues[seriesCount as number][0]]).getTime()
+                        : (this.series[seriesCount as number] as Series).category === 'Pareto'
+                            ? (this.series[seriesCount as number] as Series).
+                                points[dataCount as number][requiredValues[seriesCount as number][0]]
+                            : dataSource[dataCount as number][requiredValues[seriesCount as number][0]];
+
+                    if (xValues[axisCount as number].indexOf(xValue) > -1) {
+                        index = startIndex ? startIndex : 1;
+                        const cells: ExcelCell[] = [];
+                        const usedValueLength: number = this.series[seriesCount as number].type === 'BoxAndWhisker'
+                            ? requiredValues[seriesCount as number].length - 1
+                            : requiredValues[seriesCount as number].length;
+
+                        for (let usedValueCount: number = 0; usedValueCount < usedValueLength; usedValueCount++) {
+                            const cellValue: Object = (this.series[seriesCount as number] as Series).enableComplexProperty ?
+                                getValue(requiredValues[seriesCount as number][usedValueCount as number], dataSource[dataCount as number]) :
+                                dataSource[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]];
+                            let value: string | boolean | number | Date = (usedValueCount !== 0 && (this.series[seriesCount as number].type === 'BoxAndWhisker' || (this.series[seriesCount as number] as Series).category === 'Pareto')) ? (this.series[seriesCount as number] as Series).points[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]] : cellValue;
+                            if (value === null && type === 'CSV') {
+                                value = '';
                             }
-                            if (this.series[seriesCount as number].type === 'BoxAndWhisker') {
-                                cells.push({ index: index, value: (this.series[seriesCount as number] as Series).points[dataCount as number]['outliers'][0], colSpan: 1, rowSpan: 1, style: {} });
-                                index++;
-                            }
-                            isXValue = false;
-                            isExist = true;
-                            break;
+                            cells.push({
+                                index: (usedValueCount === 0 ? (startIndex === 0 ? 1 : startIndex) : index), value: value, colSpan: 1,
+                                rowSpan: 1, style: usedValueCount === 0 ? headerStyle : {}
+                            });
+                            index++;
                         }
-                    }
-                    if (!isExist) {
-                        index += (requiredValues[seriesCount as number].length - 1);
+                        if (this.series[seriesCount as number].type === 'BoxAndWhisker') {
+                            cells.push({index: index, value: (this.series[seriesCount as number] as Series).points[dataCount as number]['outliers'][0], colSpan: 1, rowSpan: 1, style: {}});
+                            index++;
+                        }
+                        this.rows.push({ index: this.actualRowCount, cells: cells });
+                        this.actualRowCount++;
                     }
                 }
-                this.rows.push({ index: this.actualRowCount, cells: cells });
-                this.actualRowCount++;
             }
             startIndex = index;
         }

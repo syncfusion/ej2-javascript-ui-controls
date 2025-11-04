@@ -397,7 +397,6 @@ describe('Iframe Content renderer module', () => {
             const iframeDoc = (rteObj.contentModule.getPanel() as HTMLIFrameElement).contentDocument;
             const contentBody = iframeDoc.querySelector('body');
             expect(contentBody.getAttribute('aria-label')).toBe('Rich Text Editor');
-            expect(contentBody.getAttribute('role')).toBe('textbox');
             expect(contentBody.getAttribute('lang')).toBe('en');
             expect(contentBody.getAttribute('dir')).toBe('ltr');
         });

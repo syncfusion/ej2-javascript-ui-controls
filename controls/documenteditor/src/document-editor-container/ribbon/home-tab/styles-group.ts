@@ -83,18 +83,22 @@ export class StylesGroup extends RibbonGroupBase implements IRibbonGroup {
         if (!galleryItem || !galleryItem.gallerySettings || !galleryItem.gallerySettings.groups) {
             return;
         }
-
+        const prevItemLength: number = galleryItem.gallerySettings.groups[0].items.length;
         // Update gallery items using the helper
         galleryItem.gallerySettings.groups[0].items = StylesHelper.getStyleItems(this.documentEditor, this.localObj);
 
         // Set the selected item based on current selection
         const currentStyle: string = StylesHelper.getCurrentStyleName(this.documentEditor, this.localObj);
+        const prevSelectedItemIndex: number = galleryItem.gallerySettings.selectedItemIndex;
         galleryItem.gallerySettings.selectedItemIndex = StylesHelper.findStyleIndex(
             currentStyle,
             galleryItem.gallerySettings.groups[0].items
         );
 
-        // Update the gallery
-        this.container.ribbon.ribbon.updateItem(galleryItem);
+        if (prevSelectedItemIndex !== galleryItem.gallerySettings.selectedItemIndex
+            || prevItemLength !== galleryItem.gallerySettings.groups[0].items.length) {
+            // Update the gallery
+            this.container.ribbon.ribbon.updateItem(galleryItem);
+        }
     }
 }

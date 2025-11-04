@@ -3,7 +3,7 @@
  */
 import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged, animationMode, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, Internationalization, Event, EmitType, Browser, EventHandler, Touch } from '@syncfusion/ej2-base';
-import { remove, extend, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { remove, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { AccumulationChartModel } from './accumulation-model';
 import { Margin, Border, TooltipSettings, CenterLabel, Indexes, Accessibility, TitleStyleSettings } from '../common/model/base';
 import { AccumulationSeries, AccPoints, PieCenter } from './model/acc-base';
@@ -21,7 +21,7 @@ import { AccumulationSeriesModel, PieCenterModel } from './model/acc-base-model'
 import { LegendSettings } from '../common/legend/legend';
 import { AccumulationLegend } from './renderer/legend';
 import { LegendSettingsModel } from '../common/legend/legend-model';
-import { ChartLocation, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset, getTextAnchor, stringToNumber, textWrap, subtractRect } from '../common/utils/helper';
+import { ChartLocation, indexFinder, appendChildElement, redrawElement, getTextAnchor, stringToNumber, textWrap, subtractRect } from '../common/utils/helper';
 import { RectOption, showTooltip, ImageOption } from '../common/utils/helper';
 import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase, withInBounds } from '../common/utils/helper';
 import { getElement, titlePositionX } from '../common/utils/helper';
@@ -904,8 +904,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public themeStyle: IThemeStyle;
     private chartid: number = 57724;
     /** @private */
-    public isBlazor: boolean;
-    /** @private */
     public accumulationResizeBound: EventListenerOrEventListenerObject;
     /**
      * Constructor for creating the AccumulationChart widget.
@@ -925,8 +923,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * @returns {void}
      */
     protected preRender(): void {
-        const blazor: string = 'Blazor';
-        this.isBlazor = window[blazor as string];
         this.allowServerDataBinding = false;
 
         this.unWireEvents();
@@ -968,13 +964,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.element.setAttribute('aria-label', this.accessibility.accessibilityDescription ? this.accessibility.accessibilityDescription : this.title + '. Syncfusion interactive chart.');
         this.element.setAttribute('class', this.element.getAttribute('class') + ' e-accumulationchart-focused');
         const loadEventData: IAccLoadedEventArgs = {
-            chart: this.isBlazor ? {} as AccumulationChart : this,
-            accumulation: this.isBlazor ? {} as AccumulationChart : this,
+            chart: this,
+            accumulation: this,
             theme: this.theme, name: load, cancel: false
         };
         this.trigger(load, loadEventData, () => {
 
-            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
             this.setTheme();
 
             this.accBaseModule = new AccumulationBase(this);
@@ -1141,14 +1136,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public accumulationResize(): boolean {
         this.animateSeries = false;
         const args: IAccResizeEventArgs = {
-            accumulation: this.isBlazor ? {} as AccumulationChart : this,
+            accumulation: this,
             previousSize: new Size(
                 this.availableSize.width,
                 this.availableSize.height
             ),
             name: resized,
             currentSize: new Size(0, 0),
-            chart: this.isBlazor ? {} as AccumulationChart : this
+            chart: this
         };
         const beforeResizeArgs: IAccBeforeResizeEventArgs = { name: 'beforeResize', cancelResizedEvent: false };
         if (this.resizeTo) {
@@ -1684,7 +1679,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         const indexes: Index = indexFinder(element.id, true);
         if (indexes.series >= 0 && indexes.point >= 0) {
             this.trigger(event, {
-                series: this.isBlazor ? {} : this.series[indexes.series],
+                series: this.series[indexes.series],
                 point: (<AccumulationSeries>this.series[indexes.series]).points[indexes.point],
                 seriesIndex: indexes.series, pointIndex: indexes.point,
                 x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY
@@ -1755,7 +1750,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (this.redraw) {
             return null;
         }
-        blazorTemplatesReset(this);
         removeElement(this.element.id + '_Secondary_Element');
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > 0) {
@@ -1949,11 +1943,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (isAllSeriesEmpty && !isNullOrUndefined(this.noDataTemplate)) {
             this.renderNoDataTemplate(true);
         }
-
-        updateBlazorTemplate(this.element.id + '_DataLabel', 'Template', this.series[0].dataLabel);
-
-        this.trigger('loaded', { accumulation: this.isBlazor ? {} : this, chart: this.isBlazor ? {} : this });
-
+        this.trigger('loaded', { accumulation: this, chart: this });
         this.animateSeries = false;
     }
     /**
@@ -2679,19 +2669,13 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                     const len: number = this.series.length;
                     let seriesRefresh: boolean = false;
                     let series: AccumulationSeriesModel;
-                    let blazorProp: boolean;
                     for (let i: number = 0; i < len; i++) {
                         series = newProp.series[i as number];
-                        if ((series.startAngle || series.endAngle || series.explodeOffset || series.neckHeight ||
-                            series.neckWidth || series.radius || series.innerRadius || series.groupMode ||
-                            series.emptyPointSettings) && this.isBlazor) {
-                            blazorProp = true;
-                        }
                         if (newProp.series[i as number] && (newProp.series[i as number].dataSource || newProp.series[i as number].yName
                             || newProp.series[i as number].xName || series.type ||
                             newProp.series[i as number].dataLabel || series.radius || series.innerRadius ||
                             series.startAngle || series.endAngle || series.gapRatio || series.neckWidth || series.explode ||
-                            series.neckWidth || series.pyramidMode || series.explodeOffset || series.funnelMode || blazorProp)) {
+                            series.neckWidth || series.pyramidMode || series.explodeOffset || series.funnelMode)) {
                             extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                             seriesRefresh = true;
                         }

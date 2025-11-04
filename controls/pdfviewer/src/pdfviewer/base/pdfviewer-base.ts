@@ -5843,6 +5843,24 @@ export class PdfViewerBase {
         this.isViewerMouseDown = false;
     };
 
+    private isSearchBoxActive(evtTarget?: EventTarget | null): boolean {
+        const active: any = document.activeElement as any;
+        const targetEl: any = (evtTarget as HTMLElement) || null;
+        const isSearchInput: (el: any) => boolean = (el: any): boolean => {
+            if (!el) { return false; }
+            return (
+                el.id === this.pdfViewer.element.id + '_search_input' ||
+                el.classList.contains('e-pv-search-input-ele')
+            );
+        };
+        if (isSearchInput(active)) { return true; }
+        if (targetEl) {
+            const container: any = targetEl.closest('#' + this.pdfViewer.element.id + '_search_input_container');
+            if (container) { return true; }
+        }
+        return false;
+    }
+
     private onWindowMouseUp = (event: MouseEvent): any => {
         this.isFreeTextContextMenu = false;
         this.isNewStamp = false;
@@ -5867,13 +5885,14 @@ export class PdfViewerBase {
                     if (this.pdfViewer.textSelectionModule && !this.isTextSelectionDisabled && !this.getTextMarkupAnnotationMode()) {
                         if (event.detail === 1 && !this.viewerContainer.contains(event.target as HTMLElement) &&
                          !this.contextMenuModule.contextMenuElement.contains(event.target as HTMLElement)) {
-                            if (window.getSelection().anchorNode !== null) {
+                            if (window.getSelection().anchorNode !== null && !this.isSearchBoxActive(event.target)) {
                                 this.pdfViewer.textSelectionModule.textSelectionOnMouseup(event);
                             }
                         }
                         const target: any = event.target;
                         if (this.viewerContainer.contains(event.target as HTMLElement) && target.className !== 'e-pdfviewer-formFields' && target.className !== 'e-pv-formfield-input' && target.className !== 'e-pv-formfield-textarea') {
-                            if (!this.isClickedOnScrollBar(event, true) && !this.isScrollbarMouseDown) {
+                            if (!this.isClickedOnScrollBar(event, true) && !this.isScrollbarMouseDown
+                                && !this.isSearchBoxActive(event.target)) {
                                 this.pdfViewer.textSelectionModule.textSelectionOnMouseup(event);
                             } else {
                                 if (window.getSelection().anchorNode !== null) {

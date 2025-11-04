@@ -8,7 +8,7 @@ import { Alignment, Position } from '../utils/enum';
 import { AccPoints, AccumulationSeries, AccumulationAnnotationSettings } from '../../accumulation-chart/model/acc-base';
 import { getPoint } from '../utils/helper';
 import { Axis } from '../../chart/axis/axis';
-import { DateFormatOptions, createElement, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { DateFormatOptions, createElement } from '@syncfusion/ej2-base';
 import { IAnnotationRenderEventArgs } from '../../chart/model/chart-interface';
 import { annotationRender } from '../model/constants';
 import { DataUtil } from '@syncfusion/ej2-data';
@@ -177,11 +177,6 @@ export class AnnotationBase {
         } else if (this.control.redraw) {
             removeElement(annotationElement.id);
         }
-
-        updateBlazorTemplate((this.control.element.id + 'Annotation' + index).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate',
-                             chart.stockChart ? chart.stockChart.annotations[index as number] : this.control.annotations[index as number],
-                             undefined, annotationRendered);
-
     }
 
     /**

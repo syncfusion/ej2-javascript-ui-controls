@@ -3,7 +3,7 @@
  */
 import { createElement } from '@syncfusion/ej2-base';
 import { EmitType } from '@syncfusion/ej2-base';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DataManager, ODataAdaptor, Query } from '@syncfusion/ej2-data';
 import { AccumulationChart} from '../../../src/accumulation-chart/accumulation';
 import { AccumulationTooltip} from '../../../src/accumulation-chart/user-interaction/tooltip';
 import { AccumulationDataLabel} from '../../../src/accumulation-chart/renderer/dataLabel';
@@ -674,12 +674,10 @@ describe('Checking RTL Behaviour for Title', () => {
     });
     it('Checking chart without element id', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
-            args.chart.isBlazor = true;
             expect(args.chart.element !== null).toBe(true);
             done();
         };
         accumulation.element.id = '';
-        accumulation.isBlazor = true;
         accumulation.refresh();
     });
     it('Check accumulation chart center x and y', (done: Function) => {
@@ -939,36 +937,6 @@ describe('Checking RTL Behaviour for Title', () => {
               done();
           };
           accumulation.animate(0);
-          accumulation.refresh();
-      });
-      it('Checking accumulation chart elements', (done: Function) => {
-          accumulation.loaded = (args: IAccLoadedEventArgs) => {
-              accumulation.loaded = null;
-              if (args.accumulation.accBaseModule) {
-                  args.chart.isBlazor = true;
-                  args.chart.renderElements();
-                  args
-                  expect(document.getElementById('ej2-container') !== null).toBe(true);
-              }
-              expect(document.getElementById('ej2-container') !== null).toBe(true);
-              done();
-          };
-          accumulation.load = (args: IAccLoadedEventArgs) => {
-              args.chart.isBlazor = true;
-          };
-          accumulation.refresh();
-      });
-      it('Checking accumulation checking pointColormappings', (done: Function) => {
-          accumulation.loaded = (args: IAccLoadedEventArgs) => {
-              if (args.chart.accBaseModule) {
-                  args.chart.animate();
-              }
-              expect(document.getElementById('ej2-container') !== null).toBe(true);
-              done();
-          };
-          accumulation.series[0].pointColorMapping = 'color';
-          accumulation.series[0].dataSource = [{ y: 18, x: 1, name: 'Bald Eagle', color: 'red', text: 'Bald Eagle : 18', radius: '50%' }, { y: 23, x: 2, name: 'Bison', color: 'Blue', text: 'Bison : 23', radius: '60%' },
-          { y: 30, x: 3, name: 'Brown Bear', color: 'yellow', text: 'Brown Bear : 30', radius: '70%' }, { y: 44, x: 4, name: 'Elk', color: 'black', text: 'Elk : 44', radius: '100%' }];
           accumulation.refresh();
       });
   });
@@ -1296,4 +1264,58 @@ describe('Checking RTL Behaviour for Title', () => {
             accumulation.refresh();
         });
     })
+    describe('Checking applyPattern', () => {
+        let element: HTMLElement;
+        let id: string = 'ej2-container1';
+        let accumulation: AccumulationChart;
+        let dataManager: DataManager = new DataManager({
+                            url: 'https://services.syncfusion.com/js/production/api/orders',
+                            adaptor: new ODataAdaptor(),
+                            offline: true,
+                        });
+                        let query: Query = new Query();
+        beforeAll((): void => {
+             
+            element = createElement('div', { id: id });
+            document.body.appendChild(element);
+            accumulation = new AccumulationChart({
+                border: { width: 1, color: 'blue' },
+              series: [{
+                            type: 'Pie', dataSource: [{ y: 18, x: 1, name: 'Bald Eagle', color: 'red', text: 'Bald Eagle : 18', radius: '50%' }, { y: 23, x: 2, name: 'Bison', color: 'Blue', text: 'Bison : 23', radius: '60%' },
+                    { y: 30, x: 3, name: 'Brown Bear', color: 'yellow', text: 'Brown Bear : 30', radius: '70%' }, { y: 44, x: 4, name: 'Elk', color: 'black', text: 'Elk : 44', radius: '100%' }], xName: 'x', query: query, yName: 'y', animation: { enable: false },
+                            dataLabel: {
+                                name: 'text', visible: true, position: 'Outside',
+                                connectorStyle: { type: 'Curve', color: 'black', width: 2, dashArray: '2,1', length: '5' }
+                            },
+                        }],
+                width: '600', 
+                height: '400', 
+                centerLabel: {
+                    text: 'Syncfusion',
+                    textStyle: {
+                        size: '11px',
+                    },
+                    hoverTextFormat: '${point.x}'
+                }
+            });
+            accumulation.appendTo('#' + id);
+        });
+        afterAll((): void => {
+            accumulation.loaded = null;
+            accumulation.destroy();
+            removeElement(id);
+        });
+        it('Checking title with right position and rtl', function (done) {
+                accumulation.loaded = function (args) {
+                    accumulation.loaded = null;
+                    accumulation.export('CSV', 'Chart');
+                    done();
+                };
+                accumulation.series[0].dataSource = dataManager;
+                accumulation.series[0].xName = 'CustomerID';
+                accumulation.series[0].yName = 'Freight';
+                accumulation.series[0].query = query;
+                accumulation.refresh();
+            });
+    });
 });

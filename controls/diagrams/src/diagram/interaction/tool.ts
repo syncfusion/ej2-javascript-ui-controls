@@ -120,6 +120,8 @@ export class ToolBase {
 
     private checkProperty: boolean = true;
 
+    protected toolName: string = 'ToolBase';
+
     protected undoParentElement: SelectorModel = { nodes: [], connectors: [] };
 
     protected undoContainerElement: SelectorModel = { nodes: [], connectors: [] };
@@ -498,6 +500,7 @@ export class ConnectTool extends ToolBase {
     constructor(commandHandler: CommandHandler, endPoint: string) {
         super(commandHandler, true);
         this.endPoint = endPoint;
+        this.toolName = 'ConnectTool';
     }
 
     /**
@@ -544,6 +547,15 @@ export class ConnectTool extends ToolBase {
      */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
         //Bug 981347: Exception Occurs Randomly When Creating a Connector from a Port.
+        const isConnectorDrawingTool: boolean = this.toolName === 'ConnectorDrawingTool';
+        const noConnector: boolean = !args || !args.source || !(args.source as any).connectors || !(args.source as any).connectors.length;
+        if ((isConnectorDrawingTool || noConnector) && this.inAction) {
+            this.checkPropertyValue();
+            this.commandHandler.updateSelector();
+            this.commandHandler.removeSnap();
+            ToolBase.prototype.mouseUp(args); // call grandparent
+            return;
+        }
         if (!isBlazor() && this.isConnected && args.source && (args.source as SelectorModel).connectors) {
             const connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
             const nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
@@ -2044,6 +2056,7 @@ export class ConnectorDrawingTool extends ConnectTool {
     constructor(commandHandler: CommandHandler, endPoint: string, sourceObject: Node | Connector) {
         super(commandHandler, endPoint);
         this.sourceObject = sourceObject;
+        this.toolName = 'ConnectorDrawingTool';
     }
 
     /**

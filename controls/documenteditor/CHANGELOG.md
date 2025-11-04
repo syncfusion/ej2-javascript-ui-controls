@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 31.2.5 (2025-11-04)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I762105` - Resolved script error caused by content control element selection changes.
+`#I770623` - Resolved issue where content in the document was not displaying properly.
+`#I773688` - Resolved script error in the ribbon when applying the last three styles in different locales.
+`#I769024` - Resolved issue with cursor position when merging two paragraphs.
+`#I772615` - Addressed performance issue caused by updating text style in the ribbon while typing.
+`#I766597` - Resolved form field issue.
+`#I777112` - Resolved error when reopening updated elements via the context menu.
+`#I771628` - Resolved script error related to linked styles.
+`#I780412` - Resolved issue with deleting table cells.
+`#I775093` - Resolved collaborative editing issue.
+`#I762135` - Resolved issue where the editable zone inherited the highlight color from the restricted zone.
+
+#### Features
+
+- `#I712226`- Added support for user specific custom dictionaries
+
 ## 31.2.4 (2025-10-28)
 
 ### DocumentEditor

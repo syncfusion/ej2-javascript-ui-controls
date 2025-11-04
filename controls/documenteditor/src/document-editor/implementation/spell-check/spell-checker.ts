@@ -76,18 +76,54 @@ export class SpellChecker {
     private pageCacheIndex: number[] = [];
 
     private ignoreUppercaseInternal: boolean = false;
+    private enableUserDictionaryInternal: boolean = false;
     /**
      * Gets a value indicating whether to ignore words written in uppercase during spell check.
+     *
+     * @aspType bool
+     * @returns {boolean} Returns ignoreUppercase
      */
     public get ignoreUppercase(): boolean {
         return this.ignoreUppercaseInternal;
     }
 
      /**
-     * Sets a value indicating whether to ignore words written in uppercase during spell check.
-     */
+      * Sets a value indicating whether to ignore words written in uppercase during spell check.
+      *
+      * @aspType bool
+      */
     public set ignoreUppercase(value: boolean) {
         this.ignoreUppercaseInternal = value;
+    }
+
+    /**
+     * Gets the boolean indicating whether user-specific dictionaries are enabled.
+     *
+     * If true, maintains a user-specific custom dictionary file for spell checking.
+     * If false, maintains a common custom dictionary for all users.
+     * 
+     * @aspType bool
+     * @returns {boolean} Returns enableUserDictionary
+     */
+    public get enableUserDictionary(): boolean {
+        return this.enableUserDictionaryInternal;
+    }
+    /**
+     * Sets the boolean indicating whether user-specific dictionaries are enabled.
+     * 
+     * If true, maintains a user-specific custom dictionary file for spell checking.
+     * If false, maintains a common custom dictionary for all users.
+     *
+     * @aspType bool
+     */
+    public set enableUserDictionary(value: boolean) {
+        this.enableUserDictionaryInternal = value;
+        // Reset spell checker collections when switching users with user dictionary enabled
+        // because spelling errors need to be re-evaluated based on the user's specific or custom dictionary
+        this.documentHelper.triggerSpellCheck = true;
+        this.resetSpellCheckState();
+        this.viewer.updateScrollBars();
+        this.documentHelper.triggerSpellCheck = false;
     }
 
     /**
@@ -622,9 +658,25 @@ export class SpellChecker {
             }
         } else if (!this.documentHelper.isScrollHandler && element.paragraph.isChangeDetected) {
             element.isChangeDetected = true;
-        } else if (!element.isChangeDetected && this.handleErrorCollection(element)) {
-            hasError = true;
-            erroElements.push(element);
+        } else if (!element.isChangeDetected) {
+            if (this.handleErrorCollection(element)) {
+                hasError = true;
+                erroElements.push(element);
+            } else if (!this.enableUserDictionary && !isNullOrUndefined(element.currentUser)) {
+                // Set isChangeDetected to true since the enableUserDictionary property changed from true to false,
+                // so we need to re-evaluate the word
+                element.isChangeDetected = true;
+                element.currentUser = undefined;
+            } else if (this.enableUserDictionary && element.currentUser !== (this.documentHelper.owner.currentUser === '' ? 'Guest user' : this.documentHelper.owner.currentUser)) {
+                // Set isChangeDetected to true since the enableUserDictionary property changed from false to true or the user is switched,
+                // so we need to re-evaluate the word
+                element.isChangeDetected = true;
+                element.currentUser = this.documentHelper.owner.currentUser === '' ? 'Guest user' : this.documentHelper.owner.currentUser;
+            }
+        }
+        // If the user-specific dictionary is enabled and the current user is not defined, set the current user
+        if ((this.enableUserDictionary && isNullOrUndefined(element.currentUser))) {
+            element.currentUser = this.documentHelper.owner.currentUser === '' ? 'Guest user' : this.documentHelper.owner.currentUser;
         }
         return { 'errorFound': hasError, 'elements': erroElements };
     }
@@ -857,6 +909,7 @@ export class SpellChecker {
         const index: number = line.children.indexOf(elementBox);
         let prevText: string = elementBox.text;
         if (this.combinedElements.indexOf(elementBox) === -1) {
+            elementBox.isChangeDetected = false;
             this.combinedElements.push(elementBox);
         }
         const difference: number = (isPrevious) ? 0 : 1;
@@ -1139,6 +1192,9 @@ export class SpellChecker {
                     word = word.replace(String.fromCharCode(160), ' ');
                 }
                 const spellCheckData: any = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord, IgnoreUppercase: this.ignoreUppercase };
+                if (this.enableUserDictionary) {
+                    spellCheckData.UserName = this.documentHelper.owner.currentUser === '' ? 'Guest user' : this.documentHelper.owner.currentUser;
+                }
                 const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'SpellCheck', headers: headers, timeout: 0, cancel: false, withCredentials: false };
                 headers = httprequestEventArgs.headers;
                 this.documentHelper.owner.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
@@ -1180,13 +1236,8 @@ export class SpellChecker {
             }
         }
     }
-    /**
-     * Method to check for next error
-     *
-     * @private
-     * @returns {void}
-     */
-    public checkForHeaderFooterNextError(): ContextElementInfo {
+
+    private checkForHeaderFooterNextError(): ContextElementInfo {
         if (!isNullOrUndefined(this.viewer)) {
             const errorWords: Dictionary<string, ElementBox[]> = this.errorWordCollection;
             let element: ContextElementInfo;
@@ -1242,7 +1293,12 @@ export class SpellChecker {
         }
         return undefined;
     }
-
+    /**
+     * Method to check for next error
+     *
+     * @private
+     * @returns {void}
+     */
     public checkForNextError(): void {
         if (!isNullOrUndefined(this.viewer)) {
             if (this.errorWordCollection.length > 0) {
@@ -1683,6 +1739,32 @@ export class SpellChecker {
         return { hasSpellError: hasError, isElementPresent: elementPresent };
     }
 
+    /**
+     * @private
+     * @returns {void}
+     */
+    public resetSpellCheckState(): void {
+        this.documentHelper.cachedPages = [];
+        if (!isNullOrUndefined(this.errorWordCollection)) {
+            this.errorWordCollection.clear();
+        }
+        if (!isNullOrUndefined(this.uniqueWordsCollection)) {
+            this.uniqueWordsCollection.clear();
+        }
+        this.ignoreAllItems = [];
+        this.uniqueSpelledWords = {};
+        this.errorSuggestions = new Dictionary<string, string[]>();
+        this.handleErrorElements = [];
+        this.pageCacheIndex = [];
+        if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
+            localStorage.removeItem(this.uniqueKey);
+        }
+    }
+
+    /**
+     *
+     * @private
+     */
     public triggerErrorForNonRenderPages(): void {
         if (this.documentHelper.render) {
             setTimeout(() => {

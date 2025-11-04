@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 31.2.5 (2025-11-04)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I777187` - Fixed an issue where offsets were calculated incorrectly when `editSettings` was not configured.
+- `#I778239` - Resolved an issue where rows were inserted in reverse order when multiple rows were dragged and dropped simultaneously.
+- `#I778404` - Resolved unpredictable task shifts and miscalculated dependency offsets in the Gantt chart.
+- `#I778127` - Resolved an issue where navigating with Tab and arrow keys caused duplicate focus highlights on row cells and column headers.
+
 ## 31.2.4 (2025-10-28)
 
 ### GanttChart

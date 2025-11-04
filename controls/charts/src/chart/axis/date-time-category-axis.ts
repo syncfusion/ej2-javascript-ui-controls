@@ -73,8 +73,8 @@ export class DateTimeCategory extends Category {
             axis.actualIntervalType = axis.intervalType;
         }
         axis.format = this.chart.intl.getDateFormat({
-            format: axis.labelFormat || this.blazorCustomFormat(axis), type: firstToLowerCase(axis.skeletonType),
-            skeleton: this.getSkeleton(axis, null, null, this.chart.isBlazor)
+            format: axis.labelFormat, type: firstToLowerCase(axis.skeletonType),
+            skeleton: this.getSkeleton(axis, null, null)
         });
         let i: number = (!isRangeNavigator && this.chart.stockChart) ? 1 : 0;
         const interval: number = axis.interval ? axis.interval : 1;
@@ -126,20 +126,6 @@ export class DateTimeCategory extends Category {
         }
     }
 
-    /**
-     * Calculate the Blazor custom format for axis.
-     *
-     * @param {Axis} axis - The axis for which the custom format is calculated.
-     * @returns {string} - The custom format string.
-     * @private
-     */
-    private blazorCustomFormat(axis: Axis): string {
-        if (this.chart.isBlazor && axis.actualIntervalType === 'Years') {
-            return 'yyyy';
-        } else {
-            return '';
-        }
-    }
     /**
      * To get the Indexed axis label text with axis format for DateTimeCategory axis.
      *

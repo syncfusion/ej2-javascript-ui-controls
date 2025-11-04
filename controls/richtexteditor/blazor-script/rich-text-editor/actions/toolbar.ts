@@ -83,13 +83,15 @@ export class Toolbar {
         }
     }
     private toggleFloatClass(e?: Event): void {
-        const floatOffset: number = this.parent.floatingToolbarOffset;
-        if (this.parent.toolbarSettings.enableFloating) {
-            addClass([this.tbElement.parentElement], [classes.CLS_TB_FLOAT]);
-            setStyleAttribute(this.tbElement.parentElement, { top: (floatOffset) + 'px' });
-        } else {
-            removeClass([this.tbElement.parentElement], [classes.CLS_TB_FLOAT]);
-            setStyleAttribute(this.tbElement.parentElement, { top: '' });
+        if (this.tbElement && this.tbElement.parentElement) {
+            const floatOffset: number = this.parent.floatingToolbarOffset;
+            if (this.parent.toolbarSettings.enableFloating) {
+                addClass([this.tbElement.parentElement], [classes.CLS_TB_FLOAT]);
+                setStyleAttribute(this.tbElement.parentElement, { top: (floatOffset) + 'px' });
+            } else {
+                removeClass([this.tbElement.parentElement], [classes.CLS_TB_FLOAT]);
+                setStyleAttribute(this.tbElement.parentElement, { top: '' });
+            }
         }
     }
 

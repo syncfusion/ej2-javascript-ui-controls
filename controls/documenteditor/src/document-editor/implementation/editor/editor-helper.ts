@@ -1245,8 +1245,10 @@ export class HelperMethods {
     }
     public static formatNumber(format: string, value: string): string {
         const intl: Internationalization = new Internationalization();
-        const dotData: string[] = value.split('.');
-        value = dotData[0];
+        if (format !== '0.00') {
+            let dotData: string[] = value.split('.');
+            value = dotData[0];
+        }
         const numberValue: number = intl.parseNumber(value);
         if (value.toString() === 'NaN') {
             return '';

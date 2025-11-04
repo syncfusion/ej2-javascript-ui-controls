@@ -1760,7 +1760,8 @@ export class ParagraphWidget extends BlockWidget {
                     let isTextBidi: boolean = textElement.characterFormat.bidi;
                     let isRTLLang: boolean = false;
                     let charTypeIndex: number = characterRangeTypes.length;
-
+                    let pattern = /[()\[\]{}<>]/;
+                    let istextWithBrackets: boolean = pattern.test(textElement.text);
                     if (isTextBidi) {
                         isRTLLang = textHelper.isRightToLeftLanguage(elementBox.characterFormat.localeIdBidi);
                     }
@@ -1772,16 +1773,21 @@ export class ParagraphWidget extends BlockWidget {
                         for (let j = 0; j < splitedTextCollection.length; j++) {
                             text = splitedTextCollection[j];
                             if (j > 0) {
-                                ////Clone the source span.
-                                let clonedTextElement: TextElementBox = textElement.clone();
-                                clonedTextElement.text = text;
-                                clonedTextElement.characterRange = characterRangeTypes[j + charTypeIndex];
-                                ////Inert the splitted span in order.
-                                lineWidget.children.splice(i + j, 0, clonedTextElement);
-                                clonedTextElement.line = lineWidget;
-                                iIncrementer++;
-                                if (textElement.revisionLength > 0) {
-                                    this.updateTextElementInRevisionRange(textElement, clonedTextElement);
+                                if (!textHelper.isRTLText(text) && isTextBidi && !isNullOrUndefined(documentHelper.owner.editorModule) && documentHelper.owner.editorModule.isInsertingText && istextWithBrackets) {
+                                    textElement.text += text;
+                                }
+                                else {
+                                    ////Clone the source span.
+                                    let clonedTextElement: TextElementBox = textElement.clone();
+                                    clonedTextElement.text = text;
+                                    clonedTextElement.characterRange = characterRangeTypes[j + charTypeIndex];
+                                    ////Inert the splitted span in order.
+                                    lineWidget.children.splice(i + j, 0, clonedTextElement);
+                                    clonedTextElement.line = lineWidget;
+                                    iIncrementer++;
+                                    if (textElement.revisionLength > 0) {
+                                        this.updateTextElementInRevisionRange(textElement, clonedTextElement);
+                                    }
                                 }
                             } else {
                                 ////Replace the source span with splitted text.
@@ -5083,7 +5089,10 @@ export abstract class ElementBox {
      * @private
      */
     public characterRange: CharacterRangeType = undefined;
-
+    /**
+     * @private
+     */
+    public currentUser: string = undefined;
     /**
      * @private
      */

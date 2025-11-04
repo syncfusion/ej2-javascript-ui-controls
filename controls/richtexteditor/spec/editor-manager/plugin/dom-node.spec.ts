@@ -485,7 +485,7 @@ describe('DOMNode plugin', () => {
             numberlist.click();
             numberlist.click();
             numberlist.click();
-            expect(editor.inputElement.innerHTML === `<p class="textPtag">Provides an option to customize the quick toolbar for an image </p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`).toBe( true);
+            expect(editor.inputElement.innerHTML === `<p class="textPtag">Provides an option to customize the quick toolbar for an image </p><p class="imgPtag"><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`).toBe( true);
         });
     });
 

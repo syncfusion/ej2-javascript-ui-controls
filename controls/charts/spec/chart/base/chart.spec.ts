@@ -1412,7 +1412,6 @@ describe('Chart Control', () => {
                 done();
             };
             chart.loaded = loaded;
-            chart.isBlazor = true;
             chart.series[0].fill = 'blue';
             chart.series[0].type = 'Line';
             chart.enableExport = false;
@@ -1600,9 +1599,8 @@ describe('Chart Control', () => {
         it('Checking the checking chart refreshLiveData method', (done: Function) => {
             loaded = (args: ILoadedEventArgs): void => {
                 chart.loaded = null;
-                args.chart.isBlazor = true;
                 args.chart.refreshLiveData();
-                args.chart.isBlazor = false; args.chart.enableCanvas = true;
+                args.chart.enableCanvas = true;
                 //args.chart.refreshLiveData();
                 element = document.getElementById('container');
                 expect(element !== null).toBe(true);

@@ -3005,6 +3005,13 @@
       overflow: hidden;
       overflow-x: scroll;
     }
+    
+    &.e-mac-safari .virtualtable {
+      .e-leftfreeze,
+      .e-rightfreeze {
+        transform: translateZ(0);
+      }
+    }
 
     .e-columnchooser::before {
       line-height: $grid-columnchooser-toolbar-icon-line-height;

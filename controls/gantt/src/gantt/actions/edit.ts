@@ -1429,9 +1429,9 @@ export class Edit {
                 }
             }
         }
-        if (this.parent.updateOffsetOnTaskbarEdit && this.parent.connectorLineEditModule && args.data) {
-            this.parent.connectorLineEditModule['validatedOffsetIds'] = [];
-            this.parent.connectorLineEditModule['calculateOffset'](args.data);
+        if (this.parent.updateOffsetOnTaskbarEdit && args.data && this.parent.taskFields.dependency) {
+            this.parent.predecessorModule['validatedOffsetIds'] = [];
+            this.parent.predecessorModule['calculateOffset'](args.data);
         }
         this.parent.predecessorModule['validatedParentIds'] = [];
         if (isNullOrUndefined(this.dialogModule) || (this.dialogModule && !this.dialogModule['isFromDialogPredecessor'])) {

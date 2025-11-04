@@ -213,26 +213,15 @@ export class Zoom {
             }
         }
         const zoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, zoomingEventArgs, () => {
-                if (zoomingEventArgs.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
-                }
-                else {
-                    this.performDefferedZoom(chart);
-                }
-            });
-        } else {
-            this.chart.trigger(onZooming, zoomingEventArgs, () => {
-                if (zoomingEventArgs.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
-                }
-                else {
-                    this.performDefferedZoom(chart);
-                    this.redrawOnZooming(chart, false);
-                }
-            });
-        }
+        this.chart.trigger(onZooming, zoomingEventArgs, () => {
+            if (zoomingEventArgs.cancel) {
+                this.zoomCancel(axes, this.zoomCompleteEvtCollection);
+            }
+            else {
+                this.performDefferedZoom(chart);
+                this.redrawOnZooming(chart, false);
+            }
+        });
     }
 
     private performDefferedZoom(chart: Chart): void {
@@ -392,27 +381,15 @@ export class Zoom {
         }
 
         const onZoomingEventArg: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
-        if (!onZoomingEventArg.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArg, () => {
-                if (onZoomingEventArg.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
-                }
-                else {
-                    this.zoomingRect = new Rect(0, 0, 0, 0);
-                    this.performZoomRedraw(chart);
-                }
-            });
-        } else {
-            this.chart.trigger(onZooming, onZoomingEventArg, () => {
-                if (onZoomingEventArg.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
-                }
-                else {
-                    this.zoomingRect = new Rect(0, 0, 0, 0);
-                    this.redrawOnZooming(chart);
-                }
-            });
-        }
+        this.chart.trigger(onZooming, onZoomingEventArg, () => {
+            if (onZoomingEventArg.cancel) {
+                this.zoomCancel(axes, this.zoomCompleteEvtCollection);
+            }
+            else {
+                this.zoomingRect = new Rect(0, 0, 0, 0);
+                this.redrawOnZooming(chart);
+            }
+        });
     }
 
     /**
@@ -520,25 +497,14 @@ export class Zoom {
             });
         }
         const onZoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArgs, () => {
-                if (onZoomingEventArgs.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
-                }
-                else {
-                    this.performZoomRedraw(chart);
-                }
-            });
-        } else {
-            this.chart.trigger(onZooming, onZoomingEventArgs, () => {
-                if (onZoomingEventArgs.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
-                }
-                else {
-                    this.redrawOnZooming(chart);
-                }
-            });
-        }
+        this.chart.trigger(onZooming, onZoomingEventArgs, () => {
+            if (onZoomingEventArgs.cancel) {
+                this.zoomCancel(axes, this.zoomCompleteEvtCollection);
+            }
+            else {
+                this.redrawOnZooming(chart);
+            }
+        });
     }
 
     /**

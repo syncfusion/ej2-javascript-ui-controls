@@ -33,7 +33,7 @@ export class CellFormat {
         }
         const cell: HTMLElement = args.td || this.parent.getCell(args.rowIdx, args.colIdx);
         if (cell) {
-            this.updateMergeBorder(args, sheet);
+            const mergeResult: {isRowMerge: boolean, isColMerge: boolean} = this.updateMergeBorder(args, sheet);
             let cellStyleColor: string;
             if (args.formatColor && cell.style.color === args.formatColor) {
                 cellStyleColor = args.style.color;
@@ -153,6 +153,12 @@ export class CellFormat {
             if (cellStyleColor !== undefined) {
                 args.style.color = cellStyleColor;
             }
+            if (mergeResult.isColMerge && args.style.borderRight) {
+                delete args.style.borderRight;
+            }
+            if (mergeResult.isRowMerge && args.style.borderBottom) {
+                delete args.style.borderBottom;
+            }
         } else {
             this.updateRowHeight(args.rowIdx, args.colIdx, true, args.onActionUpdate, null, args.rowHeight);
         }
@@ -176,7 +182,9 @@ export class CellFormat {
                     let n: number = 0; const valLength: number = splitVal.length;
                     for (i = 0; i < valLength; i++) {
                         let lines: number = getLines(
-                            splitVal[i as number], getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle);
+                            splitVal[i as number],
+                            getExcludedColumnWidth(sheet, rowIdx, colIdx, cell.colSpan > 1 ? colIdx + cell.colSpan - 1 : colIdx),
+                            cell.style, this.parent.cellStyle);
                         if (lines === 0) {
                             lines = 1; // for empty new line
                         }
@@ -208,7 +216,9 @@ export class CellFormat {
         }
     }
 
-    private updateMergeBorder(args: CellFormatArgs, sheet: SheetModel): void {
+    private updateMergeBorder(args: CellFormatArgs, sheet: SheetModel): { isRowMerge: boolean, isColMerge: boolean } {
+        let isRowMerge: boolean;
+        let isColMerge: boolean;
         const cellModel: CellModel = getCell(args.rowIdx, args.colIdx, sheet, null, true);
         if (cellModel.rowSpan > 1 || cellModel.colSpan > 1) {
             const mergeArgs: { range: number[] } = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
@@ -217,15 +227,18 @@ export class CellFormat {
                 const bottomCell: CellModel = getCell(mergeArgs.range[2], mergeArgs.range[1], sheet, null, true);
                 if (bottomCell.style && bottomCell.style.borderBottom) {
                     args.style.borderBottom = bottomCell.style.borderBottom;
+                    isRowMerge = true;
                 }
             }
             if (cellModel.colSpan > 1) {
                 const rightCell: CellModel = getCell(mergeArgs.range[0], mergeArgs.range[3], sheet, null, true);
                 if (rightCell.style && rightCell.style.borderRight) {
                     args.style.borderRight = rightCell.style.borderRight;
+                    isColMerge = true;
                 }
             }
         }
+        return { isRowMerge, isColMerge };
     }
     private setLeftBorder(
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string,

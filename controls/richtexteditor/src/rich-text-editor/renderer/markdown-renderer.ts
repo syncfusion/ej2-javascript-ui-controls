@@ -36,8 +36,6 @@ export class MarkdownRender implements IRenderer {
             attrs: {
                 'aria-labelledby': this.parent.getID() + '_view',
                 'aria-label': 'Markdown Editor',
-                'aria-multiline': 'true',
-                'role': 'textbox',
                 'lang': rteObj.locale.slice(0, 2),
                 'dir': rteObj.enableRtl ? 'rtl' : 'ltr'
             }

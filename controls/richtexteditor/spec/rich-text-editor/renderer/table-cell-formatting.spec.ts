@@ -141,7 +141,7 @@ describe('Table cell formatting ', () => {
             const toolbarButtons : NodeList = editor.element.querySelectorAll('.e-tbar-btn');
             (toolbarButtons[5] as HTMLElement).click();
             expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(2);
-            expect(table.rows[0].cells[0].innerHTML === '<p>Span&nbsp;<br></p><p style="font-weight: bold;"><strong>Bold </strong><br></p><p style="font-style: italic;"><em>Italic <br></em></p>').toBe(true);
+            expect(table.rows[0].cells[0].innerHTML === '<p>Span&nbsp;<br></p><p><strong>Bold </strong><br></p><p><em>Italic <br></em></p>').toBe(true);
             expect(table.rows[0].cells[1].innerHTML === '<p>Paragraph 1</p><p>Paragraph 2</p><p>Paragraph 3</p>').toBe(true);
         });
     });

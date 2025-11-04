@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.4 (2025-10-28)
+## 31.2.5 (2025-11-04)
+
+### Treeview
+
+#### Bug Fixes
+
+- `#I776118` -  The issue where the parent node was automatically checked when dynamically adding a child node with `isChecked` set to true, even when `autoCheck` was set to false, has been resolved.
+
+## 31.2.3 (2025-10-22)
 
 ### Breadcrumb
 

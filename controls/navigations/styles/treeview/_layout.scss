@@ -547,9 +547,6 @@
       }
 
       .e-list-url {
-        @if ($skin-name != 'Material3' and $skin-name != 'tailwind3') {
-          padding: 0;
-        }
         width: 100%;
       }
 

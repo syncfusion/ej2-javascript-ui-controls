@@ -289,7 +289,7 @@ export class LineBase {
                 }
                 path.setAttribute('stroke-dasharray', strokeDashArray);
                 path.style.visibility = '';
-                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
+                series.chart.trigger('animationComplete', { series: series });
             }
         });
     }
@@ -497,7 +497,7 @@ export class LineBase {
                     stackLabelGroup.setAttribute('visibility', 'visible');
                 }
                 clipRect.setAttribute('transform', 'translate(0,0)');
-                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
+                series.chart.trigger('animationComplete', { series: series });
             }
         });
     }

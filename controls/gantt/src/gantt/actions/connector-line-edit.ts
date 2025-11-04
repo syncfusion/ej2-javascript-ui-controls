@@ -28,8 +28,6 @@ export class ConnectorLineEdit {
     public childRecord: IGanttData = null;
     private validatedId: { id: string | number, value: IPredecessor }[] = [];
     private dateValidateModule: DateProcessor;
-    private cumulativePredecessorChanges: IPredecessor[];
-    private validatedOffsetIds: string[] = [];
     private isPublicDependencyDelete: boolean = false;
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
@@ -651,8 +649,8 @@ export class ConnectorLineEdit {
         if (parentId) {
             const record: IGanttData = this.parent.getRecordByID(parentId);
             if (record && record.ganttProperties && record.ganttProperties.predecessor) {
-                this.parent.connectorLineEditModule['validatedOffsetIds'] = [];
-                this.calculateOffset(record);
+                this.parent.predecessorModule['validatedOffsetIds'] = [];
+                this.parent.predecessorModule['calculateOffset'](record);
                 let isIdInclude: boolean = true;
                 /* eslint-disable-next-line */
                 const matchedObject: { id: any, value: any } = this.validatedId.find((item: any) =>
@@ -709,172 +707,6 @@ export class ConnectorLineEdit {
             const parentRecord: IGanttData = this.parent.getRecordByID(ganttRecord.parentItem.taskId);
             this.validationPredecessor = parentRecord.ganttProperties.predecessor;
             this.removePredecessors(parentRecord, this.validationPredecessor);
-        }
-    }
-    private compareObjects(obj1: Object, obj2: Object): boolean {
-        const keys1: string[] = Object.keys(obj1).filter((key: string) => key !== 'offset');
-        const keys2: string[] = Object.keys(obj2).filter((key: string) => key !== 'offset');
-        if (keys1.length !== keys2.length) {
-            return false;
-        }
-        return keys1.every((key: string) => obj1[key as string] === obj2[key as string]);
-    }
-    private getOffsetForPredecessor(
-        predecessor: IPredecessor,
-        parentTask: IGanttData,
-        record: IGanttData
-    ): number {
-        let offset: number = 0;
-        if ((parentTask.ganttProperties.startDate || parentTask.ganttProperties.endDate) &&
-            (record.ganttProperties.startDate || record.ganttProperties.endDate)) {
-            let tempStartDate: Date;
-            let tempEndDate: Date;
-            let tempDuration: number;
-            let isNegativeOffset: boolean;
-            switch (predecessor.type) {
-            case 'FS':
-                tempStartDate = new Date((parentTask.ganttProperties.endDate || parentTask.ganttProperties.startDate).getTime());
-                tempEndDate = new Date((record.ganttProperties.startDate || record.ganttProperties.endDate).getTime());
-                break;
-            case 'SS':
-                tempStartDate = new Date((parentTask.ganttProperties.startDate || parentTask.ganttProperties.endDate).getTime());
-                tempEndDate = new Date((record.ganttProperties.startDate || record.ganttProperties.endDate).getTime());
-                break;
-            case 'SF':
-                tempStartDate = new Date((parentTask.ganttProperties.startDate || parentTask.ganttProperties.endDate).getTime());
-                tempEndDate = new Date((record.ganttProperties.endDate || record.ganttProperties.startDate).getTime());
-                break;
-            case 'FF':
-                tempStartDate = new Date((parentTask.ganttProperties.endDate || parentTask.ganttProperties.startDate).getTime());
-                tempEndDate = new Date((record.ganttProperties.endDate || record.ganttProperties.startDate).getTime());
-                break;
-            }
-
-            if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                tempStartDate = this.dateValidateModule.checkStartDate(tempStartDate);
-                tempEndDate = this.dateValidateModule.checkEndDate(tempEndDate, null);
-                isNegativeOffset = false;
-            } else {
-                const tempDate: Date = new Date(tempStartDate.getTime());
-                tempStartDate = this.dateValidateModule.checkStartDate(tempEndDate);
-                tempEndDate = this.dateValidateModule.checkEndDate(tempDate, null);
-                isNegativeOffset = true;
-            }
-
-            if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                tempDuration = this.dateValidateModule.getDuration(
-                    tempStartDate, tempEndDate, predecessor.offsetUnit, true, false);
-
-                if (this.parent.durationUnit === predecessor.offsetUnit &&
-                    ((parentTask.ganttProperties.startDate && isNullOrUndefined(parentTask.ganttProperties.endDate)) ||
-                        (isNullOrUndefined(parentTask.ganttProperties.startDate) && parentTask.ganttProperties.endDate))) {
-                    tempDuration -= 1;
-                }
-                offset = isNegativeOffset ? -tempDuration : tempDuration;
-            }
-        }
-        return offset;
-    }
-    private calculateOffset(record: IGanttData, isRecursive?: boolean): void {
-        if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand
-            && this.parent.taskFields.hasChildMapping)) {
-            return;
-        }
-        if (record && isScheduledTask(record.ganttProperties) !== null) {
-            const prevPredecessor: IPredecessor[] = extend([], record.ganttProperties.predecessor, [], true) as IPredecessor[];
-            const validPredecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(record);
-            if (validPredecessor.length > 0) {
-                this.cumulativePredecessorChanges = prevPredecessor;
-                for (let i: number = 0; i < validPredecessor.length; i++) {
-                    const predecessor: IPredecessor = validPredecessor[parseInt(i.toString(), 10)];
-                    const parentTask: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.from);
-                    if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.viewType === 'ProjectView') {
-                        const isPresent: IPredecessor[] = parentTask.ganttProperties.predecessor.filter((pred: IPredecessor) => {
-                            return pred.from === validPredecessor[i as number].from && pred.to === validPredecessor[i as number].to;
-                        });
-                        if (isPresent.length === 0) {
-                            parentTask.ganttProperties.predecessor.push(validPredecessor[i as number]);
-                        }
-                    }
-                    const offset: number = this.getOffsetForPredecessor(predecessor, parentTask, record);
-                    const preIndex: number = getIndex(predecessor, 'from', prevPredecessor, 'to');
-                    if (preIndex !== -1) {
-                        prevPredecessor[preIndex as number].offset = offset;
-                    }
-                    // Update predecessor in predecessor task
-                    const parentPredecessors: IPredecessor = extend([], parentTask.ganttProperties.predecessor, [], true);
-                    const parentPreIndex: number = getIndex(predecessor, 'from', parentPredecessors, 'to');
-                    if (parentPreIndex !== -1) {
-                        parentPredecessors[parentPreIndex as number].offset = offset;
-                    }
-                    parentTask.ganttProperties.predecessor = parentPredecessors as IPredecessor[];
-                }
-            } else {
-                const validPredecessor: IPredecessor[] = record.ganttProperties.predecessor;
-                if (validPredecessor) {
-                    if (validPredecessor.length > 0) {
-                        validPredecessor.forEach((element: IPredecessor) => {
-                            if (this.validatedOffsetIds.indexOf(element.to) === -1) {
-                                if (this.parent.viewType === 'ResourceView') {
-                                    this.validatedOffsetIds.push(element.to);
-                                    this.calculateOffset(this.parent.getRecordByID((this.parent.taskIds.indexOf('T' + element.to)).toString()), true);
-                                }
-                                else {
-                                    this.calculateOffset(this.parent.getRecordByID(element.to), true);
-                                }
-                            }
-                        });
-                    }
-                }
-            }
-            if (!isRecursive) {
-                if (validPredecessor.length === 0) {
-                    this.cumulativePredecessorChanges = [];
-                }
-                if (prevPredecessor && prevPredecessor.length > 0 && this.cumulativePredecessorChanges &&
-                    this.cumulativePredecessorChanges.length > 0) {
-                    const matchingObjects: IPredecessor[] = prevPredecessor.map((objectToCompare: IPredecessor) => {
-                        const matchedObject: IPredecessor = this.cumulativePredecessorChanges.find(
-                            (obj: IPredecessor) => this.compareObjects(obj, objectToCompare));
-                        return matchedObject ? { ...matchedObject } : null;
-                    }).filter((matchedObject: IPredecessor) => matchedObject !== null);
-                    this.parent.setRecordValue('predecessor', matchingObjects, record.ganttProperties, true);
-                }
-            } else {
-                this.parent.setRecordValue('predecessor', prevPredecessor, record.ganttProperties, true);
-            }
-            const predecessorString: string = this.parent.predecessorModule.getPredecessorStringValue(record);
-            this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, record);
-            this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, record);
-            this.parent.setRecordValue('predecessorsName', predecessorString, record.ganttProperties, true);
-            if (this.validatedOffsetIds.indexOf(record.ganttProperties.taskId.toString()) === -1) {
-                this.validatedOffsetIds.push(record.ganttProperties.taskId.toString());
-            }
-            if (record.hasChildRecords) {
-                for (let i: number = 0; i < record.childRecords.length; i++) {
-                    if (this.validatedOffsetIds.indexOf(record.childRecords[i as number].ganttProperties.taskId.toString()) === -1 &&
-                    record.childRecords[i as number].ganttProperties.predecessor &&
-                    record.childRecords[i as number].ganttProperties.predecessor.length > 0) {
-                        this.calculateOffset(record.childRecords[i as number]);
-                    }
-                }
-            }
-            else if (record.parentItem) {
-                let currentParent: IParent = record.parentItem;
-                while (currentParent) {
-                    const parentItem: IGanttData = this.parent.getRecordByID(currentParent.taskId);
-                    const parentIdStr: string = parentItem.ganttProperties.taskId.toString();
-                    if (
-                        this.validatedOffsetIds.indexOf(parentIdStr) === -1 &&
-                        parentItem.ganttProperties.predecessor &&
-                        parentItem.ganttProperties.predecessor.length > 0
-                    ) {
-                        this.calculateOffset(parentItem);
-                        break;
-                    }
-                    currentParent = parentItem.parentItem;
-                }
-            }
         }
     }
     /**
@@ -1421,7 +1253,7 @@ export class ConnectorLineEdit {
         parentPredecessor.splice(parentIndex, 1);
         const predecessorString: string = this.parent.predecessorModule.getPredecessorStringValue(childRecord);
         childPredecessor.push(predecessor[0]);
-        this.parent.connectorLineEditModule.updatePredecessor(childRecord, predecessorString);
+        this.updatePredecessor(childRecord, predecessorString);
     }
 
     /**

@@ -156,7 +156,7 @@ export class WorkbookSort {
             }
             dataManager.executeQuery(query).then((e: ReturnOption) => {
                 this.parent.notify('setActionData', { args: { action: 'beforeSort', eventArgs: { range: address, cellDetails: jsonData, sortedCellDetails: e.result } } });
-                this.updateSortedDataOnCell({ result: e.result, range: range, sheet: sheet, jsonData: jsonData });
+                this.updateSortedDataOnCell({ result: e.result as Object, range: range, sheet: sheet, jsonData: jsonData });
                 const sortArgs: { range: string, sortOptions: SortOptions, previousSort?: SortCollectionModel[] } = { range:
                     `${sheet.name}!${address}`, sortOptions: args.sortOptions };
                 if (eventArgs.previousSort) { sortArgs.previousSort = eventArgs.previousSort; }

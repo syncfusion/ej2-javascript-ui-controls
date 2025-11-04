@@ -865,7 +865,7 @@ describe ('left indent testing', () => {
                 expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.childNodes[0].textContent).toBe(true);
 
                 expect(editNode.querySelector('p.ol-second-node')).not.toBeNull();
-                expect(editNode.querySelectorAll('.ol-second-node').length === 3).toBe(true);
+                expect(editNode.querySelectorAll('.ol-second-node').length === 5).toBe(true);
                 editorObj.nodeSelection.Clear(document);
             });
 
@@ -926,7 +926,7 @@ describe ('left indent testing', () => {
                 expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
 
                 expect(editNode.querySelector('p.ol-second-node')).not.toBeNull();
-                expect(editNode.querySelectorAll('p.ol-second-node').length === 2).toBe(true);
+                expect(editNode.querySelectorAll('p.ol-second-node').length === 4).toBe(true);
                 editorObj.nodeSelection.Clear(document);   
             });
             afterAll(() => {
@@ -3008,7 +3008,7 @@ describe ('left indent testing', () => {
             editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 5);
             (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
             setTimeout(() => {
-                expect(editorObj.inputElement.innerHTML === `<p class="list1" style="margin-left: 80px;">Rich Text Editor 1</p><p style="margin-left: 80px;">Rich Text Editor 2</p><p class="list2" style="margin-left: 80px;">Rich Text Editor 3</p>`).toBe(true);
+                expect(editorObj.inputElement.innerHTML === `<p style="margin-left: 80px;" class="list1">Rich Text Editor 1</p><p style="margin-left: 80px;">Rich Text Editor 2</p><p style="margin-left: 80px;" class="list2">Rich Text Editor 3</p>`).toBe(true);
                 done();
             }, 100);
         });
@@ -4728,6 +4728,77 @@ describe('979095 - Bullet list element comes with font color even after removing
         (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
         expect(editorObj.inputElement.innerHTML === '<p style="text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ppppppp</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><br></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ffffffffffff</span></p>').toBe(true);
         done();
+    });
+});
+
+describe('983729 - Complete Revert list Testing', () => {
+    let editorObj: RichTextEditor;
+    beforeEach(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList', 'CheckList']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(editorObj);
+    });
+    it('Reverting the indent applied list item', (done) => {
+        editorObj.value = `<ul><li>list-1<ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li class="selection">list-2</li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li><li>list-3</li></ul>`;
+        editorObj.dataBind();
+        let startNode = editorObj.inputElement.querySelector('.selection');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, startNode.lastChild, 0, 1);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === '<ul><li>list-1</li></ul><p class="selection">list-2</p><ul><li>list-3</li></ul>').toBe(true);
+            done();
+        }, 100);
+    });
+    it('Reverting the list of partial selection', (done) => {
+        editorObj.value = `<ul><li>one<ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li class="start">two<ul><li class="end">four</li><li>five</li></ul></li></ul></li></ul></li></ul></li><li>three</li></ul>`;
+        editorObj.dataBind();
+        let startNode = editorObj.inputElement.querySelector('.start');
+        let endNode = editorObj.inputElement.querySelector('.end');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, endNode.lastChild, 0, 1);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === '<ul><li>one</li></ul><p class="start">two</p><p class="end">four</p><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li>five</li></ul></li></ul></li></ul></li></ul></li><li>three</li></ul>').toBe(true);
+            done();
+        }, 100);
+    });
+    it('Reverting the checkList', (done) => {
+        editorObj.value = `<ul class="e-rte-checklist"><li>one</li><li class="e-rte-checklist-checked selection">two</li><li class="e-rte-checklist-checked">three</li></ul>`;
+        editorObj.dataBind();
+        let startNode = editorObj.inputElement.querySelector('.selection');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, startNode.lastChild, 0, 1);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[2] as HTMLElement).click();
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === `<ul class="e-rte-checklist"><li>one</li></ul><p class="selection">two</p><ul class="e-rte-checklist"><li class="e-rte-checklist-checked">three</li></ul>`).toBe(true);
+            done();
+        }, 100);
+    });
+    it('Reverting the list with block elements', (done) => {
+        editorObj.value = `<ul><li>one<ul><li style="list-style-type: none;"><ul><li><h3>two</h3></li><li><h3>four</h3></li></ul></li></ul></li><li>three</li></ul>`;
+        editorObj.dataBind();
+        let startNode = editorObj.inputElement.querySelector('h3');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, startNode.lastChild, 0, 1);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === `<ul><li>one</li></ul><h3>two</h3><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li><h3>four</h3></li></ul></li></ul></li><li>three</li></ul>`).toBe(true);
+            done();
+        }, 100);
+    });
+    it('Reverting the list table element', (done) => {
+        editorObj.value = `<ul><li>one<ul><li style="list-style-type: none;"><ul><li class="start">two</li><li><table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table><br></li></ul></li></ul></li><li>three</li></ul>`;
+        editorObj.dataBind();
+        let startNode = editorObj.inputElement.querySelector('.start');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, startNode.lastChild, 0, 1);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+        setTimeout(() => {
+            expect(editorObj.inputElement.querySelectorAll('.e-rte-table').length === 1).toBe(true);
+            expect(editorObj.inputElement.querySelector('table').parentElement.nodeName === 'LI').toBe(true);
+            done();
+        }, 100);
     });
 });
 

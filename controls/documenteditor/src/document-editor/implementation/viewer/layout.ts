@@ -29,7 +29,7 @@ import { Revision } from '../track-changes/track-changes';
 import { TabPositionInfo } from '../editor';
 import { TextHelper } from './text-helper';
 import { DocumentEditor } from '../../document-editor';
-import { hideSpinner } from '@syncfusion/ej2-popups';
+import { internalAsyncPagesVisible } from '../../base/constants'; 
 
 // Check box character is rendered smaller when compared to MS Word
 // So, mutiplied the font side by below factor to render check box character large.
@@ -656,7 +656,7 @@ export class Layout {
     }
 
     private processAsyncPageUpdate(section: BodyWidget): void {
-        this.owner.trigger('asyncPagesVisible');
+        this.documentHelper.owner.notify(internalAsyncPagesVisible, {});
         this.documentHelper.isDocumentLoadAsynchronously = true;
         let page: Page;
         if (section instanceof BodyWidget && section.firstChild && (section.firstChild as BlockWidget).bodyWidget && (section.firstChild as BlockWidget).bodyWidget.page) {
@@ -2308,15 +2308,21 @@ export class Layout {
             }
         });
     }
-    private layoutShape(element: ShapeBase): void {
+    private layoutShape(element: ShapeBase, isPaste?: boolean): void {
         if (element instanceof ShapeElementBox && element.isHorizontalRule) {
             return;
         }
         if (element.textWrappingStyle !== 'Inline') {
-            const position: Point = this.getFloatingItemPoints(element);
-            element.x = position.x;
-
-            element.y = position.y;
+            if (!isPaste) {
+                const position: Point = this.getFloatingItemPoints(element);
+                element.x = position.x;
+                element.y = position.y;
+            } else {
+                const paragraph: ParagraphWidget = element.paragraph as ParagraphWidget;
+                const body: BlockContainer = paragraph.bodyWidget;
+                element.x = body.x;
+                element.y = paragraph.y;
+            }
             if(!element.paragraph.isInsideTable && element.paragraph.indexInOwner !== 0 && element.verticalPosition >= 0 && Math.round(element.paragraph.y) >= Math.round(element.y) && this.viewer.clientArea.bottom <= element.y + element.height && (element.verticalOrigin == "Line" || element.verticalOrigin == "Paragraph") && element.textWrappingStyle !== "InFrontOfText" && element.textWrappingStyle !== "Behind") {
                 this.moveToNextPage(this.viewer, element.line);
                 this.updateShapeBaseLocation(element.line.paragraph);
@@ -2734,6 +2740,9 @@ export class Layout {
                     if (paragraph.bodyWidget.floatingElements.indexOf(element) === -1) {
                         paragraph.bodyWidget.floatingElements.push(element);
                     }
+                    if (!isNullOrUndefined(this.viewer.owner.editor) && this.viewer.owner.editor.isPaste && element.x === 0 && element.y === 0) {
+                        this.layoutShape(element, true);
+                    }
                 }
             }
             if (element instanceof ContentControl && this.documentHelper.contentControlCollection.indexOf(element) === -1) {
@@ -2882,7 +2891,18 @@ export class Layout {
                 paragraph.textWrapWidth = false;
             }
         }
-        let beforeSpacing: number = line.isFirstLine() && element.indexInOwner === 0 ? this.getBeforeSpacing(paragraph) : 0;
+        let beforeSpacing: number = 0;
+        if (line.isFirstLine()) {
+            for (let i: number = 0; i < line.children.length; i++) {
+                let child: ElementBox = line.children[i];
+                if (child.width > 0) {
+                    if (child === element) {
+                        beforeSpacing = this.getBeforeSpacing(paragraph);
+                    }
+                    break;
+                }
+            }
+        }
         if (this.viewer instanceof PageLayoutViewer &&
             (((element instanceof ShapeElementBox || element instanceof GroupShapeElementBox) && element.textWrappingStyle === 'Inline') || !(element instanceof ShapeElementBox || element instanceof GroupShapeElementBox))
             && this.viewer.clientActiveArea.height < beforeSpacing + element.height && this.viewer.clientActiveArea.y !== this.viewer.clientArea.y) {

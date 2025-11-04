@@ -110,7 +110,7 @@ export class BaseToolbar {
                     + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id
             }).outerHTML,
             cssClass: this.parent.inlineMode.enable ? this.getClass(itemStr) : '',
-            tooltipText: this.parent.enabled ? getTooltipText(itemStr, this.locator) : ''
+            tooltipText: getTooltipText(itemStr, this.locator)
         };
     }
 
@@ -137,7 +137,7 @@ export class BaseToolbar {
                 return {
                     id: this.parent.getID() + '_' + container + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id,
                     prefixIcon: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].icon,
-                    tooltipText: this.parent.enabled ? getTooltipText(itemStr, this.locator) : '',
+                    tooltipText: getTooltipText(itemStr, this.locator),
                     command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
                     subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand
                 };
@@ -194,7 +194,7 @@ export class BaseToolbar {
                 items.push(item as ItemModel);
             }
         }
-        if (this.parent.showTooltip && this.parent.enabled) {
+        if (this.parent.showTooltip) {
             for (let num: number = 0; num < items.length; num++) {
                 const tooltipText: string = items[num as number].tooltipText;
                 let shortCutKey: string;

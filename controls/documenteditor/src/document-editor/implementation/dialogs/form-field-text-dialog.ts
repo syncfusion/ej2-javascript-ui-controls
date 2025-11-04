@@ -386,7 +386,9 @@ export class TextFormFieldDialog {
             valid = this.isValidDateFormat();
         }
         if (valid) {
-            this.updateTextFormtas();
+            if (this.textFormatDropDown.value !== '0%' || ((this.defaultTextInput.value.charAt(this.defaultTextInput.value.length - 1) !== '%') && this.textFormatDropDown.value === '0%')) {
+                this.updateTextFormtas();
+            }
             if (this.defaultTextInput.value.length > this.maxLengthNumber.value && !isNullOrUndefined(this.maxLengthNumber.value) &&
                 this.maxLengthNumber.value !== 0) {
                 DialogUtility.alert({

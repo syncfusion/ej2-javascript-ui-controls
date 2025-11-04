@@ -209,7 +209,7 @@ export class Tooltip extends BaseTooltip {
         let tooltipTemplate: string;
         const argsData: ITooltipRenderEventArgs = {
             cancel: false, name: tooltipRender, text: textCollection, headerText : headerText, template : tooltipTemplate,
-            series: this.chart.isBlazor ? {} as Series : point.series, textStyle: this.textStyle,  point: point.point,
+            series: point.series, textStyle: this.textStyle,  point: point.point,
             data : { pointX: point.point.x , pointY: point.point.y, seriesIndex: point.series.index, seriesName: point.series.name,
                 pointIndex: point.point.index, pointText: point.point.text  }
         };

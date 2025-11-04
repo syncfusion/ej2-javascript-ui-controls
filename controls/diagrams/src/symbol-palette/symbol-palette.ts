@@ -570,14 +570,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 break;
             case 'allowDrag':
                 this.allowDrag = newProp.allowDrag;
-                if (!this.allowDrag) {
-
-                    this.draggable.helper = (): Function => {
-                        return null;
-                    };
-                } else {
+                // 987039:Symbol Palette allowDrag Property Does Not Function Correctly When Updated Dynamically
+                if (this.draggable) {
+                    this.draggable.destroy();
+                    this.draggable = null;
+                }
+                if (this.allowDrag) {
                     this.initDraggable();
-                    this.draggable.helper = this.helper;
                 }
                 break;
             }

@@ -466,10 +466,14 @@ export class PivotUtil {
      * @param {IMembers} members - It contains the members.
      * @param {string} fieldName - It contains the field Name.
      * @param {PivotEngine} engine - It contains the instance of pivot engine.
+     * @param {boolean} isLabelFilter - Specifies if this is a label-based filter.
+     * @param {boolean} isGroupedField - Specifies if this is a grouped field.
      * @returns {IMembers} - It returns the formatted members as IMembers.
      * @hidden
      */
-    public static getFormattedMembers(members: IMembers, fieldName: string, engine: PivotEngine): IMembers {
+    public static getFormattedMembers(
+        members: IMembers, fieldName: string, engine: PivotEngine, isLabelFilter?: boolean, isGroupedField?: boolean
+    ): IMembers {
         const isDateField: boolean = this.isDateField(fieldName as string, engine);
         if (isDateField || engine.groupingFields[fieldName as string]) {
             const fieldMembers: IMembers = {};
@@ -486,7 +490,7 @@ export class PivotUtil {
                     caption?: string;
                     isSelected?: boolean;
                 } = members[keys[i as number]];
-                if (isDateField) {
+                if (isDateField && (isLabelFilter || isGroupedField)) {
                     fieldMembers[values.caption as string] = values;
                 } else {
                     const commonValue: string | number = dateMember[values.ordinal - 1].actualText;

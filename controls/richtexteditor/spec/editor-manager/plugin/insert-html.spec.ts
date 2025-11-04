@@ -1006,6 +1006,7 @@ describe('EJ2-53098- Numbered List order in the Rich Text Editor goes incorrect 
     });
     it('Inserting li element at middle in the existing OL', function () {
         divElement.innerHTML = innervalue;
+        pasteElement.innerHTML = innervalue;
         range = document.createRange();
         range.setStart(divElement.lastElementChild.childNodes[1].firstChild, 9);
         range.setEnd(divElement.lastElementChild.childNodes[1].firstChild, 9);
@@ -1051,6 +1052,7 @@ describe('EJ2-53098- Unordered List order in the Rich Text Editor goes incorrect
     });
     it('Inserting li element at middle in the existing UL', function () {
         divElement.innerHTML = innervalue;
+        pasteElement.innerHTML = innervalue;
         range = document.createRange();
         range.setStart(divElement.lastElementChild.childNodes[1].firstChild, 9);
         range.setEnd(divElement.lastElementChild.childNodes[1].firstChild, 9);

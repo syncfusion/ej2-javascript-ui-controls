@@ -2,7 +2,8 @@ import { BookmarkDialog, ContentControlInfo, DocumentEditor, DocumentEditorSetti
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import 'node_modules/es6-promise/dist/es6-promise';
 import { TestHelper } from '../../../test-helper.spec';
-
+import { DocumentEditorContainer } from '../../../../src/document-editor-container/document-editor-container';
+import { Toolbar } from '../../../../src/document-editor-container/tool-bar/tool-bar';
 
 
 describe('Show Dialog documenteditor properties_1 ', () => {
@@ -387,5 +388,89 @@ describe('Document Editor enableOptimizedTextMeasuring', () => {
     it('show Ruler validation', () => {
         console.log('show Ruler validation');
         expect(documenteditor.documentEditorSettings.showRuler).toBe(true);
+    });
+});
+
+describe('Document Editor applyStyle different Headings', () => {
+    let documenteditor: DocumentEditorContainer;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditorContainer.Inject(Toolbar);
+        documenteditor = new DocumentEditorContainer({ showPropertiesPane: false, enableLocalPaste: true });
+        documenteditor.appendTo("#container");
+        jasmine.clock().install();
+    });
+    afterAll((done) => {
+        documenteditor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        documenteditor = undefined;
+        jasmine.clock().uninstall();
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Apply Heading 7', () => {
+        documenteditor.documentEditor.editor.insertText("Heading 7");
+        documenteditor.documentEditor.selection.selectAll();
+        const style = document.querySelector('#container_editor_font_properties_style') as any;
+        const dropdownIcon = style.ej2_instances[0];
+        dropdownIcon.showPopup();
+        const options = document.querySelectorAll('li[role="option"]');
+        let heading = null;
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].textContent && options[i].textContent.indexOf('Heading 7') !== -1) {
+                heading = options[i] as any;
+                break;
+            }
+        }
+        
+        if (heading) {
+            heading.click();
+            jasmine.clock().tick(100);
+        }
+        expect(documenteditor.documentEditor.editor.documentHelper.selection.paragraphFormat.styleName).toBe("Heading 7");
+    });
+    it('Apply Heading 8', () => {
+        documenteditor.documentEditor.editor.insertText("Heading 8");
+        documenteditor.documentEditor.selection.selectAll();
+        const style = document.querySelector('#container_editor_font_properties_style') as any;
+        const dropdownIcon = style.ej2_instances[0];
+        dropdownIcon.showPopup();
+        const options = document.querySelectorAll('li[role="option"]');
+        let heading = null;
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].textContent && options[i].textContent.indexOf('Heading 8') !== -1) {
+                heading = options[i] as any;
+                break;
+            }
+        }
+        
+        if (heading) {
+            heading.click();
+            jasmine.clock().tick(100);
+        }
+        expect(documenteditor.documentEditor.editor.documentHelper.selection.paragraphFormat.styleName).toBe("Heading 8");
+    });
+    it('Apply Heading 9', () => {
+        documenteditor.documentEditor.editor.insertText("Heading 9");
+        documenteditor.documentEditor.selection.selectAll();
+        const style = document.querySelector('#container_editor_font_properties_style') as any;
+        const dropdownIcon = style.ej2_instances[0];
+        dropdownIcon.showPopup();
+        const options = document.querySelectorAll('li[role="option"]');
+        let heading = null;
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].textContent && options[i].textContent.indexOf('Heading 9') !== -1) {
+                heading = options[i] as any;
+                break;
+            }
+        }
+        
+        if (heading) {
+            heading.click();
+            jasmine.clock().tick(100);
+        }
+        expect(documenteditor.documentEditor.editor.documentHelper.selection.paragraphFormat.styleName).toBe("Heading 9");
     });
 });

@@ -1559,7 +1559,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             value = this.getLimitCorrectedValues(value);
         }
         if (value >= this.min && value <= this.max) {
-            this.changeHandleValue(value);
+            this.changeHandleValue(value , args);
             this.tooltipToggle(this.getHandle());
         }
     }
@@ -1979,7 +1979,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.limits.enabled) {
             value = this.getLimitCorrectedValues(value);
         }
-        this.changeHandleValue(value);
+        this.changeHandleValue(value , args);
         if ((this.isMaterial || this.isMaterial3) && !this.tooltip.isVisible &&
             !(this.getHandle() as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
             this.materialChange();
@@ -2445,7 +2445,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.setBarColor();
     }
 
-    private changeHandleValue(value: number): void {
+    private changeHandleValue(value: number , args: any): void {
         let position: number = null;
         if (this.activeHandle === 1) {
             if (!(this.limits.enabled && this.limits.startHandleFixed)) {
@@ -2481,7 +2481,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             if (this.type !== 'Default') {
                 this.setRangeBar();
             }
-            this.setHandlePosition(null);
+            this.setHandlePosition(args);
         }
     }
 

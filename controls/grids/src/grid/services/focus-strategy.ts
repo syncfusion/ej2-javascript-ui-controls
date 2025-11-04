@@ -1185,8 +1185,12 @@ export class FocusStrategy {
         this.addFocus(this.getContent().getFocusInfo());
         const requestTypes: string[] = ['add', 'save', 'delete', 'cancel', 'batchsave', 'batchDelete', 'batchCancel'];
         const focusInfo: FocusInfo = this.getContent().getFocusInfo();
-        if (arg && requestTypes.indexOf(arg.requestType) > -1  && focusInfo && focusInfo.elementToFocus && focusInfo.elementToFocus.matches('.e-rowcell.e-focus')) {
-            addClass([focusInfo.elementToFocus], ['e-focused', 'e-focus']);
+        if (arg && requestTypes.indexOf(arg.requestType) > -1 && focusInfo && focusInfo.elementToFocus) {
+            const focusElement: Element = focusInfo.elementToFocus.matches('.e-rowcell.e-focus') ? focusInfo.elementToFocus :
+                focusInfo.elementToFocus.matches('.e-checkselect.e-focus') ? focusInfo.elementToFocus.closest('.e-rowcell') : null;
+            if (focusElement) {
+                addClass([focusElement], ['e-focused', 'e-focus']);
+            }
         }
     }
 
