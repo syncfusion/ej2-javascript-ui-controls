@@ -56,7 +56,10 @@ export class Toolbar {
     private textSelectItem: HTMLElement;
     private panItem: HTMLElement;
     private printItem: HTMLElement;
-    private textSearchItem: HTMLElement;
+    /**
+     * @private
+     */
+    public textSearchItem: HTMLElement;
     private undoItem: HTMLElement;
     private redoItem: HTMLElement;
     private commentItem: HTMLElement;
@@ -233,6 +236,7 @@ export class Toolbar {
             if (!isNullOrUndefined(toolbar) && !(this.pdfViewerBase.navigationPane &&
                 this.pdfViewerBase.navigationPane.isNavigationToolbarVisible)) {
                 toolbar.style.display = 'block';
+                this.adjustToolbar(Browser.isDevice);
             }
             const toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
             if (toolbarContainer) {
@@ -260,6 +264,22 @@ export class Toolbar {
             }
             if (!isNullOrUndefined(toolbar)) {
                 toolbar.style.display = 'none';
+                this.adjustToolbar(Browser.isDevice);
+            }
+        }
+    }
+
+    /**
+     * Helper method to adjust toolbar.
+     * @param isDevice A boolean indicating if the current environment is a mobile device.
+     * @returns {void}
+     */
+    private adjustToolbar(isDevice: boolean): void {
+        if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
+            if (isDevice) {
+                this.annotationToolbarModule.adjustMobileViewer();
+            } else {
+                this.annotationToolbarModule.adjustViewer(true);
             }
         }
     }
@@ -309,7 +329,7 @@ export class Toolbar {
             this.annotationToolbarModule.isToolbarHidden = true;
             this.annotationToolbarModule.showAnnotationToolbar(null, false, true);
         } else {
-            if (this.pdfViewer.isAnnotationToolbarVisible) {
+            if (this.annotationToolbarModule.toolbarElement.style.display !== 'none') {
                 this.annotationToolbarModule.isToolbarHidden = false;
                 this.annotationToolbarModule.showAnnotationToolbar(null, false, false);
             }
@@ -397,7 +417,7 @@ export class Toolbar {
                 this.enableOpenOption(isEnable);
                 break;
             case 'PageNavigationTool':
-                this.isPageNavigationToolDisabled = isEnable;
+                this.isPageNavigationToolDisabled = !isEnable;
                 this.enablePageNavigationTool(isEnable);
                 break;
             case 'MagnificationTool':
@@ -646,7 +666,9 @@ export class Toolbar {
     }
 
     private enableDownloadOption(enableDownloadOption: boolean): void {
-        this.enableItems(this.downloadItem.parentElement, enableDownloadOption);
+        if (!isNullOrUndefined(this.downloadItem)) {
+            this.enableItems(this.downloadItem.parentElement, enableDownloadOption);
+        }
     }
 
     private enablePrintOption(enablePrintOption: boolean): void {
@@ -667,7 +689,9 @@ export class Toolbar {
     }
 
     private enableFormDesignerEditTool(isEnable: boolean): void {
-        this.enableItems(this.formDesignerItem.parentElement, isEnable);
+        if (!isNullOrUndefined(this.formDesignerItem)) {
+            this.enableItems(this.formDesignerItem.parentElement, isEnable);
+        }
     }
 
     private enableCommentsTool(isEnable: boolean): void {

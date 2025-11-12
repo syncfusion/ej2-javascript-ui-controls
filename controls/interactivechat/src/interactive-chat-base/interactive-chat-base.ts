@@ -217,7 +217,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
     protected clearIcon: HTMLElement;
     protected undoStack: TextState[] = [];
     protected redoStack: TextState[] = [];
-    protected undoDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+    protected undoDelayTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
      * * Constructor for Base class
@@ -525,7 +525,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         this.sendIcon.classList.toggle('disabled', value === 0);
         this.sendIcon.classList.toggle('enabled', value > 0);
     }
-    protected updateFooterEleClass(): void {
+    protected updateFooterElementClass(): void {
         if (isNOU(this.editableTextarea)) { return; }
         const textarea: HTMLElement = this.editableTextarea;
         textarea.style.height = 'auto';
@@ -601,24 +601,66 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         }
     }
     protected getCursorPosition(): { start: number; end: number } {
-        const selection: Selection | null = window.getSelection();
-        const range: Range | null = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-        if (range && this.editableTextarea && this.editableTextarea.contains(range.commonAncestorContainer)) {
-            return {
-                start: range.startOffset,
-                end: range.endOffset
-            };
+        const selection: Selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+            return { start: 0, end: 0 };
         }
-        return { start: 0, end: 0 };
+        const range: Range = selection.getRangeAt(0);
+        const { startContainer, startOffset, endContainer, endOffset } = range;
+        let charCount: number = 0;
+        let start: number = -1;
+        let end: number = -1;
+        if (this.editableTextarea !== null)
+        {
+            const walker: TreeWalker = document.createTreeWalker(this.editableTextarea, NodeFilter.SHOW_TEXT, null);
+            let currentNode: Node = walker.nextNode();
+            while (currentNode !== null) {
+                if (currentNode === startContainer) {
+                    start = charCount + startOffset;
+                }
+                if (currentNode === endContainer) {
+                    end = charCount + endOffset;
+                }
+                if (start !== -1 && end !== -1) {
+                    break;
+                }
+                charCount += currentNode.textContent.length;
+                currentNode = walker.nextNode();
+            }
+        }
+        if (start === -1) { start = 0; }
+        if (end === -1) { end = 0; }
+        return { start, end };
+    }
+    private findTextNodeAndOffset(element: Node, targetOffset: number): { node: Node; offset: number } | null {
+        // TreeWalker is a robust way to traverse all text nodes in the element's subtree
+        const walker: TreeWalker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
+        let currentNode: Node = walker.nextNode();
+        let cumulativeOffset: number = 0;
+        while (currentNode !== null) {
+            const nodeLength: number = currentNode.textContent.length;
+            if (cumulativeOffset + nodeLength >= targetOffset) {
+                return { node: currentNode, offset: targetOffset - cumulativeOffset };
+            }
+            cumulativeOffset += nodeLength;
+            currentNode = walker.nextNode();
+        }
+        walker.currentNode = element;
+        const lastNode: Node = walker.lastChild();
+        if (lastNode) {
+            return { node: lastNode, offset: lastNode.textContent.length };
+        }
+        return null; // Should not happen if the element is not empty
     }
     protected setCursorPosition(start: number, end: number): void {
-        const range: Range = document.createRange();
-        const selection: Selection | null = window.getSelection();
-        const textNode: ChildNode | null = this.editableTextarea.firstChild;
-
-        if (textNode) {
-            range.setStart(textNode, start);
-            range.setEnd(textNode, end);
+        const selection: Selection = window.getSelection();
+        if (!selection) { return; }
+        const startNodeInfo: { node: Node; offset: number } = this.findTextNodeAndOffset(this.editableTextarea, start);
+        const endNodeInfo: { node: Node; offset: number } = this.findTextNodeAndOffset(this.editableTextarea, end);
+        if (startNodeInfo && endNodeInfo) {
+            const range: Range = document.createRange();
+            range.setStart(startNodeInfo.node, startNodeInfo.offset);
+            range.setEnd(endNodeInfo.node, endNodeInfo.offset);
             selection.removeAllRanges();
             selection.addRange(range);
         }
@@ -660,16 +702,28 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
             }
         });
         this.editableTextarea.dispatchEvent(inputEvent);
-        this.pushToUndoStack(this.editableTextarea.innerText);
+        this.pushToUndoStack(this.editableTextarea.innerHTML);
         this.updateScroll(this.editableTextarea);
     }
-    protected scheduleUndoPush(value: string): void {
-        if (this.undoDebounceTimer) {
-            clearTimeout(this.undoDebounceTimer);
+    private getCurrentState(): TextState {
+        const position: { start: number; end: number } = this.getCursorPosition();
+        return {
+            content: this.editableTextarea !== null ? this.editableTextarea.innerHTML : '',
+            selectionStart: position.start,
+            selectionEnd: position.end
+        };
+    }
+
+    protected scheduleUndoPush(): void {
+        if (this.undoDelayTimer) {
+            clearTimeout(this.undoDelayTimer);
         }
-        this.undoDebounceTimer = setTimeout(() => {
-            this.pushToUndoStack(value);
-            this.undoDebounceTimer = null;
+        this.undoDelayTimer = setTimeout(() => {
+            const lastState: TextState = this.undoStack[this.undoStack.length - 1];
+            const currentState: TextState = this.getCurrentState();
+            if (!lastState || lastState.content !== currentState.content) {
+                this.undoStack.push(currentState);
+            }
         }, 400);
     }
     protected wireFooterEvents(
@@ -688,7 +742,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
             EventHandler.add(this.editableTextarea, 'blur', (this as any).onBlurEditableTextarea, this);
             EventHandler.add(this.editableTextarea, 'paste', this.handlePaste, this);
             EventHandler.add(this.editableTextarea, 'input', (this as any).handleInput, this);
-            EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.updateFooterEleClass, this);
+            EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.updateFooterElementClass, this);
         }
     }
 
@@ -708,7 +762,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
             EventHandler.remove(this.editableTextarea, 'blur', (this as any).onBlurEditableTextarea);
             EventHandler.remove(this.editableTextarea, 'paste', this.handlePaste);
             EventHandler.remove(this.editableTextarea, 'input', (this as any).handleInput);
-            EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.updateFooterEleClass);
+            EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.updateFooterElementClass);
         }
     }
     protected removeAndNullify(element: HTMLElement): void {

@@ -15,7 +15,7 @@ import { Row } from '../models/row';
 import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ExcelBorderLineStyle, FocusType, ChartType } from './enum';
 import { MultipleExportType, MultiplePdfExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
 import { PredicateModel } from './grid-model';
-import { SentinelType, Offsets } from './type';
+import { SentinelType, Offsets, RowSelectable } from './type';
 import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode, ClipMode, freezeMode } from './enum';
 import { ResponsiveDialogAction, RowRenderingDirection } from './enum';
 import { Edit } from '../actions/edit';
@@ -588,6 +588,12 @@ export interface IGrid extends Component<HTMLElement> {
     allowSearching?: boolean;
 
     /**
+     * Specifies whether the row selectable or not.
+     *
+     */
+    isRowSelectable?: RowSelectable | string;
+
+    /**
      * Defines the own class for the grid element.
      *
      * @default ''
@@ -645,6 +651,8 @@ export interface IGrid extends Component<HTMLElement> {
     disableSelectedRecords?: Object[];
 
     partialSelectedRecords?: Object[];
+
+    partialSelectedIndexes?: number[];
 
     lazyLoadRender?: IRenderer;
 
@@ -814,6 +822,7 @@ export interface IGrid extends Component<HTMLElement> {
     isFrozenGrid?(): boolean;
     getFrozenMode?(): freezeMode;
     getTablesCount?(): number;
+    isRemote?(): boolean;
     setFrozenCount?(): void;
     getVisibleFrozenLeftCount?(): number;
     getVisibleFrozenRightCount?(): number;

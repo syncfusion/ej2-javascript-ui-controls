@@ -1301,10 +1301,8 @@ export class TablePropertiesDialog {
         const cellFormat: SelectionCellFormat = this.documentHelper.selection.cellFormat;
         //instance of table cell Values
         this.hasCellWidth = cellFormat.preferredWidth > 0;
-        let preferredWidth: number = cellFormat.preferredWidth;
         if (isNullOrUndefined(cellFormat.preferredWidth)) {
             this.preferredCellWidthCheckBox.indeterminate = true;
-            preferredWidth = this.documentHelper.selection.start.paragraph.associatedCell.cellFormat.preferredWidth;
         } else {
             this.preferredCellWidthCheckBox.checked = this.hasCellWidth;
         }
@@ -1316,7 +1314,7 @@ export class TablePropertiesDialog {
         } else {
             this.cellWidthType.index = 1;
         }
-        this.formatNumericTextBox(this.cellWidthBox, cellFormat.preferredWidthType, preferredWidth);
+        this.formatNumericTextBox(this.cellWidthBox, cellFormat.preferredWidthType, cellFormat.preferredWidth);
         classList(this.cellTopAlign, ['e-de-tablecell-alignment'], ['e-de-table-alignment-active']);
         classList(this.cellCenterAlign, ['e-de-tablecell-alignment'], ['e-de-table-alignment-active']);
         classList(this.cellBottomAlign, ['e-de-tablecell-alignment'], ['e-de-table-alignment-active']);
@@ -1388,7 +1386,9 @@ export class TablePropertiesDialog {
      * @returns {void}
      */
     public onCellWidthChange(): void {
-        this.cellFormat.preferredWidth = this.cellWidthBox.value;
+        if (!isNullOrUndefined(this.cellWidthBox.value)) {
+            this.cellFormat.preferredWidth = this.cellWidthBox.value;
+        }
     }
     /**
      * @private

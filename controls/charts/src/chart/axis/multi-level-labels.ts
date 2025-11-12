@@ -78,7 +78,7 @@ export class MultiLevelLabel {
             multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
                 if (categoryLabel.text !== '' && categoryLabel.start !== null && categoryLabel.end !== null) {
                     labelSize = measureText(categoryLabel.text, multiLevel.textStyle, this.chart.themeStyle.axisLabelFont);
-                    height = isVertical ? (categoryLabel.maximumTextWidth !== null && labelSize.width > categoryLabel.maximumTextWidth ?
+                    height = isVertical ? (categoryLabel.maximumTextWidth !== null ?
                         categoryLabel.maximumTextWidth : labelSize.width) : labelSize.height;
                     height += 2 * multiLevel.border.width +
                         (multiLevel.border.type === 'CurlyBrace' ? padding : 0);

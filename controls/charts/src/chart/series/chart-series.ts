@@ -3120,6 +3120,7 @@ export class Series extends SeriesBase {
         if (!data) {
             return null;
         }
+        this.currentViewData = null;
         const updatedData: Array<number | string> = [];
         if ((this.dataSource as Object[]).length === data.length) {
             for (let i: number = 0; i < data.length; i++) {

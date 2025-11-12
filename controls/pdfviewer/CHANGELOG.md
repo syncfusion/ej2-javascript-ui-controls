@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 31.2.10 (2025-11-13)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I776716` - Resolved an issue where text search with straight quotes with the mentioned phrase was not functioning as expected.
+- `#I780099` - Resolved an issue where dynamic stamp annotation appearance was not proper when saving and exporting.
+- `#I781676` - Resolved an issue where `HandWrittenSignatureTool` was not hiding properly when using `toolbarSettings` API.
+
 ## 31.2.5 (2025-11-04)
 
 ### PDF Viewer

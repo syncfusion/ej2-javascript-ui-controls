@@ -6164,12 +6164,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
                 for (const conn of Object.keys(connectors)) {
-                    if (canEnableRouting) {
+                    //Bug 988867: Connectors distributed on EnableRouting true and ConnectionPointOrigin SamePoint
+                    if ((this.layout as Layout).connectionPointOrigin !== 'SamePoint' && this.lineDistributionModule && canEnableRouting) {
                         this.lineDistributionModule.resetConnectorSegments(this.nameTable[`${conn}`]);
                     }
                     const connector: Connector = connectors[`${conn}`] as Connector;
                     const points: PointModel[] = this.getPoints(connector);
-                    if (canEnableRouting) {
+                    if ((this.layout as Layout).connectionPointOrigin !== 'SamePoint' && this.lineDistributionModule && canEnableRouting) {
                         this.lineDistributionModule.resetRoutingSegments(connector, this, points);
                     }
                     updateConnector(connector, points);
@@ -6189,7 +6190,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.refreshRoutingConnectors();
                         isRoutingConnectorsRefreshed = true;
                     }
-                    this.lineDistributionModule.distributeLines((this.layout as Layout), this);
+                    //Bug 988867: Connectors distributed on EnableRouting true and ConnectionPointOrigin SamePoint
+                    if ((this.layout as Layout).connectionPointOrigin !== 'SamePoint' && this.lineDistributionModule) {
+                        this.lineDistributionModule.distributeLines((this.layout as Layout), this);
+                    }
                 }
                 this.refreshFlowChartConnectors();
                 this.preventDiagramUpdate = false;
@@ -6257,10 +6261,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     //Checks if line distribution is enabled.
     private canDistribute(canEnableRouting: boolean, canDoOverlap: boolean) {
-        if ((canEnableRouting && this.lineDistributionModule) || ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) || (this.layout.arrangement === 'Linear' && this.lineDistributionModule)) {
+        //Bug 988867: Connectors distributed on EnableRouting true and ConnectionPointOrigin SamePoint
+        const isDistribute: boolean = ((this.layout as Layout).connectionPointOrigin !== 'SamePoint' && canEnableRouting) ||
+            ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && canDoOverlap) ||
+            ((this.layout as Layout).arrangement === 'Linear' && (this.layout as Layout).connectionPointOrigin !== 'SamePoint');
+        if (this.lineDistributionModule && isDistribute) {
             return true;
         } else {
-            if ((canEnableRouting) || ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && canDoOverlap) || (this.layout.arrangement === 'Linear')) {
+            if (isDistribute) {
                 console.warn('[WARNING] :: Module "LineDistribution" is not available in Diagram component! You either misspelled the module name or forgot to load it.');
             }
             return false;

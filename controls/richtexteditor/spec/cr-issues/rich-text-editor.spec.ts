@@ -474,6 +474,38 @@ describe('RTE CR issues ', () => {
             destroy(rteObj);
         });
     });
+    describe('Bug 989827: Script error throws when pressing the backspace key in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let defaultUserAgent = navigator.userAgent;
+        let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+        beforeAll(() => {
+            Browser.userAgent = fireFox;
+            rteObj = renderRTE({
+                value: `<p>hi</p><ul><li>hi</li></ul>`
+            });
+        });
+        it(' should not throw script error while deleting the entire line above list', (done: Function) => {
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('p'), 1);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            setTimeout(() => {
+                expect(() => rteObj.inputElement.dispatchEvent(backSpaceKeyDown)).not.toThrow();
+                expect(rteObj.inputElement.querySelectorAll('li').length).toBe(1);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            Browser.userAgent = defaultUserAgent;
+        });
+    });
     describe('Bug 986390: Bullet Point Not Removed Properly When Using Backspace on Pasted Text in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {

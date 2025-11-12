@@ -51,3 +51,9 @@ export const toggleWidth: number = 50;
 export const dataSourceChanged: string = 'dataSourceChanged';
 /** @hidden */
 export const dataStateChange: string = 'dataStateChange';
+/** @private */
+export const columnDragStart: string = 'columnDragStart';
+/** @private */
+export const columnDrag: string = 'columnDrag';
+/** @private */
+export const columnDrop: string = 'columnDrop';

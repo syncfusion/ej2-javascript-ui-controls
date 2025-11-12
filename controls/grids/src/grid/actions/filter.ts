@@ -991,6 +991,7 @@ export class Filter implements IAction {
             }
         }
         this.updateFilterMsg();
+        this.parent.renderModule.resetPartialRecords();
     }
 
     /**
@@ -1500,6 +1501,7 @@ export class Filter implements IAction {
             if (filterIconElement) {
                 filterIconElement.classList.remove('e-filtered');
             }
+            this.parent.renderModule.resetPartialRecords();
             args.requestType = 'filtering';
             this.parent.renderModule.refresh(args as object); //hot-fix onpropertychanged not working for object { array }
         }
@@ -1523,6 +1525,7 @@ export class Filter implements IAction {
                 cols[parseInt(i.toString(), 10)].uid
             );
         }
+        this.parent.renderModule.resetPartialRecords();
     }
 
     private refreshFilterIcon(

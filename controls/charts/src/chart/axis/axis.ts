@@ -1145,7 +1145,7 @@ export class Axis extends ChildProperty<Axis> {
             else {
                 return this.isAxisOpposedPosition ? titleSize + innerPadding + titlePadding + this.labelPadding +
                     ((this.orientation === 'Vertical') ? this.maxLabelSize.width : this.maxLabelSize.height) +
-                    this.multiLevelLabelHeight : titleSize + titlePadding;
+                    this.multiLevelLabelHeight : titleSize + innerPadding + titlePadding;
             }
         }
         return labelSize;

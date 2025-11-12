@@ -307,6 +307,7 @@ $spreadsheet-namerange-row-padding: 0 !default;
 $spreadsheet-namerange-footer-border: 1px solid $cell-border-color !default;
 $spreadsheet-namerange-header-padding-bottom: 12px !default;
 $spreadsheet-error-message-color: rgba(197, 15, 31, 1) !default;
+$spreadsheet-syntax-error-message-color: rgb(209, 52, 56) !default;
 $bigger-spreadsheet-namerange-header-padding-bottom: 16px !default;
 $bigger-spreadsheet-namerange-header-font-size: 20px;
 $bigger-spreadsheet-namerange-form-group-padding-top: 12px;
@@ -361,3 +362,10 @@ $bigger-spreadsheet-protection-unlock-text-padding-bottom: 4px !default;
 $bigger-spreadsheet-protection-sheet-option-font-size: 16px !default;
 $bigger-spreadsheet-protection-sheet-option-padding-top: 13px !default;
 $bigger-spreadsheet-protection-sheet-option-padding-bottom:4px !default;
+
+//Blazor typography and spacing
+$spreadsheet-font-weight-bold: bold !default;
+$spreadsheet-font-size-16: 16px !default;
+$spreadsheet-font-size-18: 18px !default;
+$spreadsheet-margin-10: 10px !default;
+$spreadsheet-padding-20: 20px !default;

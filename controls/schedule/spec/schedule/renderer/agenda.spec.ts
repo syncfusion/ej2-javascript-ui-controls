@@ -1974,6 +1974,77 @@ describe('Agenda View', () => {
         });
     });
 
+    describe('ES-988788-Agenda virtual scrolling after clearing datasource at runtime', () => {
+        let schObj: Schedule;
+
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px',
+                currentView: 'Agenda',
+                selectedDate: new Date(2018, 0, 1),
+                views: [
+                    { option: 'Day' },
+                    { option: 'Week' },
+                    { option: 'Month' },
+                    { option: 'Agenda', allowVirtualScrolling: true }
+                ]
+            };
+            const data: Record<string, any>[] = [
+                {
+                    Id: 1,
+                    Subject: 'Event A',
+                    StartTime: new Date(2018, 0, 10, 0),
+                    EndTime: new Date(2018, 0, 1, 11, 0)
+                },
+                {
+                    Id: 2,
+                    Subject: 'Event B',
+                    StartTime: new Date(2018, 1, 1, 10),
+                    EndTime: new Date(2018, 1, 1, 11)
+                },
+                {
+                    Id: 3,
+                    Subject: 'Event C',
+                    StartTime: new Date(2018, 1, 1, 10),
+                    EndTime: new Date(2018, 1, 1, 11),
+                    RecurrenceRule: "FREQ=MONTHLY;BYDAY=MO;BYSETPOS=2;INTERVAL=1;COUNT=10;"
+                }
+            ];
+            schObj = createSchedule(schOptions, data, done);
+        });
+
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Agenda initially has items', () => {
+            expect(schObj.element.querySelectorAll('.e-agenda-item').length).toBeGreaterThan(0);
+        });
+
+        it('Clearing datasource and checking that no events are rendered', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-agenda-item').length).toBe(0);
+                const empty = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+                expect(empty).toBeTruthy();
+                expect(empty.textContent).toBe('No events');
+                done();
+            };
+            const content = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(content, content.scrollHeight);
+            schObj.eventSettings.dataSource = [];
+            schObj.dataBind();
+        });
+        
+        it('Switch to Week for testing no crash and no hang', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.currentView).toBe('Week');
+                expect(schObj.getCurrentViewEvents().length).toBe(0);
+                done();
+            };
+            (schObj.element.querySelector('.e-week') as HTMLElement).click();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

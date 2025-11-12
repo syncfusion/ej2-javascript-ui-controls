@@ -814,12 +814,14 @@ export class ScrollBar {
         this.height = this.axis.scrollbarSettings.height;
         const currentX: number = this.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
         const minThumbX: number = (this.width - minThumbWidth - circleRadius);
-        this.scrollElements.thumbRectX = currentX > minThumbX ? minThumbX : currentX < circleRadius ?
+        this.scrollElements.thumbRectX = currentX > minThumbX ? (!this.isVertical && this.axis.scrollbarSettings.enableZoom ?
+            minThumbX + this.svgExtraWidth / 2 : minThumbX) : currentX < circleRadius ?
             (!this.isVertical && this.axis.scrollbarSettings.enableZoom ? circleRadius + this.svgExtraWidth / 2 : circleRadius)
             : (!this.isVertical && this.axis.scrollbarSettings.enableZoom ? (currentX + this.svgExtraWidth / 2) : currentX);
         this.scrollElements.thumbRectWidth = this.isThumbDrag ? this.scrollElements.thumbRectWidth :
             ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
-                ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;
+                ? currentWidth : ((!this.isVertical && this.axis.scrollbarSettings.enableZoom ?
+                    this.width + this.svgExtraWidth / 2 : this.width) - this.scrollElements.thumbRectX - circleRadius);
     }
 
     /**

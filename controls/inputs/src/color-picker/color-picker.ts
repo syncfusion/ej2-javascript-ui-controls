@@ -1224,13 +1224,11 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private triggerChangeEvent(value: string, e?: MouseEvent): void {
         const hex: string = value.slice(0, 7);
-        if ((this.value !== hex && !this.enableOpacity) || (this.enableOpacity && this.value !== value)) {
-            this.trigger('change', {
-                currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) }, event: e,
-                previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
-                value: this.enableOpacity ? value : hex
-            });
-        }
+        this.trigger('change', {
+            currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) }, event: e,
+            previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
+            value: this.enableOpacity ? value : hex
+        });
         if (this.showRecentColors) {
             this.recentColors.unshift(hex);
             if (this.inline) { this.renderRecentColor(); }

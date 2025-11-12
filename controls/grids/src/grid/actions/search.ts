@@ -80,6 +80,7 @@ export class Search implements IAction {
             } else {
                 gObj.searchSettings.key = searchString.toString();
             }
+            this.parent.renderModule.resetPartialRecords();
             gObj.dataBind();
         } else if (this.refreshSearch) {
             gObj.refresh();

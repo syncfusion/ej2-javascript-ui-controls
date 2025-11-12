@@ -1353,6 +1353,7 @@ export class Dependency {
             return false;
         }
     }
+
     /**
      * Handles the update logic for a task's dependency and validates whether child tasks should be updated.
      * It retrieves the previous start and end dates from the stored records to determine if dependency validation is required.

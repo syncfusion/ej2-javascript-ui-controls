@@ -5,7 +5,7 @@ import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, cellValidation } from '../../workbook/index';
 import { CellStyleExtendedModel, CellModel, beginAction, isHeightCheckNeeded, CFArgs } from '../../workbook/index';
-import { getSwapRange, skipHiddenIdx, isHiddenCol, isImported } from '../../workbook/index';
+import { getSwapRange, skipHiddenIdx, isHiddenCol, isImported, getFormattedCellObject, NumberFormatArgs } from '../../workbook/index';
 import { removeClass } from '@syncfusion/ej2-base';
 import { deleteChart, deleteImage } from '../common/index';
 /**
@@ -153,6 +153,12 @@ export class CellFormat {
             if (cellStyleColor !== undefined) {
                 args.style.color = cellStyleColor;
             }
+            if (args.onActionUpdate && cellModel.format && cellModel.format.includes('*') && (args.style.fontFamily ||
+                args.style.fontSize || (args.style.borderRight && parseInt(args.style.borderRight, 10) > 1))) {
+                this.parent.notify(getFormattedCellObject, <NumberFormatArgs>{ value: cellModel.value, format: cellModel.format,
+                    cell: cellModel, formattedText: cellModel.value, rowIndex: args.rowIdx, colIndex: args.colIdx, td: cell
+                });
+            }
             if (mergeResult.isColMerge && args.style.borderRight) {
                 delete args.style.borderRight;
             }
@@ -243,6 +249,14 @@ export class CellFormat {
     private setLeftBorder(
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string,
         sheet: SheetModel, prevCell: HTMLElement): void {
+        const applyAccountingFormats: Function = (
+            cell: HTMLElement, colIdx: number, cellModel: CellModel = getCell(rowIdx, colIdx, sheet, null, true)): void => {
+            if (actionUpdate && cellModel.format && cellModel.format.includes('*') && parseInt(border, 10) > 1) {
+                this.parent.notify(getFormattedCellObject, <NumberFormatArgs>{ value: cellModel.value, format: cellModel.format,
+                    cell: cellModel, formattedText: cellModel.value, rowIndex: rowIdx, colIndex: colIdx, td: cell
+                });
+            }
+        };
         if (first && first.includes('Column')) { return; }
         const isRtl: boolean = this.parent.enableRtl;
         const prevColIdx: number = isRtl ? colIdx + 1 : colIdx - 1;
@@ -261,15 +275,18 @@ export class CellFormat {
                     model = getCell(mergeArgs.range[0], mergeArgs.range[3], sheet, null, true);
                     if (model.style && model.style.borderRight && model.style.borderRight !== 'none') { return; }
                     cell.style.borderLeft = border;
+                    applyAccountingFormats(cell, colIdx);
                 }
             } else {
                 if (actionUpdate && border !== '' && colIdx === this.parent.viewport.leftIndex) {
                     this.parent.getMainContent().scrollLeft -= this.getBorderSize(border);
                 }
                 prevCell.style.borderRight = (border === 'none') ? prevCell.style.borderRight : border;
+                applyAccountingFormats(prevCell, prevColIdx, model);
             }
         } else if (!isRtl || (this.parent.scrollSettings.isFinite && colIdx === sheet.colCount - 1)) {
             cell.style.borderLeft = border;
+            applyAccountingFormats(cell, colIdx);
         }
     }
     private setTopBorder(

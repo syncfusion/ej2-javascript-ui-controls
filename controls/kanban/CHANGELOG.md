@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 30.1.39 (2025-07-08)
+## 31.1.17 (2025-09-05)
 
 ### Kanban
 
-#### Bug Fixes
+#### New Features
 
-- `#I739684` – Now, Kanban component works properly when the height is set to `100%` with `enableVirtualization` is set to true.
+- **Column Drag and Drop**: This feature allows users to reorder columns in the Kanban control by setting the [`allowColumnDragAndDrop`](https://ej2.syncfusion.com/documentation/api/kanban/#allowColumnDragAndDrop) property to true. When enabled, columns can be dragged and dropped to rearrange their order effortlessly. Explore the demos [here](https://ej2.syncfusion.com/demos/#/material3/kanban/column-rearrangement.html).
 
 ## 25.1.35 (2024-03-15)
 

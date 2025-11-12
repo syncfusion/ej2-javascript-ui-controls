@@ -168,6 +168,9 @@ export class SpreadsheetChart {
         let chartEle: HTMLElement; let chartObj: Chart;
         for (let i: number = 0, len: number = this.parent.chartColl.length; i < len; i++) {
             chart = this.parent.chartColl[i as number];
+            if (!chart.range) {
+                continue;
+            }
             if (chart.range.includes('!')) {
                 sheetName = chart.range.substring(0, chart.range.lastIndexOf('!'));
                 if (this.parent.activeSheetIndex !== getSheetIndex(this.parent, sheetName)) {

@@ -390,17 +390,22 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
             highlightIconCss += ' e-de-flip';
         }
 
-        // Create the HTML template for highlight color dropdown
-        const highlightColorElement: HTMLElement = createElement('div', {
-            id: this.ribbonId + '_ribbon_highlight_color',
-            styles: 'display:none;width:157px',
-            className: 'e-de-cntr-highlight-pane'
+        const colorListDropDiv: HTMLElement = createElement('div', {
+            id: this.ribbonId + '_color_list_div',
+            styles: 'visibility: hidden'
         });
+
+        // Create the HTML template for highlight color dropdown
+        const highlightColorElement: HTMLElement = createElement('ul', {
+            id: this.ribbonId + '_ribbon_highlight_color',
+            styles: 'visibility: visible; display: grid; grid-template-columns: repeat(5,1fr); padding: 2px 2px;'
+        });
+        colorListDropDiv.appendChild(highlightColorElement);
 
         const highlightColors: HighlightColorInfo[] = this.getHighlightColorItems();
 
         highlightColors.forEach((color: HighlightColorInfo) => {
-            const colorDiv: HTMLDivElement = createElement('div', { className: 'e-de-ctnr-hglt-btn' }) as HTMLDivElement;
+            const colorDiv: HTMLDivElement = createElement('li', { className: 'e-de-ctnr-hglt-btn' }) as HTMLDivElement;
             colorDiv.style.backgroundColor = color.backgroundColor;
             highlightColorElement.appendChild(colorDiv);
             // Create bound handler and store reference
@@ -409,10 +414,10 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
             this.highlightColorHandlers.push({ element: colorDiv, handler });
         });
 
-        const noColorDiv: HTMLElement = createElement('div');
+        const noColorDiv: HTMLElement = createElement('li');
         highlightColorElement.appendChild(noColorDiv);
 
-        const noColorSpan: HTMLElement = createElement('span', { className: 'e-de-ctnr-hglt-no-color' });
+        const noColorSpan: HTMLElement = createElement('span', { className: 'e-de-ctnr-hglt-no-color', styles: 'padding: 2px' });
         noColorSpan.textContent = this.localObj.getConstant('No color');
         noColorDiv.appendChild(noColorSpan);
         noColorDiv.addEventListener('click', this.onHighlightColorClick.bind(this, 'transparent'));
@@ -423,7 +428,7 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
         this.highlightColorHandlers.push({ element: noColorDiv, handler: noColorHandler });
 
         return {
-            target: highlightColorElement,
+            target: colorListDropDiv,
             iconCss: highlightIconCss,
             content: this.localObj.getConstant('Text highlight color'),
             // cssClass: this.splitButtonClass,
@@ -433,10 +438,10 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
                 this.applyHighlightColor(args.item.backgroundColor);
             },
             beforeOpen: (): void => {
-                highlightColorElement.style.display = 'block';
+                colorListDropDiv.style.visibility = 'visible';
             },
             beforeClose: (): void => {
-                highlightColorElement.style.display = 'none';
+                colorListDropDiv.style.visibility = 'hidden';
             },
             click: () => {
                 this.applyHighlightColor(this.appliedHighlightColor);
@@ -446,19 +451,13 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
 
     private onHighlightColorClick(color: string, event: any): void {
         this.applyHighlightColor(color);
-        this.closePopup(); // Close the dropdown
         // Remove the 'e-color-selected' class from all children
         event.currentTarget.parentElement.querySelectorAll('.e-color-selected').forEach((child: HTMLElement) => {
             child.classList.remove('e-color-selected');
         });
         // Add the 'e-color-selected' class to the clicked element
-        event.currentTarget.classList.add('e-color-selected');
-    }
-
-    private closePopup(): void {
-        const highlightColorElement: HTMLElement = document.getElementById(this.ribbonId + '_ribbon_highlight_color');
-        if (highlightColorElement) {
-            highlightColorElement.style.display = 'none';
+        if (event.currentTarget.classList.length > 0) {
+            event.currentTarget.classList.add('e-color-selected');
         }
     }
 

@@ -221,5 +221,7 @@ $kanban-col-expand-collapse-bg-color: color.adjust($gray-600, $lightness: -7.5%)
 $kanban-col-expand-collapse-color: $primary-font;
 $kanban-col-expand-collapse-border: 1px solid color.adjust($gray-600, $lightness: -12.5%);
 $kanban-col-expand-collapse-box-shadow: none;
+$skeleton-card-color: $kanban-card-selection-bg-color;
+$skelton-box-shadow: none;
 
 //Color End

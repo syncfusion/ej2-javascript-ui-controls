@@ -264,15 +264,55 @@ export class Scroll {
     }
 
     private onHeaderWheel(e: WheelEvent): void {
-        e.preventDefault();
-        this.parent.getMainContent().parentElement.scrollTop += e.deltaY;
-        this.parent.getScrollElement().scrollLeft += e.deltaX;
+        if (e.ctrlKey || e.metaKey) {
+            return;
+        }
+        if (e.shiftKey && e.deltaY !== 0) {
+            this.applyShiftScroll(e);
+            return;
+        }
+        if (e.deltaY !== 0) {
+            if (e.cancelable) {
+                e.preventDefault();
+            }
+            this.parent.getMainContent().parentElement.scrollTop += e.deltaY;
+        }
+        if (e.deltaX !== 0) {
+            if (e.cancelable) {
+                e.preventDefault();
+            }
+            this.parent.getScrollElement().scrollLeft += e.deltaX;
+        }
     }
 
     private onContentWheel(e: WheelEvent): void {
+        if (e.ctrlKey || e.metaKey) {
+            return;
+        }
+        if (e.shiftKey && e.deltaY !== 0) {
+            this.applyShiftScroll(e);
+            return;
+        }
         if (e.deltaX !== 0) {
-            e.preventDefault();
+            if (e.cancelable) {
+                e.preventDefault();
+            }
             this.parent.getScrollElement().scrollLeft += e.deltaX;
+            if (e.deltaY !== 0) {
+                this.parent.getMainContent().parentElement.scrollTop += e.deltaY;
+            }
+        }
+    }
+
+    private applyShiftScroll(e: WheelEvent): void {
+        if (e.cancelable) {
+            e.preventDefault();
+        }
+        if (e.deltaX !== 0) {
+            this.parent.getScrollElement().scrollLeft += e.deltaX;
+            this.parent.getMainContent().parentElement.scrollTop += e.deltaY;
+        } else {
+            this.parent.getScrollElement().scrollLeft += e.deltaY;
         }
     }
 

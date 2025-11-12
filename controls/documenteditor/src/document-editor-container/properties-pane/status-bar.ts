@@ -301,7 +301,7 @@ export class StatusBar {
         }
     }
     private setZoomValue(text: string): void {
-        this.documentEditor.isClientCall = true;
+        this.documentEditor.isUpdateFocus = true;
         if (text.match(this.localObj.getConstant('Fit one page'))) {
             this.documentEditor.fitPage('FitOnePage');
         } else if (text.match(this.localObj.getConstant('Fit page width'))) {

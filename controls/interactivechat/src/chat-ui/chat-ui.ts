@@ -870,7 +870,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.addRtlClass(this.element, this.enableRtl);
         this.updateHeader(this.showHeader, this.chatHeader, this.viewWrapper);
         this.updateEmptyChatTemplate();
-        this.updateFooterEleClass();
+        this.updateFooterElementClass();
         this.wireEvents();
         this.renderTypingIndicator();
         this.updateScrollPosition(false, 0);
@@ -1894,7 +1894,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     private refreshTextareaUI(): void {
         this.updateHiddenTextarea(this.editableTextarea.innerText);
         this.activateSendIcon(this.editableTextarea.innerText.length);
-        this.updateFooterEleClass();
+        this.updateFooterElementClass();
     }
     private handleInput(event: Event): void {
         const textareaEle: HTMLDivElement = event.target as HTMLDivElement;
@@ -1906,7 +1906,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.refreshTextareaUI();
         this.editableTextarea.focus();
         // Debounced push to undo stack
-        this.scheduleUndoPush(textContent);
+        this.scheduleUndoPush();
         this.redoStack = [];
         this.triggerUserTyping(event, textContent);
     }
@@ -2101,7 +2101,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             chip.replaceWith(placeholder);
         });
 
-        return tempEle.textContent || '';
+        return tempEle.innerHTML || '';
     }
 
     private clearReplyWrapper(): void {
@@ -2178,7 +2178,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         }
     }
     private applyPromptChange(newState: TextState, oldState: TextState, event: KeyboardEvent): void {
-        this.editableTextarea.innerText = newState.content;
+        this.editableTextarea.innerHTML = newState.content;
         this.refreshTextareaUI();
         this.setCursorPosition(newState.selectionStart, newState.selectionEnd);
         this.triggerUserTyping(event, oldState.content);

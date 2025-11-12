@@ -2117,8 +2117,23 @@ export class PdfViewerBase {
         if (index >= 0) {
             this.pdfViewer.formFieldCollections[parseInt(index.toString(), 10)].value = formFieldObject.Value;
         }
-        this.pdfViewer.pdfRendererModule.formFieldsBase.PdfRenderedFormFields.push(formFieldObject);
-        const updatedFormData: string = JSON.stringify(this.pdfViewer.pdfRendererModule.formFieldsBase.PdfRenderedFormFields);
+        const fields: any[] = this.pdfViewer.pdfRendererModule.formFieldsBase.PdfRenderedFormFields;
+        const targetKey: string = formFieldObject.FieldName || formFieldObject.ActualFieldName;
+        let targetIndex: number = -1;
+        for (let i: number = fields.length - 1; i >= 0; i--) {
+            const field: any = fields[i as number] || {};
+            const candidateKey: any = field.FieldName || field.ActualFieldName;
+            if (candidateKey && candidateKey === targetKey) {
+                targetIndex = i;
+                break;
+            }
+        }
+        if (targetIndex !== -1) {
+            fields[targetIndex as number] = formFieldObject;
+        } else {
+            fields.push(formFieldObject);
+        }
+        const updatedFormData: string = JSON.stringify(fields);
         this.setItemInSessionStorage(updatedFormData, '_formfields');
     }
 

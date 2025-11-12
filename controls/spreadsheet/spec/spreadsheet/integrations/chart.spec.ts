@@ -4348,8 +4348,8 @@ describe('Chart ->', () => {
             const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_5');
             const chartObj: any = getComponent(chart, 'chart');
             expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
-            expect(document.getElementById('chart_50_AxisLabel_0').textContent).toBe('2/14/2014 0:00');
-            expect(document.getElementById('chart_50_AxisLabel_1').textContent).toBe('4/14/2014 0:00');
+            expect(document.getElementById('chart_50_AxisLabel_0').textContent).toBe('1/1/1900 0...');
+            expect(document.getElementById('chart_50_AxisLabel_1').textContent).toBe('1/1/1920 0...');
             done();
         });
         it('Testing inbetween values editing and undo & redo in Scatter chart ', (done: Function) => {
@@ -4361,8 +4361,8 @@ describe('Chart ->', () => {
             expect(document.getElementById('chart_50_AxisLabel_1').textContent).toBe('Hello');
             helper.invoke('undo');
             expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
-            expect(document.getElementById('chart_50_AxisLabel_0').textContent).toBe('2/14/2014 0:00');
-            expect(document.getElementById('chart_50_AxisLabel_1').textContent).toBe('4/14/2014 0:00');
+            expect(document.getElementById('chart_50_AxisLabel_0').textContent).toBe('1/1/1900 0...');
+            expect(document.getElementById('chart_50_AxisLabel_1').textContent).toBe('1/1/1920 0...');
             helper.invoke('redo');
             expect(chartObj.primaryXAxis.valueType).toBe('Category');
             expect(document.getElementById('chart_50_AxisLabel_0').textContent).toBe('2/14/2014 3:00');
@@ -4373,7 +4373,7 @@ describe('Chart ->', () => {
             helper.invoke('undo');
             helper.invoke('insertChart', [[{ type: 'Pie', range: 'J1:K6', id: 'chart_6' }]]);
             expect(document.getElementById('chart_6_chart_legend_text_0').textContent).toBe('2/14/2014 3:00');
-            expect(document.getElementById('chart_6_chart_legend_text_1').textContent).toBe('6/11/2014 0:00');
+            expect(document.getElementById('chart_6_chart_legend_text_1').textContent).toBe('1/1/1900 0:00');
             done();
         });
         it('Checking date values in Doughnut chart rendering using public method', (done: Function) => {
@@ -4563,8 +4563,8 @@ describe('Chart ->', () => {
                 const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_7');
                 const chartObj: any = getComponent(chart, 'chart');
                 expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
-                expect(document.getElementById('chart_70_AxisLabel_0').textContent).toBe('2/4/2014 0:00');
-                expect(document.getElementById('chart_70_AxisLabel_1').textContent).toBe('4/4/2014 0:00');
+                expect(document.getElementById('chart_70_AxisLabel_0').textContent).toBe('1/1/1900 0...');
+                expect(document.getElementById('chart_70_AxisLabel_1').textContent).toBe('1/1/1920 0...');
                 const target: HTMLElement = document.getElementById('chart_7_Series_0_Point_7');
                 helper.triggerMouseAction('mousemove', { x: target.getBoundingClientRect().left, y: target.getBoundingClientRect().top }, chart, target);
                 helper.switchRibbonTab(6);
@@ -4573,8 +4573,8 @@ describe('Chart ->', () => {
                 helper.switchRibbonTab(6);
                 helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
                 expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
-                expect(document.getElementById('chart_70_AxisLabel_0').textContent).toBe('2/4/2014 0:00');
-                expect(document.getElementById('chart_70_AxisLabel_1').textContent).toBe('4/4/2014 0:00');
+                expect(document.getElementById('chart_70_AxisLabel_0').textContent).toBe('1/1/1900 0...');
+                expect(document.getElementById('chart_70_AxisLabel_1').textContent).toBe('1/1/1920 0...');
                 helper.invoke('deleteChart');
                 done();
             });

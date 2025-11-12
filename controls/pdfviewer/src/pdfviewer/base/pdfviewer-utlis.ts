@@ -220,22 +220,37 @@ export class PdfViewerUtils {
      * Method to deep-shallow copy an object, only if it is a Proxy
      *
      * @private
-     * @param {any} obj - Get the data of the next queued task.
+     * @param {any} value - Get the data of the next queued task.
      * @returns {any} - The copied object if it was a Proxy; otherwise, returns the original object.
      */
-    public static cloneProxy(obj: any): any {
-        if (this.isProxy(obj)) {
-            const copy: any = Object.assign({}, obj);
-            for (const key in copy) {
-                // eslint-disable-next-line security/detect-object-injection
-                if (this.isProxy(copy[key])) {
+    public static cloneProxy(value: any): any {
+        if (value === null || value === undefined || typeof value !== 'object') {
+            return value;
+        }
+        if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
+            return value;
+        }
+        if (value instanceof Date || value instanceof RegExp || value instanceof Blob || value instanceof File) {
+            return value;
+        }
+        if (Array.isArray(value)) {
+            const arr: any[] = [];
+            for (let i: number = 0; i < value.length; i++) {
+                arr[i as number] = this.cloneProxy(value[i as number]);
+            }
+            return arr;
+        }
+        if (this.isProxy(value)) {
+            const copy: any = {};
+            for (const key in value) {
+                if (Object.prototype.hasOwnProperty.call(value, key)) {
                     // eslint-disable-next-line security/detect-object-injection
-                    copy[key] = this.cloneProxy(copy[key]); // Recursively process each property
+                    copy[key] = this.cloneProxy(value[key]);
                 }
             }
             return copy;
         }
-        return obj;
+        return value;
     }
 
     /**
@@ -246,7 +261,10 @@ export class PdfViewerUtils {
      * @returns {boolean} - Returns true if the value is a Proxy; otherwise, false.
      */
     public static isProxy(value: any): boolean {
-        return Object.prototype.toString.call(value) === '[object Object]';
+        if (value === null || typeof value !== 'object') { return false; }
+        if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) { return false; }
+        if (value instanceof Date || value instanceof RegExp || value instanceof Blob || value instanceof File) { return false; }
+        return true;
     }
 
     /**

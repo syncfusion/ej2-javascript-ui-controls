@@ -600,3 +600,5 @@ export const destroyEditForm: string = 'destroy-edit-form';
 export const beforeDetailTemplateDetach: string = 'beforeDetailTemplateDetach';
 /** @hidden */
 export const detachDetailTemplate: string = 'detach-detail-template';
+/** @hidden */
+export const beforeSetPartialRecords: string = 'beforeSetPartialRecords';

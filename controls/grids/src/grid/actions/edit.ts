@@ -205,6 +205,12 @@ export class Edit implements IAction {
             return;
         }
         this.editModule.startEdit(tr);
+        if (this.parent.isEdit && !this.parent.isPersistSelection) {
+            const checkedAllTarget: HTMLElement = this.parent.getHeaderContent().querySelector('.e-checkselectall');
+            if (checkedAllTarget) {
+                checkedAllTarget.parentElement.classList.add('e-checkbox-disabled');
+            }
+        }
         this.refreshToolbar();
         (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         this.parent.notify('start-edit', {});

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.10 (2025-11-13)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I780912` - Resolved an issue where `DrawText` did not apply bold and italic parameters as expected.
+
 ## 31.2.5 (2025-11-04)
 
 ### Image Editor

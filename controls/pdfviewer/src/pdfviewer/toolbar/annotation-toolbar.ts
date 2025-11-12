@@ -4179,10 +4179,10 @@ export class AnnotationToolbar {
                 this.showStampAnnotationTool(false, stampIndex, stampIndex);
             }
             if (annotationToolbarItems.indexOf('HandWrittenSignatureTool') !== -1) {
-                const signatureIndex: number = this.getIndexByCssClass('e-pv-signature-template-container');
+                const signatureIndex: number = this.getIndexByCssClass('e-pv-sign-template-container');
                 this.showSignatureTool(true, signatureIndex, signatureIndex);
             } else {
-                const signatureIndex: number = this.getIndexByCssClass('e-pv-signature-template-container');
+                const signatureIndex: number = this.getIndexByCssClass('e-pv-sign-template-container');
                 this.showSignatureTool(false, signatureIndex, signatureIndex);
             }
             if (annotationToolbarItems.indexOf('FreeTextAnnotationTool') !== -1) {
@@ -5490,6 +5490,10 @@ export class AnnotationToolbar {
         } else {
             this.toolbarElement.style.display = 'none';
             this.isToolbarHidden = true;
+            if (!this.pdfViewer.isFormDesignerToolbarVisible) {
+                this.adjustViewer(true);
+            }
+            this.primaryToolbar.deSelectItem(this.primaryToolbar.annotationItem);
             this.pdfViewer.isAnnotationToolbarVisible = false;
         }
     }

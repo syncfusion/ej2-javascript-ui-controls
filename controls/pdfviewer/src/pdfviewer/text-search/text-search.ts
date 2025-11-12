@@ -462,7 +462,12 @@ export class TextSearch {
             }
         }
         else {
-            if (this.isSingleSearch && this.searchString === searchWord && this.isMatchCase === matchCase && (this.textSearchOpen ||
+            let searchString: string = this.searchString;
+            if (/[’']/g.test(searchWord)) {
+                searchWord = this.normalizeForSearch(searchWord);
+                searchString = this.normalizeForSearch(this.searchString);
+            }
+            if (this.isSingleSearch && searchString === searchWord && this.isMatchCase === matchCase && (this.textSearchOpen ||
                 this.programaticalSearch)) {
                 this.isTextSearchHandled = true;
                 const details: any = this.getSearchTextDetails;
@@ -664,8 +669,21 @@ export class TextSearch {
         }
     }
 
+    private normalizeForSearch(s: string): string {
+        if (isNullOrUndefined(s)) { return s; }
+        return s
+            .normalize('NFKC')
+            // eslint-disable-next-line
+            .replace(/[\u2018\u2019\u201B]/g, "'")
+            .replace(/[\u201C\u201D]/g, '"')
+            .replace(/\u00A0/g, ' ');
+    }
+
     private calculateSearchCount(inputString: string, documentTextCollection: any): void {
         this.searchCount = 0;
+        if (/[’']/g.test(inputString)) {
+            inputString = this.normalizeForSearch(inputString);
+        }
         if (!this.isTextSearchHandled) {
             this.currentOccurrence = 0;
             this.resetVariables();
@@ -695,6 +713,9 @@ export class TextSearch {
                     const pageIndex: number = parseInt(Object.keys(documentTextCollection[parseInt(i.toString(), 10)])[0], 10);
                     const documentIndex: any = documentTextCollection[parseInt(i.toString(), 10)][parseInt(pageIndex.toString(), 10)];
                     let pageTextData: string = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
+                    if (/[’']/g.test(inputString)) {
+                        pageTextData = this.normalizeForSearch(pageTextData);
+                    }
                     if (!this.isMatchCase) {
                         pageTextData = pageTextData.toLowerCase();
                         word = word.toLowerCase();
@@ -719,6 +740,9 @@ export class TextSearch {
             const pageIndex: number = parseInt(Object.keys(documentTextCollection[parseInt(i.toString(), 10)])[0], 10);
             const documentIndex: any = documentTextCollection[parseInt(i.toString(), 10)][parseInt(pageIndex.toString(), 10)];
             let pageTextData: string = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
+            if (/[’']/g.test(inputString)) {
+                pageTextData = this.normalizeForSearch(pageTextData);
+            }
             let multiSearch: string = (pageTextData.replace((/(\s\r\n)/gm), ' ')).replace((/(\r\n)/gm), ' ');
             let Multiline: string = (pageTextData.replace((/(\s\r\n)/gm), '  ')).replace((/(\r\n)/gm), ' ');
             let specialCharcterSearch: string = multiSearch.replace(/[^a-zA-Z0-9]+/g, ' ');
@@ -938,7 +962,10 @@ export class TextSearch {
         }
         this.autompleteDataSource = [];
         if (this.pdfViewer.enableHtmlSanitizer && typeof inputString === 'string') {
-            inputString = SanitizeHtmlHelper.sanitize(inputString);
+            const sanitizedString: string = SanitizeHtmlHelper.sanitize(inputString);
+            if (sanitizedString === inputString) {
+                inputString = sanitizedString;
+            }
         }
         if (inputString && inputString.length > 0 && inputString[inputString.length - 1] === ' ') {
             inputString = inputString.slice(0, inputString.length - 1);
@@ -1353,6 +1380,10 @@ export class TextSearch {
 
     private getPossibleMatches(pageIndex: number, searchString: string, pageString: string, textContents: string[],
                                isSinglePageSearch: boolean, characterBounds: any[]): void {
+        if (/[’']/g.test(searchString)) {
+            pageString = this.normalizeForSearch(pageString);
+            searchString = this.normalizeForSearch(searchString);
+        }
         let arrayReturns: any;
         let pageText: string = pageString;
         let searchText: string = searchString;
@@ -1605,6 +1636,10 @@ export class TextSearch {
 
     private correctLinetext(searchString: string, matchIndex: number, pageText: string, multiSearchIndex?: number): string[] {
         const indiuvalLineArray: string[] = [];
+        if (/[’']/g.test(searchString)) {
+            pageText = this.normalizeForSearch(pageText);
+            searchString = this.normalizeForSearch(searchString);
+        }
         let searchArray: string[] = searchString.split(/[" "]+/);
         if (!this.isMatchCase) {
             searchArray = searchString.toLowerCase().split(/\s+/);
@@ -1666,6 +1701,10 @@ export class TextSearch {
                                  isSinglePageSearch: boolean, characterBounds: any[]): void {
         let pageText: string = pageString;
         let searchText: string = searchString;
+        if (/[’']/g.test(searchString)) {
+            pageString = this.normalizeForSearch(pageString);
+            searchString = this.normalizeForSearch(searchString);
+        }
         const queryLength: number = searchString.length;
         if (!this.isMatchCase) {
             searchText = searchString.toLowerCase();
@@ -2899,7 +2938,10 @@ export class TextSearch {
                 searchText = searchText.slice(0, searchText.length - 1);
             }
             if (this.pdfViewer.enableHtmlSanitizer && searchText) {
-                searchText = SanitizeHtmlHelper.sanitize(searchText);
+                const sanitizedString: string = SanitizeHtmlHelper.sanitize(searchText);
+                if (sanitizedString === searchText) {
+                    searchText = sanitizedString;
+                }
             }
             this.searchString = searchText;
             this.isMatchCase = isMatchCase;

@@ -234,6 +234,14 @@ export class Column {
      */
     public edit: IEditCell = {};
 
+    /**
+     * Determines whether the column is locked in its current position.
+     * When set to true, the column becomes fixed and cannot be reordered by the user.
+     * Locked columns are always displayed at the beginning of the TreeGrid pane.
+     *@default false
+     */
+    public lockColumn: boolean;
+
     constructor(options: ColumnModel) {
         merge(this, options);
     }
@@ -479,4 +487,10 @@ export interface ColumnModel {
      * @default null
      */
     sortComparer?: SortComparer | string;
+    /**
+     * Prevents column reordering when set to true, locking the column into a set position.
+     *
+     * @default false
+     */
+    lockColumn?: boolean;
 }

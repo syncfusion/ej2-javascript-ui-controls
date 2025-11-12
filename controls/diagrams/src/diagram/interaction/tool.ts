@@ -2519,6 +2519,8 @@ export class PolyLineDrawingTool extends ToolBase {
         let canConnect: boolean = false;
         if (this.inAction) {
             const obj: Connector = (this.drawingObject as Connector);
+            // 988501 : PolyLine connector snapping support in Diagram
+            this.currentPosition = this.commandHandler.snapConnectorEnd(this.currentPosition);
             obj.targetPoint = this.currentPosition;
             // 920152: elementDraw event not triggered for Polyline Drawing tool
             // 927554: ElementDraw Arguments updated wrongly for Polyline drawing
@@ -2905,6 +2907,8 @@ export class FreeHandTool extends ToolBase {
         if (this.inAction) {
             const obj: PathModel = (this.drawingObject.shape as PathModel);
             let pt: PointModel = this.currentPosition as PointModel;
+            // 988501 : Freehand connector snapping support in Diagram
+            pt = this.commandHandler.snapConnectorEnd(this.currentPosition);
             (obj as BasicShapeModel).points.push(pt);
             (this.drawingObject.wrapper.children[0] as PathElement).data = getFreeHandPath(
                 (this.drawingObject.shape as BasicShapeModel).points);

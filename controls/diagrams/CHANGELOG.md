@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 31.2.10 (2025-11-13)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I778679` - Connectors Now Properly Distributed with EnableRouting and ConnectionPointOrigin.
+- `#I777571` - Symbols in the symbol palette can now be searched using their description text.
+- `#I778436` - Snapping is now applied to PolyLine and FreeHand connectors when drawn using the drawing tools.
+
 ## 31.2.5 (2025-11-04)
 
 ### Diagram

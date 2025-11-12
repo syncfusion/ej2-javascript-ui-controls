@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.10 (2025-11-13)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I779062` - Fixed an issue where the Scheduler became unresponsive in agenda view when the data source was reset to empty.
+
 ## 31.2.3 (2025-10-22)
 
 ### Schedule

@@ -418,16 +418,35 @@ export class TaskProcessor extends DateProcessor {
             return;
         }
         this.parent.customColumns.forEach((column: string) => {
-            const value: string | Date = data[column as string];
-            const isValidDateString: boolean =
-                typeof value === 'string' && !isNaN(new Date(value).getTime());
-            const isValidDateObject: boolean =
-                value instanceof Date && !isNaN(value.getTime());
-            if (isValidDateString || isValidDateObject) {
-                const dateValue: Date = isValidDateString ? new Date(value) : value as Date;
-                data[column as string] = this.getDateFromFormat(dateValue, true);
+            const currentColumn: ColumnModel = this.parent.getColumnByField(column, this.parent.ganttColumns);
+            if (currentColumn && currentColumn.type === 'date' || currentColumn.type === 'datetime') {
+                const value: string | Date = data[column as string];
+                if (value == null) {
+                    return;
+                }
+                const isValidDateString: boolean =
+                    (typeof value === 'string') && this.isValidDateString(value);
+                const isValidDateObject: boolean =
+                    value instanceof Date && !isNaN(value.getTime());
+                if (isValidDateString || isValidDateObject) {
+                    const dateValue: Date = isValidDateString ? new Date(value) : value as Date;
+                    data[column as string] = this.getDateFromFormat(dateValue, true);
+                }
             }
         });
+    }
+
+    private isValidDateString(str: string): boolean {
+        const trimmed: string = str.trim();
+        if (!trimmed) {
+            return false;
+        }
+        // Block pure numeric strings
+        if (/^\d+$/.test(trimmed)) {
+            return false;
+        }
+        // Final check: must parse to a real date
+        return !isNaN(Date.parse(trimmed));
     }
 
     /**

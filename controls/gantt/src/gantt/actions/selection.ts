@@ -160,6 +160,9 @@ export class Selection {
         let isContains: boolean;
         if (this.multipleIndexes.length !== 0) {
             index = this.multipleIndexes;
+            this.addRemoveClass(index);
+        } else if (args.isHeaderCheckboxClicked === true) {
+            this.clearSelection();
         } else {
             if (!isNullOrUndefined(args.rowIndexes)) {
                 for (let i: number = 0; i < args.rowIndexes.length; i++) {
@@ -175,8 +178,8 @@ export class Selection {
             } else {
                 index = [args.rowIndex];
             }
+            this.addRemoveClass(index);
         }
-        this.addRemoveClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: -1 }, true);
         if (this.selectedRowIndexes.length === 1) {
@@ -383,7 +386,7 @@ export class Selection {
             const selectedRow: Element = closest((e.target as Element), 'tr.e-chart-row');
             const rIndex: number = parseInt(selectedRow.getAttribute('aria-rowindex'), 10) - 1;
             const isToggle: boolean = this.parent.selectionSettings.enableToggle;
-            if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
+            if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest && !this.parent.treeGrid.grid['isCheckBoxSelection'])) {
                 if (this.parent.selectionSettings.persistSelection) {
                     this.addRemoveClass(this.selectedRowIndexes, e['name']);
                 }
@@ -399,7 +402,7 @@ export class Selection {
                     setValue('isMultiCtrlRequest', true, this.parent.treeGrid.grid.selectionModule);
                     this.parent.treeGrid.grid.selectionModule.addRowsToSelection([rIndex]);
                     const isUnSelected: boolean = this.selectedRowIndexes.indexOf(rIndex) > -1;
-                    if (isUnSelected) {
+                    if (isUnSelected && !this.parent.treeGrid.grid['isCheckBoxSelection']) {
                         this.addRemoveClass([rIndex], e['name']);
                     }
                 }

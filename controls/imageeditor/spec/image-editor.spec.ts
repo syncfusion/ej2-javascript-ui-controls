@@ -6190,6 +6190,23 @@ describe('ImageEditor', () => {
                done();
            }, 100);
        });
+       it('Bold, Italic, UnderLine, Strikethrough Combination', (done) => {
+           imageEditor = new ImageEditor({
+               height: '350px'
+           }, '#image-editor');
+           imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+           setTimeout(() => {
+               let dimension = imageEditor.getImageDimension();
+               imageEditor.drawText(dimension.x, dimension.y, 'Normal text', 'Arial', 20, false, false, '#FFF', false, 0, '#F6A906', '', null, [], false, false);
+               imageEditor.drawText(dimension.x + 50, dimension.y + 50, 'Bold UnderLine text', 'Arial', 20, true, false, '#FFF', false, 0, '#F6A906', '', null, [], true, false);
+               imageEditor.drawText(dimension.x + 100, dimension.y + 100, 'Italic Strikethrough text', 'Arial', 20, false, true, '#FFF', false, 0, '#F6A906', '', null, [], false, true);
+               expect(imageEditor.objColl[imageEditor.objColl.length - 1].textSettings.bold).toEqual(false);
+               expect(imageEditor.objColl[imageEditor.objColl.length - 1].textSettings.italic).toEqual(true);
+               expect(imageEditor.objColl[imageEditor.objColl.length - 2].textSettings.bold).toEqual(true);
+               expect(imageEditor.objColl[imageEditor.objColl.length - 2].textSettings.italic).toEqual(false);
+               done();
+           }, 100);
+       })
    });
 
    describe('Combination testing', () => {

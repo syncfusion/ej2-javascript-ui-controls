@@ -85,7 +85,7 @@ $kanban-header-item-count-font-size: $text-xxs !default;
 $kanban-header-item-count-font-weight: $font-weight-medium !default;
 $kanban-header-item-count-line-height: $leading-relaxed !default;
 $kanban-header-item-count-opacity: 1 !default;
-$kanban-header-item-count-margin-top: 0 !default;
+$kanban-header-item-count-margin-top: 2 !default;
 $kanban-header-item-count-text-transform: capitalize !default;
 $kanban-header-item-count-bgr-font-size: $text-xs !default;
 $kanban-header-item-count-bgr-font-weight: $font-weight-medium !default;
@@ -228,5 +228,7 @@ $kanban-col-expand-collapse-bg-color: none;
 $kanban-col-expand-collapse-color: $primary;
 $kanban-col-expand-collapse-border: 1px solid $transparent;
 $kanban-col-expand-collapse-box-shadow: $shadow-focus-ring1;
+$skeleton-card-color: $content-bg-color-alt3;
+$skelton-box-shadow: $shadow-sm;
 
 //Color End

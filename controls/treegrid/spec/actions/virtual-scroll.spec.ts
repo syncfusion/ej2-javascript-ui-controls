@@ -7078,3 +7078,47 @@ describe("Adding rows at different positions with virtualization", () => {
     destroy(gridObj);
   });
 });
+
+describe("982776: Coverage Fix: Checkbox with virtualization", function () {
+  let TreeGridObj: TreeGrid;
+  if (!addVirtualData.length) {
+    dataSource1();
+  }
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: addVirtualData,
+        enableVirtualization: true,
+        childMapping: "Crew",
+        height: 400,
+        treeColumnIndex: 1,
+        selectionSettings: { persistSelection: true },
+        pageSettings: { pageSize: 40 },
+        filterSettings: { hierarchyMode: "Child" },
+        isRowSelectable: (data: any) => data.TaskID !== 1,
+        columns: [
+          { type: "checkbox", width: 50 },
+          { field: "TaskID", headerText: "Player Jersey", width: 140, textAlign: "Right", isPrimaryKey: true },
+          { field: "FIELD1", headerText: "Player Name", width: 140, showCheckbox: true },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" },
+        ],
+      },
+      done
+    );
+  });
+  it("Coverage Fix", (done: Function) => {
+    setTimeout(() => {
+      const header = TreeGridObj.element
+        .querySelectorAll(".e-headercell")[0]
+        .getElementsByClassName("e-frame")[0] as HTMLElement;
+      header.click();
+      expect(TreeGridObj.getSelectedRowIndexes().length).toBe(999);
+      done();
+    }, 100);
+  });
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});

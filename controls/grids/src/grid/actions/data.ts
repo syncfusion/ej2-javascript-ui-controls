@@ -164,6 +164,9 @@ export class Data implements IDataProcessor {
 
     protected pageQuery(query: Query, skipPage?: boolean): Query {
         const gObj: IGrid = this.parent;
+        if (skipPage) {
+            return query;
+        }
         const fName: string = 'fn';
         const args: { query: Query, skipPage: boolean } = { query: query, skipPage: false };
         gObj.notify(events.setVirtualPageQuery, args);

@@ -2,6 +2,7 @@
 import { BaseEventArgs, Draggable } from '@syncfusion/ej2-base';
 import { Predicate, Query, Deferred } from '@syncfusion/ej2-data';
 import { CurrentAction } from './type';
+import { ColumnsModel, StackedHeadersModel } from '../models';
 
 /**
  * Kanban Interface
@@ -288,4 +289,40 @@ export interface DataSourceChangedEventArgs {
     query?: Query;
     /** Defines the promise object. */
     promise?: Promise<object>
+}
+
+/**
+ * Provides information about a column drag and drop operations.
+ *
+ * @interface ColumnDragEventArgs
+ */
+export interface ColumnDragEventArgs {
+    /**
+     * If set to true, the drag operation will be canceled
+     */
+    cancel?: boolean;
+    /**
+     * The original mouse or touch event that triggered the drag operation
+     */
+    event: MouseEvent | TouchEvent;
+    /**
+     * The HTML element representing the column being dragged
+     */
+    element: HTMLElement;
+    /**
+     * The index of the column before the drag operation began
+     */
+    fromIndex?: number;
+    /**
+     * The index where the column is currently being dragged to
+     */
+    toIndex?: number;
+    /**
+     * The data object representing the column being dragged
+     */
+    column?: ColumnsModel | StackedHeadersModel;
+    /**
+     * The final index position where the column is dropped
+     */
+    dropIndex?: number;
 }

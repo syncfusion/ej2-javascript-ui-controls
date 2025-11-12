@@ -86,13 +86,14 @@ export class WorkbookSave extends SaveWorker {
             fileName: saveSettings.fileName || 'Sample'
             //passWord: saveSettings.passWord
         };
+        (<{ skipWorkerPipeline?: boolean }> this.saveSettings).skipWorkerPipeline = args.skipWorkerPipeline as boolean;
         this.isFullPost = args.isFullPost as boolean;
         this.needBlobData = args.needBlobData as boolean;
         if (this.needBlobData) { this.isFullPost = false; }
         this.customParams = args.customParams;
         this.pdfLayoutSettings = args.pdfLayoutSettings;
         this.updateBasicSettings();
-        this.processSheets(saveSettings.autoDetectFormat, args.jsonConfig);
+        this.processSheets(saveSettings.autoDetectFormat, args.jsonConfig, args.skipWorkerPipeline as boolean);
     }
 
     /**
@@ -123,10 +124,11 @@ export class WorkbookSave extends SaveWorker {
      *
      * @param {boolean} autoDetectFormat - Auto detect the format based on the cell value.
      * @param {SerializationOptions} jsonConfig - Specify the serialization options to exclude specific features from the JSON.
+     * @param {boolean} isSkipWorkerPipeline - If true, prevent using web worker on the main thread for CSP-restricted environments.
      * @hidden
      * @returns {void} - Process sheets properties.
      */
-    private processSheets(autoDetectFormat?: boolean, jsonConfig?: SerializationOptions): void {
+    private processSheets(autoDetectFormat?: boolean, jsonConfig?: SerializationOptions, isSkipWorkerPipeline?: boolean): void {
         const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader', 'result', 'preservePos'];
         if (this.parent.isAngular) {
             skipProps.push('template');
@@ -171,18 +173,29 @@ export class WorkbookSave extends SaveWorker {
             }
             if (isNotLoaded) {
                 const loadCompleteHandler: Function = (idx: number): void => {
-                    executeTaskAsync(
-                        this, this.processSheet, this.updateSheet,
-                        [this.getStringifyObject(this.parent.sheets[idx as number], skipProps, idx, false, true), idx], null, this.parent);
+                    if (isSkipWorkerPipeline) {
+                        const json: string = this.getStringifyObject(this.parent.sheets[idx as number], skipProps, idx, false, true);
+                        this.updateSheet(this.processSheet(json, sheetIdx) as Object[]);
+                    } else {
+                        executeTaskAsync(
+                            this, this.processSheet, this.updateSheet,
+                            [this.getStringifyObject(this.parent.sheets[idx as number], skipProps, idx, false, true), idx],
+                            null, this.parent);
+                    }
                 };
                 this.parent.notify(
                     updateSheetFromDataSource, { sheet: sheet, sheetIndex: sheetIdx, loadComplete: loadCompleteHandler.bind(this, sheetIdx),
                         loadFromStartCell: true, autoDetectFormat: autoDetectFormat });
             } else {
-                executeTaskAsync(
-                    this, this.processSheet, this.updateSheet,
-                    [this.getStringifyObject(sheet, skipProps, sheetIdx, autoDetectFormat && isDataBinding, true), sheetIdx]
-                    , null, this.parent);
+                if (isSkipWorkerPipeline) {
+                    const json: string = this.getStringifyObject(sheet, skipProps, sheetIdx, autoDetectFormat && isDataBinding, true);
+                    this.updateSheet(this.processSheet(json, sheetIdx) as Object[]);
+                } else {
+                    executeTaskAsync(
+                        this, this.processSheet, this.updateSheet,
+                        [this.getStringifyObject(sheet, skipProps, sheetIdx, autoDetectFormat && isDataBinding, true), sheetIdx],
+                        null, this.parent);
+                }
             }
         }
     }
@@ -225,9 +238,14 @@ export class WorkbookSave extends SaveWorker {
                 this.initiateFullPostSave();
                 this.saveJSON = {};
             } else {
-                executeTaskAsync(
-                    this, { 'workerTask': this.processSave },
-                    this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams, this.pdfLayoutSettings], true, this.parent);
+                if ((<{ skipWorkerPipeline?: boolean }>saveSettings).skipWorkerPipeline) {
+                    this.processSave(
+                        this.saveJSON, saveSettings, this.customParams, this.pdfLayoutSettings, this.updateSaveResult);
+                } else {
+                    executeTaskAsync(
+                        this, { 'workerTask': this.processSave },
+                        this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams, this.pdfLayoutSettings], true, this.parent);
+                }
             }
         }
     }

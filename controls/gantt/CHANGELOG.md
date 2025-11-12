@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 31.2.10 (2025-11-13)
+
+### GanttChart
+
+#### Feature
+
+- `#I731224` - Enhanced checkbox selection with virtualization support for large datasets, delivering faster, more accurate multi-selection and smoother CRUD operations.
+
+#### Bug fixes
+
+- `#I783506` - Fixed the invalid string to date conversion issue in the custom column of the Gantt Chart.
+
 ## 31.2.5 (2025-11-04)
 
 ### GanttChart

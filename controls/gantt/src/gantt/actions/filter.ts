@@ -15,6 +15,7 @@ import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 export class Filter {
     public parent: Gantt;
     public filterMenuElement: HTMLElement;
+    public filteredResult: Object[] = [];
     constructor(gantt: Gantt) {
         this.parent = gantt;
         TreeGrid.Inject(TreeGridFilter);

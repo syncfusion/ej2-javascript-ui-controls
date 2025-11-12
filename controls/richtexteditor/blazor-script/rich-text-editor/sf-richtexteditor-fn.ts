@@ -1886,6 +1886,7 @@ export class SfRichTextEditor {
         if (this.enabled) {
             this.inputElement.focus();
             this.focusHandler({} as FocusEvent);
+	        this.observer.notify(events.toolbarRefresh, {});
         }
     }
     public insertAlt(altText: string): void {

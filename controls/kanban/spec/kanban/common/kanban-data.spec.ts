@@ -853,15 +853,21 @@ export function generateKanbanData(count: number = 100): Record<string, any>[] {
     for (let a: number = 0, id: number = 0; a < count; a++) {
         kanbanData.push({
             Id: ++id,
-            Summary: names[Math.floor(Math.random() * names.length)],
-            Status: keys[Math.floor(Math.random() * keys.length)],
-            Priority: priority[Math.floor(Math.random() * priority.length)],
-            Type: types[Math.floor(Math.random() * types.length)],
-            Assignee: assignee[Math.floor(Math.random() * assignee.length)],
-            Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+            Summary: names[Math.floor(secureRandom() * names.length)],
+            Status: keys[Math.floor(secureRandom() * keys.length)],
+            Priority: priority[Math.floor(secureRandom() * priority.length)],
+            Type: types[Math.floor(secureRandom() * types.length)],
+            Assignee: assignee[Math.floor(secureRandom() * assignee.length)],
+            Estimate: parseFloat((secureRandom() * (9 - 0)).toFixed(3).slice(0, -1))
         });
     }
     return kanbanData;
+}
+
+export function secureRandom(): number {
+    const array: Uint32Array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] / (0xFFFFFFFF + 1);
 }
 
 /**
@@ -887,56 +893,56 @@ export function generateKanbanDataVirtualScroll(count: number = 1000): Record<st
         if (a < 200) {
             kanbanData.push({
                 Id: ++id,
-                Summary: names[Math.floor(Math.random() * names.length)],
+                Summary: names[Math.floor(secureRandom() * names.length)],
                 Status: keys[0],
-                Priority: priority[Math.floor(Math.random() * priority.length)],
-                Type: types[Math.floor(Math.random() * types.length)],
-                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
-                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+                Priority: priority[Math.floor(secureRandom() * priority.length)],
+                Type: types[Math.floor(secureRandom() * types.length)],
+                Assignee: assignee[Math.floor(secureRandom() * assignee.length)],
+                Estimate: parseFloat((secureRandom() * (9 - 0)).toFixed(3).slice(0, -1))
             });
         }
         if (a >= 200 && a < 400) {
             kanbanData.push({
                 Id: ++id,
-                Summary: names[Math.floor(Math.random() * names.length)],
+                Summary: names[Math.floor(secureRandom() * names.length)],
                 Status: keys[1],
-                Priority: priority[Math.floor(Math.random() * priority.length)],
-                Type: types[Math.floor(Math.random() * types.length)],
-                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
-                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+                Priority: priority[Math.floor(secureRandom() * priority.length)],
+                Type: types[Math.floor(secureRandom() * types.length)],
+                Assignee: assignee[Math.floor(secureRandom() * assignee.length)],
+                Estimate: parseFloat((secureRandom() * (9 - 0)).toFixed(3).slice(0, -1))
             });
         }
         if (a >= 400 && a < 600) {
             kanbanData.push({
                 Id: ++id,
-                Summary: names[Math.floor(Math.random() * names.length)],
+                Summary: names[Math.floor(secureRandom() * names.length)],
                 Status: keys[2],
-                Priority: priority[Math.floor(Math.random() * priority.length)],
-                Type: types[Math.floor(Math.random() * types.length)],
-                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
-                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+                Priority: priority[Math.floor(secureRandom() * priority.length)],
+                Type: types[Math.floor(secureRandom() * types.length)],
+                Assignee: assignee[Math.floor(secureRandom() * assignee.length)],
+                Estimate: parseFloat((secureRandom() * (9 - 0)).toFixed(3).slice(0, -1))
             });
         }
         if (a >= 600 && a < 800) {
             kanbanData.push({
                 Id: ++id,
-                Summary: names[Math.floor(Math.random() * names.length)],
+                Summary: names[Math.floor(secureRandom() * names.length)],
                 Status: keys[3],
-                Priority: priority[Math.floor(Math.random() * priority.length)],
-                Type: types[Math.floor(Math.random() * types.length)],
-                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
-                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+                Priority: priority[Math.floor(secureRandom() * priority.length)],
+                Type: types[Math.floor(secureRandom() * types.length)],
+                Assignee: assignee[Math.floor(secureRandom() * assignee.length)],
+                Estimate: parseFloat((secureRandom() * (9 - 0)).toFixed(3).slice(0, -1))
             });
         }
         if (a >= 800 && a < 1000) {
             kanbanData.push({
                 Id: ++id,
-                Summary: names[Math.floor(Math.random() * names.length)],
+                Summary: names[Math.floor(secureRandom() * names.length)],
                 Status: keys[4],
-                Priority: priority[Math.floor(Math.random() * priority.length)],
-                Type: types[Math.floor(Math.random() * types.length)],
-                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
-                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+                Priority: priority[Math.floor(secureRandom() * priority.length)],
+                Type: types[Math.floor(secureRandom() * types.length)],
+                Assignee: assignee[Math.floor(secureRandom() * assignee.length)],
+                Estimate: parseFloat((secureRandom() * (9 - 0)).toFixed(3).slice(0, -1))
             });
         }
     }
@@ -960,34 +966,34 @@ export function generateKanbanDataVirtualScrollLessData(count: number = 10): Rec
         if (a < 4) {
             kanbanData.push({
                 Id: ++id,
-                Summary: names[Math.floor(Math.random() * names.length)],
+                Summary: names[Math.floor(secureRandom() * names.length)],
                 Status: keys[0],
-                Priority: priority[Math.floor(Math.random() * priority.length)],
-                Type: types[Math.floor(Math.random() * types.length)],
-                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
-                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+                Priority: priority[Math.floor(secureRandom() * priority.length)],
+                Type: types[Math.floor(secureRandom() * types.length)],
+                Assignee: assignee[Math.floor(secureRandom() * assignee.length)],
+                Estimate: parseFloat((secureRandom() * (9 - 0)).toFixed(3).slice(0, -1))
             });
         }
         if (a >= 4 && a < 6) {
             kanbanData.push({
                 Id: ++id,
-                Summary: names[Math.floor(Math.random() * names.length)],
+                Summary: names[Math.floor(secureRandom() * names.length)],
                 Status: keys[1],
-                Priority: priority[Math.floor(Math.random() * priority.length)],
-                Type: types[Math.floor(Math.random() * types.length)],
-                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
-                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+                Priority: priority[Math.floor(secureRandom() * priority.length)],
+                Type: types[Math.floor(secureRandom() * types.length)],
+                Assignee: assignee[Math.floor(secureRandom() * assignee.length)],
+                Estimate: parseFloat((secureRandom() * (9 - 0)).toFixed(3).slice(0, -1))
             });
         }
         if (a >= 6 && a < 10) {
             kanbanData.push({
                 Id: ++id,
-                Summary: names[Math.floor(Math.random() * names.length)],
+                Summary: names[Math.floor(secureRandom() * names.length)],
                 Status: keys[4],
-                Priority: priority[Math.floor(Math.random() * priority.length)],
-                Type: types[Math.floor(Math.random() * types.length)],
-                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
-                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+                Priority: priority[Math.floor(secureRandom() * priority.length)],
+                Type: types[Math.floor(secureRandom() * types.length)],
+                Assignee: assignee[Math.floor(secureRandom() * assignee.length)],
+                Estimate: parseFloat((secureRandom() * (9 - 0)).toFixed(3).slice(0, -1))
             });
         }
     }

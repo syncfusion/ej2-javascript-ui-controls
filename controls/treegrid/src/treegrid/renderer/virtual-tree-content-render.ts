@@ -397,6 +397,21 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     }
 
     /**
+     * returns the index of a row in virtualization case
+     *
+     * @param {number} index - The index of the row.
+     * @returns {number} virtual index of that row.
+     */
+    public getVirtualRowIndex(index: number): number {
+        if (isNullOrUndefined(this.prevInfo)) {
+            return index;
+        } else {
+            const startIdx: number = (this.parent.getRowsObject()[0]).index;
+            return startIdx + index;
+        }
+    }
+
+    /**
      * Generates a cell object with provided column and row configurations.
      *
      * @param {Column} col - The Column object which holds the column configuration.

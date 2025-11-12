@@ -13,12 +13,13 @@ import { StackedHeaders } from '../models/stacked-headers';
 import { SortSettings } from '../models/sort-settings';
 import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel, DialogSettingsModel } from '../models/index';
 import { SortSettingsModel } from '../models/index';
-import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs, ScrollPosition } from './interface';
+import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs, ScrollPosition, ColumnDragEventArgs } from './interface';
 import { QueryCellInfoEventArgs, DialogEventArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';
 import { ReturnType, ConstraintType, CurrentAction } from './type';
 import { Action } from '../actions/action';
 import { Crud } from '../actions/crud';
 import { DragAndDrop } from '../actions/drag';
+import { ColumnDragAndDrop } from '../actions/column-drag';
 import { KanbanDialog } from '../actions/dialog';
 import { Keyboard } from '../actions/keyboard';
 import { KanbanTooltip } from '../actions/tooltip';
@@ -51,6 +52,7 @@ export class Kanban extends Component<HTMLElement> {
     public virtualLayoutModule: VirtualLayoutRender;
     public actionModule: Action;
     public dragAndDropModule: DragAndDrop;
+    public columnDragAndDropModule: ColumnDragAndDrop;
     public dialogModule: KanbanDialog;
     public keyboardModule: Keyboard;
     public tooltipModule: KanbanTooltip;
@@ -245,6 +247,14 @@ export class Kanban extends Component<HTMLElement> {
     public allowDragAndDrop: boolean;
 
     /**
+     * Enables or disables the column drag and drop actions in Kanban.
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowColumnDragAndDrop: boolean;
+
+    /**
      * Enables or disables the tooltip in Kanban board. The property relates to the tooltipTemplate property.
      *
      * @default false
@@ -383,6 +393,27 @@ export class Kanban extends Component<HTMLElement> {
      */
     @Event()
     public dialogClose: EmitType<DialogEventArgs>;
+    /**
+     * Triggers when a column drag operation starts.
+     *
+     * @event 'columnDragStart'
+     */
+    @Event()
+    public columnDragStart: EmitType<ColumnDragEventArgs>;
+    /**
+     * Triggers during the column drag operation.
+     *
+     * @event 'columnDrag'
+     */
+    @Event()
+    public columnDrag: EmitType<ColumnDragEventArgs>;
+    /**
+     * Triggers when a column is dropped.
+     *
+     * @event 'columnDrop'
+     */
+    @Event()
+    public columnDrop: EmitType<ColumnDragEventArgs>;
 
     /**
      * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done.
@@ -580,6 +611,21 @@ export class Kanban extends Component<HTMLElement> {
                     }
                 }
                 break;
+            case 'allowColumnDragAndDrop':
+                if (newProp.allowColumnDragAndDrop) {
+                    if (this.enableVirtualization) {
+                        this.wireColumnDragEvent();
+                    } else {
+                        this.wireColumnDragEvent();
+                    }
+                } else {
+                    if (this.enableVirtualization) {
+                        this.unwireColumnDragEvent();
+                    } else {
+                        this.unwireColumnDragEvent();
+                    }
+                }
+                break;
             case 'enableTooltip':
                 if (this.tooltipModule) {
                     this.tooltipModule.destroy();
@@ -691,6 +737,9 @@ export class Kanban extends Component<HTMLElement> {
         this.actionModule = new Action(this);
         this.crudModule = new Crud(this);
         this.dragAndDropModule = new DragAndDrop(this);
+        if (this.allowColumnDragAndDrop) {
+            this.columnDragAndDropModule = new ColumnDragAndDrop(this);
+        }
         this.dialogModule = new KanbanDialog(this);
         if (this.enableTooltip) {
             this.tooltipModule = new KanbanTooltip(this);
@@ -738,6 +787,71 @@ export class Kanban extends Component<HTMLElement> {
         this.crudModule = null;
         this.dataModule = null;
         this.dragAndDropModule = null;
+    }
+
+    public wireColumnDragEvent(): void {
+        if (this.allowColumnDragAndDrop) {
+            const headerContainer: HTMLElement = this.element.querySelector('.' + cls.HEADER_CLASS) as HTMLElement;
+            if (headerContainer) {
+                if (this.stackedHeaders && this.stackedHeaders.length > 0) {
+                    // Wire stacked headers for dragging stacked header groups
+                    const stackedHeaderSelector: string = '.' + cls.STACKED_HEADER_CELL_CLASS;
+                    const stackedHeaderCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(stackedHeaderSelector));
+                    addClass(stackedHeaderCells, cls.DRAG_CLASS);
+                    // Wire events to stacked headers
+                    stackedHeaderCells.forEach((headerCell: HTMLElement) => {
+                        this.columnDragAndDropModule.wireColumnDragEvents(headerCell);
+                    });
+                    // ALSO wire regular column headers to enable dragging within stacked headers
+                    const columnHeaderSelector: string = '.' + cls.HEADER_CELLS_CLASS + ':not(.' + cls.STACKED_HEADER_CELL_CLASS + ')';
+                    const columnHeaderCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(columnHeaderSelector));
+                    addClass(columnHeaderCells, cls.DRAG_CLASS);
+                    // Wire events to column headers
+                    columnHeaderCells.forEach((headerCell: HTMLElement) => {
+                        this.columnDragAndDropModule.wireColumnDragEvents(headerCell);
+                    });
+                } else {
+                    // If no stacked headers, only wire normal headers
+                    const headerSelector: string = '.' + cls.HEADER_CELLS_CLASS;
+                    const headerCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(headerSelector));
+                    addClass(headerCells, cls.DRAG_CLASS);
+                    // Loop through each header cell and wire drag events
+                    headerCells.forEach((headerCell: HTMLElement) => {
+                        this.columnDragAndDropModule.wireColumnDragEvents(headerCell);
+                    });
+                }
+            }
+        }
+    }
+
+    public unwireColumnDragEvent(): void {
+        if (this.stackedHeaders && this.stackedHeaders.length > 0) {
+            // Unwire stacked header cells
+            const stackedHeaderSelector: string = '.' + cls.STACKED_HEADER_CELL_CLASS;
+            const stackedHeaderCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(stackedHeaderSelector));
+            removeClass(stackedHeaderCells, cls.DRAG_CLASS);
+            // Unwire events from stacked headers
+            stackedHeaderCells.forEach((headerCell: HTMLElement) => {
+                this.columnDragAndDropModule.unwireColumnDragEvents(headerCell);
+            });
+            // ALSO unwire regular column headers
+            const columnHeaderSelector: string = '.' + cls.HEADER_CELLS_CLASS + ':not(.' + cls.STACKED_HEADER_CELL_CLASS + ')';
+            const columnHeaderCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(columnHeaderSelector));
+            removeClass(columnHeaderCells, cls.DRAG_CLASS);
+            // Unwire events from column headers
+            columnHeaderCells.forEach((headerCell: HTMLElement) => {
+                this.columnDragAndDropModule.unwireColumnDragEvents(headerCell);
+            });
+        } else {
+            // If no stacked headers, only unwire normal headers
+            const headerSelector: string = '.' + cls.HEADER_CELLS_CLASS;
+            const headerCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(headerSelector));
+            removeClass(headerCells, cls.DRAG_CLASS);
+            // Loop through each header cell and unwire drag events
+            headerCells.forEach((headerCell: HTMLElement) => {
+                this.columnDragAndDropModule.unwireColumnDragEvents(headerCell);
+            });
+        }
     }
 
     public templateParser(template: string | Function): any {

@@ -4,11 +4,11 @@
 
 ## 31.2.5 (2025-11-04)
 
-### ColorPicker
+### Slider
 
 #### Bug Fixes
 
-- `#778916` - Addressed an issue where the color picker would trigger events even when the same value was selected.
+- `775749` - The `isInteracted` property in the change event now correctly returns true for keyboard and slider button actions.
 
 ## 31.2.4 (2025-10-28)
 

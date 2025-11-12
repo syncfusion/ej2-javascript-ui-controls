@@ -212,20 +212,27 @@ export class OptionsGroup extends RibbonGroupBase {
         if (selection) {
             // Update Different First Page checkbox
             if (differentFirstCheckbox) {
+                const prevDifferentFirstCheckbox: boolean = differentFirstCheckbox.checkBoxSettings.checked;
                 differentFirstCheckbox.checkBoxSettings.checked = selection.sectionFormat.differentFirstPage;
-                ribbon.updateItem(differentFirstCheckbox);
+                if (prevDifferentFirstCheckbox !== differentFirstCheckbox.checkBoxSettings.checked) {
+                    ribbon.updateItem(differentFirstCheckbox);
+                }
             }
 
             // Update Different Odd & Even Pages checkbox
             if (differentOddEvenCheckbox) {
+                const prevDifferentOddEvenCheckbox: boolean = differentOddEvenCheckbox.checkBoxSettings.checked;
                 differentOddEvenCheckbox.checkBoxSettings.checked = selection.sectionFormat.differentOddAndEvenPages;
-                ribbon.updateItem(differentOddEvenCheckbox);
+                if (prevDifferentOddEvenCheckbox !== differentOddEvenCheckbox.checkBoxSettings.checked) {
+                    ribbon.updateItem(differentOddEvenCheckbox);
+                }
             }
 
             // Update Link to Previous checkbox
             if (linkToPreviousCheckbox) {
                 // Disable if this is the first section
                 const isFirstSection: boolean = selection.start.paragraph.bodyWidget.sectionIndex === 0;
+                const prevLinkToPreviousCheckbox: boolean = linkToPreviousCheckbox.checkBoxSettings.checked;
                 if (isFirstSection) {
                     ribbon.disableItem(this.ribbonId + LINK_PREVIOUS_BUTTON_ID);
                 } else {
@@ -238,7 +245,9 @@ export class OptionsGroup extends RibbonGroupBase {
                         linkToPreviousCheckbox.checkBoxSettings.checked = this.isLinkToPreviousChecked();
                     }
                 }
-                ribbon.updateItem(linkToPreviousCheckbox);
+                if (linkToPreviousCheckbox !== linkToPreviousCheckbox.checkBoxSettings.checked) {
+                    ribbon.updateItem(linkToPreviousCheckbox);
+                }
             }
         }
     }

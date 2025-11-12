@@ -1684,7 +1684,7 @@ describe('Complex Tree Layout with routing', () => {
                 id: 'connector3', sourceID: 'node1', targetID: 'node3' 
             }
             ],
-            layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 70, verticalSpacing: 70, orientation: 'LeftToRight',enableRouting:true,arrangement:ChildArrangement.Linear },
+            layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 70, verticalSpacing: 70, orientation: 'LeftToRight',enableRouting:true,connectionPointOrigin: ConnectionPointOrigin.DifferentPoint,arrangement:ChildArrangement.Linear },
         });
         diagram.appendTo('#diagramComplexHierarchicalTreeUpdate');
     });

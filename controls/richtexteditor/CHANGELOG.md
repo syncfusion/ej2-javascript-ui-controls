@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.10 (2025-11-13)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I762661` - Now, the Rich Text Editor works properly when pressing the `Backspace` key above the list element, without throwing script errors.
+
 ## 31.2.5 (2025-11-04)
 
 ### RichTextEditor

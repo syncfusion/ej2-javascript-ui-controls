@@ -2583,3 +2583,20 @@ export function getVisiblePage(blockes: number[]): number[] {
     }
     return visiblePage;
 }
+
+export function getSerachFilteredData(grid: IGrid): Object[] {
+    const isTreeGrid: string = 'isTreeGrid';
+    if (grid[`${isTreeGrid}`]) {
+        const gridFiltered: Object[] = grid.getDataModule()
+            .dataManager.executeLocal(grid.getDataModule().generateQuery(true));
+        grid.notify('partial-filter-update', { gridFiltered: gridFiltered });
+        if (grid.root.filterModule && grid.root.filterModule.filteredResult.length > 0) {
+            return grid.root.filterModule.filteredResult;
+        }
+        else {
+            return gridFiltered;
+        }
+    } else {
+        return grid.getDataModule().dataManager.executeLocal(grid.getDataModule().generateQuery(true));
+    }
+}

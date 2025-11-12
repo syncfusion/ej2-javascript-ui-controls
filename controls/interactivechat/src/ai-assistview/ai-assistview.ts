@@ -778,7 +778,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.setDimension(this.element, this.width, this.height);
         this.renderViews();
         this.renderToolbar();
-        this.updateFooterEleClass();
+        this.updateFooterElementClass();
         this.wireEvents();
     }
 
@@ -1036,7 +1036,8 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         }
         if (this.prompts) {
             this.prompts.forEach((prompt: PromptModel, i: number) => {
-                this.renderOutputContainer(prompt.prompt, prompt.response, prompt.attachedFiles, i);
+                this.renderOutputContainer(SanitizeHtmlHelper.sanitize(prompt.prompt)
+                    , SanitizeHtmlHelper.sanitize(prompt.response), prompt.attachedFiles, i);
             });
         }
         if (this.suggestionsElement && this.content.contains(this.suggestionsElement)) {
@@ -1254,7 +1255,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private applyPromptChange(newState: TextState, oldState: TextState, event: KeyboardEvent): void {
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
-        this.prompt = this.editableTextarea.innerText = newState.content;
+        this.prompt = this.editableTextarea.innerHTML = newState.content;
         this.isProtectedOnChange = prevOnChange;
         this.refreshTextareaUI();
         this.setCursorPosition(newState.selectionStart, newState.selectionEnd);
@@ -1266,7 +1267,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         if (isEmpty) {
             this.clearBreakTags(textareaEle);
         }
-        const textContent: string = textareaEle.innerText;
+        const textContent: string = textareaEle.innerHTML;
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         const prevPrompt: string = this.prompt;
@@ -1275,7 +1276,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.refreshTextareaUI();
         this.editableTextarea.focus();
         // Debounced push to undo stack
-        this.scheduleUndoPush(textContent);
+        this.scheduleUndoPush();
         this.redoStack = [];
         this.triggerPromptChanged(event, prevPrompt);
     }
@@ -1683,7 +1684,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (args.item as any).controlParent.element.querySelector('.e-assist-dislike');
         if (args.item.prefixIcon === 'e-icons e-assist-copy') {
-            this.getClipBoardContent(this.prompts[parseInt(index.toString(), 10)].response);
+            this.getClipBoardContent(SanitizeHtmlHelper.sanitize(this.prompts[parseInt(index.toString(), 10)].response));
             args.item.prefixIcon = 'e-icons e-assist-check';
             this.responseToolbarEle.dataBind();
             setTimeout(() => {
@@ -1828,7 +1829,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                         this.onEditIconClick(promptIndex as number);
                     }
                     if (args.item.prefixIcon === 'e-icons e-assist-copy') {
-                        this.getClipBoardContent(this.prompts[parseInt(promptIndex.toString(), 10)].prompt);
+                        this.getClipBoardContent(SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].prompt));
                         args.item.prefixIcon = 'e-icons e-assist-check';
                         this.promptToolbarEle.dataBind();
                         setTimeout(() => {
@@ -1868,7 +1869,8 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             if (this.suggestionsElement ) { this.suggestionsElement.hidden = true; }
             const prevOnChange: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
-            this.editableTextarea.innerText = this.prompt = this.prompts[parseInt(promptIndex.toString(), 10)].prompt;
+            this.editableTextarea.innerHTML = this.prompt =
+SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].prompt);
             this.isProtectedOnChange = prevOnChange;
             this.refreshTextareaUI();
             this.editableTextarea.focus();
@@ -1880,7 +1882,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private refreshTextareaUI(): void {
         this.updateHiddenTextarea(this.prompt);
         this.checkAndActivateSendIcon();
-        this.updateFooterEleClass();
+        this.updateFooterElementClass();
     }
 
     private checkAndActivateSendIcon(): void {
@@ -2139,7 +2141,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                         const footerIconsWrapper: HTMLDivElement = this.footer.querySelector('.e-footer-icons-wrapper');
                         this.renderClearIcon(footerIconsWrapper, 'e-icons e-assist-clear-icon e-assist-clear-icon-hide');
                         this.clearIcon.setAttribute('title', this.l10n.getConstant('clear'));
-                        this.updateFooterEleClass();
+                        this.updateFooterElementClass();
                         this.wireClearIconEvents();
                     }
                 }

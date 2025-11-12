@@ -147,8 +147,9 @@
         margin-right: $toast-icon-bgr-right-margin;
         width: $toast-icon-bgr-width;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          left: 18px;
-          margin-top: 13px;
+          left: 0;
+          margin-top: 14px;
+          margin-left: 12px;
         }
       }
 

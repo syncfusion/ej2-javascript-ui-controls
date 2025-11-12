@@ -5327,7 +5327,7 @@ export class Layout {
         // if the element is paragraph end and para bidi is true and text alignment is justify
         // we need to calculate subwidth and add it to the left margin of the element.
         if (textAlignment !== 'Left' && this.viewer.textWrap && (!(textAlignment === 'Justify' && isParagraphEnd)
-            || (textAlignment === 'Justify' && paraFormat.bidi) || (this.is2013Justification && isParagraphEnd))) {
+            || (textAlignment === 'Justify' && (paraFormat.bidi || line.isEndsWithLineBreak)) || (this.is2013Justification && isParagraphEnd))) {
             getWidthAndSpace = this.getSubWidth(line, textAlignment === 'Justify', whiteSpaceCount, firstLineIndent, isParagraphEnd);
             subWidth = getWidthAndSpace[0].subWidth;
             whiteSpaceCount = getWidthAndSpace[0].spaceCount;
@@ -6311,7 +6311,18 @@ export class Layout {
             block = block !== endBlock && !isTableHasParaVerticalOrigin ? block.nextWidget as BlockWidget : undefined;
         }
     }
-
+    //This method iterates through the children of the line widget starting from the index of the given element
+    private isTextFollowWithtab(element: ElementBox): boolean {
+        let index: number = element.indexInOwner;
+        if (index >= 0) {
+            for (let i: number = index; i < element.line.children.length; i++) {
+                if (element.line.children[i] instanceof TabElementBox) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     /* eslint-disable-next-line max-len */
     private alignLineElements(element: ElementBox, topMargin: number, bottomMargin: number, maxDescent: number, addSubWidth: boolean, subWidth: number, textAlignment: TextAlignment, whiteSpaceCount: number, isLastElement: boolean): LineElementInfo {
         if (element.width > 0 && (element instanceof TextElementBox || element instanceof ListTextElementBox)) {
@@ -6321,7 +6332,7 @@ export class Layout {
             topMargin += this.maxBaseline - baselineOffset;
             bottomMargin += maxDescent - (element.height - baselineOffset);
             //Updates the text to base line offset.
-            if (!isNullOrUndefined(textElement) && textAlignment === 'Justify' && whiteSpaceCount > 0) {
+            if (!isNullOrUndefined(textElement) && textAlignment === 'Justify' && whiteSpaceCount > 0 && (!this.isTextFollowWithtab(element) || element.line.paragraph.paragraphFormat.bidi)) {
                 //Aligns the text as Justified.
                 textElement.isWidthUpdated = false;
                 let width: number = textElement.width;
@@ -7473,7 +7484,10 @@ export class Layout {
             let element: ElementBox = renderElementBox[i];
             if (element.width > 0 && element instanceof TextElementBox) {
                 let elementText: string = (element as TextElementBox).text;
-                lineText = elementText + lineText;
+                // Concatenate the current element's text to the beginning of lineText. This is done to build the text content of the line from right to left for RTL layout, or when handling specific conditions like text following a tab.
+                if (!justify || !this.isTextFollowWithtab(element) || isBidi) {
+                    lineText = elementText + lineText;
+                }
                 if (justify && isBidi) {
                     if (elementText === ' ' && i - 1 >= 0 && (renderElementBox[i - 1] as TextElementBox).text === ' ') {
                         trimSpace = true;
@@ -7531,7 +7545,7 @@ export class Layout {
         } else if (justify) {
             // For justify alignment, element width will be updated based space count value.
             // So when the element is paragraph end, need to set space count to zero.
-            if (!isParagraphEnd && spaceCount > 0 || (isParagraphEnd && this.is2013Justification && spaceCount > 0)) {
+            if ((!isParagraphEnd || lineWidget.isEndsWithLineBreak) && spaceCount > 0 || (isParagraphEnd && this.is2013Justification && spaceCount > 0)) {
                 subWidth = subWidth / spaceCount;
             } else {
                 spaceCount = 0;
@@ -7644,11 +7658,19 @@ export class Layout {
      * @param {number} count - the space count to be considered.
      * @returns {number} the total space width.
      */
-     private getTotalSpaceWidth(lineWidget: LineWidget, count?: number): number {
+    private getTotalSpaceWidth(lineWidget: LineWidget, count?: number): number {
         let totalSpaceWidth: number = 0;
         let totalSpaceCount: number = 0;
+        let lastTabElementIndex: number = -1;
+        for (let i = lineWidget.children.length - 1; i >= 0; i--) {
+            if (lineWidget.children[i] instanceof TabElementBox) {
+                lastTabElementIndex = i;
+                break; // Found the last tab, so we can stop searching.
+            }
+        }
+        const startIndex: number = lastTabElementIndex !== -1 ? lastTabElementIndex + 1 : 0;
         if (lineWidget) {
-            for (let i = 0; i < lineWidget.children.length; i++) {
+            for (let i = startIndex; i < lineWidget.children.length; i++) {
                 let currentWidget: ElementBox = lineWidget.children[i];
                 if (currentWidget instanceof TextElementBox) {
                     let spaceCount: number = currentWidget.text.length - HelperMethods.removeSpace(currentWidget.text).length;
@@ -10248,7 +10270,8 @@ export class Layout {
                     const tableHolderBeforeBuildColumn: WTableHolder = parentTable.tableHolder.clone();
                     let isSameColumnWidth: boolean = true;
                     if (parentTable.tableFormat.allowAutoFit) {
-                        const tableWidget: TableWidget = parentTable;
+                        let tableWidget: TableWidget = parentTable;
+                        tableWidget = tableWidget.combineWidget(this.viewer) as TableWidget;
                         tableWidget.isGridUpdated = false;
                         tableWidget.buildTableColumns();
                         tableWidget.isGridUpdated = true;

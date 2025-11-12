@@ -4969,3 +4969,37 @@ describe('Remote data- child positions are wrong after expanding record', () => 
         destroy(gridObj);
     });
 });
+
+describe('isRowSelectable method', () => {
+    let gridObj: TreeGrid;
+    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            height: 400,
+            allowSelection: true,
+            columns: [
+                { type: 'checkbox', width: 50 },
+                { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+                { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+                { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' }
+            ]
+            },
+            done
+        );
+    });
+    it('Test isRowSelectable property', () => {
+        gridObj.isRowSelectable = (data: any) => {
+            return data.taskID !== 1;
+        };
+        ((<HTMLElement>(gridObj.element.querySelectorAll(".e-row")[0].getElementsByClassName("e-frame e-icons")[0])) as any).click();
+        expect(gridObj.flatData.length).toBe(36);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

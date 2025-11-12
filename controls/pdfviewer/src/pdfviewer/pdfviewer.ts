@@ -8679,11 +8679,62 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
                 break;
             case 'enableToolbar':
-                this.notify('', { module: 'toolbar', enable: this.enableToolbar });
-                requireRefresh = true;
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    if (!newProp.enableToolbar) {
+                        if (this.toolbarModule.annotationToolbarModule && this.isAnnotationToolbarVisible) {
+                            this.isAnnotationToolbarVisible = false;
+                            this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
+                            this.toolbarModule.deSelectItem(this.toolbarModule.annotationItem);
+                        }
+                        else if (this.toolbarModule.formDesignerToolbarModule && this.isFormDesignerToolbarVisible) {
+                            this.isFormDesignerToolbarVisible = false;
+                            this.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar();
+                            this.toolbarModule.deSelectItem(this.toolbarModule.formDesignerItem);
+                        }
+                        if (Browser.isDevice && !isNullOrUndefined(this.viewerBase.navigationPane) &&
+                            this.viewerBase.navigationPane.isNavigationToolbarVisible) {
+                            this.viewerBase.navigationPane.goBackToToolbar();
+                        }
+                        else if (!Browser.isDevice && !isNullOrUndefined(this.textSearchModule) &&
+                            this.textSearchModule.textSearchOpen) {
+                            this.textSearchModule.showSearchBox(false);
+                            this.toolbarModule.deSelectItem(this.toolbarModule.textSearchItem);
+                        }
+                    }
+                    this.toolbarModule.showToolbar(newProp.enableToolbar);
+                }
                 break;
             case 'enableLocalStorage':
                 this.updateLocalStorage(this.enableLocalStorage);
+                break;
+            case 'enableMagnification':
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    this.toolbarModule.enableToolbarItem(['MagnificationTool'], this.enableMagnification);
+                }
+                break;
+            case 'enableNavigation':
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    this.toolbarModule.enableToolbarItem(['PageNavigationTool'], this.enableNavigation);
+                }
+                if (!isNullOrUndefined(this.toolbarModule) && this.enableNavigation) {
+                    this.toolbarModule.updateNavigationButtons();
+                }
+                break;
+            case 'enableNavigationToolbar':
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    this.toolbarModule.showNavigationToolbar(this.enableNavigationToolbar);
+                }
+                this.viewerBase.onWindowResize();
+                break;
+            case 'enablePrint':
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    this.toolbarModule.enableToolbarItem(['PrintOption'], this.enablePrint);
+                }
+                break;
+            case 'enableDownload':
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    this.toolbarModule.enableToolbarItem(['DownloadOption'], this.enableDownload);
+                }
                 break;
             case 'enableTextSelection':
                 if (!Browser.isDevice || this.enableDesktopMode) {
@@ -8871,6 +8922,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         }
                         this.toolbarModule.annotationToolbarModule.resetToolbar();
                     }
+                    else {
+                        if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule) &&
+                         !isNullOrUndefined(this.toolbarModule.annotationToolbarModule) && !newProp.isAnnotationToolbarVisible) {
+                            this.toolbar.showAnnotationToolbar(newProp.isAnnotationToolbarVisible);
+                        }
+                    }
                 }
                 else {
                     if (this.toolbarModule) {
@@ -8902,6 +8959,26 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                                 newProp.pageOrganizerSettings.imageZoom, oldProp.pageOrganizerSettings.imageZoom);
                         }
                     }
+                }
+                break;
+            case 'enableAnnotationToolbar':
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule) &&
+                    !isNullOrUndefined(this.toolbarModule.annotationToolbarModule)) {
+                    if (!newProp.enableAnnotationToolbar && this.isAnnotationToolbarVisible) {
+                        this.isAnnotationToolbarVisible = false;
+                        this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
+                    }
+                    this.toolbarModule.enableToolbarItem(['AnnotationEditTool'], newProp.enableAnnotationToolbar);
+                }
+                break;
+            case 'enableFormDesignerToolbar':
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.formDesignerModule) &&
+                    !isNullOrUndefined(this.toolbarModule.formDesignerToolbarModule)) {
+                    if (!newProp.enableFormDesignerToolbar && this.isFormDesignerToolbarVisible) {
+                        this.isFormDesignerToolbarVisible = false;
+                        this.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar();
+                    }
+                    this.toolbarModule.enableToolbarItem(['FormDesignerEditTool'], newProp.enableFormDesignerToolbar);
                 }
                 break;
             }

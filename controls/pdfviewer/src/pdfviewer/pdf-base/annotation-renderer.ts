@@ -1836,7 +1836,7 @@ export class AnnotationRenderer {
         const stampTimeStampbounds: number[] = [drawingPath._points[1][0], drawingPath._points[1][1],
             (rectangle.width - drawingPath._points[1][0]), (rectangle.height - drawingPath._points[1][1])];
         appearance.graphics.drawString(icon.toUpperCase(), stampFont, stampTypeBounds, pens, textBrush, stringFormat);
-        appearance.graphics.drawString(text, detailsFont, stampTimeStampbounds, pens, textBrush, stringFormat);
+        appearance.graphics.drawString(text, detailsFont, stampTimeStampbounds, null, textBrush, stringFormat);
     }
 
     private calculateBoundsXY(wrapperBounds: any, bounds: Rect, pageNo: number, pdfPageBase: any): Rect {

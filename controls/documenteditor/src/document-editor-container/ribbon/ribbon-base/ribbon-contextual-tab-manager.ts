@@ -88,6 +88,7 @@ export class RibbonContextualTabManager {
         this.updateTableContextualTabs(ribbon, currentContext);
         this.updateHeaderFooterContextualTab(ribbon, currentContext);
         this.updatePictureFormatContextualTab(ribbon, currentContext);
+        this.ribbonDocumentEditor.previousContext = currentContext;
     }
 
     private updateTableContextualTabs(ribbon: EJ2Ribbon, currentContext: ContextType): void {

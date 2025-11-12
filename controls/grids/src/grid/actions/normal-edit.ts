@@ -55,7 +55,7 @@ export class NormalEdit {
                 && parentsUntil(target, literals.headerContent) && !parentsUntil(target, 'e-columnheader')))
                 && !parentsUntil(target, 'e-unboundcelldiv')) {
             this.rowIndex = parentsUntil(target, literals.rowCell)
-                ? parseInt(target.parentElement.getAttribute(literals.ariaRowIndex), 10) - 1 : -1;
+                ? parseInt(parentsUntil(target, literals.rowCell).parentElement.getAttribute(literals.ariaRowIndex), 10) - 1 : -1;
             if (gObj.isEdit) {
                 gObj.editModule.endEdit();
             }
@@ -715,6 +715,12 @@ export class NormalEdit {
             gObj.clearSelection();
         }
         this.renderer.addNew(addArgs);
+        if (this.parent.isEdit && !this.parent.isPersistSelection) {
+            const checkedAllTarget: HTMLElement = this.parent.getHeaderContent().querySelector('.e-checkselectall');
+            if (checkedAllTarget) {
+                checkedAllTarget.parentElement.classList.add('e-checkbox-disabled');
+            }
+        }
         gObj.editModule.applyFormValidation();
         addArgs.type = events.actionComplete;
         addArgs.row = gObj.element.querySelector('.' + literals.addedRow);

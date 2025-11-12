@@ -19,7 +19,6 @@ import { ReturnType } from '../base/type';
  *
  * @hidden
  */
-MultiSelect.Inject(CheckBoxSelection);
 
 export class StringFilterUI implements IFilterMUI {
 
@@ -39,6 +38,7 @@ export class StringFilterUI implements IFilterMUI {
     private acFocus: Function;
     private acComplete: Function;
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, filterSettings?: FilterSettings) {
+        MultiSelect.Inject(CheckBoxSelection);
         this.parent = parent;
         this.serLocator = serviceLocator;
         this.filterSettings = filterSettings;

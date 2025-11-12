@@ -3470,7 +3470,9 @@ export class Annotation {
     public onAnnotationMouseUp(): void {
         if (this.pdfViewer.selectedItems.annotations.length !== 0 && this.pdfViewer.selectedItems.annotations[0] &&
             this.pdfViewer.selectedItems.annotations[0].annotationSettings &&
-            !(this.pdfViewer.selectedItems.annotations[0].annotationSettings as any).isLock) {
+            (!((this.pdfViewer.selectedItems.annotations[0].annotationSettings as any).isLock) ||
+                this.checkAllowedInteractions('Delete', this.pdfViewer.selectedItems.annotations[0]) ||
+                this.checkAllowedInteractions('PropertyChange', this.pdfViewer.selectedItems.annotations[0]))) {
             if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule) {
                 this.enableBasedOnType();
                 this.pdfViewer.toolbar.annotationToolbarModule.selectAnnotationDeleteItem(true);

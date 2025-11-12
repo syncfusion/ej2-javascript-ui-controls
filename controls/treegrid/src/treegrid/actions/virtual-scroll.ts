@@ -255,10 +255,12 @@ export class VirtualScroll {
      */
     private updateSelection(args: RowDeselectEventArgs): void {
         if (args.isHeaderCheckboxClicked &&
-            this.parent.grid.currentViewData.length !== this.parent.grid.selectionModule.selectedRowIndexes.length) {
+            this.parent.grid.currentViewData.length !== this.parent.grid.selectionModule.selectedRowIndexes.length &&
+            args.target.classList.contains('e-uncheck')) {
             const updateRowSelection: string = 'updateRowSelection';
             for (let i: number = 0; i < this.parent.getRows().length; i++) {
-                if (this.parent.getRows()[parseInt(i.toString(), 10)].getElementsByClassName('e-frame e-icons e-uncheck').length) {
+                if (this.parent.getRows()[parseInt(i.toString(), 10)].getElementsByClassName('e-frame e-icons e-uncheck').length &&
+                !this.parent.getRows()[parseInt(i.toString(), 10)].querySelector('.e-checkbox-disabled')) {
                     this.parent.grid.selectionModule[`${updateRowSelection}`](this.parent.getRows()[parseInt(i.toString(), 10)],
                                                                               // eslint-disable-next-line max-len
                                                                               (this.parent.getCurrentViewRecords()[parseInt(i.toString(), 10)] as

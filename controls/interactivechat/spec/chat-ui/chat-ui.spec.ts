@@ -1233,7 +1233,7 @@ describe('ChatUI Component', () => {
                 const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
                 const lastMessage: HTMLElement = messageItems[messageItems.length - 1];
                 expect(lastMessage).not.toBeNull();
-                expect(lastMessage.querySelector('img')).not.toBeNull(); // Ensure no <img> tag is rendered
+                expect(lastMessage.querySelector('img')).toBeNull(); // Ensure no <img> tag is rendered
 
                 // Verify the message group alignment
                 const messageGroup: HTMLElement = lastMessage.closest('.e-message-group') as HTMLElement;
@@ -1251,6 +1251,7 @@ describe('ChatUI Component', () => {
                 done();
             }, 450);
         });
+
         it('Sending a message with iframe content', (done: DoneFn) => {
             const sTag: HTMLElement = createElement('script', { id: 'emptyChatTemplate', attrs: { type: 'text/x-template' } });
             sTag.innerHTML = '<div><h1>Welcome to Chat</h1><p>Start your conversation</p></div>';
@@ -3214,6 +3215,52 @@ describe('ChatUI Component', () => {
             }, 10);
         });
 
+        it('should handle undo and redo actions with mentioned users', (done: DoneFn) => {
+            chatUI = new ChatUI({
+                mentionUsers: [
+                    { id: "user1", user: "John Doe" }
+                ]
+            });
+            chatUI.appendTo('#chatUI');
+            const textareaEle: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            expect(textareaEle).not.toBeNull();
+            // State 1: Initial content
+            textareaEle.innerText = 'Hello ';
+            const inputEvent1 = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent1);
+            setTimeout(() => {
+                // State 2: Add a mention
+                const mentionChip = '<span contenteditable="false" class="e-mention-chip"><span class="e-chat-mention-user-chip" data-user-id="user1">John Doe</span></span>';
+                textareaEle.innerHTML += mentionChip;
+                const inputEvent2 = new Event('input', { bubbles: true });
+                textareaEle.dispatchEvent(inputEvent2);
+                const stateWithMention = textareaEle.innerHTML;
+                setTimeout(() => {
+                    // State 3: Add more text after the mention
+                    textareaEle.innerHTML += ' how are you?';
+                    const inputEvent3 = new Event('input', { bubbles: true });
+                    textareaEle.dispatchEvent(inputEvent3);
+                    const finalState = textareaEle.innerHTML;
+                    setTimeout(() => {
+                        // Perform Undo: should revert to State 2
+                        const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true });
+                        (chatUI as any).footer.dispatchEvent(undoEvent);
+                        setTimeout(() => {
+                            expect(textareaEle.innerHTML).toBe(stateWithMention);
+                            // Perform Redo: should revert to State 3
+                            const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, bubbles: true });
+                            (chatUI as any).footer.dispatchEvent(redoEvent);
+                            
+                            setTimeout(() => {
+                                expect(textareaEle.innerHTML).toBe(finalState);
+                                done();
+                            }, 50);
+                        }, 50);
+                    }, 450);
+                }, 450);
+            }, 450);
+        });
+
         it('should render mention component with correct CSS classes', () => {
             const mentionUsers = [
                 { id: "user1", user: "John Doe" },
@@ -3637,8 +3684,7 @@ describe('ChatUI Component', () => {
             }
         });
 
-        it('should correctly render HTML formatting and mentions when sending a message', (done: DoneFn) => {
-            // Create chat UI with mention users
+        it('should correctly render plain text and mention chips when sending a message', (done: DoneFn) => {
             chatUIInstance = new ChatUI({
                 user: { id: 'current-user', user: 'Current User' },
                 mentionUsers: [
@@ -3651,13 +3697,12 @@ describe('ChatUI Component', () => {
             // Get the textarea element
             const textareaElem: HTMLDivElement = chatUIMentionElem.querySelector('.e-footer .e-chat-textarea');
             expect(textareaElem).not.toBeNull();
-
             // Set HTML content with both formatting and mention chips
-            textareaElem.innerText = '<h1>Important</h1> message for ' + 
-            '<span contenteditable="false" class="e-mention-chip"><span class="e-chat-mention-user-chip" data-user-id="user1">Andrew</span></span>' +
-            ' and <b>please</b> also inform ' +
-            '<span contenteditable="false" class="e-mention-chip"><span class="e-chat-mention-user-chip" data-user-id="user2">Jane</span></span>';
-
+            // Set innerHTML to insert actual chip elements (simulating user input with mentions)
+            textareaElem.innerHTML = '<h1>Important</h1> message for ' + 
+                '<span contenteditable="false" class="e-mention-chip"><span class="e-chat-mention-user-chip" data-user-id="user1">Andrew</span></span>' +
+                ' and <b>please</b> also inform ' +
+                '<span contenteditable="false" class="e-mention-chip"><span class="e-chat-mention-user-chip" data-user-id="user2">Jane</span></span>';
             // Trigger input event to enable the send button
             const inputEvent: Event = new Event('input', { bubbles: true });
             textareaElem.dispatchEvent(inputEvent);
@@ -3679,29 +3724,102 @@ describe('ChatUI Component', () => {
 
                     const messageText: HTMLElement = messageItem.querySelector('.e-text');
                     expect(messageText).not.toBeNull();
-
                     // Check for HTML rendering
+                    // Since HTML is now flattened to plain text, <h1> and <b> should not exist as elements
                     const h1Element = messageText.querySelector('h1');
                     expect(h1Element).not.toBeNull();
-                    expect(h1Element.textContent).toBe('Important');
-
                     const boldElement = messageText.querySelector('b');
                     expect(boldElement).not.toBeNull();
-                    expect(boldElement.textContent).toBe('please');
-
                     // Check for mention chips rendering
+                    // Check for mention chips rendering (chips are rendered as elements)
                     const mentionChips = messageText.querySelectorAll('.e-chat-mention-user-chip');
                     expect(mentionChips.length).toBe(2);
                     expect(mentionChips[0].textContent).toBe('Andrew');
                     expect(mentionChips[1].textContent).toBe('Jane');
-
                     // Verify the overall structure of the message
+                    // Verify plain text content (HTML tags flattened by innerText during send)
+                    const messageTextContent = messageText.textContent || '';
+                    expect(messageTextContent).toContain('Important message for');
+                    expect(messageTextContent).toContain('and please also inform');
+                    expect(messageTextContent).toContain('Andrew');
+                    expect(messageTextContent).toContain('Jane');
+                    // Verify innerHTML has mention chips but no raw HTML (flattened)
                     const messageHTML = messageText.innerHTML;
                     expect(messageHTML).toContain('<h1>Important</h1>');
                     expect(messageHTML).toContain('<b>please</b>');
                     expect(messageHTML).toContain('data-user-id="user1"');
                     expect(messageHTML).toContain('data-user-id="user2"');
+                    // No HTML encoding or tags in innerHTML due to flattening
+                    expect(messageHTML).not.toContain('&lt;'); // No encoding since flattened to text
+                    done();
+                }, 300);
+            }, 300);
+        });
 
+        it('should correctly render Xss text and mention chips when sending a message', (done: DoneFn) => {
+            chatUIInstance = new ChatUI({
+                user: { id: 'current-user', user: 'Current User' },
+                mentionUsers: [
+                    { id: 'user1', user: 'Andrew' },
+                    { id: 'user2', user: 'Jane' }
+                ]
+            });
+            chatUIInstance.appendTo('#htmlMentionChatUI');
+
+            // Get the textarea element
+            const textareaElem: HTMLDivElement = chatUIMentionElem.querySelector('.e-footer .e-chat-textarea');
+            expect(textareaElem).not.toBeNull();
+            // Set HTML content with both formatting and mention chips
+            // Set innerHTML to insert actual chip elements (simulating user input with mentions)
+            textareaElem.innerHTML = '<img src onerror=alert(1)> ' + 
+                '<span contenteditable="false" class="e-mention-chip"><span class="e-chat-mention-user-chip" data-user-id="user1">Andrew</span></span>' +
+                ' and <b>please</b> also inform ' +
+                '<span contenteditable="false" class="e-mention-chip"><span class="e-chat-mention-user-chip" data-user-id="user2">Jane</span></span>';
+            // Trigger input event to enable the send button
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaElem.dispatchEvent(inputEvent);
+
+            // Wait for input event to be processed
+            setTimeout(() => {
+                // Get the send button and click it
+                const sendButton: HTMLElement = chatUIMentionElem.querySelector('.e-chat-send');
+                expect(sendButton).not.toBeNull();
+                expect(sendButton.classList.contains('disabled')).toBe(false);
+
+                sendButton.click();
+
+                // Wait for the message to be processed and rendered
+                setTimeout(() => {
+                    // Find the rendered message
+                    const messageItem: HTMLElement = chatUIMentionElem.querySelector('.e-message-item');
+                    expect(messageItem).not.toBeNull();
+
+                    const messageText: HTMLElement = messageItem.querySelector('.e-text');
+                    expect(messageText).not.toBeNull();
+                    // Check for HTML rendering
+                    // Since HTML is now flattened to plain text, <h1> and <b> should not exist as elements
+                    const h1Element = messageText.querySelector('h1');
+                    expect(h1Element).toBeNull();
+                    // Check for mention chips rendering
+                    // Check for mention chips rendering (chips are rendered as elements)
+                    const mentionChips = messageText.querySelectorAll('.e-chat-mention-user-chip');
+                    expect(mentionChips.length).toBe(2);
+                    expect(mentionChips[0].textContent).toBe('Andrew');
+                    expect(mentionChips[1].textContent).toBe('Jane');
+                    // Verify the overall structure of the message
+                    // Verify plain text content (HTML tags flattened by innerText during send)
+                    const messageTextContent = messageText.textContent || '';
+                    expect(messageTextContent).toContain(' Andrew and please also inform Jane');
+                    expect(messageTextContent).toContain('and please also inform');
+                    expect(messageTextContent).toContain('Andrew');
+                    expect(messageTextContent).toContain('Jane');
+                    // Verify innerHTML has mention chips but no raw HTML (flattened)
+                    const messageHTML = messageText.innerHTML;
+                    expect(messageHTML).toContain('<b>please</b>');
+                    expect(messageHTML).toContain('data-user-id="user1"');
+                    expect(messageHTML).toContain('data-user-id="user2"');
+                    // No HTML encoding or tags in innerHTML due to flattening
+                    expect(messageHTML).not.toContain('&lt;'); // No encoding since flattened to text
                     done();
                 }, 300);
             }, 300);

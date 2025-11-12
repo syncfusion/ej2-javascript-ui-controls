@@ -2257,7 +2257,19 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             const symbolPaletteGroup: PaletteModel = this.palettes[parseInt(i.toString(), 10)];
             for (let j: number = 0; j < symbolPaletteGroup.symbols.length; j++) {
                 const item: (NodeModel | ConnectorModel) = symbolPaletteGroup.symbols[parseInt(j.toString(), 10)];
-                if (value !== '' && item.id.toLowerCase().indexOf(value.toLowerCase()) !== -1) {
+                // 988362 : Provide Option to search symbols by description Text
+                if (
+                    value !== '' &&
+                    (
+                        item.id.toLowerCase().indexOf(value.toLowerCase()) !== -1 ||
+                        (
+                            (item as any).info &&
+                            (item as any).info.description &&
+                            (item as any).info.description.text &&
+                            (item as any).info.description.text.toLowerCase().startsWith(value.toLowerCase())
+                        )
+                    )
+                ) {
                     symbolGroup.push(item);
                 }
             }

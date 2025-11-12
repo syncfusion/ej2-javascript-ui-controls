@@ -773,8 +773,8 @@ describe('Scrollbar Chart ', () => {
                 chartObj.axisCollections[0].zoomingScrollBar.animateDuration = 0;
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 890, 390)));
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '92.5' || thumbEle.getAttribute('x') === '121.5').toBe(true);
-                expect(thumbEle.getAttribute('width') === '715').toBe(true);
+                expect(thumbEle.getAttribute('x') === '92.5' || thumbEle.getAttribute('x') === '113.5').toBe(true);
+                expect(thumbEle.getAttribute('width') === '740').toBe(true);
                 done();
             }
             chartObj.primaryXAxis.zoomFactor = 1;
@@ -788,7 +788,7 @@ describe('Scrollbar Chart ', () => {
                 trigger.draganddropEvent(ele, 150, 150, 8000, 400);
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 expect(thumbEle.getAttribute('x') === '84.5' || thumbEle.getAttribute('x') === '113.5').toBe(true);
-                expect(thumbEle.getAttribute('width') === '715').toBe(true);
+                expect(thumbEle.getAttribute('width') === '740').toBe(true);
                 done();
             }
             chartObj.primaryXAxis.zoomFactor = 1;
@@ -828,7 +828,7 @@ describe('Scrollbar Chart ', () => {
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 expect(thumbEle.getAttribute('x') === '84.5' || thumbEle.getAttribute('x') === '113.5').toBe(true);
-                expect(thumbEle.getAttribute('width') === '715').toBe(true);
+                expect(thumbEle.getAttribute('width') === '740').toBe(true);
                 done();
             }
             chartObj.primaryXAxis.zoomFactor = 1;

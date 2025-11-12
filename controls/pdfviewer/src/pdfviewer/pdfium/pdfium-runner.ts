@@ -315,33 +315,72 @@ export function PdfiumRunner(): void {
             }
             else if (event.data.message === 'searchText') {
                 const pagesCount: number = FPDF.GetPageCount(documentDetails.processor.wasmData.wasm);
-                const searchTerm: string = event.data.searchWord;
-                const buffer: any = new Uint16Array(searchTerm.length + 1);
-                for (let i: number = 0; i < searchTerm.length; i++) {
-                    buffer[parseInt(i.toString(), 10)] = searchTerm.charCodeAt(i);
-                }
-                buffer[searchTerm.length] = 0;
-                const mallocFunction: any = PDFiumModule.asm && PDFiumModule.asm.malloc
-                    ? PDFiumModule.asm.malloc
-                    : PDFiumModule._malloc;
-                const pointer: any = mallocFunction(buffer.length * buffer.BYTES_PER_ELEMENT);
-                PDFiumModule.HEAPU16.set(buffer, pointer / Uint16Array.BYTES_PER_ELEMENT);
-                let occurrencesCount: number = 0;
-                const isMatchCase: number = (event.data.matchCase === true) ? 1 : 0;
                 const startIndex: number = event.data.startIndex;
                 const endIndex: number = event.data.endIndex;
-                let pageSearchCounts: any = {};
+                const isMatchCase: number = (event.data.matchCase === true) ? 1 : 0;
+                const originalSearchTerm: string = event.data.searchWord;
+                let totalOccurrencesCount: number = 0;
+                const pageSearchCounts: any = {};
+                const freeFunction: any = PDFiumModule.asm && PDFiumModule.asm.free ? PDFiumModule.asm.free : PDFiumModule._free;
+                const normalizeStringForSearch: (s: string) => string = (s: string) => {
+                    if (!s) { return s; }
+                    const hasCurly: any = /[\u2018\u2019\u201B\u02BC\uFF07\u201C\u201D\uFF02]/.test(s);
+                    return hasCurly
+                        ? s.normalize('NFKC')
+                            // eslint-disable-next-line
+                            .replace(/[\u2018\u2019\u201B\u02BC\uFF07]/g, "'")
+                            .replace(/[\u201C\u201D\uFF02]/g, '"')
+                            .replace(/\u00A0/g, ' ')
+                            // eslint-disable-next-line
+                            .replace(/(\w)[’‘]/g, "$1'")
+                        : s.replace(/'/g, '’').replace(/"/g, '”');
+                };
+                const normalizedSearchTerm: any = normalizeStringForSearch(originalSearchTerm);
+                const needsNormalizedSearch: boolean = originalSearchTerm !== normalizedSearchTerm;
+                const createSearch: any = (textPage: any, term: string) => {
+                    const buffer: any = new Uint16Array(term.length + 1);
+                    for (let i: number = 0; i < term.length; i++) {
+                        buffer[i as number] = term.charCodeAt(i);
+                    }
+                    buffer[term.length] = 0;
+                    const mallocFunction: any = PDFiumModule.asm && PDFiumModule.asm.malloc
+                        ? PDFiumModule.asm.malloc
+                        : PDFiumModule._malloc;
+                    const pointer: number = mallocFunction(buffer.length * buffer.BYTES_PER_ELEMENT);
+                    PDFiumModule.HEAPU16.set(buffer, pointer / Uint16Array.BYTES_PER_ELEMENT);
+                    const handle: any = FPDF.TextFindStart(textPage, pointer, isMatchCase, 0);
+                    return { handle, pointer };
+                };
                 for (let a: number = startIndex; a < endIndex; a++) {
-                    let pageOccurrence: number = -1;
                     const page: any = FPDF.LoadPage(documentDetails.processor.wasmData.wasm, a);
                     const textPage: any = FPDF.LoadTextPage(page);
-                    const searchHandle: any = FPDF.TextFindStart(textPage, pointer, isMatchCase, 0);
                     const pageHeight: any = FPDF.GetPageHeight(page);
-                    while (FPDF.TextFindNext(searchHandle)) {
-                        occurrencesCount++;
+                    let search: { handle: any, pointer: number };
+                    let pageHasMatches: boolean = false;
+                    const originalSearch: any = createSearch(textPage, originalSearchTerm);
+                    if (FPDF.TextFindNext(originalSearch.handle)) {
+                        pageHasMatches = true;
+                        FPDF.TextFindClose(originalSearch.handle);
+                        search = {
+                            handle: FPDF.TextFindStart(textPage, originalSearch.pointer, isMatchCase, 0),
+                            pointer: originalSearch.pointer
+                        };
+                    } else {
+                        FPDF.TextFindClose(originalSearch.handle);
+                        freeFunction(originalSearch.pointer);
+                    }
+                    if (!pageHasMatches && needsNormalizedSearch) {
+                        search = createSearch(textPage, normalizedSearchTerm);
+                    } else if (!pageHasMatches) {
+                        FPDF.ClosePage(page);
+                        continue;
+                    }
+                    let pageOccurrence: number = -1;
+                    while (FPDF.TextFindNext(search.handle)) {
+                        totalOccurrencesCount++;
                         pageOccurrence++;
-                        const charLength: any = FPDF.TextFindCount(searchHandle);
-                        const startIndex: any = FPDF.TextFindResultIndex(searchHandle);
+                        const charLength: any = FPDF.TextFindCount(search.handle);
+                        const charStartIndex: any = FPDF.TextFindResultIndex(search.handle);
                         if (!pageSearchCounts[parseInt(a.toString(), 10)]) {
                             pageSearchCounts[parseInt(a.toString(), 10)] = { Indices: [], Bounds: {}, PageOccurrence: 0 };
                         }
@@ -354,13 +393,13 @@ export function PdfiumRunner(): void {
                         let charBottom: number = Number.POSITIVE_INFINITY;
                         let charTop: number = 0;
                         for (let i: number = 0; i < charLength; i++) {
-                            const resultPage: any = FPDF.GetUnicodeChar(textPage, startIndex + i);
+                            const resultPage: any = FPDF.GetUnicodeChar(textPage, charStartIndex + i);
                             const character: string = String.fromCharCode(resultPage);
                             if (character !== '\r') {
                                 if (character !== '\n') {
-                                    const result: any = H(F64, 4, [-1, -1, -1, -1])((left: any, right: any, bottom: any, top: any) => {
-                                        return FPDF.GetCharBox(textPage, startIndex + i, left, right, bottom, top);
-                                    });
+                                    const result: any = H(F64, 4, [-1, -1, -1, -1])((left: any, right: any, bottom: any, top: any) =>
+                                        FPDF.GetCharBox(textPage, charStartIndex + i, left, right, bottom, top)
+                                    );
                                     charLeft = Math.min(charLeft, result[0]);
                                     charRight = Math.max(charRight, result[1]);
                                     charBottom = Math.min(charBottom, result[2]);
@@ -389,25 +428,21 @@ export function PdfiumRunner(): void {
                             });
                         pageSearchCounts[parseInt(a.toString(), 10)].PageOccurrence = pageOccurrence + 1;
                     }
-                    FPDF.TextFindClose(searchHandle);
+                    FPDF.TextFindClose(search.handle);
+                    freeFunction(search.pointer);
                     FPDF.ClosePage(page);
                 }
-                const result: object = {
-                    totalSearchCount: occurrencesCount,
+                const result: any = {
+                    totalSearchCount: totalOccurrencesCount,
                     resultPages: pageSearchCounts,
                     message: 'textSearched',
-                    searchWord: searchTerm,
+                    searchWord: originalSearchTerm,
                     matchCase: event.data.matchCase,
                     isRequestsend: event.data.isRequestsend,
                     isCompletedSearch: (endIndex === pagesCount) ? true : false,
                     endIndex: endIndex
                 };
                 ctx.postMessage(result);
-                pageSearchCounts = {};
-                const freeFunction: any = PDFiumModule.asm && PDFiumModule.asm.free
-                    ? PDFiumModule.asm.free
-                    : PDFiumModule._free;
-                freeFunction(pointer);
             }
             else if (event.data.message === 'renderThumbnail') {
                 // eslint-disable-next-line

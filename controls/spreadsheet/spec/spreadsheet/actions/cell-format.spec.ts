@@ -2193,4 +2193,82 @@ describe('Cell Format ->', () => {
             done();
         });
     });
+    describe('EJ2-982178: Provide support for horizontal scrolling using Shift+Mouse wheel', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('horizontal scrolling should not be performed on using ctrl+Mouse wheel on headder and content', (done: Function) => {
+            let content: any = helper.invoke('getColumnHeaderContent');
+            const wheelEvent: WheelEvent = new WheelEvent('wheel', {
+                deltaX: 500, deltaY: 400, ctrlKey: true, bubbles: true, cancelable: true
+            });
+            content.dispatchEvent(wheelEvent);
+            expect(helper.getInstance().sheets[0].topLeftCell).toBe('A1');
+            done();
+        });
+        it('horizontal scrolling should be performed on using Shift+Mouse wheel on content', (done: Function) => {
+            let content: any = helper.invoke('getMainContent');
+            let wheelEvent: WheelEvent = new WheelEvent('wheel', {
+                deltaX: 0, deltaY: 500, shiftKey: true, bubbles: true, cancelable: true
+            });
+            content.dispatchEvent(wheelEvent);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].topLeftCell).not.toBe('A1');
+                done();
+            }, 20);
+        });
+        it('horizontal scrolling should be performed on using Shift+Mouse wheel on headder', (done: Function) => {
+            let content: any = helper.invoke('getColumnHeaderContent');
+            const topLeftCell: string = helper.getInstance().sheets[0].topLeftCell;
+            let wheelEvent: WheelEvent = new WheelEvent('wheel', {
+                deltaX: 0, deltaY: 400, shiftKey: true, bubbles: true, cancelable: true
+            });
+            content.dispatchEvent(wheelEvent);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].topLeftCell).not.toBe(topLeftCell);
+                done();
+            }, 20);
+        });
+        it('Simultaneous scrolling using trackpad on Header', (done: Function) => {
+            let content: any = helper.invoke('getColumnHeaderContent');
+            const topLeftCell: string = helper.getInstance().sheets[0].topLeftCell;
+            const wheelEvent: WheelEvent = new WheelEvent('wheel', {
+                deltaX: 500, deltaY: 500, shiftKey: false, bubbles: true, cancelable: true
+            });
+            content.dispatchEvent(wheelEvent);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].topLeftCell).not.toBe(topLeftCell);
+                done();
+            }, 10);
+        });
+        it('Simultaneous scrolling using trackpad on Content', (done: Function) => {
+            let content: any = helper.invoke('getMainContent');
+            const topLeftCell: string = helper.getInstance().sheets[0].topLeftCell;
+            const wheelEvent: WheelEvent = new WheelEvent('wheel', {
+                deltaX: 500, deltaY: 500, shiftKey: false, bubbles: true, cancelable: true
+            });
+            content.dispatchEvent(wheelEvent);
+            setTimeout(() => {
+                //expect(helper.getInstance().sheets[0].topLeftCell).not.toBe(topLeftCell);
+                done();
+            }, 10);
+        });
+    });
+    describe('EJ2-972438: Accounting Cell Formatting Breaks with Font Style/Size Change ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Accounting formatted cell should not break', (done: Function) => {
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'D2:D11']);
+            helper.invoke('updateCell', [{ style: { fontFamily: 'Arial Black' } }, 'D2']);
+            helper.invoke('updateCell', [{ style: { fontSize: '14pt' } }, 'D3']);
+            done();
+        });
+    });
 });

@@ -227,5 +227,7 @@ $kanban-col-expand-collapse-bg-color: none !default;
 $kanban-col-expand-collapse-color: rgba($primary) !default;
 $kanban-col-expand-collapse-border: 1px solid $transparent !default;
 $kanban-col-expand-collapse-box-shadow: $secondary-shadow-focus !default;
+$skelton-box-shadow: $shadow-sm;
+$skeleton-card-color: $kanban-empty-card-color;
 
 //Color End

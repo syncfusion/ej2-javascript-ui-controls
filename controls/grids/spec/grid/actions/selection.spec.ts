@@ -7,7 +7,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Page } from '../../../src/grid/actions/page';
-import { data, infiniteGroupData } from '../base/datasource.spec';
+import { data, infiniteGroupData, partialData } from '../base/datasource.spec';
 import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Edit } from '../../../src/grid/actions/edit';
@@ -20,7 +20,7 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Column } from '../../../src/grid/models/column';
 import { Row } from '../../../src/grid/models/row';
-import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, WebApiAdaptor, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 import { Freeze } from '../../../src/grid/actions/freeze';
 
 Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, VirtualScroll, Filter, Freeze);
@@ -7489,5 +7489,295 @@ describe('EJ2-960012: Previously selected records gets removed in getSelectedRec
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
+    });
+});
+
+describe('EJ2-985690: Partial Selection module', () => {
+    describe('Provide partial selection with local data', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: partialData,
+                    allowPaging: true,
+                    allowFiltering: true,
+                    toolbar: ['Search'],
+                    columns: [
+                        { type: 'checkbox', width: 40 },
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' },
+                        { field: 'Freight', headerText: 'Freight', width: 250 },
+                    ],
+                    selectionSettings: { persistSelection: true },
+                    isRowSelectable: function(args: any) {
+                        return args.Freight > 15;
+                    }
+                }, done);
+        });
+        
+        it('Initial load', (done: Function) => {
+            expect(gridObj.selectionModule.isPartialSelection).toBe(true);
+            expect(gridObj.partialSelectedRecords.length).toBe(11);
+            expect(gridObj.disableSelectedRecords.length).toBe(4);
+            done();
+        });
+
+        it('Click header to chek the selected records length', (done: Function) => {
+            (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click();
+            done();
+        });
+
+        it('SelectedRecords', function (done) {
+            expect(gridObj.getSelectedRecords().length).toBe(11);
+            expect((<any>gridObj.element.querySelector('.e-checkselectall').nextSibling).classList.contains('e-check')).toBeTruthy();
+            done();
+        });
+
+        it('perform searching', (done: Function) => {
+            let actionComplete = (e: any) => {
+                    expect(1).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.search("10248");
+        });
+
+        it('clear searching', (done: Function) => {
+            let actionComplete = (e: any) => {
+                    expect(1).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.search("");
+        });
+
+        it('perform filtering', (done: Function) => {
+            let actionComplete = (e: any) => {
+                    expect(1).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn("OrderID", "equal", 10248);
+        });
+
+        it('clear filtering', (done: Function) => {
+            let actionComplete = (e: any) => {
+                    expect(1).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.clearFiltering();
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('partial selection with remote data =>', () => {
+        let gridObj: Grid;
+        let remoteData: DataManager = new DataManager({
+            url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+            adaptor: new ODataV4Adaptor
+        });
+        beforeAll((done: Function) => {
+            let options: Object = {
+                dataSource: remoteData,
+                query: new Query().addParams('datacount', '40'),
+                enableVirtualization: true,
+                height: 300,
+                isRowSelectable: function(args: any) {
+                    return args.Freight > 15;
+                },
+                columns: [
+                    { type: 'checkbox', width: 40 },
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'Freight', headerText: "Freight", width: 250 },
+                ],
+            };
+            gridObj = createGrid(options, done);
+        });
+
+        it('Initial load', (done: Function) => {
+            expect(gridObj.selectionModule.isPartialSelection).toBe(true);
+            expect(gridObj.partialSelectedRecords.length).toBe(12);
+            expect(gridObj.disableSelectedRecords.length).toBe(4);
+            done();
+        });
+
+        it('Click header to chek the selected records length', (done: Function) => {
+            (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click();
+            done();
+        });
+
+        it('SelectedRecords', function (done) {
+            expect(gridObj.getSelectedRecords().length).toBe(12);
+            expect((<any>gridObj.element.querySelector('.e-checkselectall').nextSibling).classList.contains('e-stop')).toBeTruthy();
+            done();
+        });
+
+        afterAll((done) => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Provide partial selection with virtual scrolling', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: partialData,
+                    enableVirtualization: true,
+                    allowFiltering: true,
+                    height: 300,
+                    pageSettings: { pageSize: 10 },
+                    filterSettings: { type: 'Excel' },
+                    columns: [
+                        { type: 'checkbox', width: 40 },
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' },
+                        { field: 'Freight', headerText: "Freight", width: 250 },
+                    ],
+                    selectionSettings: { persistSelection: true },
+                    isRowSelectable: function(args: any) {
+                        return args.Freight > 15;
+                    }
+                }, done);
+        });
+        
+        it('Initial load', (done: Function) => {
+            expect(gridObj.selectionModule.isPartialSelection).toBe(true);
+            expect(gridObj.partialSelectedRecords.length).toBe(11);
+            expect(gridObj.disableSelectedRecords.length).toBe(4);
+            done();
+        });
+
+        it('Click header to chek the selected records length', (done: Function) => {
+            (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click();
+            done();
+        });
+
+        it('SelectedRecords', function (done) {
+            expect(gridObj.getSelectedRecords().length).toBe(11);
+            expect(gridObj.selectionModule.selectedRowIndexes.length).toBe(11);
+            expect((<any>gridObj.element.querySelector('.e-checkselectall').nextSibling).classList.contains('e-check')).toBeTruthy();
+            done();
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Provide partial selection with infinite scrolling', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: partialData,
+                    enableInfiniteScrolling: true,
+                    allowFiltering: true,
+                    height: 300,
+                    pageSettings: { pageSize: 10 },
+                    filterSettings: { type: 'Excel' },
+                    columns: [
+                        { type: 'checkbox', width: 40 },
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' },
+                        { field: 'Freight', headerText: "Freight", width: 250 },
+                    ],
+                    selectionSettings: { persistSelection: true },
+                    isRowSelectable: function(args: any) {
+                        return args.Freight > 15;
+                    }
+                }, done);
+        });
+        
+        it('Initial load', (done: Function) => {
+            expect(gridObj.selectionModule.isPartialSelection).toBe(true);
+            expect(gridObj.partialSelectedRecords.length).toBe(11);
+            expect(gridObj.disableSelectedRecords.length).toBe(4);
+            done();
+        });
+
+        it('Click header to chek the selected records length', (done: Function) => {
+            (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click();
+            done();
+        });
+
+        it('SelectedRecords', function (done) {
+            expect(gridObj.getSelectedRecords().length).toBe(11);
+            expect(gridObj.selectionModule.selectedRowIndexes.length).toBe(11);
+            expect((<any>gridObj.element.querySelector('.e-checkselectall').nextSibling).classList.contains('e-check')).toBeTruthy();
+            done();
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('partial selection with remote data in virtual scrolling =>', () => {
+        let gridObj: Grid;
+        let remoteData: DataManager = new DataManager({
+            url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+            adaptor: new ODataV4Adaptor
+        });
+        beforeAll((done: Function) => {
+            let options: Object = {
+                dataSource: remoteData,
+                query: new Query().addParams('datacount', '50'),
+                enableVirtualization: true,
+                selectionSettings: {persistSelection: true},
+                isRowSelectable: function(args: any) {
+                    return args.Freight > 15;
+                },
+                height: 300,
+                columns: [
+                    { type: 'checkbox', width: 40 },
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'Freight', headerText: "Freight", width: 250 },
+                ],
+            };
+            gridObj = createGrid(options, done);
+        });
+
+        it('Initial load', (done: Function) => {
+            debugger;
+            expect(gridObj.selectionModule.isPartialSelection).toBe(true);
+            expect(gridObj.partialSelectedRecords.length).toBe(12);
+            expect(gridObj.disableSelectedRecords.length).toBe(4);
+            done();
+        });
+
+        it('Click header to chek the selected records length', (done: Function) => {
+            (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click();
+            done();
+        });
+
+        it('virtual scroll', function (done) {
+            (gridObj.getContent() as any).firstChild.scrollTop = 800;
+            setTimeout(done, 500);
+        });
+
+        afterAll((done) => {
+            destroy(gridObj);
+            gridObj = null;
+        });
     });
 });

@@ -1662,3 +1662,32 @@ describe('coverage', () => {
     TreeGridObj = null;
   });
 });
+
+describe('Bug 988137: Order changing issue on Drag and dropping multipe row in single drag in Ej2 Treegrid', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        allowRowDragAndDrop: true,
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+  it('Multiple-RowDD drops records in correct order', () => {
+    let before: ITreeData = TreeGridObj.flatData[3];
+    TreeGridObj.rowDragAndDropModule.reorderRows([1,2],0,'below');
+    expect(TreeGridObj.flatData[3] !== before);
+    expect(TreeGridObj.grid.dataSource[3].taskID).toBe(2);
+    TreeGridObj.rowDragAndDropModule.destroy();
+  });
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});

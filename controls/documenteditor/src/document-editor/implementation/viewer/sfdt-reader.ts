@@ -1583,6 +1583,10 @@ export class SfdtReader {
                 let bookmark: BookmarkElementBox = undefined;
                 bookmark = new BookmarkElementBox(inline[bookmarkTypeProperty[this.keywordIndex]]);
                 bookmark.name = inline[nameProperty[this.keywordIndex]];
+                if (!isNullOrUndefined(this.documentHelper.owner) && !this.documentHelper.owner.documentEditorSettings.allowHyphensInBookmarkNames) {
+                    let bookmarkName: string = bookmark.name.replace('-', '_');
+                    bookmark.name = bookmarkName;
+                }
                 bookmark.properties = inline[propertiesProperty[this.keywordIndex]];
                 if (!isNullOrUndefined(inline[propertiesProperty[this.keywordIndex]])) {
                     if (!isNullOrUndefined(inline[propertiesProperty[this.keywordIndex]][isAfterParagraphMarkProperty[this.keywordIndex]])) {

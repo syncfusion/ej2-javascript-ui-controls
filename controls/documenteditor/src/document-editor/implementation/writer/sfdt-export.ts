@@ -1197,6 +1197,10 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
             inline = this.writeImage(element);
         } else if (element instanceof BookmarkElementBox) {
             inline[bookmarkTypeProperty[this.keywordIndex]] = element.bookmarkType;
+            if (!isNullOrUndefined(this.documentHelper.owner) && !this.documentHelper.owner.documentEditorSettings.allowHyphensInBookmarkNames) {
+                let bookmarkName: string = element.name.replace('-', '_');
+                element.name = bookmarkName;
+            }
             inline[nameProperty[this.keywordIndex]] = element.name;
             if (!isNullOrUndefined(element.properties)) {
                 let properties: any = {};

@@ -1029,13 +1029,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Property(true)
     public enableLayout: boolean;
     /**
-     * Set to true when fitpage method is not called via API.
-     *
-     * @default false
-     */
-    @Property(false)
-    public isClientCall: boolean;
-    /**
      * Defines the settings for DocumentEditor customization.
      *
      * @default {}
@@ -1352,6 +1345,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public serverActionSettingsImport: string = 'Import';
+    /**
+     * @private
+     */
+    public isUpdateFocus: boolean = false;
     /**
      * Gets or sets a value indicating whether xml toolbar is enabled or not.
      * @private
@@ -3845,6 +3842,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     private async convertToSfdt(file: File): Promise<string> {
         const formData: FormData = new FormData();
         formData.append('files', file);
+        formData.append('allowHyphensInBookmarkNames', this.documentEditorSettings.allowHyphensInBookmarkNames.toString());
         return await this.send(formData);
     }
     private async getSfdtFromBase64string(value: string): Promise<string> {
@@ -4374,10 +4372,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.viewer) {
             this.viewer.pageFitType = pageFitType;
         }
-        if (!this.documentHelper.owner.enableAutoFocus && !this.isClientCall) {
+        if (!this.documentHelper.owner.enableAutoFocus && !this.isUpdateFocus) {
             this.documentHelper.onFocusOut();
         }
-        this.isClientCall = false;
+        this.isUpdateFocus = false;
     }
 
     /**

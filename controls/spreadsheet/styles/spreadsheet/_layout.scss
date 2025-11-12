@@ -46,6 +46,11 @@
         padding: 10px;
       }
 
+      &.e-min-dimension {
+        min-height: 400px;
+        min-width: 300px;
+      }
+
       .e-spreadsheet-function-dlg.e-dialog .e-dlg-content .e-formula-list {
         @if $sheet-skin == 'Material3' {
           overflow-y: visible !important; /* stylelint-disable-line declaration-no-important */
@@ -304,6 +309,14 @@
         margin: 0;
       }
 
+      & .e-editor-visible {
+        display: flex;
+      }
+
+      & .e-editor-hidden {
+        display: none;
+      }
+
       .e-name-manager-dialog-mobile .e-dlg-header-content {
         background: var(--color-sf-content-bg-color-alt1);
         border-bottom: 1px solid var(--color-sf-border-light);
@@ -554,6 +567,31 @@
       {
         @if $sheet-skin == 'highcontrast' or $sheet-skin == ''FluentUI'' {
           width: 275px;
+        }
+      }
+
+      & .e-dlg-modal .e-dlg-content {
+        .syntax-error-message {
+          font-weight: $spreadsheet-font-weight-bold;
+          font-size: $spreadsheet-font-size-18;
+          color: $spreadsheet-syntax-error-message-color;
+          margin-bottom: $spreadsheet-margin-10;
+        }
+
+        .syntax-rules {
+          margin-left: $spreadsheet-margin-10;
+          & ul {
+            padding-left: $spreadsheet-padding-20;
+          }
+        }
+
+        .e-warning-content {
+          display: flex;
+          gap: 10px;
+        }
+
+        e-warning-note {
+          font-size: $spreadsheet-font-size-16;
         }
       }
     }
@@ -3311,6 +3349,11 @@
         right: 0;
         width: 4px;
       }
+
+      .e-resize-cursor.e-device {
+        width: 12px;
+      }
+      
       .e-sheet-panel .back_content {
         & .axis {
           position: absolute;
@@ -3336,6 +3379,12 @@
           border-left: 2px solid;
           z-index: 2;
         }
+      }
+
+      & .e-resizer-handle {
+        width: 8px;
+        height: 8px;
+        border-radius: 4px;
       }
 
       .e-sheet-tab-panel .e-tab {
@@ -3377,6 +3426,10 @@
       .e-excelfilter .e-dlg-content {
         overflow: visible;
         padding: 0;
+      }
+      
+      & .e-invisible {
+        display: none;
       }
     }
 
@@ -3470,6 +3523,13 @@
         }
       }
     }
+  }
+
+  .e-file-input {
+    position: fixed;
+    left: -100em;
+    height: 1px;
+    width: 1px;
   }
 
   .e-spreadsheet-palette-item{
@@ -3681,6 +3741,10 @@
       line-height: inherit;
       align-items: center;
     }
+  }
+
+  .e-dialog .e-xlfl-table .e-xlfl-col {
+    width: 50%;
   }
 
   .e-dropdown-popup.e-ribbon-dropdown-group-button {

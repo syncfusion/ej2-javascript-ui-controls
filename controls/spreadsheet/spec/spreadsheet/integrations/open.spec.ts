@@ -190,6 +190,18 @@ describe('Open & Save ->', () => {
             spreadsheet.dataBind();
             done();
         });
+        it('EJ2-982172: Provided bypassWorkerPipeline property to avoid CSP related issues', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.beforeSave = (args: BeforeSaveEventArgs): void => {
+                (<{ skipWorkerPipeline?: boolean }>args).skipWorkerPipeline = true;
+                args.isFullPost = false;
+            };
+            spreadsheet.dataBind();
+            helper.invoke('saveAsJson').then((response: any) => {
+                expect(response.jsonObject.Workbook.sheets[0].rows[0].cells[0].value).toBe('Item Name');
+                done();
+            });
+        });
     });
 });
 describe('EJ2-56416 ->', () => {

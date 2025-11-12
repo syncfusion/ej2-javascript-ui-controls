@@ -11,7 +11,7 @@ import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompi
 import { getRowHeight, setColumnIndex, Global, ispercentageWidth, getNumberFormat, getTransformValues } from './util';
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
-import { ReturnType, BatchChanges } from '../base/type';
+import { ReturnType, BatchChanges, RowSelectable } from '../base/type';
 import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, ContextMenuOpenEventArgs, NotifyArgs, ExportHeaders, DetailTemplateDetachArgs, BeforeCustomFilterOpenEventArgs } from './interface';
 import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
@@ -1036,6 +1036,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public partialSelectedRecords: Object[] = [];
     /** @hidden */
+    public partialSelectedIndexes: number[] = [];
+    /** @hidden */
     public lazyLoadRender: IRenderer;
     /** @hidden */
     public isSpan: boolean = false;
@@ -2015,6 +2017,26 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property('')
     public ej2StatePersistenceVersion: string;
+
+    /**
+     * Determines whether a row can be selected.
+     * When not set, all rows are considered selectable.
+     * @default null
+     * @example
+     * const grid = new Grid({
+     *   dataSource: data,
+     *   columns: [
+     *     { field: 'OrderID', type: 'number' },
+     *     { field: 'Status', type: 'string' }
+     *   ],
+     *   isRowSelectable: function(data, columns) {
+     *     // prevent selection for locked rows
+     *     return data['Status'] !== 'Locked';
+     *   }
+     * });
+     */
+    @Property(null)
+    public isRowSelectable: RowSelectable | string;
 
     /**
      * Triggers when the component is created.
@@ -4216,6 +4238,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (this.allowSelection && this.isPersistSelection && !(requestPendingState && requestPendingState.isPending)) {
                 this.clearSelection();
             }
+            this.partialSelectedRecords = [];
+            this.partialSelectedIndexes = [];
+            this.disableSelectedRecords = [];
+            this.renderModule.selectableDataKey = {};
+            this.renderModule.nonselectableDataKey = {};
             if (!isNullOrUndefined(this.dataSource) && (<DataResult>this.dataSource).result) {
                 this.isVirtualAdaptive = false;
             }
@@ -4258,6 +4285,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.getDataModule().setState({ isDataChanged: false });
                 this.notify(events.dataSourceModified, {});
                 if (!requireGridRefresh) {
+                    if (this.isRowSelectable && !this.isRemote()) {
+                        const data: Object[] = this.getDataModule().dataManager.executeLocal(this.getDataModule().generateQuery(true));
+                        this.renderModule.setPartialRecord(data);
+                    }
                     this.renderModule.refresh();
                     if (this.isCheckBoxSelection) {
                         this.notify(events.beforeRefreshOnDataChange, {});
@@ -4336,6 +4367,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getTablesCount(): number {
         return this.tablesCount;
+    }
+
+    /**
+     * @returns {boolean} - Returns whether the data source is remote or not
+     * @hidden
+     */
+    public isRemote(): boolean {
+        return (this.getDataModule().isRemote() || (!isNullOrUndefined(this.dataSource)
+            && !isNullOrUndefined((<{result: object[]}>this.dataSource).result)));
     }
 
     /**
@@ -7397,6 +7437,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const element: HTMLElement = parentsUntil((e.target as Element), 'e-ellipsistooltip') as HTMLElement;
             if (e.type === 'mouseout' && (this.prevElement !== element || element !== parentsUntil((e.relatedTarget as Element), 'e-ellipsistooltip') as HTMLElement)) {
                 this.toolTipObj.close();
+                this.toolTipObj['clear']();
                 this.prevElement = null;
             }
             const tagName: string = (e.target as Element).tagName;
@@ -7870,7 +7911,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public getForeignKeyColumns(): Column[] {
         const cols: Column[] | string[] | ColumnModel[] = this.enableColumnVirtualization ? this.columns : this.getColumns();
         return (cols as Column[]).filter((col: Column) => {
-            return col.isForeignColumn();
+            return  col instanceof Column && col.isForeignColumn();
         });
     }
 

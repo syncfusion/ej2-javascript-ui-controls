@@ -364,6 +364,10 @@ export class TableResizer {
         const selection: Selection = this.owner.selectionModule;
         this.owner.editorModule.setOffsetValue(selection);
         table = table.combineWidget(this.viewer) as TableWidget;
+        if (isNullOrUndefined(this.currentResizingTable.tableHolder)) {
+            //When combining the table. If the table is destroyed. Need to update the currentResizing property.
+            this.currentResizingTable = table;
+        }
         this.owner.isLayoutEnabled = false;
         // table.PreserveGrid = true;
         this.setPreferredWidth(table);

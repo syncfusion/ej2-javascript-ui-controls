@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 31.2.10 (2025-11-13)
+
+### Grid
+
+#### Features
+
+- The Grid now enables conditional row selection through the `isRowSelectable` callback. This enhancement applies dynamic business logic, ensuring that users can only select rows that satisfy the specified conditions.
+
+#### Bug Fixes
+
+- `#I778061` - Resolved an issue where the `aria-describedby` label for `EllipsisWithTooltip` columns was not properly removed upon mouse leave.
+- `#FB70791` - Resolved an issue where the `AdaptiveUI` search functionality was not operating correctly on mobile devices.
+
 ## 31.2.5 (2025-11-04)
 
 ### Grid

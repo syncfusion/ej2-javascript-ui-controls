@@ -241,6 +241,9 @@ export class Agenda extends AgendaBase implements IRenderer {
         const tBody: Element = target.querySelector('tbody');
         const emptyTBody: Element = createElement('tbody');
         const topElement: Element = this.getElementFromScrollerPosition(event);
+        if (!topElement) {
+            return;
+        }
         const scrollDate: Date = this.parent.getDateFromElement(topElement);
         let filterDate: Record<string, Date>;
         let filterData: Record<string, any>[];

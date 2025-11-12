@@ -15,7 +15,9 @@
   }
 
   .e-kanban-table.e-content-table {
-    border-spacing: $kanban-table-bigger-border-spacing;
+    @if $skin-name !='tailwind' and $skin-name !='tailwind-dark' and $skin-name !='fluent2' and $skin-name !='fluent2-dark' and $skin-name !='material3' and $skin-name !='material3-dark' and $skin-name !='bootstrap5' and $skin-name !='bootstrap5-dark' {
+      border-spacing: $kanban-table-bigger-border-spacing;
+    }
   }
 
   .e-swimlane {

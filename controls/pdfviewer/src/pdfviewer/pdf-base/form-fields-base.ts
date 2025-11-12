@@ -2250,6 +2250,7 @@ export class FormFieldsBase {
                         };
                         formFields.Name = 'SignatureImage';
                         formFields.PageIndex = i;
+                        this.PdfRenderedFormFields.push(formFields);
                         count++;
                         if (isNullOrUndefined(dictionary)) {
                             const pdfReference: any = annotation._dictionary.get('AP');

@@ -88,6 +88,26 @@
         overflow: hidden;
       }
 
+      .e-kanban-column-skeleton {
+        background: $kanban-column-bg-color;
+        color: $kanban-default-font-color;
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px dashed $kanban-border-color;
+        box-sizing: border-box;
+      }
+
+      .e-kanban-skeleton-card {
+        background: $skeleton-card-color;
+        box-shadow: $skelton-box-shadow;
+        margin: 8px;
+        border-radius: 4px;
+      }
+
+      .e-kanban-skeleton-content {
+        border-top: 1px solid $kanban-border-color;
+      }
+
       .e-header-cells {
         @if $skin-name =='material3' {
           border-radius: 4px 4px 0 0;
@@ -103,6 +123,10 @@
         text-align: left;
         text-overflow: ellipsis;
         white-space: nowrap;
+
+        &.e-draggable {
+          cursor: all-scroll;
+        }
 
         .e-header-wrap {
           display: flex;
@@ -842,5 +866,14 @@
     height: inherit;
     overflow: hidden;
     padding: $kanban-card-container-padding;
+  }
+  
+  .e-kanban-column-indicator {
+    display: none;
+    position: absolute;
+    width: 3px;
+    background: $kanban-dropped-clone-border-color;
+    height: 100%;
+    z-index: 1000;
   }
 }

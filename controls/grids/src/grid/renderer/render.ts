@@ -12,7 +12,7 @@ import { Row } from '../models/row';
 import { Cell } from '../models/cell';
 import { AggregateRowModel, AggregateColumnModel } from '../models/models';
 import * as events from '../base/constant';
-import { prepareColumns, setFormatter, isGroupAdaptive, getDatePredicate, getObject, clearReactVueTemplates } from '../base/util';
+import { prepareColumns, setFormatter, isGroupAdaptive, getDatePredicate, getObject, clearReactVueTemplates, getSerachFilteredData } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { CellRendererFactory } from '../services/cell-render-factory';
@@ -57,6 +57,14 @@ export class Render {
     private emptyGrid: boolean = false;
     private isLayoutRendered: boolean;
     private counter: number = 0;
+    /**
+     * @hidden
+     */
+    public selectableDataKey: { [key: number]: boolean } = {};
+    /**
+     * @hidden
+     */
+    public nonselectableDataKey: { [key: number]: boolean } = {};
     /**
      * @hidden
      */
@@ -542,6 +550,22 @@ export class Render {
                 gObj.hideSpinner();
                 return;
             }
+            if (gObj.isRowSelectable) {
+                const beforeArgs: { e: ReturnType, isResetPartialRecords: boolean } = { e: dataArgs, isResetPartialRecords: false };
+                gObj.notify(events.beforeSetPartialRecords, beforeArgs);
+                if (!gObj.isInitialLoad || this.parent.isRemote() || (args.action === 'add' && args.requestType === 'save') ||
+                    beforeArgs.isResetPartialRecords) {
+                    const isTreeGrid: string = 'isTreeGrid';
+                    const gridData: Object[] = (gObj.getDataModule().isRemote() || (!isNullOrUndefined(gObj.dataSource)
+                        && (<{result: object[]}>gObj.dataSource).result)) ? dataArgs.result :
+                        gObj.getDataModule().dataManager.executeLocal(gObj.getDataModule().generateQuery(true));
+                    if (gObj[`${isTreeGrid}`] && !this.parent.isRemote()) {
+                        this.resetPartialRecords();
+                    } else {
+                        this.setPartialRecord(gridData);
+                    }
+                }
+            }
             if (this.parent.isReact && !isNullOrUndefined(args) && !(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache) && !args.isFrozen) {
                 let templates: string[] = [
                     'columnTemplate', 'rowTemplate', 'detailTemplate',
@@ -559,6 +583,74 @@ export class Render {
                 this.extendDataManagerSuccess(e, args, len, dataArgs, isInfiniteDelete);
             }
         });
+    }
+
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public resetPartialRecords(): void {
+        if (this.parent.isRowSelectable) {
+            if (!this.parent.isRemote()) {
+                const data: Object[] = getSerachFilteredData(this.parent);
+                this.setPartialRecord(data);
+            } else {
+                this.selectableDataKey = {};
+                this.nonselectableDataKey = {};
+                this.parent.partialSelectedIndexes = [];
+                this.parent.partialSelectedRecords = [];
+                this.parent.disableSelectedRecords = [];
+            }
+        }
+    }
+
+    /**
+     * @param {object} gridData - specifies the data
+     * @returns {void}
+     * @hidden
+     */
+    public setPartialRecord(gridData: Object[]): void {
+        const primaryField: string = this.parent.getPrimaryKeyFieldNames()[0];
+        const records: Object[] = (this.parent.allowGrouping && !isNullOrUndefined((gridData as { records?: Object[] }).records)) ?
+            (gridData as { records?: Object[] }).records : gridData;
+        if (this.parent.isRemote()) {
+            for (let i: number = 0; i < records.length; i++) {
+                const startIndex: number = (this.parent.pageSettings.currentPage - 1) * this.parent.pageSettings.pageSize;
+                const index: number = this.parent.allowPaging ? parseInt(i.toString(), 10) : startIndex + parseInt(i.toString(), 10);
+                const key: number = records[parseInt(i.toString(), 10)][`${primaryField}`];
+                if ((this.parent.isRowSelectable as Function)(records[parseInt(i.toString(), 10)], this.parent.columns)) {
+                    if (!this.selectableDataKey.hasOwnProperty(key)) {
+                        this.parent.partialSelectedRecords.push(records[parseInt(i.toString(), 10)]);
+                        this.parent.partialSelectedIndexes.push(index);
+                        this.selectableDataKey[records[parseInt(i.toString(), 10)][`${primaryField}`]] = true;
+                    }
+                } else {
+                    this.parent.selectionModule.isPartialSelection = true;
+                    if (!this.nonselectableDataKey.hasOwnProperty(key)) {
+                        this.parent.disableSelectedRecords.push(records[parseInt(i.toString(), 10)]);
+                        this.nonselectableDataKey[records[parseInt(i.toString(), 10)][`${primaryField}`]] = false;
+                    }
+                }
+            }
+        } else {
+            const selectedData: Object[] = [];
+            const nonselectedData: Object[] = [];
+            const selectedDataIndexes: number[] = [];
+            for (let i: number = 0; i < records.length; i++) {
+                if ((this.parent.isRowSelectable as Function)(records[parseInt(i.toString(), 10)], this.parent.columns)) {
+                    selectedData.push(records[parseInt(i.toString(), 10)]);
+                    selectedDataIndexes.push(parseInt(i.toString(), 10));
+                    this.selectableDataKey[records[parseInt(i.toString(), 10)][`${primaryField}`]] = true;
+                } else {
+                    this.parent.selectionModule.isPartialSelection = true;
+                    nonselectedData.push(records[parseInt(i.toString(), 10)]);
+                    this.nonselectableDataKey[records[parseInt(i.toString(), 10)][`${primaryField}`]] = false;
+                }
+            }
+            this.parent.partialSelectedRecords = selectedData;
+            this.parent.disableSelectedRecords = nonselectedData;
+            this.parent.partialSelectedIndexes = selectedDataIndexes;
+        }
     }
 
     private extendDataManagerSuccess(e: ReturnType, args?: NotifyArgs, len?: number, dataArgs?: ReturnType,

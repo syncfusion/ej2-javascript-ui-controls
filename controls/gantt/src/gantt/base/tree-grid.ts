@@ -58,6 +58,7 @@ export class GanttTreeGrid {
         this.parent.on('chartScroll', this.updateScrollTop, this);
         this.parent.on('destroy', this.destroy, this);
         this.parent.treeGrid.on('renderReactTemplate', this.renderReactTemplate, this);
+        this.parent.treeGrid.grid.on('beforeSetPartialRecords', this.setPartialSelectionForGrid, this);
     }
     private renderReactTemplate(args: Object[]): void {
         const portals: string = 'portals';
@@ -216,6 +217,9 @@ export class GanttTreeGrid {
         if (this.parent.enableHover) {
             const columnHeader: HTMLElement = this.treeGridElement.querySelector('.e-columnheader');
             columnHeader.classList.add('e-headercell-hover');
+        }
+        if (this.parent.filterModule && this.parent.treeGrid.filterModule) {
+            this.parent.filterModule.filteredResult = this.parent.treeGrid.filterModule.filteredResult;
         }
         const arg: { result: { updatedCollection: object[] } } = { result: args['result'] };
         this.parent.trigger('beforeDataBound', arg);
@@ -1458,11 +1462,15 @@ export class GanttTreeGrid {
     private treeGridClickHandler(e: PointerEvent): void {
         this.parent.notify('treeGridClick', e);
     }
+    private setPartialSelectionForGrid(args: Object): void {
+        args['isResetPartialRecords'] = this.parent.addDeleteRecord;
+    }
     private removeEventListener(): void {
         this.parent.off('renderPanels', this.createContainer);
         this.parent.off('chartScroll', this.updateScrollTop);
         this.parent.off('destroy', this.destroy);
         this.parent.treeGrid.off('reactTemplateRender', this.renderReactTemplate);
+        this.parent.treeGrid.grid.off('beforeSetPartialRecords', this.setPartialSelectionForGrid);
     }
     private destroy(): void {
         this.removeEventListener();

@@ -831,7 +831,7 @@
         }
 
         & .e-responsive-right {
-          width: calc(100% - 50px);
+          width: $grid-toolbar-responsive-right-width;
           &.e-search-wrapper {
             width: auto;
           }
@@ -3006,7 +3006,7 @@
       overflow-x: scroll;
     }
     
-    &.e-mac-safari .virtualtable {
+    &.e-mac-safari .e-virtualtable {
       .e-leftfreeze,
       .e-rightfreeze {
         transform: translateZ(0);

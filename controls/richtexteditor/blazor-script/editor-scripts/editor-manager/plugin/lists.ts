@@ -519,12 +519,12 @@ export class Lists {
         (!isNullOrUndefined(startNode.childNodes[1]) && (startNode.childNodes[1].nodeName === 'UL' ||
         startNode.childNodes[1].nodeName === 'OL'))) {
             const parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
-            if (parentList.tagName === startNode.childNodes[1].nodeName) {
+            if (!isNOU(parentList) && parentList.tagName === startNode.childNodes[1].nodeName) {
                 while (startNode.childNodes[1].lastChild) {
                     this.parent.domNode.insertAfter(startNode.children[1].lastChild as Element, startNode);
                 }
                 detach(startNode.childNodes[1]);
-            } else {
+            } else if (!isNOU(parentList)) {
                 parentList.parentElement.insertBefore(startNode.children[1], parentList);
             }
         }

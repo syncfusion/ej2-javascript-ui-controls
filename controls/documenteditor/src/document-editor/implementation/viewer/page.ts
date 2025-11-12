@@ -4736,6 +4736,13 @@ export class LineWidget implements IWidget {
             if (lastElement instanceof TextElementBox) {
                 return lastElement.isPageBreak;
             }
+            else {
+                for (let i: number = this.children.length - 1; i >= 0; i--) {
+                    if (this.children[i] instanceof TextElementBox) {
+                        return this.children[i].isPageBreak;
+                    }
+                }
+            }
         }
         return false;
     }

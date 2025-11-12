@@ -2,7 +2,7 @@ import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Mo
 import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, getValue, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
-import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs, Row, getNumberFormat } from '@syncfusion/ej2-grids';
+import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs, Row, getNumberFormat, RowSelectable } from '@syncfusion/ej2-grids';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel, Freeze as FreezeColumn } from '@syncfusion/ej2-grids';
 import { RowDragEventArgs, RowDropEventArgs, RowDropSettingsModel, RowDropSettings, getUid, parentsUntil } from '@syncfusion/ej2-grids';
 import { LoadingIndicator } from '../models/loading-indicator';
@@ -44,7 +44,7 @@ import { PdfExportCompleteArgs, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInf
 import { ExcelExportProperties, PdfExportProperties, CellSelectingEventArgs, PrintEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import {BeforeDataBoundArgs} from '@syncfusion/ej2-grids';
-import { DataManager, ReturnOption, RemoteSaveAdaptor, Query, JsonAdaptor, Deferred, UrlAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, ReturnOption, RemoteSaveAdaptor, Query, JsonAdaptor, Deferred, UrlAdaptor, Middlewares } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner, Dialog } from '@syncfusion/ej2-popups';
 import { isRemoteData, isOffline, extendArray, isCountRequired, findChildrenRecords } from '../utils';
 import { Grid, QueryCellInfoEventArgs, Logger } from '@syncfusion/ej2-grids';
@@ -846,6 +846,26 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(-1)
     public selectedRowIndex: number;
+
+    /**
+     * Determines whether a row can be selected.
+     * When not set, all rows are considered selectable.
+     * @default null
+     * @example
+     * const grid = new TreeGrid({
+     *   dataSource: data,
+     *   columns: [
+     *     { field: 'TaskID', type: 'number' },
+     *     { field: 'Status', type: 'string' }
+     *   ],
+     *   isRowSelectable: function(data, columns) {
+     *     // prevent selection for locked rows
+     *     return data['Status'] !== 'Locked';
+     *   }
+     * });
+     */
+    @Property(null)
+    public isRowSelectable: RowSelectable | string;
 
     /**
      * Configures the selection behavior.
@@ -2377,6 +2397,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid[`${enableHtmlSanitizer}`] = this.enableHtmlSanitizer;
         this.grid.enableStickyHeader = this.enableStickyHeader;
         this.grid.emptyRecordTemplate = this.emptyRecordTemplate;
+        this.grid.isRowSelectable = this.isRowSelectable;
         const isTreeGrid: string = 'isTreeGrid';
         this.grid[`${isTreeGrid}`] = true;
     }
@@ -2772,7 +2793,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.grid.dataSource = { result: data, count: datacount };
         } else {
             this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
-                this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
+                this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor,
+                                                this.hasPreAndPostMiddleware(this.dataSource) ? this.dataSource : undefined);
         }
         if (this.dataSource instanceof DataManager && (this.dataSource.dataSource.offline || this.dataSource.ready)) {
             this.grid.dataSource[`${dataSource}`].json = extendArray(this.dataSource[`${dataSource}`].json);
@@ -3354,6 +3376,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.grid.enableStickyHeader = this.enableStickyHeader; break;
             case 'emptyRecordTemplate':
                 this.grid.emptyRecordTemplate = this.emptyRecordTemplate; break;
+            case 'isRowSelectable':
+                this.grid.isRowSelectable = this.isRowSelectable; break;
             case 'editSettings':
                 if (this.grid.isEdit && this.grid.editSettings.mode === 'Normal' && newProp[`${prop}`].mode &&
                           (newProp[`${prop}`].mode === 'Cell' || newProp[`${prop}`].mode === 'Row')) {
@@ -4161,6 +4185,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.setProperties({ sortSettings: getObject('properties', this.grid.sortSettings) }, true);
     }
 
+    private hasPreAndPostMiddleware(obj: any): obj is { applyPreRequestMiddlewares: Function; applyPostRequestMiddlewares: Function } {
+        return (obj && typeof obj.applyPreRequestMiddlewares === 'function' && typeof obj.applyPostRequestMiddlewares === 'function');
+    }
+
     /**
      * Retrieves the content table element of the TreeGrid.
      *
@@ -4326,8 +4354,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.grid.dataSource = this.flatData;
             } else {
                 this.grid.setProperties({
-                    dataSource: new DataManager(this.dataSource.dataSource,
-                                                this.dataSource.defaultQuery, this.dataSource.adaptor)
+                    dataSource: new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor,
+                                                this.hasPreAndPostMiddleware(this.dataSource) ? this.dataSource : undefined)
                 }, true);
             }
         }
@@ -5469,6 +5497,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public addListener(): void {
         this.on('updateResults', this.updateResultModel, this);
         this.grid.on('initial-end', this.afterGridRender, this);
+        this.grid.on('partial-filter-update', this.partialFilterUpdate, this);
     }
     private updateResultModel(returnResult: BeforeDataBoundArgs): void {
         this.dataResults = <ReturnOption>returnResult;
@@ -5482,7 +5511,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.off('updateResults', this.updateResultModel);
         this.grid.off('initial-end', this.afterGridRender);
         this.grid.off('last-rowcell-border-updated', this.lastRowCellBorderUpdated);
+        this.grid.off('partial-filter-update', this.partialFilterUpdate);
     }
+
+    private partialFilterUpdate(args: any) : void {
+        const gridFiltered : Object[] = args.gridFiltered;
+        this.notify('updateFilterRecs', { data: gridFiltered });
+    }
+
     /**
      * Filters the TreeGrid rows based on a specified column and filter criteria.
      *

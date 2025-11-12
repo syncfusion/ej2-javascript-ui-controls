@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 31.2.10 (2025-11-13)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I778677` - Authorization token now passes correctly to remote endpoints when using middleware, even with offline: false.
+
+## 31.2.5 (2025-11-04)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I778239` - Resolved an issue that caused incorrect row ordering when multiple rows were moved simultaneously using drag-and-drop.
+
 ## 31.1.22 (2025-10-01)
 
 ### Tree Grid

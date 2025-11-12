@@ -1310,7 +1310,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                     events.beginSave, {
                         saveSettings: eventArgs, isFullPost: eventArgs.isFullPost, needBlobData: eventArgs.needBlobData,
                         customParams: eventArgs.customParams, pdfLayoutSettings: eventArgs.pdfLayoutSettings,
-                        jsonConfig: eventArgs.jsonConfig
+                        jsonConfig: eventArgs.jsonConfig,
+                        skipWorkerPipeline: (<{ skipWorkerPipeline?: boolean }>eventArgs).skipWorkerPipeline
                     });
             }
         }

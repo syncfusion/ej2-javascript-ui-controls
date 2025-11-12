@@ -421,6 +421,12 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         const args: RowDataBoundEventArgs = { row: tr, rowHeight: this.parent.rowHeight };
         if (row.isDataRow) {
             const eventArg: RowDataBoundEventArgs = extend(rowArgs, args); eventArg.isSelectable = true;
+            const primaryKey: string = this.parent.getPrimaryKeyFieldNames()[0];
+            const isPrimaryKeyValue: number | string = row.data[`${primaryKey}`];
+            if (this.parent.renderModule && Object.keys(this.parent.renderModule.nonselectableDataKey).length &&
+                this.parent.renderModule.nonselectableDataKey[`${isPrimaryKeyValue}`] === false) {
+                eventArg.isSelectable = false;
+            }
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
             const cellTemplate: NodeListOf<Element> = eventArg.row.querySelectorAll('.e-templatecell');
@@ -442,7 +448,6 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             row.isSelectable = eventArg.isSelectable;
             const isDraggable: boolean = this.parent.isRowDragable();
             if (this.parent.allowPaging && this.parent.selectionSettings.persistSelection) {
-                const primaryKey: string = this.parent.getPrimaryKeyFieldNames()[0];
                 const pKey: string = row.data ? row.data[`${primaryKey}`] : null;
                 const SelectedRecords: Object[] = eventArg.isSelectable ? this.parent.partialSelectedRecords :
                     this.parent.disableSelectedRecords;

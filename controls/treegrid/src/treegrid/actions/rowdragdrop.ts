@@ -1360,7 +1360,7 @@ export class RowDD {
                 this.isaddtoBottom = multiplegrid && this.isDraggedWithChild;
             }
             const dragLength: number = dragRecords.length;
-            if (!isNullOrUndefined(this.parent.idMapping)) {
+            if (!isNullOrUndefined(this.parent.idMapping) || (this.dropPosition === 'bottomSegment' && dragRecords.length > 1 && isNullOrUndefined(this.parent.idMapping))) {
                 dragRecords.reverse();
             }
             for (let i: number = 0; i < dragLength; i++) {

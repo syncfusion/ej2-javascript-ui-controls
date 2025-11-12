@@ -747,10 +747,11 @@ export class Shape {
         parent.activeObj.textSettings.text = text || parent.activeObj.textSettings.text;
         parent.activeObj.textSettings.fontFamily = fontFamily || parent.activeObj.textSettings.fontFamily;
         parent.activeObj.textSettings.fontSize = fontSize || parent.activeObj.textSettings.fontSize;
-        parent.activeObj.textSettings.bold = bold || parent.activeObj.textSettings.bold;
-        parent.activeObj.textSettings.italic = italic || parent.activeObj.textSettings.italic;
-        parent.activeObj.textSettings.underline = underline || parent.activeObj.textSettings.underline;
-        parent.activeObj.textSettings.strikethrough = strikethrough || parent.activeObj.textSettings.strikethrough;
+        parent.activeObj.textSettings.bold = !isNullOrUndefined(bold) ? bold : parent.activeObj.textSettings.bold;
+        parent.activeObj.textSettings.italic = !isNullOrUndefined(italic) ? italic : parent.activeObj.textSettings.italic;
+        parent.activeObj.textSettings.underline = !isNullOrUndefined(underline) ? underline : parent.activeObj.textSettings.underline;
+        parent.activeObj.textSettings.strikethrough = !isNullOrUndefined(strikethrough) ?
+            strikethrough : parent.activeObj.textSettings.strikethrough;
         parent.activeObj.strokeSettings.outlineColor = outlineColor || parent.activeObj.strokeSettings.outlineColor;
         parent.activeObj.strokeSettings.outlineWidth = outlineWidth || parent.activeObj.strokeSettings.outlineWidth;
     }

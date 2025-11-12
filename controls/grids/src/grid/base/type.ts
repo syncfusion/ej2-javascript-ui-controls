@@ -33,3 +33,11 @@ export type SentinelInfo = { up?: SentinelType, down?: SentinelType, right?: Sen
 export type Offsets = { top?: number, left?: number };
 /** @hidden */
 export type BatchChanges = { addedRecords?: Object[], changedRecords?: Object[], deletedRecords?: Object[] };
+
+/**
+ * A function that determines whether a given data row is selectable.
+ * @param data - The data object for the row being evaluated.
+ * @param columns - The column definitions of the Grid.
+ * @returns Returns true to allow selecting the row; false to disable selection.
+ */
+export type RowSelectable = (data: Object, columns: ColumnModel[]) => boolean;

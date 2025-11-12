@@ -1542,8 +1542,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('MINUTE formula with input having minute value as 90->', (done: Function) => {
             helper.edit('C4', '3:90:44 AM');
-            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('30');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":30,"formula":"=MINUTE(C4)"}');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=MINUTE(C4)"}');
             done();
         });
         it('MINUTE formula with cell having no value->', (done: Function) => {

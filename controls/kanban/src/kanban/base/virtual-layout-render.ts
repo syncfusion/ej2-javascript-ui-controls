@@ -1366,6 +1366,9 @@ export class VirtualLayoutRender extends MobileLayout {
             content.scrollLeft = this.scrollLeft;
         }
         this.wireDragEvent();
+        if (this.parent.allowColumnDragAndDrop) {
+            this.parent.wireColumnDragEvent();
+        }
     }
 
     public unWireEvents(): void {
@@ -1388,6 +1391,9 @@ export class VirtualLayoutRender extends MobileLayout {
         }
         if (this.parent.isAdaptive) {
             this.parent.touchModule.unWireTouchEvents();
+        }
+        if (this.parent.allowColumnDragAndDrop) {
+            this.parent.unwireColumnDragEvent();
         }
     }
 
