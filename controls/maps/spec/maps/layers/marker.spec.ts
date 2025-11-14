@@ -2355,8 +2355,7 @@ describe('Map marker properties tesing', () => {
                 },
                 layers: [
                     {
-                        //url:'GoogleStaticMap', 
-                        //key:'AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw',
+                        
                     },
                     {
                         
@@ -2384,8 +2383,6 @@ describe('Map marker properties tesing', () => {
                 { Name: "Gujarath", latitude: 22.140547, longitude: 73.184296 }
                 ]
             }];
-            //map.layers[0].layerType = 'GoogleStaticMap';
-            //map.layers[0].key='AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw';
             map.layers[0].shapeData = null;
             map.layers[0].urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
             map.refresh();
@@ -2493,8 +2490,6 @@ describe('Map marker properties tesing', () => {
                 animationDuration: 0
             },
         ];
-            //map.layers[0].layerType = 'GoogleStaticMap';
-            //map.layers[0].key='AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw';
             map.layers[0].shapeData = null;
             map.layers[0].urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
             map.refresh();
