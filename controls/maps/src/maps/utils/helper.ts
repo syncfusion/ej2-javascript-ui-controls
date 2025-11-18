@@ -2853,9 +2853,7 @@ export function getElementsByClassName(className: string): HTMLCollectionOf<Elem
  */
 export function querySelector(args: string, elementSelector: string): Element {
     let targetEle: Element = null;
-    if (document.getElementById(elementSelector)) {
-        targetEle = document.getElementById(elementSelector).querySelector('#' + args);
-    }
+    targetEle = document.querySelector('#' + args);
     return targetEle;
 }
 /**

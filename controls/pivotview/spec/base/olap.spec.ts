@@ -331,7 +331,7 @@ describe('Pivot Olap Engine', () => {
                             }
                         ],
                         sortSettings: [{ name: '[Date].[Fiscal]', order: 'Ascending' },
-                            { name: '[Customer].[Customer Geography]', order: 'Descending', membersOrder: ['United States', 'Germany'] }],
+                        { name: '[Customer].[Customer Geography]', order: 'Descending', membersOrder: ['United States', 'Germany'] }],
                         valueAxis: 'column',
                         valueSortSettings: {
                             headerDelimiter: '##',
@@ -422,8 +422,8 @@ describe('Pivot Olap Engine', () => {
                     dataBound: dataBound,
                     onHeadersSort: function(args: HeadersSortEventArgs): void{
                         if(args.fieldName == '[Date].[Fiscal]'){
-                        args.members = ['FY 2012', 'FY 2010'];
-                        args.IsOrderChanged = true;
+                            args.members = ['FY 2012', 'FY 2010'];
+                            args.IsOrderChanged = true;
                         }
                     },
                     chartSettings: {
@@ -434,7 +434,7 @@ describe('Pivot Olap Engine', () => {
                         selectionSettings: { mode: 'Cell', type: 'Single', cellSelectionMode: 'Box' }
                     },
                     toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
-                    'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
+                        'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
                     virtualScrollSettings: { allowSinglePage: false }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
@@ -890,7 +890,7 @@ describe('Pivot Olap Engine', () => {
                         selectionSettings: { mode: 'Cell', type: 'Single', cellSelectionMode: 'Box' }
                     },
                     toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
-                    'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
+                        'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
                     virtualScrollSettings: { allowSinglePage: false }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
@@ -1096,6 +1096,61 @@ describe('Pivot Olap Engine', () => {
         it('Validation', (done: Function) => {
             setTimeout(() => {
                 expect(pivotGridObj.pivotValues[0][1].formattedText === 'Australia').toBeTruthy();
+                done();
+            }, 1000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+
+    describe('- OLAP with drill through', () => {
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        let pivotGridObj: PivotView;
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(DrillThrough);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    catalog: 'Adventure Works DW 2008 SE',
+                    cube: 'Finance',
+                    providerType: 'SSAS',
+                    enableSorting: true,
+                    url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                    localeIdentifier: 1033,
+                    values: [{ name: '[Measures].[Amount]', caption: 'Amount' }]
+                },
+                allowDrillThrough: true,
+                maxRowsInDrillThrough: 3,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        let event: MouseEvent = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('- Clicking the summary cell', (done: Function) => {
+            document.querySelectorAll('td[aria-colindex="2"]')[0].dispatchEvent(event);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
             }, 1000);
         });

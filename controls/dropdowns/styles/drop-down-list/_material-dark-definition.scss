@@ -23,6 +23,7 @@ $ddl-clear-icon-margin-right: 66px !default;
 $ddl-back-icon-margin: 0 10px 0 -52px !default;
 $ddl-back-icon-padding: 0 8px !default;
 $ddl-filter-margin: 0 !default;
+$input-margin-top: 16px !default;
 
 // Small Size
 
@@ -30,6 +31,7 @@ $ddl-small-list-font-size: 12px !default;
 
 // touch small
 $ddl-bigger-small-list-font-size: 13px !default;
+$input-border: $ddl-zero-value $border-type !default;
 
 //enddefault
 

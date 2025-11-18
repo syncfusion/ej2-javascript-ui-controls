@@ -237,6 +237,10 @@ export class Selection {
      * @private
      */
     public isHomeEnd: boolean = false;
+    /**
+     * @private
+     */
+    public isSelectLine: boolean = false;
     // Code for Comparing the offset calculated using old approach and optimized approach
     // /**
     //  * @private
@@ -1743,8 +1747,10 @@ export class Selection {
      */
     public selectLine(): void {
         if (!isNullOrUndefined(this.start)) {
+            this.isSelectLine = true;
             this.moveToLineStart();
             this.handleShiftEndKey();
+            this.isSelectLine = false;
         }
     }
     /**
@@ -6733,6 +6739,9 @@ export class Selection {
             return { 'height': maxLineHeight, 'topMargin': topMargin, 'isItalic': isItalic };
         }
         let height: number = this.documentHelper.textHelper.getHeight(format).Height;
+        if (maxLineHeight === 0 && (element instanceof EditRangeStartElementBox || element instanceof EditRangeEndElementBox)) {
+            maxLineHeight = height;
+        }
         if (height > maxLineHeight) {
             height = maxLineHeight;
         }
@@ -7565,7 +7574,8 @@ export class Selection {
                 }
                 if (element instanceof TextElementBox) {
                     top += element.margin.top > 0 ? element.margin.top : 0;
-                } else if (!(element instanceof BookmarkElementBox && element.indexInOwner === 0 && this.lineHasOnlyBookmarks(element.line))) {
+                } else if (!((element instanceof BookmarkElementBox && element.indexInOwner === 0) || element instanceof EditRangeStartElementBox || element instanceof EditRangeEndElementBox)
+                    && this.lineHasOnlyBookmarksAndEditRanges(element.line)) {
                     let textMetrics: TextSizeInfo = this.documentHelper.textHelper.getHeight(element.characterFormat);     //for ascent and descent
                     let height: number = element.height;
                     if (element instanceof BookmarkElementBox && !this.documentHelper.layout.hasValidElement(element.line.paragraph)) {
@@ -7629,14 +7639,14 @@ export class Selection {
     /**
      * Returns true if the current line contains only the bookmark element.
      */
-    private lineHasOnlyBookmarks(line: LineWidget) {
+    private lineHasOnlyBookmarksAndEditRanges(line: LineWidget) {
         let lineHasOnlyBookmarks: boolean = false;
         if (line.children.length === 0) {
             return false;
         }
         for (let i: number = 0; i < line.children.length; i++) {
             let elementBox = line.children[i];
-            if (elementBox instanceof BookmarkElementBox) {
+            if (elementBox instanceof BookmarkElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox) {
                 lineHasOnlyBookmarks = true;
             }
             else {
@@ -9331,7 +9341,7 @@ export class Selection {
         }
         if (startOffset < length) {
             if (this.isEmpty) {
-                if (inline instanceof TextElementBox || (inline instanceof FieldElementBox
+                if ((inline instanceof TextElementBox && !(inline instanceof FootnoteElementBox)) || (inline instanceof FieldElementBox
                     && ((inline as FieldElementBox).fieldType === 0 || (inline as FieldElementBox).fieldType === 1))) {
                     let previousNode: TextElementBox = this.getPreviousTextElement(inline) as TextElementBox;
                     if (startOffset === 0 && previousNode) {
@@ -9341,13 +9351,23 @@ export class Selection {
                 } else {
                     if (!isNullOrUndefined(this.getPreviousTextElement(inline))) {
                         let element: ElementBox = this.getPreviousTextElement(inline);
-                        this.characterFormat.copyFormat(element.characterFormat, this.documentHelper.textHelper.getFontNameToRender((element as TextElementBox).scriptType, inline.characterFormat));
+                        while (element instanceof FootnoteElementBox) {
+                            element = this.getPreviousTextElement(element);
+                        }
+                        if (!isNullOrUndefined(element)) {
+                            this.characterFormat.copyFormat(element.characterFormat, this.documentHelper.textHelper.getFontNameToRender((element as TextElementBox).scriptType, inline.characterFormat));
+                        }
                         if (inline instanceof EditRangeStartElementBox) {    
                             this.characterFormat.highlightColor = inline.characterFormat.highlightColor;
                         }
                     } else if (!isNullOrUndefined(this.getNextTextElement(inline))) {
                         let element: ElementBox = this.getNextTextElement(inline);
-                        this.characterFormat.copyFormat(element.characterFormat, this.documentHelper.textHelper.getFontNameToRender((element as TextElementBox).scriptType, inline.characterFormat));
+                        while (element instanceof FootnoteElementBox) {
+                            element = this.getNextTextElement(element);
+                        }
+                        if (!isNullOrUndefined(element)) {
+                            this.characterFormat.copyFormat(element.characterFormat, this.documentHelper.textHelper.getFontNameToRender((element as TextElementBox).scriptType, inline.characterFormat));
+                        }
                         if (inline instanceof EditRangeEndElementBox) {
                             this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as any).scriptType, inline.characterFormat));
                         }
@@ -9367,10 +9387,13 @@ export class Selection {
             }
         } else {
             if (length === endPos.offset) {
-                if (inline instanceof TextElementBox || inline instanceof FieldElementBox) {
+                if ((inline instanceof TextElementBox && !(inline instanceof FootnoteElementBox)) || inline instanceof FieldElementBox) {
                     this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                 } else if (!isNullOrUndefined(inline)) {
                     inline = this.getPreviousTextElement(inline);
+                    while (inline instanceof FootnoteElementBox) {
+                        inline = this.getPreviousTextElement(inline);
+                    }
                     if (!isNullOrUndefined(inline)) {
                         this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                     }
@@ -11095,8 +11118,15 @@ export class Selection {
                 case 70:
                     event.preventDefault();
                     if (!isNullOrUndefined(this.owner.optionsPaneModule)) {
+                        this.owner.optionsPaneModule.isReplace = false;
+                        this.owner.optionsPaneModule.isFind = true;
                         this.owner.documentEditorSettings.showNavigationPane = true;
                         this.owner.optionsPaneModule.showHideOptionsPane(true);
+                        setTimeout(() => {
+                            if (this.owner.optionsPaneModule.isFind) {
+                                this.owner.optionsPaneModule.isFind = false;
+                            }
+                        }, 10);
                     }
                     break;
             }
@@ -12624,7 +12654,12 @@ export class Selection {
      * @private
      */
     public getPosition(element: ElementBox, isNavigateToNextEditRegion?: boolean): PositionInfo {
-        let offset: number = element.line.getOffset(element, 1);
+        let offset: number = 0;
+        if (isNavigateToNextEditRegion && !isNullOrUndefined(element.previousElement) && element.previousElement instanceof BookmarkElementBox) {
+            offset = element.line.getOffset(element, 0)
+        } else {
+            offset = element.line.getOffset(element, 1);
+        }
         let startPosition: TextPosition = new TextPosition(this.owner);
         startPosition.setPositionParagraph(element.line, offset);
         let endElement: ElementBox;

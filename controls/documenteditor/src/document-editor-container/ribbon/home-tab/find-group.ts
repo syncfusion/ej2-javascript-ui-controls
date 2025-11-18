@@ -39,6 +39,7 @@ export class FindGroup extends RibbonGroupBase implements IRibbonGroup {
                                 iconCss: 'e-icons e-de-ctnr-find',
                                 clicked: () => {
                                     if (this.documentEditor.searchModule) {
+                                        this.documentEditor.optionsPaneModule.isFind = true;
                                         this.documentEditor.showOptionsPane();
                                     }
                                 }

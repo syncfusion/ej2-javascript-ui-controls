@@ -923,6 +923,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private exactMatchedContent: { [key: string]: Object } | undefined;
     private isDataFiltered: boolean;
     private isInitialRender: boolean;
+    private isInitialValueRender: boolean;
     private remoteDataLength: number;
     private selectedRowIndex: number;
     private isShowSpinner: boolean = true;
@@ -1006,6 +1007,11 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
 
     protected render(): void {
         this.renderInput();
+        if ((!isNOU(this.value) || !isNOU(this.text) || !isNOU(this.index)) && !isNOU(this.dataSource)
+            && this.dataSource instanceof DataManager)
+        {
+            this.isInitialValueRender = true;
+        }
         if (this.gridData == null) {
             this.setGridData(this.dataSource);
         }
@@ -1032,6 +1038,10 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                                 this.mainData = this.gridData;
                                 this.remoteDataLength = (this.gridData as any).length;
                                 this.isMainDataUpdated = true;
+                            }
+                            if (this.isInitialValueRender) {
+                                this.isInitialValueRender = false;
+                                this.initValue(null, null, true);
                             }
                             if (this.popupDiv) {
                                 this.updateGridDataSource();
@@ -1151,7 +1161,10 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 SortOrder.Ascending : SortOrder.Descending }] };
         }
         this.gridObj.appendTo(this.gridEle);
-        if (!isNOU(this.value) || !isNOU(this.text) || !isNOU(this.index)) { this.initValue(null, null, true); }
+        if ((!isNOU(this.value) || !isNOU(this.text) || !isNOU(this.index)) && !isNOU(this.dataSource) && this.dataSource instanceof Array)
+        {
+            this.initValue(null, null, true);
+        }
     }
 
     private handleActionComplete(args: { [key: string]: Object }): void {
@@ -1498,23 +1511,22 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         };
         if ((!isRerender && (!isNOU(this.value) || !isNOU(this.text))) || (isRerender && isValue !== undefined)) {
             const value: string = isRerender ? (isValue ? this.value : this.text) : (!isNOU(this.value) ? this.value : this.text);
-            if (!isNOU(this.dataSource) && this.dataSource instanceof DataManager) {
-                (this.dataSource as DataManager).executeQuery(new Query).then((e: Object) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const dataLists: { [key: string]: Object }[] = (e as any).result;
-                    const filteredData: { [key: string]: Object }[] = dataLists.filter((item: { [key: string]: Object }) => {
-                        const fieldVal: string = item ? (this.updateFieldValue(isRerender ? (isValue ? this.fields.value :
-                            this.fields.text) : !isNOU(this.value) ? this.fields.value : this.fields.text, item)) : null;
-                        return fieldVal === value;
-                    });
-                    if (filteredData.length > 0) {
-                        item = filteredData[0];
-                        updateValues(dataLists);
-                        this.updateChangeEvent(item, prevItemData, prevItemEle, currentValue, currentText, currentIndex,
-                                               isRerender, isInitial);
-                        this.gridObj.selectRow(this.index);
-                    }
+            if (!isNOU(this.dataSource) && this.dataSource instanceof DataManager && this.mainData
+                && this.isMainDataUpdated) {
+                const dataLists: { [key: string]: Object }[] = ((this.query && this.getQuery(this.query as Query).isCountRequired) ||
+                    !this.query) ? (this.mainData as any) : (this.mainData as any).result ? (this.mainData as any).result : this.mainData;
+                const filteredData: { [key: string]: Object }[] = dataLists.filter((item: { [key: string]: Object }) => {
+                    const fieldVal: string = item ? (this.updateFieldValue(isRerender ? (isValue ? this.fields.value :
+                        this.fields.text) : !isNOU(this.value) ? this.fields.value : this.fields.text, item)) : null;
+                    return fieldVal === value;
                 });
+                if (filteredData.length > 0) {
+                    item = filteredData[0];
+                    updateValues(dataLists);
+                    this.updateChangeEvent(item, prevItemData, prevItemEle, currentValue, currentText, currentIndex,
+                                           isRerender, isInitial);
+                    this.gridObj.selectRow(this.index);
+                }
             } else if (!isNOU(this.dataSource) && this.dataSource instanceof Array) {
                 item = (<{ [key: string]: Object }[]>this.dataSource).filter((data: { [key: string]: Object }) => {
                     const fieldVal: string = this.updateFieldValue(isRerender ? (isValue ? this.fields.value : this.fields.text) :
@@ -1524,15 +1536,15 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 updateValues(this.dataSource);
             }
         } else if (!isNOU(this.index)) {
-            if (!isNOU(this.dataSource) && this.dataSource instanceof DataManager) {
-                (this.dataSource as DataManager).executeQuery(new Query).then((e: Object) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const dataLists: { [key: string]: Object }[] = (e as any).result;
-                    item = dataLists[this.index];
-                    updateValues(dataLists);
-                    this.updateChangeEvent(item, prevItemData, prevItemEle, currentValue, currentText, currentIndex, isRerender, isInitial);
-                    this.gridObj.selectRow(this.index);
-                });
+            if (!isNOU(this.dataSource) && this.dataSource instanceof DataManager  && this.mainData
+                && this.isMainDataUpdated) {
+                const dataLists: { [key: string]: Object }[] = ((this.query && this.getQuery(this.query as Query).isCountRequired) ||
+                    !this.query) ? (this.mainData as any) : (this.mainData as any).result ? (this.mainData as any).result : this.mainData;
+                item = dataLists[this.index];
+                updateValues(dataLists);
+                this.updateChangeEvent(item, prevItemData, prevItemEle, currentValue,
+                                       currentText, currentIndex, isRerender, isInitial);
+                this.gridObj.selectRow(this.index);
             } else if (!isNOU(this.dataSource) && this.dataSource instanceof Array) {
                 if (!this.fields.groupBy) {
                     item = (<{ [key: string]: Object }[]>this.dataSource)[this.index];
@@ -2309,15 +2321,14 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 return fieldValue === value;
             })[0];
         }
-        else if (!isNOU(this.dataSource) && this.dataSource instanceof DataManager){
-            (this.dataSource as DataManager).executeQuery(new Query()).then((e: Object) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const dataLists: { [key: string]: Object }[] = (e as any).result;
-                return dataLists.filter((item: { [key: string]: Object }) => {
-                    const fieldValue: string = this.updateFieldValue(this.fields.value, item);
-                    return fieldValue === value;
-                })[0];
-            });
+        else if (!isNOU(this.dataSource) && this.dataSource instanceof DataManager && this.mainData
+            && this.isMainDataUpdated) {
+            const dataLists: { [key: string]: Object }[] = ((this.query && this.getQuery(this.query as Query).isCountRequired) ||
+                !this.query) ? (this.mainData as any) : (this.mainData as any).result ? (this.mainData as any).result : this.mainData;
+            return dataLists.filter((item: { [key: string]: Object }) => {
+                const fieldValue: string = this.updateFieldValue(this.fields.value, item);
+                return fieldValue === value;
+            })[0];
         }
         return null;
     }

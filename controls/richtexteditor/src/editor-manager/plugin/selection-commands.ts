@@ -197,8 +197,7 @@ export class SelectionCommands {
                         value,
                         painterValues,
                         domNode,
-                        endNode,
-                        domSelection);
+                        endNode);
                     counter++;
                 }
                 if (nodes.length === counter) {
@@ -668,8 +667,7 @@ export class SelectionCommands {
         value: string,
         painterValues: FormatPainterValue,
         domNode: DOMNode,
-        endNode: Node,
-        domSelection: NodeSelection): Node {
+        endNode: Node): Node {
         if (!isCursor) {
             if ((formatNode === null && isFormat) || isFontStyle) {
                 if (!isTableSelect && nodes[index as number].nodeName !== 'BR' ) {
@@ -796,22 +794,25 @@ export class SelectionCommands {
                         if (!isNOU(liElement) && liElement.tagName.toLowerCase() !== 'li'){
                             liElement = closest(liElement, 'li') as HTMLElement;
                         }
-                        if (format === 'bold' && liElement) {
-                            domSelection.restore();
-                        }
-                        const selection: Selection = domSelection.get(docElement);
+                        const liParent: HTMLElement = liElement && liElement.parentElement ? closest(liElement.parentElement, 'li') as HTMLElement : null;
                         if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                         (liElement.textContent.trim() === nodes[index as number].textContent.trim() ||
-                        ((liElement.innerText.split('\n').length === nodes.length || selection.containsNode(liElement, true)) && liElement.innerText.split('\n')[0] === nodes[index as number].textContent.trim()))) {
+                        (liElement.innerText.split('\n').length === nodes.length && liElement.innerText.split('\n')[0] === nodes[index as number].textContent.trim()))) {
                             if (format === 'bold') {
                                 liElement.style.fontWeight = 'bold';
                             } else if (format === 'italic') {
                                 liElement.style.fontStyle = 'italic';
                             }
+                            if ((isNOU(liElement.nextSibling) || liElement.nextSibling.nodeName !== 'LI') && !isNOU(liParent)) {
+                                SelectionCommands.conCatenateTextNode(liParent, format, liParent.textContent, format);
+                            }
                         }
                         else if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
                             && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
                             SelectionCommands.conCatenateTextNode(liElement, format, liElement.textContent, format);
+                            if ((isNOU(liElement.nextSibling) || liElement.nextSibling.nodeName !== 'LI') && !isNOU(liParent)) {
+                                SelectionCommands.conCatenateTextNode(liParent, format, liParent.textContent, format);
+                            }
                         }
                     }
                 }
@@ -1076,7 +1077,7 @@ export class SelectionCommands {
         let fontFamily: string = '';
         switch (format) {
         case 'bold':
-            liElement.querySelectorAll('strong').forEach(function (e: HTMLElement): void {
+            liElement.querySelectorAll('strong, b').forEach(function (e: HTMLElement): void {
                 result = result + e.textContent;
             });
             if (result === value) {
@@ -1084,7 +1085,7 @@ export class SelectionCommands {
             }
             break;
         case 'italic':
-            liElement.querySelectorAll('em').forEach(function (e: HTMLElement): void {
+            liElement.querySelectorAll('em, i').forEach(function (e: HTMLElement): void {
                 result = result + e.textContent;
             });
             if (result === value) {

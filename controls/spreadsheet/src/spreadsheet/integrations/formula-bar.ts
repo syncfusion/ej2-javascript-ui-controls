@@ -13,7 +13,7 @@ import { intToDate, isNumber } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
 import { SelectEventArgs, ListView } from '@syncfusion/ej2-lists';
 import { workbookFormulaOperation, selectionComplete, getData, getFormatFromType } from '../../workbook/index';
-import { isFormulaBarEdit, removeAllChildren } from '../common/index';
+import { isFormulaBarEdit, removeAllChildren, mouseDown, getEndEvent } from '../common/index';
 
 /**
  * Represents Formula bar for Spreadsheet.
@@ -342,6 +342,18 @@ export class FormulaBar {
             this.comboBoxInstance.dataBind();
         }
     }
+    private formulaBarMouseDownHandler(e: MouseEvent & TouchEvent): void {
+        if ((e.target as HTMLElement).classList.contains('e-formula-bar') && !this.parent.isEdit) {
+            const mouseUpHandler: Function = (e: MouseEvent & TouchEvent): void => {
+                EventHandler.remove(document, getEndEvent(), mouseUpHandler);
+                if (!(e.target as HTMLElement).classList.contains('e-formula-bar') &&
+                    document.activeElement.classList.contains('e-formula-bar') && !this.parent.isEdit) {
+                    this.startFormulaBarEdit(e);
+                }
+            };
+            EventHandler.add(document, getEndEvent(), mouseUpHandler, this);
+        }
+    }
     private disabletextarea(): void {
         const element: HTMLTextAreaElement = this.getFormulaBar();
         if (this.parent.getActiveSheet().isProtected && !this.parent.isEdit) {
@@ -383,24 +395,10 @@ export class FormulaBar {
     }
     private formulaBarClickHandler(e: MouseEvent & TouchEvent): void {
         const target: HTMLElement = e.target as HTMLElement;
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        const isSheetProtected: boolean = sheet.isProtected;
-        const range: number[] = getCellIndexes(sheet.activeCell);
-        const cell: CellModel = getCell(range[0], range[1], sheet);
-        const isCellLocked: boolean = isLocked(cell, getColumn(sheet, range[1]));
         if (target.classList.contains('e-drop-icon') && target.parentElement.classList.contains('e-formula-bar-panel')) {
             this.toggleFormulaBar(target);
-        } else if (target.classList.contains('e-formula-bar') || document.activeElement.classList.contains('e-formula-bar')) {
-            if (isReadOnly(cell, getColumn(sheet, range[1]), getRow(sheet, range[0]))) {
-                this.parent.notify(readonlyAlert, null);
-                return;
-            }
-            if ((!this.parent.isEdit && (!isSheetProtected || (isSheetProtected && !isCellLocked))) ||
-                (this.parent.isEdit && isSheetProtected && !(target as HTMLTextAreaElement).disabled)) {
-                this.formulaBarScrollEdit();
-            } else if (isSheetProtected && isCellLocked) {
-                this.parent.notify(editAlert, null);
-            }
+        } else if (target.classList.contains('e-formula-bar')) {
+            this.startFormulaBarEdit(e);
         } else if (target.parentElement && target.parentElement.classList.contains('e-name-box')) {
             if (target.classList.contains('e-ddl-icon')) {
                 const eventArgs: { action: string, names: string[] } = { action: 'getNames', names: [] };
@@ -425,6 +423,24 @@ export class FormulaBar {
             target.parentElement.classList.contains('e-insert-function')
             || (this.parent.element.id + '_insert_function' === target.parentElement.id))) {
             this.renderInsertDlg();
+        }
+    }
+
+    private startFormulaBarEdit(e: MouseEvent & TouchEvent): void {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const isSheetProtected: boolean = sheet.isProtected;
+        const range: number[] = getCellIndexes(sheet.activeCell);
+        const cell: CellModel = getCell(range[0], range[1], sheet);
+        const isCellLocked: boolean = isLocked(cell, getColumn(sheet, range[1]));
+        if (isReadOnly(cell, getColumn(sheet, range[1]), getRow(sheet, range[0]))) {
+            this.parent.notify(readonlyAlert, null);
+            return;
+        }
+        if ((!this.parent.isEdit && (!isSheetProtected || (isSheetProtected && !isCellLocked))) ||
+            (this.parent.isEdit && isSheetProtected && !(e.target as HTMLTextAreaElement).disabled)) {
+            this.formulaBarScrollEdit();
+        } else if (isSheetProtected && isCellLocked) {
+            this.parent.notify(editAlert, null);
         }
     }
 
@@ -677,6 +693,7 @@ export class FormulaBar {
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(selectionComplete, this.formulaBarUpdateHandler, this);
         this.parent.on(mouseUpAfterSelection, this.updateValueAfterMouseUp, this);
+        this.parent.on(mouseDown, this.formulaBarMouseDownHandler, this);
         this.parent.on(formulaBarOperation, this.editOperationHandler, this);
         this.parent.on(enableFormulaInput, this.disabletextarea, this);
         this.parent.on(isFormulaBarEdit, this.isFormulaBarEdit, this);
@@ -708,6 +725,7 @@ export class FormulaBar {
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(selectionComplete, this.formulaBarUpdateHandler);
             this.parent.off(mouseUpAfterSelection, this.updateValueAfterMouseUp);
+            this.parent.off(mouseDown, this.formulaBarMouseDownHandler);
             this.parent.off(formulaBarOperation, this.editOperationHandler);
             this.parent.off(enableFormulaInput, this.disabletextarea);
             this.parent.off(isFormulaBarEdit, this.isFormulaBarEdit);

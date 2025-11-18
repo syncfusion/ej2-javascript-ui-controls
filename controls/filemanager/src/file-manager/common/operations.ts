@@ -373,6 +373,7 @@ function triggerRenameOperation(parent: IFileManager, data: Object, eventArgs: B
                 const oldName: string = fileData.name;
                 fileData.name = args.newName;
                 updateChildrenFilterPath(parent, fileData.id, oldName, args.newName);
+                parent.responseData.error = null;
             }
             else {
                 const message: string = 'Cannot rename' + (args.itemData[0] as { [key: string]: Object; }).name + 'to' + args.newName + ': destination already exists.';

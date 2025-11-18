@@ -3,7 +3,8 @@ import { addNote, editNote, deleteNote, showNote, removeNoteContainer, createNot
 import { isNullOrUndefined, EventHandler, closest, detach } from '@syncfusion/ej2-base';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getCellIndexes, getRangeAddress } from '../../workbook/common/address';
-import { CellModel, getCell, updateCell, getSheetName, Workbook, getRowHeight} from '../../workbook/index';
+import { CellModel, getCell, updateCell, getSheetName, Workbook, getRowHeight } from '../../workbook/index';
+import { ExtendedSheet, setCell, importModelUpdate } from '../../workbook/index';
 /**
  * `Note` module
  */
@@ -57,6 +58,7 @@ export class SpreadsheetNote {
         this.parent.on(showNote, this.showNote, this);
         this.parent.on(removeNoteContainer, this.removeNoteContainer, this);
         this.parent.on(updateNoteContainer, this.updateNoteContainer, this);
+        this.parent.on(importModelUpdate, this.updateNotesFromSheet, this);
     }
 
     private removeEventListener(): void {
@@ -68,6 +70,7 @@ export class SpreadsheetNote {
             this.parent.off(createNoteIndicator, this.createNoteIndicator);
             this.parent.off(removeNoteContainer, this.removeNoteContainer);
             this.parent.off(updateNoteContainer, this.updateNoteContainer);
+            this.parent.off(importModelUpdate, this.updateNotesFromSheet);
         }
     }
 
@@ -347,5 +350,17 @@ export class SpreadsheetNote {
             this.parent.notify(removeNoteContainer, '');
             this.isShowNote = null;
         }
+    }
+
+    private updateNotesFromSheet(): void {
+        this.parent.sheets.forEach((sheet: ExtendedSheet) => {
+            if (sheet.notes && sheet.notes.length > 0) {
+                sheet.notes.forEach((model: { text: string, address: number[] }) => {
+                    const indexes: number[] = model.address;
+                    setCell(indexes[0], indexes[1], sheet, { notes: model.text }, true);
+                });
+                delete sheet.notes;
+            }
+        });
     }
 }

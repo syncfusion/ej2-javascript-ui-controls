@@ -2734,6 +2734,7 @@ export class Node extends NodeBase implements IElement {
             (content as GridPanel).cellStyle.strokeColor = 'none';
             this.container = { type: 'Grid', orientation: (this.shape as SwimLaneModel).orientation };
             content.id = this.id;
+            content.pivot = this.pivot;  // 989749 - Incorrect lane position when SwimLane has pivot
             this.container.orientation = (this.shape as SwimLaneModel).orientation;
             this.constraints |= NodeConstraints.HideThumbs;
             initSwimLane(content as GridPanel, diagram, this);

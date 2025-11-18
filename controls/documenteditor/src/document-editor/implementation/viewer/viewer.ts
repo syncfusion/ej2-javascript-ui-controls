@@ -1340,6 +1340,9 @@ export class DocumentHelper {
             this.owner.commentReviewPane.showHidePane(true, 'Comments');
         } else {
             this.owner.isUpdateTrackChanges = false;
+            if (this.owner.showRevisions) {
+                show = true;
+            }
             this.owner.commentReviewPane.showHidePane(show, 'Changes');
             this.owner.isUpdateTrackChanges = true;
             if (!this.owner.enableComment) {
@@ -3795,7 +3798,17 @@ export class DocumentHelper {
                 if (tapCount % 2 === 0) {
                     this.owner.selectionModule.selectCurrentWord();
                 } else if (!this.isDragStarted) {
-                    this.owner.selectionModule.selectParagraph();
+                    if (this.owner.selectionModule.start.paragraph.isInsideTable) {
+                        let cell = this.owner.selectionModule.start.paragraph.associatedCell;
+                        if (!isNullOrUndefined(this.owner.selectionModule.getLastParagraph(cell)) && this.owner.selectionModule.getLastParagraph(cell).lastChild === this.owner.selectionModule.start.paragraph.lastChild) {
+                            this.owner.selectionModule.selectCell();
+                        }
+                        else {
+                            this.owner.selectionModule.selectParagraph();
+                        }
+                    } else {
+                        this.owner.selectionModule.selectParagraph();
+                    }
                 }
             }
         }
@@ -5665,10 +5678,10 @@ export abstract class LayoutViewer {
             textBox.x = this.clientActiveArea.x;
         }
         if (beforeLayout) {
-            let marginLeft: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginLeft);
-            let marginRight: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginRight);
-            let marginTop: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginTop);
-            let marginBottom: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginBottom);
+            let marginLeft: number = textBox.textFrame.marginLeft;
+            let marginRight: number = textBox.textFrame.marginRight;
+            let marginTop: number = textBox.textFrame.marginTop;
+            let marginBottom: number = textBox.textFrame.marginBottom;
             let width: number = textBox.width;
             let height: number = Number.POSITIVE_INFINITY;
             this.clientArea = new Rect(textBox.x + marginLeft, textBox.y + marginTop, width - marginLeft - marginRight, height - marginTop - marginBottom);

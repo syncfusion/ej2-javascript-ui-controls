@@ -1943,7 +1943,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         const eleSwapRow: number = parseInt(collisions[0].getAttribute('data-row'), 10);
         if (this.startRow < eleSwapRow) {
             direction = 1;
-        } else if (this.startRow > eleSwapRow) {
+        } else if (this.startRow >= eleSwapRow) {
             direction = 0;
         }
         if (!this.swapAvailability(collisions, element)) {

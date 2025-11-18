@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 31.2.12 (2025-11-18)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I783876` - Now, the `Apply` and `Cancel` buttons are available in the `Picker` mode of the Rich Text Editor's color picker.
+
+- `#I785329` - Now, the Enter key behaves correctly when the cursor is placed at the end of a text node that is preceded by a `<br>` tag in the Rich Text Editor.
+
+- `#I763871` - Now, when the `BR` is configured for the Enter key in the Rich Text Editor, the backspace action works as expected when the cursor is placed after an anchor tag.
+
 ## 31.2.10 (2025-11-13)
 
 ### RichTextEditor

@@ -575,7 +575,8 @@ export class Selection {
                     this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [scrollUpRowIdx, scrollUpColIdx]), e);
                     this.clearInterval(); return;
                 }
-                this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
+                this.selectRangeByIdx(
+                    [].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e, null, false, false, false, undefined, false, false, true);
             };
             scrollSelection();
             this.scrollInterval = setInterval(() => {
@@ -600,7 +601,7 @@ export class Selection {
                 indexes = args.indexes;
                 rangeIndex = indexes;
             }
-            this.selectRangeByIdx(indexes, e);
+            this.selectRangeByIdx(indexes, e, null, false, false, false, undefined, false, false, true);
         }
         if (isFormulaEdit && this.parent.isEdit && !closest(e.target as Element, '#' + this.parent.element.id + '_edit')) {
             let range: string;
@@ -831,7 +832,8 @@ export class Selection {
 
     private selectRangeByIdx(
         range: number[], e?: MouseEvent | KeyboardEvent, isScrollRefresh?: boolean, isActCellChanged?: boolean, isInit?: boolean,
-        skipChecking?: boolean, selectedRowColIdx?: number, preventAnimation?: boolean, isisRowHeightChanged?: boolean
+        skipChecking?: boolean, selectedRowColIdx?: number, preventAnimation?: boolean, isisRowHeightChanged?: boolean,
+        isMouseMoveScroll?: boolean
     ): void {
         const isMouseEvent: boolean = e && this.isMouseEvent(e as MouseEvent);
         if (e && e.target && isMouseEvent && closest(e.target as Element, '#' + this.parent.element.id + '_edit')) { return; }
@@ -1004,7 +1006,7 @@ export class Selection {
         } else if (!isInit && !this.isautoFillClicked) {
             updateSelectedRange(this.parent as Workbook, selRange, sheet, isMultiRange);
         }
-        rowColSelectArgs = this.isRowColSelected(range);
+        rowColSelectArgs = this.isRowColSelected(range, isMouseMoveScroll);
         this.isRowSelected = rowColSelectArgs.isRowSelected; this.isColSelected = rowColSelectArgs.isColSelected;
         this.highlightHdr(range, e && e.ctrlKey && this.parent.selectionSettings.mode !== 'Single');
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
@@ -1034,7 +1036,11 @@ export class Selection {
         this.parent.notify(refreshOverlayElem, null);
     }
 
-    private isRowColSelected(indexes: number[]): { isRowSelected: boolean, isColSelected: boolean } {
+    private isRowColSelected(indexes: number[], isMouseMoveScroll?: boolean): { isRowSelected: boolean, isColSelected: boolean } {
+        if (isMouseMoveScroll && this.parent.scrollSettings.isFinite) {
+            return { isRowSelected: this.isRowSelected,
+                isColSelected: this.isColSelected };
+        }
         const sheet: SheetModel = this.parent.getActiveSheet();
         return { isRowSelected: indexes[1] === 0 && indexes[3] === sheet.colCount - 1,
             isColSelected: indexes[0] === 0 && indexes[2] === sheet.rowCount - 1 };

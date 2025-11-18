@@ -166,8 +166,8 @@ export class PrintAndExport {
             imageFormat = imageFormat.toUpperCase();
         }
         const fileType: string = imageFormat || 'JPG';
-
-        if (options.multiplePage) {
+        // 990395: Exported diagram image includes excessive blank space and misaligned content
+        if (options.multiplePage && options.region !== 'Content') {
             options.pageHeight = options.pageHeight ? options.pageHeight : this.diagram.pageSettings.height;
             options.pageWidth = options.pageWidth ? options.pageWidth : this.diagram.pageSettings.width;
             options.pageHeight = options.pageHeight ? options.pageHeight : canvas.width;
@@ -334,30 +334,34 @@ export class PrintAndExport {
         options[`${scaleY}`] = 1;
         options[`${scaleOffsetX}`] = 0;
         options[`${scaleOffsetY}`] = 0;
-        options.pageHeight = options.pageHeight || this.diagram.pageSettings.height;
-        options.pageWidth = options.pageWidth || this.diagram.pageSettings.width;
-        let pageOrientation: PageOrientation = options.pageOrientation || this.diagram.pageSettings.orientation;
-        if (!pageOrientation) {
-            pageOrientation = 'Portrait';
-        }
-        if (pageOrientation === 'Portrait') {
-            if (options.pageWidth > options.pageHeight) {
-                const temp: number = options.pageHeight;
-                options.pageHeight = options.pageWidth;
-                options.pageWidth = temp;
+        // 990395: Exported diagram image includes excessive blank space and misaligned content
+        const isContentRegion: boolean = options && options.region === 'Content';
+        if (!isContentRegion) {
+            options.pageHeight = options.pageHeight || this.diagram.pageSettings.height;
+            options.pageWidth = options.pageWidth || this.diagram.pageSettings.width;
+            let pageOrientation: PageOrientation = options.pageOrientation || this.diagram.pageSettings.orientation;
+            if (!pageOrientation) {
+                pageOrientation = 'Portrait';
             }
-        } else {
-            if (options.pageHeight > options.pageWidth) {
-                const temp: number = options.pageWidth;
-                options.pageWidth = options.pageHeight;
-                options.pageHeight = temp;
+            if (pageOrientation === 'Portrait') {
+                if (options.pageWidth > options.pageHeight) {
+                    const temp: number = options.pageHeight;
+                    options.pageHeight = options.pageWidth;
+                    options.pageWidth = temp;
+                }
+            } else {
+                if (options.pageHeight > options.pageWidth) {
+                    const temp: number = options.pageWidth;
+                    options.pageWidth = options.pageHeight;
+                    options.pageHeight = temp;
+                }
+            }
+            if (options.pageWidth && options.pageHeight && !options.multiplePage) {
+                options.stretch = 'Meet';
             }
         }
-        if (options.pageWidth && options.pageHeight && !options.multiplePage) {
-            options.stretch = 'Meet';
-        }
-        const height: number = options.pageHeight || bounds.height;
-        const width: number = options.pageWidth || bounds.width;
+        const height: number = isContentRegion ? bounds.height : (options.pageHeight || bounds.height);
+        const width: number = isContentRegion ? bounds.width : (options.pageWidth || bounds.width);
         if (options.stretch === 'Stretch' || options.stretch === 'Meet' || options.stretch === 'Slice') {
             options[`${scaleX}`] = width / bounds.width;
             options[`${scaleY}`] = height / bounds.height;

@@ -4898,9 +4898,31 @@ export class CommandHandler {
                 second.direction = Point.direction(
                     first.points[first.points.length - 1], second.points[second.points.length - 1]) as Direction;
             }
-            if (connector.sourcePortID !== '' && first.length < 10) {
+            // Bug 986852: Connector segments behave unexpectedly when moving multiple selected nodes.
+            // When the source node is dragged quickly, the segment length is miscalculated because the `distancePoints` method always returns positive values.
+            // To detect cases where the actual segment length should be negative, the logic below checks for such conditions and passes control to the next block to update the length accordingly
+            let length: number;
+            const { points, direction }: { points: PointModel[]; direction: string } = first;
+            const firstPoint: PointModel = points[0];
+            const lastPoint: PointModel = points[points.length - 1];
+            switch (direction) {
+            case 'Left':
+                length = firstPoint.x - lastPoint.x;
+                break;
+            case 'Right':
+                length = lastPoint.x - firstPoint.x;
+                break;
+            case 'Top':
+                length = firstPoint.y - lastPoint.y;
+                break;
+            case 'Bottom':
+                length = lastPoint.y - firstPoint.y;
+                break;
+            }
+            if (connector.sourcePortID !== '' && (first.length < 10 || length < 0)) {
                 if (connector.segments.length > 2) {
                     const next: OrthogonalSegment = connector.segments[2] as OrthogonalSegment;
+                    const secondNext: OrthogonalSegment = connector.segments[3] as OrthogonalSegment;
                     const nextDirection: Direction = Point.direction(next.points[0], next.points[1]) as Direction;
                     if (first.direction === getOppositeDirection(nextDirection)) {
                         if (first.direction === 'Right') {
@@ -4917,15 +4939,59 @@ export class CommandHandler {
                         }
                         first.length = Point.distancePoints(first.points[0], first.points[first.points.length - 1]);
                     } else if (first.direction === nextDirection && next.direction && next.length) {
-                        if (first.direction === 'Top' || first.direction === 'Bottom') {
-                            next.points[0] = first.points[0];
-                            next.points[next.points.length - 1].x = next.points[0].x;
-                        } else {
-                            next.points[0] = first.points[0];
-                            next.points[next.points.length - 1].y = next.points[0].y;
+                        const additionalLengthRequired: number = 20 - length;
+                        const minLength: number = 5;
+                        first.length = 20;
+                        next.length -= additionalLengthRequired;
+                        // If the next segment becomes too short, merge it with the following segment
+                        if (secondNext && next.length < minLength) {
+                            const currentSegment: OrthogonalSegment = connector.segments[1] as OrthogonalSegment;
+                            const currentSecondSegmentLength: number = currentSegment.length;
+                            let mergedLength: number = 0;
+                            if (currentSegment.direction === secondNext.direction) {
+                                mergedLength =  Math.abs(currentSecondSegmentLength + secondNext.length);
+                            } else {
+                                mergedLength =  Math.abs(currentSecondSegmentLength - secondNext.length);
+                            }
+                            // Update the new second segment with the merged length
+                            secondNext.length = mergedLength;
+                            const prevDirection: string = secondNext.direction;
+                            const point1: PointModel = first.points[first.points.length - 1];
+                            const point2: PointModel = secondNext.points[secondNext.points.length - 1];
+                            secondNext.direction = Point.direction(point1, point2) as Direction;
+                            if (!(prevDirection === secondNext.direction || prevDirection === getOppositeDirection(secondNext.direction))) {
+                                secondNext.direction = getOppositeDirection(prevDirection) as Direction;
+                            }
+                            const fourthIndexSeg: OrthogonalSegment = connector.segments[4] as OrthogonalSegment;
+                            if (fourthIndexSeg) {
+                                let fourthAdditionalLength: number = 0;
+                                if (direction === 'Bottom') {
+                                    if (first.points[0].y > secondNext.points[0].y) {
+                                        fourthAdditionalLength = Math.abs(first.points[0].y - secondNext.points[0].y);
+                                        fourthAdditionalLength += 20;
+                                    }
+                                }
+                                else if (direction === 'Top') {
+                                    if (first.points[0].y < secondNext.points[0].y) {
+                                        fourthAdditionalLength = Math.abs(first.points[0].y - secondNext.points[0].y);
+                                        fourthAdditionalLength += 20;
+                                    }
+                                } else if (direction === 'Left') {
+                                    if (first.points[0].x < secondNext.points[0].x) {
+                                        fourthAdditionalLength = Math.abs(first.points[0].x - secondNext.points[0].x);
+                                        fourthAdditionalLength += 20;
+                                    }
+                                } else if (direction === 'Right') {
+                                    if (first.points[0].x > secondNext.points[0].x) {
+                                        fourthAdditionalLength = Math.abs(first.points[0].x - secondNext.points[0].x);
+                                        fourthAdditionalLength += 20;
+                                    }
+                                }
+                                fourthIndexSeg.length += fourthAdditionalLength;
+                            }
+                            // Remove the first two segments (index 1 and 2 in the original snippet)
+                            connector.segments.splice(1, 2);
                         }
-                        next.length = Point.distancePoints(next.points[0], next.points[next.points.length - 1]);
-                        connector.segments.splice(0, 2);
                     } else {
                         first.length = 20;
                     }
@@ -7189,11 +7255,18 @@ Remove terinal segment in initial
                                     node.offsetX += offsetX;
                                     node.offsetY += offsetY;
                                 }
-                                node.width += width; node.height += height; node.rotateAngle += rotateAngle;
-                                this.diagram.nodePropertyChange(node, {} as Node, {
-                                    offsetX: node.offsetX, offsetY: node.offsetY,
-                                    width: node.width, height: node.height, rotateAngle: node.rotateAngle
-                                } as Node);
+                                node.width += width; node.height += height;
+                                let previousAngle: number = node.rotateAngle;
+                                node.rotateAngle += rotateAngle;
+                                const isAngleChanged: boolean = previousAngle !== node.rotateAngle;
+                                let newValue: Node = {
+                                        offsetX: node.offsetX, offsetY: node.offsetY,
+                                        width: node.width, height: node.height, rotateAngle: node.rotateAngle
+                                    } as Node;
+                                if (!isAngleChanged) {
+                                    delete newValue.rotateAngle;
+                                }
+                                this.diagram.nodePropertyChange(node, {} as Node, newValue);
                                 objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds as Rect));
                             }
                         }

@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-calendars/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-calendars)
-
 # JavaScript Calendars Controls
 
 The [JavaScript Calendars](https://www.syncfusion.com/javascript-ui-controls/js-calendar?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm) package contains date and time components such as calendar, date picker, date range picker, date time picker, and time picker. These components come with options to disable dates, restrict selection, and show custom events.
@@ -25,7 +23,7 @@ The [JavaScript Calendar](https://www.syncfusion.com/javascript-ui-controls/js-c
 #### Key features
 
 * [Date range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/fluent2/calendar/date-range.html) - Restricts the range of dates that can be selected by using the `min` and `max` properties.
-* [Customization](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/fluent2/calendar/special-dates.html) - Allows complete control over the appearance of the calendar component.
+* [Customization](https://ej2.syncfusion.com/javascript/documentation/calendar/customization) - Allows complete control over the appearance of the calendar component.
 * [Month or year selection](https://ej2.syncfusion.com/documentation/calendar/calendar-views?lang=typescript#calendar-views) - Provides a flexible option to select only a month or year as the date value.
 * [First day of week](https://ej2.syncfusion.com/documentation/calendar/how-to.html?lang=typescript#change-the-first-day-of-the-week) - Changes the first day of all weeks in every month.
 * [Week number](https://ej2.syncfusion.com/documentation/calendar/how-to/render-the-calendar-with-week-numbers?lang=typescript#render-the-calendar-with-week-numbers) - Displays the week number of the selected date in the calendar by enabling the week number option.
@@ -131,7 +129,7 @@ The [JavaScript DateRangePicker](https://www.syncfusion.com/javascript-ui-contro
 <p align="center">
 Trusted by the world's leading companies
   <a href="https://www.syncfusion.com/">
-    <img src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/syncfusion/syncfusion-trusted-companies.webp" alt="Syncfusion logo">
+    <img src="https://ej2.syncfusion.com/home/images/trusted_companies.png" alt="Syncfusion logo">
   </a>
 </p>
 
@@ -155,6 +153,14 @@ Calendar controls are also offered to following list of frameworks.
 * Expanse Tracker - [Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/#/dashboard?utm_source=npm&utm_campaign=daterangepicker)
 * Loan Calculator - [Source](https://github.com/syncfusion/ej2-sample-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=datepicker)
 
+## Resources
+
+* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
+* [Custom Resource Generator](https://crg.syncfusion.com/)
+* [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)
+* [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=github)
+* [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=github)
+
 ## Support
 
 Product support is available through the following mediums.
@@ -171,10 +177,10 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 ## License and copyright
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this component, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 140+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
 
 > A [free community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license) for more info.
 
-&copy; Copyright 2024 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+&copy; Copyright 2025 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.

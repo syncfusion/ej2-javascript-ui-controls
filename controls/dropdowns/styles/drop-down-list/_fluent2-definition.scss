@@ -2,6 +2,7 @@ $ddl-input-font-size: $text-sm !default;
 $ddl-zero-value: 0 !default;
 $ddl-input-border: 1px $border-light !default;
 $ddl-input-font-family: inherit !default;
+$border-type: solid !default;
 $ddl-input-margin-bottom: 4px !default;
 $ddl-input-padding: 8px $ddl-zero-value 4px !default;
 $ddl-input-group-border-width: $ddl-zero-value !default;
@@ -17,6 +18,7 @@ $ddl-popup-shadow: $shadow-lg !default;
 $ddl-bigger-list-font-size: $text-base !default;
 $ddl-bigger-group-list-font-size: $text-sm !default;
 $ddl-filter-margin: 0 !default;
+$input-margin-top: 24px !default;
 
 // Small Size
 $ddl-small-list-font-size: $text-xs !default;
@@ -36,6 +38,7 @@ $ddl-popup-background-color: $flyout-bg-color !default;
 $ddl-filter-background-color: $flyout-bg-color !default;
 $ddl-filter-box-shadow: none !default;
 $ddl-list-disable-item-color: $flyout-text-color-disabled !default;
+$input-border: $ddl-zero-value $border-type !default;
 
 @include export-module('dropdownlist-bds') {
   .e-ddl.e-control-wrapper .e-ddl-icon::before {

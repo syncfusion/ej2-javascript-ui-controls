@@ -668,7 +668,7 @@ export class Legend {
                                              this.maps.legendSettings.toggleLegendSettings.opacity :
                                              this.maps.legendSettings.toggleLegendSettings.border.opacity,
                                          this.maps.legendSettings.toggleLegendSettings.fill);
-            } else {
+            } else if (currentItem[currentItem.length - 1].length > 0) {
                 const layerIndex: number = currentItem[currentItem.length - 1].layerIndex;
                 this.setToggleAttributes(legendTextElement, legendShapeElement,
                                          this.maps.layers[layerIndex as number].shapeSettings.fill,

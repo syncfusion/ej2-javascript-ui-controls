@@ -8,7 +8,7 @@ import { Grid, ColumnModel, Reorder, Resize, ColumnChooser, Toolbar, ExcelExport
 import { VirtualScroll, Selection, Edit, Page, CommandColumn } from '@syncfusion/ej2-grids';
 import { IDataSet, INumberIndex, IDataOptions, PivotEngine } from '../../base/engine';
 import * as events from '../../common/base/constant';
-import { OlapEngine } from '../../base/olap/engine';
+import { IOlapField, OlapEngine } from '../../base/olap/engine';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { PivotUtil } from '../../base/util';
 
@@ -478,15 +478,22 @@ export class DrillThroughDialog {
         }
         if (this.parent.dataType === 'olap') {
             for (const key of keys) {
+                const baseKey: string = key.replace(/_x005B_|_x005D_|_x0024_/g, '').replace(/_x0020_/g, ' ').replace('].[', '');
+                const splittedKey: string[] = baseKey.split('.').reverse();
+                const fieldKey: string = `[Measures].[${splittedKey[0]}]`;
+                const field: IOlapField = (this.engine && this.engine.fieldList) ? this.engine.fieldList[fieldKey as string] : null;
+                const columnType: string = (field && field.type === 'number') ? 'number' : 'string';
+                const columnFormat: string = field ? !isNullOrUndefined(formatList[field.id]) ? formatList[field.id] :
+                    field.formatString === 'Currency' ? 'C' : field.formatString === 'Percent' ? 'P' : field.format ? field.format : null :
+                    !isNullOrUndefined(formatList[key as string]) ? formatList[key as string] : null;
                 columns.push({
                     field: key.replace(/_x005B_|_x0020_|_x005D_|_x0024_/g, '').replace('].[', '').split('.').reverse().join(''),
-                    headerText: key.replace(/_x005B_|_x005D_|_x0024_/g, '').replace(/_x0020_/g, ' ').
-                        replace('].[', '').split('.').reverse().join('.'),
+                    headerText: splittedKey.join('.'),
                     width: 120,
                     visible: true,
                     validationRules: { required: true },
-                    format: !isNullOrUndefined(formatList[key as string]) ? formatList[key as string] : null,
-                    type: !isNullOrUndefined(formatList[key as string]) ? null : 'string'
+                    format: columnFormat,
+                    type: columnType
                 });
             }
         } else {

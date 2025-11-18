@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 31.2.12 (2025-11-18)
+
+### FileManager
+
+`#F197650` - The issue with incorrect validation message in File Manager component with flat data configuration has been resolved.
+
 ## 31.1.21 (2025-09-23)
 
 ### FileManager

@@ -760,7 +760,6 @@ export class SpellChecker {
             } else {
                 text = inlineObj.element.text;
             }
-
             if (text === ' ') {
                 inlineObj = insertPosition.currentWidget.getInline(this.documentHelper.selection.start.offset + 1, 0);
                 text = inlineObj.element.text;
@@ -791,6 +790,27 @@ export class SpellChecker {
                 this.uniqueWordsCollection.add(text, true);
             }
         }
+    }
+    /**
+     * Method to retrieve error text if text is not matched with error word collection
+     *
+     * @private
+     */
+    public getErrorWordText (text: string): string {
+        const start: TextPosition = this.documentHelper.selection.start.clone();
+        const end: TextPosition = this.documentHelper.selection.end.clone();
+        this.documentHelper.selection.isModifyingSelectionInternally = true;
+        this.documentHelper.selection.selectCurrentWord();
+        let currentWord: string = this.documentHelper.selection.text;
+        let exactData: string = this.manageSpecialCharacters(currentWord, undefined, true);
+        if (!isNullOrUndefined(exactData) && this.errorWordCollection.containsKey(exactData)) {
+            currentWord = exactData;
+        } else {
+            currentWord = text;
+        }
+        this.documentHelper.selection.selectRange(start, end);
+        this.documentHelper.selection.isModifyingSelectionInternally = false;
+        return currentWord;
     }
     private addCorrectWordCollection(text: string): void {
         text = this.manageSpecialCharacters(text, undefined, true);

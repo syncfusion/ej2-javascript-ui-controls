@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 31.2.10 (2025-11-13)
+## 31.2.12 (2025-11-18)
 
 ### DatePicker
 
@@ -11,6 +11,8 @@
 - `#I765718` - Resolved an issue where the iPad keyboard would not open after selecting a date in the popup.
 
 - `#I771080` - Fixed an issue where the float label text was overlapping with the icon of the DatePicker component when long text was used.
+
+- `#I780231` – Fixed a script error thrown when using `fullScreenMode` with `showTodayButton` set to false in mobile view.
 
 ### DatePicker
 

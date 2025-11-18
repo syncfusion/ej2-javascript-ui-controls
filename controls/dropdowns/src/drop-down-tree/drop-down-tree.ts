@@ -2679,8 +2679,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         const isFooter: Element = closest(target, '.' + FOOTER);
         const isScroller: boolean = target.classList.contains(DROPDOWN) ? true :
             (matches(target, '.e-ddt .e-popup') || matches(target, '.e-ddt .e-treeview'));
+        const isSelectAllArea: boolean = target.classList.contains('e-ripple-container');
         if ((this.isPopupOpen && ((!isNOU(this.inputWrapper) &&
-            this.inputWrapper.contains(target)) || isTree || isScroller || isHeader || isFooter)) ||
+            this.inputWrapper.contains(target)) || isTree || isScroller || isHeader || isFooter || isSelectAllArea)) ||
             ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
                 (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(ALLTEXT)
                  || target.classList.contains(CHECKBOXFRAME)))))) {

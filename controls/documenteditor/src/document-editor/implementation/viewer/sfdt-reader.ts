@@ -1365,7 +1365,7 @@ export class SfdtReader {
                 fieldCode = undefined;
                 isCreateTextEleBox = false;
             }
-            if (inline.hasOwnProperty(textProperty[this.keywordIndex]) || inline.hasOwnProperty(breakClearTypeProperty[this.keywordIndex])) {
+            if ((inline.hasOwnProperty(textProperty[this.keywordIndex]) || inline.hasOwnProperty(breakClearTypeProperty[this.keywordIndex])) && !(inline.hasOwnProperty(footnoteTypeProperty[this.keywordIndex]))) {
                 let textElement: any = undefined;
                 if (this.documentHelper.isPageField) {
                     textElement = new FieldTextElementBox();
@@ -2745,7 +2745,7 @@ export class SfdtReader {
             }
         }
     }
-    public parseSectionFormat(keyIndex: number, data: any, sectionFormat: WSectionFormat): void {
+    public parseSectionFormat(keyIndex: number, data: any, sectionFormat: WSectionFormat, isNotInitialLoad?: boolean): void {
         if (!isNullOrUndefined(data[pageWidthProperty[keyIndex]])) {
             sectionFormat.pageWidth = data[pageWidthProperty[keyIndex]];
         }
@@ -2814,8 +2814,14 @@ export class SfdtReader {
             if (data[columnsProperty[keyIndex]]) {
                 for (let i: number = 0; i < data[columnsProperty[keyIndex]].length; i++) {
                     let newCol: WColumnFormat = new WColumnFormat();
-                    newCol.width = HelperMethods.convertPointToPixel(data[columnsProperty[keyIndex]][i][widthProperty[keyIndex]] as number);
-                    newCol.space = HelperMethods.convertPointToPixel(data[columnsProperty[keyIndex]][i][spaceProperty[keyIndex]] as number);
+                    if (isNotInitialLoad) {
+                        newCol.width = data[columnsProperty[keyIndex]][i][widthProperty[keyIndex]] as number;
+                        newCol.space = data[columnsProperty[keyIndex]][i][spaceProperty[keyIndex]] as number;
+                    }
+                    else {
+                        newCol.width = HelperMethods.convertPointToPixel(data[columnsProperty[keyIndex]][i][widthProperty[keyIndex]] as number);
+                        newCol.space = HelperMethods.convertPointToPixel(data[columnsProperty[keyIndex]][i][spaceProperty[keyIndex]] as number);
+                    }
                     newCol.index = i;
                     sectionFormat.columns.push(newCol);
                 }
@@ -4126,6 +4132,8 @@ export class SfdtReader {
                 return "ElbowConnector";
             case 135:
                 return "CurvedConnector";
+            case 136:
+                return "RectangularCallout";
             default:
                 return autoShapeType as AutoShapeType;
         }

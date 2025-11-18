@@ -1163,6 +1163,12 @@ export class BordersAndShadingDialog {
                     borderColor = tableFormat.borders.top.color;
                     borderWidth = tableFormat.borders.top.getLineWidth();
                     fillColor = tableFormat.shading.backgroundColor;
+                    if (tableFormat.shading.backgroundColor === 'empty') {
+                        fillColor = '#FFFFFF';
+                    }
+                    if (tableFormat.borders.top.color === 'empty') {
+                        borderColor = '#000000';
+                    }
                 }
                 this.ulelementShading.value = 'Table';
                 this.shadingColorPicker.value = fillColor;

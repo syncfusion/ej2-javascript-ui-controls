@@ -1073,6 +1073,31 @@ describe('DropDown Tree control hierarchical datasource', () => {
             }, 400);
         });
 
+        it('for ShowSelectAll checkbox Interaction', (done: Function) => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, showSelectAll: true, showCheckBox: true }, '#ddtree');
+            let ele = ddtreeObj.element;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var selectAllElement = ddtreeObj.popupEle.firstElementChild;
+            expect(selectAllElement.classList.contains('e-selectall-parent')).toBe(true);
+            let checkEle: Element = <Element & NodeListOf<Element>>selectAllElement.querySelector('.e-checkbox-wrapper');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle.querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle.querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            checkEle.querySelector('.e-frame').dispatchEvent(e);
+            setTimeout(function () {
+                expect(selectAllElement.querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+                expect(ddtreeObj.value.length).toBe(24);
+                done();
+            }, 400);
+        });
+
         /**
          * selectAllText and unSelectAllText
          */

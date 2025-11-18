@@ -1919,11 +1919,11 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
                 endPos = this.documentHelper.selection.start;
             }
             let lastLine: LineWidget = endPos.paragraph.childWidgets[endPos.paragraph.childWidgets.length - 1] as LineWidget;
-            
+            let isExistBefore: boolean = this.documentHelper.selection.isExistBefore(paragraphWidget, endPos.paragraph);
             const isEndBeforeContentControl = lastLine.children.length === 1 && lastLine.children[0] instanceof ContentControl && endPos.offset === 0;
             isListPara = !isNullOrUndefined(paragraphWidget.paragraphFormat.listFormat.list);
             isParaSelected = this.documentHelper.selection.isParagraphLastLine(lastLine)
-                && (endPos.offset === this.documentHelper.selection.getLineLength(lastLine) + 1 || (!(paragraphWidget.index == endPos.paragraph.index) && isListPara) || isEndBeforeContentControl);
+                && (endPos.offset === this.documentHelper.selection.getLineLength(lastLine) + 1 || isExistBefore || isEndBeforeContentControl);
         } else {
             isParaSelected = true;
         }

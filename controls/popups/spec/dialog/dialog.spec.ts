@@ -2985,7 +2985,7 @@ describe('Maximum Zindex value testing for modal dialog', () => {
     beforeAll(() => {
         mazIndexElement = createElement('div', { id: 'dialog' });
         document.body.appendChild(mazIndexElement);
-        mazIndexElement.style.zIndex = '2147483647';
+        mazIndexElement.style.zIndex = '2147483646';
         mazIndexElement.style.position = 'relative';
         let ele: HTMLElement = createElement('div', { id: 'dialog1' });
         document.body.appendChild(ele);
@@ -3010,7 +3010,7 @@ describe('Maximum Zindex value testing for non modal dialog', () => {
     beforeAll(() => {
         mazIndexElement = createElement('div', { id: 'dialog' });
         document.body.appendChild(mazIndexElement);
-        mazIndexElement.style.zIndex = '2147483647';
+        mazIndexElement.style.zIndex = '2147483646';
         mazIndexElement.style.position = 'relative';
         let ele: HTMLElement = createElement('div', { id: 'dialog1' });
         document.body.appendChild(ele);
@@ -4840,5 +4840,164 @@ describe('EJ2-765718 Keydown Tab focus wrap in modal Dialog when footer button i
 
     afterAll(() => {
         destroyDialog(dlgObj);
+    });
+});
+
+describe('EJ2-984491 Dialog and Nested Dialog Z-Index Verification', () => {
+    let baseZ: number;
+    let zDiv: HTMLElement;
+    let outerElem: HTMLElement;
+    let innerElem: HTMLElement;
+    let outerDialogZ: Dialog;
+    let innerDialogZ: Dialog;
+    let dialog: Dialog;
+    let innerDialog: Dialog;
+    let outerDialogElem: HTMLElement;
+    let innerDialogElem: HTMLElement;
+    let customDiv: HTMLElement;
+    let nestedDialog: Dialog;
+    let nestedDialogElem: HTMLElement;
+
+    beforeAll(() => {
+        baseZ = 5000;
+        zDiv = document.createElement('div');
+        zDiv.id = 'zBaseDiv';
+        zDiv.style.position = 'absolute';
+        zDiv.style.zIndex = String(baseZ);
+        zDiv.style.width = '10px';
+        zDiv.style.height = '10px';
+        document.body.appendChild(zDiv);
+
+        outerElem = document.createElement('div');
+        outerElem.id = 'outerDialogZ';
+        document.body.appendChild(outerElem);
+        outerDialogZ = new Dialog({
+            header: 'Outer Dialog Z',
+            showCloseIcon: true,
+            target: zDiv,
+            content: 'Outer dialog content',
+            height: '100px',
+            width: '200px',
+            animationSettings: { effect: 'None' }
+        });
+        outerDialogZ.appendTo('#outerDialogZ');
+
+        innerElem = document.createElement('div');
+        innerElem.id = 'innerDialogZ';
+        document.body.appendChild(innerElem);
+        innerDialogZ = new Dialog({
+            header: 'Inner Dialog Z',
+            showCloseIcon: true,
+            target: document.getElementById('outerDialogZ'),
+            content: 'Inner dialog content',
+            height: '80px',
+            width: '150px',
+            animationSettings: { effect: 'None' }
+        });
+        innerDialogZ.appendTo('#innerDialogZ');
+        document.body.innerHTML += `
+            <div id="container">
+                <button class="e-control e-btn" id="targetButton" role="button">Open Dialog</button>
+                <div id="dialog"></div>
+                <div id="innerDialog"></div>
+                <div id="dlgContent" style="visibility: hidden">
+                    <button class="e-control e-btn" id="innerButton" role="button">Open InnerDialog</button>
+                </div>
+            </div>
+            <div id="customDiv"
+                style="background-color: grey; width: 500px; height: 200px; position: fixed !important; display: block !important; z-index: 2147483647 !important; top: 50px; left: 50px;">
+            </div>
+        `;
+
+        dialog = new Dialog({
+            header: 'Outer Dialog',
+            showCloseIcon: true,
+            target: document.getElementById('container'),
+            content: document.getElementById('dlgContent'),
+            height: '300px',
+            animationSettings: { effect: 'None' },
+            closeOnEscape: false,
+            width: '400px',
+            beforeOpen: () => {
+                document.getElementById('dlgContent').style.visibility = 'visible';
+            }
+        });
+        dialog.appendTo('#dialog');
+
+        innerDialog = new Dialog({
+            header: 'Inner Dialog',
+            showCloseIcon: true,
+            animationSettings: { effect: 'None' },
+            closeOnEscape: false,
+            content: 'This is a Nested Dialog',
+            target: document.getElementById('dialog'),
+            height: '150px',
+            width: '250px',
+        });
+        innerDialog.appendTo('#innerDialog');
+
+        outerDialogElem = document.querySelector('#dialog') as HTMLElement;
+        innerDialogElem = document.querySelector('#innerDialog') as HTMLElement;
+        customDiv = document.getElementById('customDiv');
+    });
+
+    it('should set dialog z-index relative to introduced div', () => {
+        const outerZ = parseInt(outerElem.style.zIndex, 10);
+        const innerZ = parseInt(innerElem.style.zIndex, 10);
+        expect(outerZ).toBe(baseZ + 1);
+        expect(innerZ).toBe(baseZ + 1);
+    });
+
+    it('should not set z-index 2147483647 for dialog and nested dialog', () => {
+        expect(outerDialogElem).toBeDefined();
+        expect(innerDialogElem).toBeDefined();
+        expect(outerDialogElem.style.zIndex).not.toBe('2147483647');
+        expect(innerDialogElem.style.zIndex).not.toBe('2147483647');
+    });
+
+    it('should have z-index 2147483647 for the custom div', () => {
+        expect(customDiv).toBeDefined();
+        expect(customDiv.style.zIndex).toBe('2147483647');
+    });
+
+    it('should set custom z-index for nested dialog and verify', () => {
+        nestedDialogElem = document.createElement('div');
+        nestedDialogElem.id = 'nestedDialog';
+        document.body.appendChild(nestedDialogElem);
+        nestedDialog = new Dialog({
+            header: 'Nested Dialog',
+            showCloseIcon: true,
+            animationSettings: { effect: 'None' },
+            closeOnEscape: false,
+            content: 'This is a deeply nested Dialog',
+            target: document.getElementById('innerDialog'),
+            height: '100px',
+            width: '200px',
+            zIndex: 2000
+        });
+        nestedDialog.appendTo('#nestedDialog');
+        const nestedDialogDom = document.querySelector('#nestedDialog') as HTMLElement;
+        expect(nestedDialogDom).toBeDefined();
+        expect(nestedDialogDom.style.zIndex).toBe('2000');
+    });
+
+    it('should set z-index outside the component and verify', () => {
+        outerDialogElem.style.zIndex = '3000';
+        expect(outerDialogElem.style.zIndex).toBe('3000');
+        innerDialogElem.style.zIndex = '3500';
+        expect(innerDialogElem.style.zIndex).toBe('3500');
+    });
+
+    afterAll(() => {
+        outerDialogZ.destroy();
+        innerDialogZ.destroy();
+        dialog.destroy();
+        innerDialog.destroy();
+        nestedDialog.destroy();
+        outerElem.remove();
+        innerElem.remove();
+        zDiv.remove();
+        nestedDialogElem.remove();
+        document.body.innerHTML = '';
     });
 });

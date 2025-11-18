@@ -1,7 +1,7 @@
 /**
  * RTE - Color-picker action spec
  */
-import { Browser } from "@syncfusion/ej2-base";
+import { Browser, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { RichTextEditor } from './../../../src/index';
 import { renderRTE, destroy, dispatchKeyEvent, dispatchEvent } from "./../render.spec";
 
@@ -124,6 +124,7 @@ describe(' RTE content selection with ', () => {
         rteObj.notify('selection-save', {});
         let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[1];
         backgroundColorPicker.click();
+        (document.querySelectorAll('.e-control.e-colorpicker')[1] as any).ej2_instances[0].inline = true;
         (document.querySelectorAll('.e-control.e-colorpicker')[1]  as any).ej2_instances[0].showButtons = true;
         (document.querySelectorAll('.e-control.e-colorpicker')[1]  as any).ej2_instances[0].dataBind();
         let backgroundColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
@@ -398,6 +399,47 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
         let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector('.e-split-btn-wrapper .e-split-colorpicker');
         backgroundColorPicker.click();
         expect(selectNode.childNodes[0].nodeName.toLocaleLowerCase()).toBe("span");
+    });
+});
+
+describe("Bug 991469: Apply and Cancel buttons are hidden in the ColorPicker popup in RichTextEditor", () => {
+    let rteEle: HTMLElement;
+    let rteObj: any;
+    beforeEach(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ["FontColor", "BackgroundColor"]
+            },
+            fontColor: {
+                mode: 'Picker',
+                modeSwitcher: true
+            },
+            backgroundColor: {
+                mode: 'Picker',
+                modeSwitcher: true
+            }
+        });
+        rteEle = rteObj.element;
+    });
+    afterEach((done: DoneFn) => {
+        destroy(rteObj);
+        done();
+    });
+    it(" The color picker buttons should only be shown when it's in picker mode, and not when it switches to palette mode dynamically", (done) => {
+        rteObj.focusIn();
+        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-split-btn-wrapper .e-dropdown-btn')[1];
+        backgroundColorPicker.click();
+        setTimeout(() => {
+            let backgroundColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
+            expect(!isNullOrUndefined(backgroundColorPickerItem)).toBe(true);
+            rteObj.backgroundColor.mode = 'Palette';
+            rteObj.dataBind();
+            setTimeout(() => {
+                backgroundColorPickerItem = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
+                expect(isNullOrUndefined(backgroundColorPickerItem)).toBe(true);
+                done();
+            }, 100);
+        }, 200);
     });
 });
 

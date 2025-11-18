@@ -1,5 +1,6 @@
 $ddl-input-font-size: $text-sm !default;
 $ddl-zero-value: 0 !default;
+$border-type: solid !default;
 $ddl-input-border: 1px $border-light !default;
 $ddl-input-font-family: inherit !default;
 $ddl-input-margin-bottom: 4px !default;
@@ -18,6 +19,7 @@ $ddl-popup-shadow: $shadow-lg !default;
 $ddl-readonly-bg-color: $content-bg-color-alt2 !default;
 $ddl-filter-margin: 0 !default;
 $ddl-box-border-color: $border !default;
+$input-margin-top: 24px !default;
 
 // Small Size
 $ddl-small-list-font-size: $text-xs !default;
@@ -36,6 +38,7 @@ $ddl-filter-background-color: $content-bg-color !default;
 $ddl-filter-bg: $content-bg-color !default;
 $ddl-list-icon-color: $icon-color !default;
 $ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
+$input-border: $ddl-zero-value $border-type !default;
 
 @include export-module('dropdownlist-bootstrap5') {
   #{&}.e-popup.e-ddl {

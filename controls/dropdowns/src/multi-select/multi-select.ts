@@ -1053,22 +1053,20 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private updatePopupHeightOnFilter(): void {
-        if (this.allowFiltering && this.allowResize && this.keyboardEvent) {
-            if (this.allowResize && this.popupObj && this.list) {
-                const filterText: string = this.inputElement && this.inputElement.value;
-                const filteredItems: any = this.list.querySelectorAll('li.e-list-item:not(.e-hide-listitem):not(.e-disabled)');
-                const isFiltering: boolean = filterText && filterText.length > 0;
-                if (isFiltering && filteredItems.length > 0) {
-                    const itemHeight: any = filteredItems[0].offsetHeight;
-                    const newHeight: number = filteredItems.length * itemHeight;
-                    this.popupObj.element.style.maxHeight = newHeight + 16 + 'px';
-                    this.list.style.maxHeight = newHeight + 'px';
-                } else if (!isFiltering) {
-                    const restoreHeight: number = this.resizeHeight || parseInt(<string>this.popupHeight, 10);
-                    this.popupObj.element.style.maxHeight = restoreHeight + 'px';
-                    this.list.style.maxHeight = restoreHeight + 'px';
-                    this.setResize();
-                }
+        if (this.allowFiltering && this.allowResize && this.keyboardEvent && this.popupObj && this.list) {
+            const filterText: string = this.inputElement && this.inputElement.value;
+            const filteredItems: any = this.list.querySelectorAll('li.e-list-item:not(.e-hide-listitem):not(.e-disabled)');
+            const isFiltering: boolean = filterText && filterText.length > 0;
+            if (isFiltering && filteredItems.length > 0) {
+                const itemHeight: any = filteredItems[0].offsetHeight;
+                const newHeight: number = filteredItems.length * itemHeight;
+                this.popupObj.element.style.maxHeight = newHeight + 16 + 'px';
+                this.list.style.maxHeight = newHeight + 'px';
+            } else if (!isFiltering) {
+                const restoreHeight: number = this.resizeHeight || parseInt(<string>this.popupHeight, 10);
+                this.popupObj.element.style.maxHeight = restoreHeight + 'px';
+                this.list.style.maxHeight = restoreHeight + 'px';
+                this.setResize();
             }
         }
     }
@@ -3223,10 +3221,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.chipCollectionWrapper) {
             const selectedChips:  NodeListOf<Element>  = <NodeListOf<HTMLElement>>
             this.chipCollectionWrapper.querySelectorAll('span.' + CHIP + '.' + CHIP_SELECTED);
-            if (selectedChips && selectedChips.length > 0)
-            {
-                for (let i: number = 0; i < selectedChips.length; i++) {
-                    (<HTMLElement>selectedChips[i as number]).removeAttribute('aria-live');
+            if (selectedChips && selectedChips.length === 1) {
+                selectedChips[0].removeAttribute('id');
+                if (!isNullOrUndefined(this.inputElement) && this.inputElement.hasAttribute('aria-activedescendant')) {
+                    this.inputElement.removeAttribute('aria-activedescendant');
                 }
             }
             this.removeChipFocus();
@@ -3235,7 +3233,10 @@ export class MultiSelect extends DropDownBase implements IInput {
     private addChipSelection(element: Element, e?: MouseEvent | KeyboardEventArgs): void {
         addClass([element], CHIP_SELECTED);
         if (element) {
-            element.setAttribute('aria-live', 'polite');
+            element.setAttribute('id',  this.element.id + '_chip_item');
+            if (!isNullOrUndefined(this.inputElement) && element.id && !this.inputElement.hasAttribute('aria-activedescendant')) {
+                this.inputElement.setAttribute('aria-activedescendant', element.id);
+            }
         }
         this.trigger('chipSelection', e);
     }

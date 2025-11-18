@@ -915,8 +915,12 @@ export class BaseHistoryInfo {
                 this.owner.documentHelper.layout.shiftLayoutedItems(false);
             }
         }
+        if (this.action === 'SectionBreak' || this.action === 'SectionBreakContinuous' && this.editorHistory.isRedoing &&
+            this.owner.selectionModule.sectionFormat.numberOfColumns > 1) {
+            this.documentHelper.layout.layoutWholeDocument(true);
+        }
         this.owner.editorModule.reLayout(this.owner.selectionModule, this.owner.selectionModule.isEmpty);
-        if (this.editorHistory.isUndoing && this.action === 'SectionBreak') {
+        if (this.editorHistory.isUndoing && (this.action === 'SectionBreak' || (this.action === 'SectionBreakContinuous' && this.owner.selectionModule.sectionFormat.numberOfColumns > 1))) {
             this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
             this.documentHelper.layout.layoutWholeDocument();
             this.owner.editorModule.isSkipOperationsBuild = false;            

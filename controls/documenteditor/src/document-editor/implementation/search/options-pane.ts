@@ -88,6 +88,10 @@ export class OptionsPane {
     /**
      * @private
      */
+    public isFind: boolean = false;
+    /**
+     * @private
+     */
     public isReplace: boolean = false;
     /**
      * @private
@@ -1314,12 +1318,11 @@ export class OptionsPane {
                 } else {
                     this.tabInstance.hideTab(2, false);
                 }
-                if (this.isReplace && !this.documentHelper.owner.isReadOnlyMode) {
+                if (this.isReplace && !this.documentHelper.owner.isReadOnlyMode && !this.isFind) {
                     this.tabInstance.select(2);
-                    this.isReplace = false;
                     this.isOptionsPane = false;
                 }
-                else if (this.isNavigationPane) {
+                else if (this.isNavigationPane && !this.isFind) {
                     this.isOptionsPane = false;
                     this.isHeadingTab = true;
                     this.onHeadingPane();

@@ -10,7 +10,7 @@ export type HightLightType = 'Contains' | 'StartsWith' | 'EndsWith';
  */
 export function highlightSearch(element: HTMLElement, query: string, ignoreCase: boolean, type?: HightLightType): void {
     const isHtmlElement: boolean = /<[^>]*>/g.test(element.innerText);
-    if (isHtmlElement) {
+    if (isHtmlElement && query !== '') {
         element.innerText = element.innerText.replace(/[\u00A0-\u9999<>&]/g, (match: string) => `&#${match.charCodeAt(0)};`);
     }
     if (query === '') {

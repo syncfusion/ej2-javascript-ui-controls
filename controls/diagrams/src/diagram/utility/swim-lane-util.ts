@@ -153,6 +153,7 @@ export function headerDefine(grid: GridPanel, diagram: Diagram, object: NodeMode
         offsetX: object.offsetX, offsetY: object.offsetY,
         rowIndex: 0, columnIndex: 0,
         maxWidth: maxWidth,
+        pivot: object.pivot,  // 989749 - Incorrect lane position when SwimLane has pivot
         container: { type: 'Canvas', orientation: 'Horizontal' }
     } as NodeModel;
     if (!canSelect(object)) {
@@ -192,6 +193,7 @@ export function phaseDefine(
         offsetX: object.offsetX, offsetY: object.offsetY,
         style: shape.phases[parseInt(phaseIndex.toString(), 10)].style,
         rowIndex: rowValue, columnIndex: colValue,
+        pivot: object.pivot,  // 989749 - Incorrect lane position when SwimLane has pivot
         container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
     };
     phaseObject[shape.orientation === 'Horizontal' ? 'height' : 'width'] = shape.phaseSize;
@@ -236,6 +238,7 @@ export function laneCollection(
             offsetX: object.offsetX, offsetY: object.offsetY,
             style: shape.lanes[parseInt(laneIndex.toString(), 10)].style,
             addInfo: shape.lanes[parseInt(laneIndex.toString(), 10)].addInfo,
+            pivot: object.pivot,  // 989749 - Incorrect lane position when SwimLane has pivot
             constraints: NodeConstraints.Default | NodeConstraints.ReadOnly | NodeConstraints.AllowDrop,
             container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
         };
@@ -257,6 +260,7 @@ export function laneCollection(
                 annotations: [cloneObject(shape.lanes[parseInt(laneIndex.toString(), 10)].header.annotation)],
                 offsetX: object.offsetX, offsetY: object.offsetY,
                 rowIndex: rowValue, columnIndex: colValue,
+                pivot: object.pivot,  // 989749 - Incorrect lane position when SwimLane has pivot
                 container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
             };
             laneNode.annotations[0].rotateAngle = orientation ? 270 : 0;
@@ -1858,6 +1862,11 @@ export function gridSelection(diagram: Diagram, selectorModel: SelectorModel, id
                     canvas.offsetY = wrapper.offsetY;
                     element.width = parentNode.wrapper.actualSize.width;
                     element.height = wrapper.actualSize.height;
+                }
+                // 989749 - Incorrect lane position when SwimLane has pivot
+                if (parentNode.container.orientation === 'Vertical' && (node as Node).isPhase ||
+                    parentNode.container.orientation === 'Horizontal' && (node as Node).isLane) {
+                    canvas.pivot = node.pivot;
                 }
             }
             canvas.children.push(element);

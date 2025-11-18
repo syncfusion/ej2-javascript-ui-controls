@@ -1,5 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
+import { ExtendedSheet } from '../../../src/index';
 describe('Note ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
 
@@ -293,6 +294,28 @@ describe('Note ->', () => {
                 expect(helper.getInstance().sheets[0].rows[0].cells[2].notes).toBe('Spreadsheet');
                 done();
             });
+        });
+    });
+
+    describe('EJ2-990399, Migrate Note properties from the cell model to the sheet model during import ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking sheet notes update to cells during import action', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            const sheet: ExtendedSheet = spreadsheet.sheets[0];
+            const note: { text: string, address: number[] }[] = [
+                { text: "Notes added", address: [0, 0] },
+                { text: "Notes added", address: [0, 3] }]
+            spreadsheet.setSheetPropertyOnMute(sheet, 'notes', note);
+            spreadsheet.spreadsheetNoteModule.updateNotesFromSheet();
+            expect(sheet.rows[0].cells[0].notes).toBe('Notes added');
+            expect(sheet.rows[0].cells[3].notes).toBe('Notes added');
+            expect(sheet.hyperLinks).toBeUndefined();
+            done();
         });
     });
 });

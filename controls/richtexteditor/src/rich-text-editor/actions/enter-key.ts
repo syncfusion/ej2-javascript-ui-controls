@@ -456,14 +456,18 @@ export class EnterKeyAction {
                                             const isPreviousSiblingBR: boolean = cursorElement.previousElementSibling && cursorElement.previousElementSibling.nodeName === 'BR';
                                             const isCursorNodeBR: boolean = cursorFocusNode.nodeName === 'BR';
                                             if (isPreviousSiblingBR || isCursorNodeBR) {
-                                                insertedZWSP = document.createTextNode('\u200B');
-                                                cursorFocusNode.parentNode.insertBefore(insertedZWSP, cursorFocusNode);
-                                                if (isCursorNodeBR && !cursorElement.previousElementSibling) {
-                                                    cursorFocusNode.parentNode.insertBefore(document.createElement('br'), insertedZWSP);
+                                                const isBlockEnter: boolean = ((this.parent.enterKey === 'P' || this.parent.enterKey === 'DIV') && !shiftKey);
+                                                const cursorInText: boolean = cursorFocusNode.nodeName === '#text' && this.range.startContainer === cursorFocusNode && this.range.startOffset > 0;
+                                                if (!(isBlockEnter && cursorInText)) {
+                                                    insertedZWSP = document.createTextNode('\u200B');
+                                                    cursorFocusNode.parentNode.insertBefore(insertedZWSP, cursorFocusNode);
+                                                    if (isCursorNodeBR && !cursorElement.previousElementSibling) {
+                                                        cursorFocusNode.parentNode.insertBefore(document.createElement('br'), insertedZWSP);
+                                                    }
+                                                    this.range.setStartAfter(insertedZWSP);
+                                                    this.range.setEndBefore(cursorFocusNode);
+                                                    previousSiblingBR = true;
                                                 }
-                                                this.range.setStartAfter(insertedZWSP);
-                                                this.range.setEndBefore(cursorFocusNode);
-                                                previousSiblingBR = true;
                                             }
                                         }
                                     }

@@ -2631,10 +2631,10 @@ describe("962380 - Applying Bold to Main Bullet Also Affects Sub-Bullets in Rich
         selection.addRange(range);
         let bold = document.getElementById(rteObj.getID() + '_toolbar_Bold');
         bold.click();
-        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold;"><strong>Syncfusion</strong><ol><li>RTE<ol><li id="list2">Bold Action</li></ol></li></ol></li></ol>');
+        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1"><strong>Syncfusion</strong><ol><li>RTE<ol><li id="list2">Bold Action</li></ol></li></ol></li></ol>');
         let italic = document.getElementById(rteObj.getID() + '_toolbar_Italic');
         italic.click();
-        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold; font-style: italic;"><strong><em>Syncfusion</em></strong><ol><li>RTE<ol><li id="list2">Bold Action</li></ol></li></ol></li></ol>');
+        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1"><strong><em>Syncfusion</em></strong><ol><li>RTE<ol><li id="list2">Bold Action</li></ol></li></ol></li></ol>');
     });
 });
 

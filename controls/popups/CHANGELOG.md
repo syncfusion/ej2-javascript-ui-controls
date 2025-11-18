@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 31.2.12 (2025-11-18)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I779528` - Fixed an issue where focus was not retained within the `Dialog` when a `Grid` component was embedded in its content.
+
+## 31.2.5 (2025-11-04)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#F70075` - Fixed a miscalculation of the dialog's z-index caused by DOM elements injected by extensions.
+
 ## 31.2.2 (2025-10-15)
 
 ### Dialog

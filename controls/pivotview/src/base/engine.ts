@@ -5635,7 +5635,9 @@ export class PivotEngine {
                             value = this.getAggregateValue(rowIndex, columnIndex, <number>aggregatedValue.index, type, false);
                             aggregateField[<string>aggregatedValue.formula] = value;
                         }
-                        actualFormula = (actualFormula).replace(<string>aggregatedValue.formula, String(value));
+                        actualFormula = (actualFormula).replace(
+                            <string>aggregatedValue.formula, value < 0 ? `(${String(value)})` : String(value)
+                        );
                     }
                 }
                 cellValue = this.evaluate(actualFormula);

@@ -322,8 +322,13 @@ export class OlapEngine {
             const isRowGrandTolExists: boolean = !isNullOrUndefined(rowTuples[0]) &&
                 (Number(rowTuples[0].querySelectorAll('Member')[0].querySelector('LNum').textContent) === 0) &&
                     rowTuples[0].querySelectorAll('Member')[0].querySelector('MEMBER_VALUE').textContent.startsWith('All');
-            const isAddColGrandTotals: boolean = isColGrandTolExists ? (calColPage + calColSize >= colTuples.length - 1) : false;
-            const isAddRowGrandTotals: boolean = isRowGrandTolExists ? (calRowPage + calRowSize >= rowTuples.length - 1) : false;
+            const isTop: boolean = this.dataSourceSettings.grandTotalsPosition === 'Top';
+            const isAddColGrandTotals: boolean = isColGrandTolExists && (
+                isTop ? calColPage === 0 : (calColPage + calColSize) >= (colTuples.length - 1)
+            );
+            const isAddRowGrandTotals: boolean = isRowGrandTolExists && (
+                isTop ? calRowPage === 0 : (calRowPage + calRowSize) >= (rowTuples.length - 1)
+            );
             const colDepth: number = isColGrandTolExists ?
                 this.getAxisdepth(colTuples) : measureInfo.measureAxis === 'column' ? measureInfo.valueInfo.length : 1;
             const rowDepth: number = isRowGrandTolExists ?
@@ -3671,7 +3676,12 @@ export class OlapEngine {
                 const child: HTMLElement[] = [].slice.call(tag[i as number].children);
                 let j: number = 0;
                 while (j < child.length) {
-                    json.push('"' + child[j as number].tagName + '"' + ':' + '"' + child[j as number].textContent + '"');
+                    const element: Element = child[j as number];
+                    const tagName: string = element.tagName;
+                    const textContent: string = element.textContent;
+                    const xsiType: string = element.getAttribute('xsi:type');
+                    json.push('"' + tagName + '":' + (xsiType === 'xsd:double' ? parseFloat(textContent || '0') :
+                        '"' + textContent + '"'));
                     j++;
                 }
                 i++;

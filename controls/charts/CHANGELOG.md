@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.10 (2025-11-13)
+## 31.2.12 (2025-11-18)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F71059` - Polar range column now display properly even when the low and high values are the same.
+
+## 31.2.6 (2025-11-18)
 
 ### Chart
 

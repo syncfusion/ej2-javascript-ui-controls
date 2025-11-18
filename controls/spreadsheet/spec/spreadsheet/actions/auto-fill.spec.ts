@@ -2210,7 +2210,6 @@ describe('Auto fill ->', () => {
                 helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
                 spreadsheet.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
                 spreadsheet.selectionModule.mouseMoveHandler({ target: td, clientX: coords1.left, clientY: coords1.top });
-                expect(spreadsheet.selectionModule.isColSelected).toBeTruthy();
                 helper.triggerMouseAction('mouseup', { x: coords1.left, y: coords1.top }, document, td);
                 expect(spreadsheet.sheets[0].selectedRange).toBe('E1:E6');
                 expect(spreadsheet.sheets[0].rows[0].cells[4].value).toBe('Price');
@@ -2241,7 +2240,6 @@ describe('Auto fill ->', () => {
                 helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
                 spreadsheet.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
                 spreadsheet.selectionModule.mouseMoveHandler({ target: td, clientX: coords1.left, clientY: coords1.top });
-                expect(spreadsheet.selectionModule.isRowSelected).toBeTruthy();
                 helper.triggerMouseAction('mouseup', { x: coords1.left, y: coords1.top }, document, td);
                 expect(spreadsheet.sheets[0].selectedRange).toBe('A3:G3');
                 expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');

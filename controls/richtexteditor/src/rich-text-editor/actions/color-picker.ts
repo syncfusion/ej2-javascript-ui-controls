@@ -236,6 +236,7 @@ export class ColorPickerInput {
                             break;
                         }
                         case 'mode':
+                            this.fontColorPicker.showButtons = newProp.fontColor.mode === 'Picker' ? true : false;
                             this.fontColorPicker.setProperties({ mode: newProp.fontColor.mode });
                             break;
                         case 'columns':
@@ -263,6 +264,7 @@ export class ColorPickerInput {
                             break;
                         }
                         case 'mode':
+                            this.backgroundColorPicker.showButtons = newProp.backgroundColor.mode === 'Picker' ? true : false;
                             this.backgroundColorPicker.setProperties({ mode: newProp.backgroundColor.mode });
                             break;
                         case 'columns':

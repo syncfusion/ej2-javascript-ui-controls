@@ -526,6 +526,40 @@ describe('RTE CR issues ', () => {
             destroy(rteObj);
         });
     });
+    describe('Bug 992064: Editor gets broken when pressing the backspace key after a link in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `text
+            <a
+              contenteditable="false"
+              href="https://google.com"
+              title=""
+              target="_blank"
+              style="word-break: normal"
+              data-tracking-enabled="false"
+              data-tracking-tag=""
+              >hyperlink</a
+            >
+            text`,
+            enterKey: 'BR',
+            shiftEnterKey: 'BR',
+            });
+        });
+        it(' The editor should not be deleted when Backspace is pressed immediately following a link', () => {
+            const startNode: Element = rteObj.inputElement.lastChild as Element;
+            setCursorPoint(startNode, 0);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            expect(rteObj.inputElement).not.toBe(null);
+            expect(rteObj.inputElement.textContent.length).not.toBe(0);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('883844: When using the Refresh method, RichTextEditor doesnot get refreshed to initial rendering', () => {
         let editor: RichTextEditor;
         beforeAll(() => {
@@ -846,6 +880,41 @@ describe('RTE CR issues ', () => {
             (<any>rteObj).keyDown(EnterkeyboardEventArgs);
             setTimeout(() => {
                 expect(rteObj.inputElement.innerHTML === '<ul><li><div>one</div></li><li><div>two</div></li></ul><div><br></div><div class="test">three</div>').toBe(true); 
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 992121: Enter doesnt work properly after using Shift-Enter in the Vue RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let EnterkeyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 13,
+            keyCode: 13,
+            which: 13,
+            code: 'Enter',
+            action: 'enter',
+            type: 'keydown'
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>Hi<br>Hello</p>'
+            });
+        });
+        it(' when enter is pressed after br followed by text, new block node should be created', (done: DoneFn) => {
+            rteObj.dataBind();
+            let pElement: HTMLElement = rteObj.inputElement.querySelector('p');
+            setCursorPoint(pElement.lastChild, pElement.lastChild.textContent.length);
+            (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === '<p>Hi<br>Hello</p><p><br></p>').toBe(true); 
                 done();
             }, 100);
         });

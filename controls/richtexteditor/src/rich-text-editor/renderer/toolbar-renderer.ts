@@ -681,6 +681,7 @@ export class ToolbarRenderer implements IRenderer {
                     proxy.parent.notify(events.selectionSave, {});
                     this.rangeStore = true;
                 }
+                colorPicker.showButtons = colorPicker.mode === 'Picker' ? true : false;
             },
             change: (colorPickerArgs: IColorPickerEventArgs): void => {
                 if (this.rangeStore) {

@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { AfterHyperlinkArgs, CellModel, DialogBeforeOpenEventArgs, HyperlinkModel, RowModel } from '../../../src';
+import { AfterHyperlinkArgs, CellModel, DialogBeforeOpenEventArgs, ExtendedSheet, HyperlinkModel, RowModel } from '../../../src';
 import { getFormatFromType, BeforeHyperlinkArgs, setCellFormat } from '../../../src/index';
 import { Spreadsheet } from "../../../src/index"; 
 import { getComponent } from '@syncfusion/ej2-base';
@@ -1436,6 +1436,28 @@ describe('Hyperlink ->', () => {
             expect(beforeHyperlinkClickArgs).toBe('{"hyperlink":"http://www.google.com","address":"A2","target":"_blank","cancel":true,"name":"beforeHyperlinkClick"}');
             expect(afterHyperlinkClickSpy).not.toHaveBeenCalled();
             spreadsheet.beforeHyperlinkClick = undefined;
+            done();
+        });
+    });
+
+    describe('EJ2-990399, Migrate Hyperlink properties from the cell model to the sheet model during import ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking sheet hyperlinks update to cells during import action', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            const sheet: ExtendedSheet = spreadsheet.sheets[0];
+            const hyperlink: { address: string, range: number[] }[] = [
+                { address: "http://www.google.com", range: [0, 0] },
+                { address: "http://www.google.com", range: [0, 3] }]
+            spreadsheet.setSheetPropertyOnMute(sheet, 'hyperLinks', hyperlink);
+            spreadsheet.workbookHyperlinkModule.updateHyperLinksFromSheet();
+            expect(sheet.rows[0].cells[0].hyperlink).toBe('http://www.google.com');
+            expect(sheet.rows[0].cells[3].hyperlink).toBe('http://www.google.com');
+            expect(sheet.hyperLinks).toBeUndefined();
             done();
         });
     });

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.10 (2025-11-13)
+## 31.2.12 (2025-11-18)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- Grand Totals are now correctly displayed at the top of OLAP Pivot Tables when virtualization is enabled.
+
+## 31.2.5 (2025-11-04)
 
 ### Pivot Table
 

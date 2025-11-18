@@ -2,6 +2,42 @@
 
 ## [Unreleased]
 
+## 31.2.12 (2025-11-18)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I776220` - Table fill color was not applied correctly.
+`#I778750` - Alignment, line spacing, and font settings were not preserved.
+`#I770477` - Cell width became incorrect after merging cells.
+`#I783704` - Find pane did not open with the Ctrl + F shortcut.
+`#I779496` - Fixed a script error that occurred when deleting content inside a table cell.
+`#I775650` - "No Color" highlight option now shows the pointer cursor like other buttons.
+`#I783047` - Corrected superscript formatting when typing a comma.
+`#I770706` - Undo now restores the original bullet-point formatting.
+`#I774637` - Spell-check suggestions were not displayed properly.
+`#I779125` - Resolved script error when exporting the document as DOCX.
+`#I773853` - The `showRevisions` property now works correctly in protected documents.
+`#I763990` - Footnotes were undefined when serializing a document.
+`#I781625` - Resolved selection issues with nested bookmarks when using the `navigateToNextEditingRegion` API.
+`#I780167` - Reduced lag during text insertion and backspacing.
+`#I776105` - Prevented image clipping when "Exactly" line spacing is applied.
+`#I778204` - Cursor is now visible in an empty editable region.
+
+## 31.2.10 (2025-11-13)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I764638` - Resolved an issue where justified text ending with a line break was not displayed correctly in the Document Editor.
+`#I729357` - Fixed unintended removal of extra content when the Delete API was used.
+`#I778197` - Prevented multiple ribbon refreshes triggered by bookmark selection changes.
+`#I778003` - The Header & Footer ribbon tab now updates correctly based on the current selection.
+`#I766630` - Improved performance when editing inside nested tables.
+`#I778414` - Fixed improper table layout when editing via the Table Properties dialog.
+
 ## 31.2.5 (2025-11-04)
 
 ### DocumentEditor

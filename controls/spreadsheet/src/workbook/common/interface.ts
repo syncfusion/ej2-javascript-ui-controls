@@ -414,6 +414,8 @@ export interface ExtendedSheet extends Sheet {
     chartColl?: ChartModel[];
     imageColl?: ImageModel[];
     mergedCells?: MergedCellModel[];
+    notes?: { text: string, address: number[] }[],
+    hyperLinks?: { address: string, range: number[] }[];
 }
 
 /**

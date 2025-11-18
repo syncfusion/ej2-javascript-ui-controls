@@ -689,7 +689,7 @@ describe('Map polygon properties tesing', () => {
         ];
         map.refresh();
         });
-    })
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

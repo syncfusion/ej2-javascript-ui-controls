@@ -1019,5 +1019,81 @@ describe('FileManager control large icon view', () => {
                 }, 500);
             }, 500);
         });
+
+        it('should show error when renaming to original name after paste conflict, then allow rename to unique name', function (done) {
+            feObj = new FileManager({
+                fileSystemData: flatData,
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            setTimeout(() => {
+                const contextMenu = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
+                const largeIcons = document.getElementById('file_largeicons').querySelectorAll('li');
+                const originalIndex = Array.from(largeIcons).findIndex(li =>
+                    li.querySelector('.e-list-text') &&
+                    li.querySelector('.e-list-text').textContent === 'textDocument.doc'
+                );
+                expect(originalIndex).toBeGreaterThan(-1);
+                mouseEventArgs.target = largeIcons[originalIndex];
+                tapEvent.tapCount = 1;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                const evt = document.createEvent('MouseEvents');
+                evt.initEvent('contextmenu', true, true);
+                largeIcons[originalIndex].dispatchEvent(evt);
+                contextMenu.element.querySelector('.e-fe-copy').click();
+                mouseEventArgs.target = document.getElementById('file_largeicons');
+                tapEvent.tapCount = 1;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                const pasteEvt = document.createEvent('MouseEvents');
+                pasteEvt.initEvent('contextmenu', true, true);
+                document.getElementById('file_largeicons').dispatchEvent(pasteEvt);
+                contextMenu.element.querySelector('.e-fe-paste').click();
+                const overwriteDialog = document.getElementById('file_extn_dialog');
+                expect(overwriteDialog).toBeDefined();
+                const yesButton = Array.from(overwriteDialog.querySelectorAll('.e-btn')).find(btn => btn.textContent.trim() === 'Yes');
+                expect(yesButton).toBeDefined();
+                (yesButton as HTMLElement).click();
+                const updatedItems = document.getElementById('file_largeicons').querySelectorAll('li');
+                const pastedItem = Array.from(updatedItems).find(li => {
+                    const textEl = li.querySelector('.e-list-text');
+                    return textEl && textEl.textContent && textEl.textContent.includes('textDocument(0).doc');
+                });
+                expect(pastedItem).toBeDefined();
+                mouseEventArgs.target = pastedItem;
+                tapEvent.tapCount = 1;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                const renameEvt = document.createEvent('MouseEvents');
+                renameEvt.initEvent('contextmenu', true, true);
+                pastedItem.dispatchEvent(renameEvt);
+                (document.getElementById('file_cm_rename') as HTMLElement).click();
+                const renameDialog  = document.getElementById('file_dialog');
+                const inputField = renameDialog.querySelector('#rename');
+                (inputField as HTMLInputElement).value = 'textDocument.doc';
+                const inputEvent = new Event('input', { bubbles: true });
+                inputField.dispatchEvent(inputEvent);
+                const saveButton = Array.from(renameDialog.querySelectorAll('.e-btn')).find(btn => btn.textContent.trim() === 'Save');
+                expect(saveButton).toBeDefined();
+                (saveButton as HTMLElement).click();
+                expect(feObj.responseData.error).not.toBeNull();
+                expect(feObj.responseData.error.message).toContain('already exists');
+                const renameDialog1  = document.getElementById('file_dialog');
+                const inputField1 = renameDialog1.querySelector('#rename');
+                (inputField1 as HTMLInputElement).value = 'textDocument_x.doc';
+                inputField1.dispatchEvent(inputEvent);
+                const saveButton1 = Array.from(renameDialog1.querySelectorAll('.e-btn')).find(btn => btn.textContent.trim() === 'Save');
+                expect(saveButton1).toBeDefined();
+                (saveButton1 as HTMLElement).click();
+                setTimeout(() => {
+                    const updatedItem = document.getElementById('file_largeicons').querySelectorAll('li');
+                    const renamedItem = Array.from(updatedItem).find(li => {
+                        const textEl = li.querySelector('.e-list-text');
+                        return textEl && textEl.textContent && textEl.textContent.includes('textDocument_x.doc');
+                    });
+                    expect(renamedItem).toBeDefined();
+                    done();
+                }, 500);
+            }, 500);
+        })
+
     });
 });

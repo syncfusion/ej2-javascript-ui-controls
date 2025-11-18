@@ -31,8 +31,7 @@ export class FontHelper {
             { id: id + '_dark-yellow', text: localObj.getConstant('Dark Yellow'), backgroundColor: 'rgb(128, 128, 0)' },
             { id: id + '_gray-50', text: localObj.getConstant('Gray 50'), backgroundColor: 'rgb(128, 128, 128)' },
             { id: id + '_gray-25', text: localObj.getConstant('Gray 25'), backgroundColor: 'rgb(192, 192, 192)' },
-            { id: id + '_black', text: localObj.getConstant('Black'), backgroundColor: 'rgb(0, 0, 0)' },
-            { id: id + '_no-color', text: localObj.getConstant('No color'), backgroundColor: 'transparent' }
+            { id: id + '_black', text: localObj.getConstant('Black'), backgroundColor: 'rgb(0, 0, 0)' }
         ];
     }
 

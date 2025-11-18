@@ -557,6 +557,45 @@ describe('Paste CR issues ', ()=> {
         });
     });
 
+    describe('Bug 990903: Script error thrown while applying bold to list elements', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: "",
+                pasteCleanupSettings: {
+                    prompt: false
+                },
+                toolbarSettings: {
+                    items: ['Bold', 'Outdent']
+                }
+            });
+        });
+        it(' should apply bold to list without throwing any script error', (done: DoneFn) => {
+            rteObj.focusIn();
+            const clipBoardData: string = '\x3C!--StartFragment--> <ol type="1" style="direction: ltr; margin-top: 0in; margin-bottom: 0in; font-family: Calibri; font-size: 11pt; font-weight: normal; font-style: normal;" class="pasteContent_RTE"> <li value="1" style="margin-top: 0px; margin-bottom: 0px; vertical-align: middle;"><span style="font-weight: normal; font-style: normal; font-family: Calibri; font-size: 11pt;">List1 the rich text editor</span></li> <ol type="a" style="direction: ltr; margin-top: 0in; margin-bottom: 0in; font-family: Calibri; font-size: 11pt; font-weight: normal; font-style: normal;"> <li value="1" style="margin-top: 0px; margin-bottom: 0px; vertical-align: middle;"><span style="font-weight: normal; font-style: normal; font-family: Calibri; font-size: 11pt;">List2</span></li> </ol> <li style="margin-top: 0px; margin-bottom: 0px; vertical-align: middle;"><span style="font-family: Calibri; font-size: 11pt;">List3</span></li> </ol> \x3C!--EndFragment-->';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const liElements: NodeListOf<HTMLElement> = rteObj.inputElement.querySelectorAll('li');
+                expect(liElements.length).toBe(3);
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, liElements[0].firstChild.firstChild, liElements[0].firstChild.firstChild, 7, 11);
+                const toolbarElems: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-toolbar-item');
+                expect(() => {
+                    toolbarElems[0].click();
+                }).not.toThrow();
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, liElements[0].firstChild.firstChild, liElements[0].firstChild.lastChild, 0, liElements[0].firstChild.lastChild.textContent.length);
+                toolbarElems[0].click();
+                expect(liElements[0].style.fontWeight === '').toBe(true);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('896578 - Copy and pasting justified content from Word web app is not working properly in RichTextEditor', () => {
         let rteObject : RichTextEditor ;
         let innerHTML: string =`\n\n\x3C!--StartFragment--><span style="color: rgb(28, 27, 31); font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">hello world this is a sample made for editor to check that alignment is working&nbsp; properly or not for the feature that is checking to work that how it is working in real time sb sample to check that it is working properly or not so that it could be working effectively. this has to be the sample for that it should be working proeperly or not formagt option denied tags denied attributes , allowed style propertied</span>\x3C!--EndFragment-->\n\n`; 

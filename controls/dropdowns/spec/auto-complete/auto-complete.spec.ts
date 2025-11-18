@@ -903,6 +903,38 @@ describe('AutoComplete', () => {
         });
     });
 
+    describe('EJ2-990911 Inconsistent HTML Entity Rendering', () => {
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', keyCode: null, type: null };
+        let list: any;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('input', { id: 'autocomplete' });
+            document.body.appendChild(ele);
+            list = new AutoComplete({
+                dataSource: ['<testdoc2>', 'test', 'as', 'asdf'],
+                highlight: true,
+            });
+            list.appendTo(ele);
+        });
+        afterAll(() => {
+            ele.remove();
+            list.destroy();
+            document.body.innerHTML = '';
+        });
+        /**
+        * popup open when press down key
+        */
+        it("check the html popup item", (done) => {
+            keyEventArgs.keyCode = 40;
+            list.onInput(keyEventArgs);
+            list.onFilterUp(keyEventArgs);
+            setTimeout(() => {
+                expect(list.liCollections[0].innerText === '<testdoc2>');
+                done();
+            }, 450);
+        })
+    });
+
     // Keyboard Interaction
     describe('key actions', () => {
         let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', keyCode: null, type: null };

@@ -1,4 +1,5 @@
 $ddl-input-font-size: 14px !default;
+$border-type: solid !default;
 
 // $ddl-input-border: $border-size $border-type !default;
 $ddl-input-font-family: inherit !default;
@@ -27,6 +28,8 @@ $ddl-icon-hover-color: rgba($black, .4) !default;
 $ddl-readonly-bg-color: $gray-200 !default;
 $ddl-filter-margin: 0 !default;
 $ddl-box-border-color: $gray-400 !default;
+$input-border: $ddl-zero-value $border-type !default;
+$input-margin-top: 24px !default;
 
 // small size
 $ddl-small-list-font-size: 13px !default;

@@ -5125,7 +5125,7 @@ export class Layout {
         let borders: WBorders = paraFormat.borders;
         // To align the text with the baseline, we need to update the maxBaseline value for each line
         this.clearLineMeasures();
-        this.updateLineWidget(line);
+        this.updateLineWidget(line, paraFormat);
         height = this.maxTextHeight;
         maxDescent = height - this.maxTextBaseline;
         let pageIndex: number = 0;
@@ -5277,7 +5277,7 @@ export class Layout {
         let lineSpacing: number = 0;
         let firstLineIndent: number = 0;
         let borders: WBorders = paraFormat.borders;
-        this.updateLineWidget(line);
+        this.updateLineWidget(line, paraFormat);
         height = this.maxTextHeight;
         maxDescent = height - this.maxTextBaseline;
         let pageIndex: number = 0;
@@ -5640,7 +5640,7 @@ export class Layout {
         }
         return lineY;
     }
-    private updateLineWidget(line: LineWidget): void {
+    private updateLineWidget(line: LineWidget, paragraphFormat: WParagraphFormat): void {
         let spaceHeight: number = 0;
         let spaceBaseline: number = 0;
         let isContainsImage: boolean = false;
@@ -5688,8 +5688,15 @@ export class Layout {
                     this.maxBaseline = this.maxTextBaseline;
                 }
             } else if (this.maxBaseline < element.height) {
-                this.maxBaseline = element.height;
-                if(element instanceof ImageElementBox) {
+                if (element instanceof ImageElementBox && paragraphFormat.lineSpacingType === 'Exactly' && paragraphFormat.lineSpacing > 0) {
+                    let lineSpacing: number = this.getLineSpacing(line.paragraph, element.height);
+                    if (this.maxBaseline < lineSpacing) {
+                        this.maxBaseline = lineSpacing;
+                    }
+                } else {
+                    this.maxBaseline = element.height;
+                }
+                if (element instanceof ImageElementBox) {
                     isContainsImage = true;
                 }
             }
@@ -7751,7 +7758,7 @@ export class Layout {
         } else {
             beforeSpacing = paragraph.paragraphFormat.beforeSpacing;
         }
-        if (this.isSameStyle(paragraph, false)) {
+        if (this.isSameStyle(paragraph, false) || (this.documentHelper.compatibilityMode === 'Word2013' && this.isFirstElementWithPageBreak(paragraph))) {
             return 0;
         } else {
             return HelperMethods.convertPointToPixel(beforeSpacing);
@@ -11714,10 +11721,15 @@ export class Layout {
                             if (!isNullOrUndefined(paragraph.containerWidget) && (paragraph.containerWidget instanceof BodyWidget) && paragraph.containerWidget.indexInOwner === -1) {
                                 continue;
                             }
-                            if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page) && paragraph.bodyWidget.page.index !== -1) {
+                            let bodyWidget: BodyWidget = paragraph.bodyWidget;
+                            if (!isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.page) && bodyWidget.page.index !== -1) {
                                 if (regex.test(fieldCode.toLowerCase())) {
                                     let index: number = paragraph.bodyWidget.page.index + 1;
-                                    textElement.text = index.toString();
+                                    if (textElement.text !== index.toString()) {
+                                        textElement.text = this.documentHelper.getFieldResult(fieldBegin, bodyWidget.page);
+                                    } else {
+                                        textElement.text = index.toString();
+                                    }
                                 } else {
                                     textElement.text = this.documentHelper.pages.length.toString();
                                 }
@@ -13041,10 +13053,10 @@ export class Layout {
             }
             if (isNullOrUndefined(nextPage)) {
                 nextBody = this.createSplitBody(body);
-                if ((((this.documentHelper.owner.editorHistoryModule &&
+                if (((((this.documentHelper.owner.editorHistoryModule &&
                     this.documentHelper.owner.editorHistoryModule.isRedoing && this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo &&
                     this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'SectionBreakContinuous')) && block.bodyWidget.sectionFormat.breakCode === 'NoBreak')
-                    || sectionBreakContinuous) {
+                    || sectionBreakContinuous) && block.bodyWidget.sectionFormat.numberOfColumns <= 1) {
                     //  this.viewer.clientActiveArea.y = block.y + block.height;
                 } else if (isEndnote) {
                     let lastBodyWidget: BodyWidget = page.bodyWidgets[body.page.bodyWidgets.length - 1];
@@ -13054,7 +13066,10 @@ export class Layout {
                     newBodyWidget.y = nextBody.y = this.viewer.clientActiveArea.y;
                     nextBody.page = nextPage;
                 } else {
+                    let isRTLLayout: boolean = this.isRTLLayout;
+                    this.isRTLLayout = false;
                     nextPage = this.viewer.createNewPage(nextBody, pageIndex);
+                    this.isRTLLayout = isRTLLayout;
                     this.viewer.updateClientArea(nextBody, nextBody.page);
                     nextBody.y = this.viewer.clientActiveArea.y;
                 }

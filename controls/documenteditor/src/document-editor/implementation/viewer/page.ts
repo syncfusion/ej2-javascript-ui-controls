@@ -2536,6 +2536,33 @@ export class TableWidget extends BlockWidget {
             }
         }
     }
+    /**
+     * @private
+     */
+    public updateCellFormatPreferredWidth(): void {
+        let factor: number = 0;
+        for (let i: number = 0; i < this.tableHolder.columns.length; i++) {
+            let column: WColumn = this.tableHolder.columns[i];
+            if (i === 0) {
+                factor = column.endOffset / column.preferredWidth;
+            } else {
+                if (column.endOffset < this.tableHolder.columns[i - 1].endOffset) {
+                    column.endOffset = this.tableHolder.columns[i - 1].endOffset + (column.preferredWidth * factor);
+                }
+            }
+        }
+        //Updating preferred width.
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            let row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                if (cell.cellFormat.preferredWidthType === 'Point' && this.tableHolder && this.tableHolder.columns
+                    && this.tableHolder.columns.length > 0 && (this.tableHolder.columns[cell.columnIndex + cell.cellFormat.columnSpan - 1])) {
+                    cell.cellFormat.preferredWidth = this.tableHolder.columns[cell.columnIndex + cell.cellFormat.columnSpan - 1].endOffset - (cell.columnIndex > 0 ? this.tableHolder.columns[cell.columnIndex - 1].endOffset : 0);
+                }
+            }
+        }
+    }
 
     /**
      * @private

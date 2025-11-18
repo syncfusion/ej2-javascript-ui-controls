@@ -104,7 +104,9 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
      * @returns {void}
      */
     public open(top: number, left: number, target?: HTMLElement): void {
+        this.isOpenCalled = true;
         super.openMenu(null, null, top, left, null, target);
+        this.isOpenCalled = false;
     }
 
     /**

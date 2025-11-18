@@ -589,6 +589,10 @@ export class ContextMenu {
                 break;
             case id + CONTEXTMENU_SPELLING_DIALOG:
                 let contextInfo: ContextElementInfo = this.spellChecker.retriveText();
+                let start: TextPosition = this.documentHelper.selection.start;
+                if (start.paragraph.isInHeaderFooter && !isNullOrUndefined(contextInfo.text) && !this.spellChecker.errorWordCollection.containsKey(contextInfo.text)) {
+                    contextInfo.text = this.spellChecker.getErrorWordText(contextInfo.text);
+                }
                 this.currentContextInfo = null;
                 this.documentHelper.owner.spellCheckDialogModule.show(contextInfo.text, contextInfo.element);
                 break;
@@ -683,6 +687,10 @@ export class ContextMenu {
         if (this.documentHelper.owner.isSpellCheck && this.spellChecker.allowSpellCheckAndSuggestion) {
             event.preventDefault();
             this.currentContextInfo = this.spellChecker.findCurretText();
+            const start: TextPosition = this.documentHelper.selection.start;
+            if (isNullOrUndefined(this.currentContextInfo.element) && !isNullOrUndefined(this.currentContextInfo.text) && start.paragraph.isInHeaderFooter && !this.spellChecker.errorWordCollection.containsKey(this.currentContextInfo.text)) {
+                this.currentContextInfo.text = this.spellChecker.getErrorWordText(this.currentContextInfo.text);
+            }
             let splittedSuggestion: string[];
             /* eslint-disable @typescript-eslint/no-explicit-any */
             let allSuggestions: any;

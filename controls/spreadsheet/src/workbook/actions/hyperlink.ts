@@ -1,5 +1,5 @@
-import { Workbook, SheetModel, CellModel, getCell, getSheet, getSheetIndex, getColumn } from '../base/index';
-import { setLinkModel, getRangeIndexes, updateCell, getSwapRange, isLocked } from '../common/index';
+import { Workbook, SheetModel, CellModel, getCell, getSheet, getSheetIndex, getColumn, setCell } from '../base/index';
+import { setLinkModel, getRangeIndexes, updateCell, getSwapRange, isLocked, ExtendedSheet, importModelUpdate } from '../common/index';
 import { HyperlinkModel } from '../common/class-model';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -30,11 +30,13 @@ export class WorkbookHyperlink {
 
     private addEventListener(): void {
         this.parent.on(setLinkModel, this.setLinkHandler, this);
+        this.parent.on(importModelUpdate, this.updateHyperLinksFromSheet, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(setLinkModel, this.setLinkHandler);
+            this.parent.off(importModelUpdate, this.updateHyperLinksFromSheet);
         }
     }
 
@@ -101,6 +103,18 @@ export class WorkbookHyperlink {
             }
         }
         this.parent.setUsedRange(cellIdx[2], cellIdx[3]);
+    }
+
+    private updateHyperLinksFromSheet(): void {
+        this.parent.sheets.forEach((sheet: ExtendedSheet) => {
+            if (sheet.hyperLinks && sheet.hyperLinks.length > 0) {
+                sheet.hyperLinks.forEach((model: { address: string, range: number[] }) => {
+                    const indexes: number[] = model.range;
+                    setCell(indexes[0], indexes[1], sheet, { hyperlink: model.address }, true);
+                });
+                delete sheet.hyperLinks;
+            }
+        });
     }
 
     /**

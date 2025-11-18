@@ -9,7 +9,7 @@ $ddl-input-group-border-width: 1px !default;
 $ddl-clear-icon-margin-right: 0 !default;
 $ddl-active-font-color: $active-font-color !default;
 $ddl-box-border-color: $border-fg !default;
-
+$input-margin-top: 28px !default;
 $ddl-list-search-icon-padding: 8px !default;
 $ddl-list-filter-text-indent: 0 12px !default;
 $ddl-list-icon-color: $bg-base-20 !default;
@@ -31,6 +31,7 @@ $ddl-small-list-font-size: 13px !default;
 
 // touch size
 $ddl-bigger-small-list-font-size: 14px !default;
+$input-border: $ddl-zero-value $border-type !default;
 
 //enddefault
 @include export-module('dropdownlist-highcontrast-light') {

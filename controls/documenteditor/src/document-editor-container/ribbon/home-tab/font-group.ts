@@ -398,7 +398,7 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
         // Create the HTML template for highlight color dropdown
         const highlightColorElement: HTMLElement = createElement('ul', {
             id: this.ribbonId + '_ribbon_highlight_color',
-            styles: 'visibility: visible; display: grid; grid-template-columns: repeat(5,1fr); padding: 2px 2px;'
+            styles: 'visibility: visible; display: grid; grid-template-columns: repeat(5,1fr); padding: 2px 2px; box-shadow: none'
         });
         colorListDropDiv.appendChild(highlightColorElement);
 
@@ -413,13 +413,14 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
             colorDiv.addEventListener('click', handler);
             this.highlightColorHandlers.push({ element: colorDiv, handler });
         });
-
-        const noColorDiv: HTMLElement = createElement('li');
-        highlightColorElement.appendChild(noColorDiv);
-
-        const noColorSpan: HTMLElement = createElement('span', { className: 'e-de-ctnr-hglt-no-color', styles: 'padding: 2px' });
-        noColorSpan.textContent = this.localObj.getConstant('No color');
-        noColorDiv.appendChild(noColorSpan);
+        const noColorList: HTMLElement = createElement('ul', { styles: 'visibility: visible; padding:2px' });
+        const noColorListItem: HTMLElement = createElement('li', { className: 'e-hglt-no-color' });
+        colorListDropDiv.appendChild(noColorList);
+        noColorList.appendChild(noColorListItem);
+        const noColorDiv: HTMLElement = createElement('div', { styles: 'width:24px;height:24px;background-color:#ffffff;margin:3px;', id: 'noColorDiv' });
+        noColorListItem.appendChild(noColorDiv);
+        const noColorLabel: HTMLElement = createElement('div', { innerHTML: this.localObj.getConstant('No color'), className: 'e-de-ctnr-hglt-no-color' });
+        noColorDiv.appendChild(noColorLabel);
         noColorDiv.addEventListener('click', this.onHighlightColorClick.bind(this, 'transparent'));
 
         // Create bound handler and store reference
@@ -452,13 +453,16 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
     private onHighlightColorClick(color: string, event: any): void {
         this.applyHighlightColor(color);
         // Remove the 'e-color-selected' class from all children
-        event.currentTarget.parentElement.querySelectorAll('.e-color-selected').forEach((child: HTMLElement) => {
-            child.classList.remove('e-color-selected');
-        });
-        // Add the 'e-color-selected' class to the clicked element
-        if (event.currentTarget.classList.length > 0) {
-            event.currentTarget.classList.add('e-color-selected');
+        const container: any = event.currentTarget.closest('#' + this.ribbonId + '_color_list_div')
+            || document.getElementById(this.ribbonId + '_color_list_div')
+            || event.currentTarget.parentElement;
+        if (container) {
+            container.querySelectorAll('.e-color-selected').forEach(function (el: any): void {
+                el.classList.remove('e-color-selected');
+            });
         }
+        // Add the 'e-color-selected' class to the clicked element
+        event.currentTarget.classList.add('e-color-selected');
     }
 
     private applyHighlightColor(color: string): void {

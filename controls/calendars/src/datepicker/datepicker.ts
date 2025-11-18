@@ -96,6 +96,7 @@ export class DatePicker extends Calendar implements IInput {
     protected iconRight: boolean;
     protected isBlur: boolean = false;
     private isKeyAction: boolean = false;
+    private initTimeZone: number;
     protected clearButton: HTMLElement;
     /**
      * Specifies the width of the DatePicker component.
@@ -488,6 +489,7 @@ export class DatePicker extends Calendar implements IInput {
         if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }
+        this.initTimeZone = new Date().getTimezoneOffset();
         this.renderComplete();
         this.setTimeZone(this.serverTimezoneOffset);
     }
@@ -1061,6 +1063,9 @@ export class DatePicker extends Calendar implements IInput {
         if (!this.enabled) {
             return;
         }
+        if (this.initTimeZone !== new Date().getTimezoneOffset()) {
+            this.strictModeUpdate(true);
+        }
         if (this.enableMask && !this.inputElement.value && this.placeholder)
         {
             if (this.maskedDateValue && !this.value && (this.floatLabelType === 'Auto' || this.floatLabelType === 'Never' || this.placeholder))
@@ -1101,12 +1106,8 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private inputBlurHandler(e: MouseEvent): void {
-        const inputSame: boolean = this.inputElement.value === this.previousElementValue;
-        const dateSame: boolean = this.value && this.previousDate
-            ? this.value.getTime() === this.previousDate.getTime()
-            : this.value === this.previousDate;
         this.updateFloatLabelOverflowWidth();
-        if (!this.enabled || (inputSame && dateSame)) {
+        if (!this.enabled) {
             return;
         }
         this.strictModeUpdate();
@@ -1294,7 +1295,7 @@ export class DatePicker extends Calendar implements IInput {
             }
         }
     }
-    protected strictModeUpdate(): void {
+    protected strictModeUpdate(preventTimeZone?: boolean): void {
         let format: string;
         const pattern: RegExp = /^y/ ;
         const charPattern: RegExp = /[^a-zA-Z]/;
@@ -1391,16 +1392,16 @@ export class DatePicker extends Calendar implements IInput {
             }
         }
         // EJ2-35061 - To prevent change event from triggering twice when using strictmode and format property
-        if ((this.getModuleName() === 'datepicker') && (this.value && !isNaN(+this.value)) && date) {
+        if (((this.getModuleName() === 'datepicker') && (this.value && !isNaN(+this.value)) && date) && !preventTimeZone) {
             date.setHours(this.value.getHours(), this.value.getMinutes(), this.value.getSeconds(), this.value.getMilliseconds());
         }
         if (this.strictMode && date) {
             this.updateInputValue(this.globalize.formatDate(date, dateOptions));
-            if (this.inputElement.value !== this.previousElementValue) {
+            if ((this.inputElement.value !== this.previousElementValue) || preventTimeZone) {
                 this.setProperties({ value: date }, true);
             }
         } else if (!this.strictMode) {
-            if (this.inputElement.value !== this.previousElementValue) {
+            if ((this.inputElement.value !== this.previousElementValue) || preventTimeZone) {
                 this.setProperties({ value: date }, true);
             }
         }
@@ -1587,11 +1588,15 @@ export class DatePicker extends Calendar implements IInput {
         if (this.fullScreenMode) {
             const modelCloseIcon: any = this.createElement('span', { className: 'e-popup-close' });
             EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.modelCloseHandler, this);
-            const modelTodayButton: Element = this.calendarElement.querySelector('button.e-today');
+            const modelTodayButton: Element | null = this.showTodayButton
+                ? this.calendarElement.querySelector('button.e-today') : null;
             h2.classList.add('e-day-wrapper');
-            modelTodayButton.classList.add('e-outline');
             modelHeader.appendChild(modelCloseIcon);
-            modelHeader.appendChild(modelTodayButton);
+
+            if (modelTodayButton) {
+                modelTodayButton.classList.add('e-outline');
+                modelHeader.appendChild(modelTodayButton);
+            }
         }
         if (!this.fullScreenMode)
         {modelHeader.appendChild(yearHeading); }

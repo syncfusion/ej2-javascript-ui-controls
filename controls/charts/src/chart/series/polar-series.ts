@@ -97,7 +97,7 @@ export class PolarSeries extends PolarRadarPanel {
                     startValue = yAxis.visibleRange.min;
                     endValue = point.yValue > yAxis.actualRange.max ? yAxis.actualRange.max : point.yValue;
                 }
-                radius = startValue === endValue ? 0 : series.chart.radius * valueToCoefficient(endValue, yAxis);
+                radius = startValue === endValue && (!isRangeColumn) ? 0 : series.chart.radius * valueToCoefficient(endValue, yAxis);
                 x1 = centerX + radius * Math.cos(startAngle); x2 = centerX + radius * Math.cos(endAngle);
                 y1 = centerY + radius * Math.sin(startAngle); y2 = centerY + radius * Math.sin(endAngle);
                 innerRadius = series.chart.radius * valueToCoefficient(

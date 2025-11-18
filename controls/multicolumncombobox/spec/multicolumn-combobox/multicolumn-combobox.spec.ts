@@ -1766,7 +1766,7 @@ describe('MultiColumnComboBox control', () => {
                 setTimeout(() => {
                     done();
                 }, 1000);
-            }, 2000);
+            }, 3000);
         });
         it(' check row focus with dropdown button click ', (done) => {
             let isPopupClose: boolean = false;

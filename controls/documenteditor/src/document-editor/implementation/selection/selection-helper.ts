@@ -2057,7 +2057,17 @@ export class TextPosition {
                         break;
                     }
                 }
-                this.offset = moveToNextLine ? length + 1 : length - editRangeEndLength;
+                if (selection.start.paragraph.isInsideTable && this.selection.isSelectLine) {
+                    let cellVal = selection.start.paragraph.associatedCell;
+                    if (!isNullOrUndefined(selection.getLastParagraph(cellVal)) && selection.getLastParagraph(cellVal).lastChild === selection.start.paragraph.lastChild) {
+                        this.offset = moveToNextLine ? length : length - editRangeEndLength;
+                    } else {
+                        this.offset = moveToNextLine ? length + 1 : length - editRangeEndLength;
+                    }
+                }
+                else {
+                    this.offset = moveToNextLine ? length + 1 : length - editRangeEndLength;
+                }
             } else {
                 let inline: ElementBox = lastElement;
                 while (!isNullOrUndefined(inline) && inline.length === index && inline.nextNode instanceof FieldElementBox) {

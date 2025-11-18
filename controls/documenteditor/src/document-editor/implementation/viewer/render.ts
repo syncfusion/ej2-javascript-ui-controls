@@ -2933,7 +2933,10 @@ private calculatePathBounds(data: string): Rect {
                 // if (containerWid instanceof BodyWidget) {
                 //     widgetWidth = containerWid.width + containerWid.x;
                 // } else 
-                if (containerWid instanceof TableCellWidget) {
+                if (elementBox.line.paragraph.paragraphFormat.lineSpacingType === 'Exactly' && elementBox.line.paragraph.paragraphFormat.lineSpacing > 0) {
+                    isClipped = true;
+                    this.clipRect(elementBox.line.paragraph.x, elementBox.line.paragraph.y, this.getScaledValue(elementBox.line.paragraph.width), this.getScaledValue(elementBox.line.paragraph.height));
+                } else if (containerWid instanceof TableCellWidget) {
                     let leftIndent: number = 0;
                     if (containerWid.childWidgets[0] instanceof ParagraphWidget) {
                         let paraAdv: ParagraphWidget = containerWid.childWidgets[0] as ParagraphWidget;

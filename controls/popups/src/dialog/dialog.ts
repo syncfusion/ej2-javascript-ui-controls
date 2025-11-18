@@ -1036,9 +1036,19 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     buttonObj = this.getFocusElement(this.ftrTemplateContent);
                     if (isNullOrUndefined(this.btnObj) && (!buttonObj || isNullOrUndefined(buttonObj.element))) {
                         const focusableItems: NodeListOf<HTMLElement> = this.element.querySelectorAll(FOCUSABLE_ELEMENTS_SELECTOR);
-                        if (focusableItems.length > 0 && document.activeElement === focusableItems[focusableItems.length - 1]) {
-                            event.preventDefault();
-                            this.focusableElements(this.element).focus();
+                        if (focusableItems.length > 0) {
+                            const validFocusableItems: HTMLElement[] = [];
+                            for (let i: number = 0; i < focusableItems.length; i++) {
+                                if (!(focusableItems[i as number].hasAttribute('tabindex') &&
+                                    focusableItems[i as number].getAttribute('tabindex') === '-1')) {
+                                    validFocusableItems.push(focusableItems[i as number] as HTMLElement);
+                                }
+                            }
+                            if (validFocusableItems.length > 0 &&
+                                document.activeElement === validFocusableItems[validFocusableItems.length - 1]) {
+                                event.preventDefault();
+                                this.focusableElements(this.element).focus();
+                            }
                         }
                     }
                 }

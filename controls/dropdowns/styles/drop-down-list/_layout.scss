@@ -8,6 +8,15 @@
     }
   }
 
+  .e-ddl.e-lib.e-input-group:not(.e-float-input) .e-dropdownlist:not(.e-input) {
+    width: 100%;
+    border: $input-border;
+  }
+
+  .e-ddl.e-lib.e-input-group.e-control-container.e-control-wrapper:not(.e-float-input):has(.e-float-line) {
+    margin-top: $input-margin-top;
+  }
+
   .e-popup.e-wide-popup.e-ddl-device.e-popup-close {
     display: block;
     visibility: hidden;

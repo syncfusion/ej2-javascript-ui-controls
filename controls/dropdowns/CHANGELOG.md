@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.10 (2025-11-13)
+## 31.2.5 (2025-11-04)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I775292` - The issue with SelectAll checkbox in the dropdown popup caused the popup to close without applying any selections has been resolved.
+
+## 31.2.4 (2025-10-28)
 
 ### DropdownList
 
@@ -11,6 +19,12 @@
 - `#I771070` - Fixed an issue where the Clear button was not in a disabled state when the `e-static-clear` class was used with the enabled property set to False.
 
 - `#I771080` - Fixed an issue where the float label text was overlapping with the icon of the dropdown list component when long text was used.
+
+### Mention
+
+#### Bug Fixes
+
+- `#I776199` - Fixed an issue with the Mention Component where pressing the backspace key on the last mention chip would incorrectly display a popup, delete multiple mentions, and hinder the creation of a new line when the enter key was pressed.
 
 ## 31.2.3 (2025-10-22)
 

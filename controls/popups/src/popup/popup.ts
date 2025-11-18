@@ -885,7 +885,7 @@ export function getZindexPartial(element: HTMLElement): number {
         if (parent.tagName !== 'BODY') {
             const index: string = document.defaultView.getComputedStyle(parent, null).getPropertyValue('z-index');
             const position: string = document.defaultView.getComputedStyle(parent, null).getPropertyValue('position');
-            if (index !== 'auto' && position !== 'static') {
+            if (index !== 'auto' && position !== 'static' && parseInt(index, 10) < 2147483647) {
                 parentZindex.push(index);
             }
             parent = parent.parentElement;
@@ -898,7 +898,7 @@ export function getZindexPartial(element: HTMLElement): number {
         if (!element.isEqualNode(document.body.children[i as number])) {
             const index: string = document.defaultView.getComputedStyle(document.body.children[i as number], null).getPropertyValue('z-index');
             const position: string = document.defaultView.getComputedStyle(document.body.children[i as number], null).getPropertyValue('position');
-            if (index !== 'auto' && position !== 'static') {
+            if (index !== 'auto' && position !== 'static' && parseInt(index, 10) < 2147483647) {
                 childrenZindex.push(index);
             }
         }
@@ -911,7 +911,7 @@ export function getZindexPartial(element: HTMLElement): number {
             if (!element.isEqualNode(childNodes[i as number])) {
                 const index: string = document.defaultView.getComputedStyle(childNodes[i as number], null).getPropertyValue('z-index');
                 const position: string = document.defaultView.getComputedStyle(childNodes[i as number], null).getPropertyValue('position');
-                if (index !== 'auto' && position !== 'static') {
+                if (index !== 'auto' && position !== 'static' && parseInt(index, 10) < 2147483647) {
                     siblingsZindex.push(index);
                 }
             }

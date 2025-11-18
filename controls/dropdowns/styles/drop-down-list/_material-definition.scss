@@ -23,12 +23,14 @@ $ddl-back-icon-margin: 0 10px 0 -52px !default;
 $ddl-back-icon-padding: 0 8px !default;
 $ddl-popup-shadow: 0 5px 5px -3px rgba($grey-light-font, .2), 0 8px 10px 1px rgba($grey-light-font, .14), 0 3px 14px 2px rgba($grey-light-font, .12) !default;
 $ddl-filter-margin: 0 !default;
+$input-margin-top: 16px !default;
 
 // Small Size
 $ddl-small-list-font-size: 12px !default;
 
 // touch small
 $ddl-bigger-small-list-font-size: 13px !default;
+$input-border: $ddl-zero-value $border-type !default;
 
 @include export-module('dropdownlist-material') {
   .e-ddl.e-control-wrapper .e-ddl-icon::before {

@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 31.1.17 (2025-09-05)
+
+### Maps
+
+#### Bug fixes
+
+- `#I732333` - The map rendered in the pop-up will no longer throw console warnings during user interaction.
+
 ## 28.2.9 (2025-03-04)
 
 ### Maps

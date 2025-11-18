@@ -341,35 +341,35 @@ export class LayerPanel {
         }
         this.rectBounds = null;
         const shapeSettings: ShapeSettings = <ShapeSettings>this.currentLayer.shapeSettings;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Array.prototype.forEach.call(renderData, (geometryData: any) => {
-            if (!isNullOrUndefined(geometryData['geometry']) || !isNullOrUndefined(geometryData['coordinates'])) {
-                const type: string = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['type'] : geometryData['type'];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const coords: any[] = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['coordinates'] :
-                    geometryData['coordinates'];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const data: any = geometryData['geometry'];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const properties: any = geometryData['properties'];
+        for (let r: number = 0; r < renderData.length; r++) {
+            const geometryData: object = renderData[r as number];
+            const geom: object = geometryData['geometry'];
+            const hasGeom: boolean = !isNullOrUndefined(geom);
+            const hasCoords: boolean = !isNullOrUndefined(geometryData['coordinates']);
+            if (hasGeom || hasCoords) {
+                const type: string = hasGeom ? geom['type'] : geometryData['type'];
+                const coords: object[] = hasGeom ? geom['coordinates'] : geometryData['coordinates'];
+                const data: object = geom;
+                const properties: object = geometryData['properties'];
                 this.generatePoints(type, coords, data, properties);
             }
-        });
+        }
         this.currentLayer.rectBounds = this.rectBounds;
         if (isNullOrUndefined(this.mapObject.baseMapRectBounds) && this.currentLayer.isBaseLayer) {
             this.mapObject.baseMapRectBounds = this.rectBounds;
         }
         const colors: string[] = (!isNullOrUndefined(shapeSettings.palette) && shapeSettings.palette.length > 1) ?
             shapeSettings.palette : getShapeColor(this.mapObject.theme);
+        const areaRect: Rect = this.mapObject.mapAreaRect;
         const labelTemplateEle: HTMLElement = createElement('div', {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_Label_Template_Group',
             className: this.mapObject.element.id + '_template'
         });
         labelTemplateEle.style.cssText = 'pointer-events: none; overflow: hidden; position: absolute;' +
-                                        'top:' + this.mapObject.mapAreaRect.y + 'px;' +
-                                        'left:' + this.mapObject.mapAreaRect.x + 'px;' +
-                                        'height:' + this.mapObject.mapAreaRect.height + 'px;' +
-                                        'width:' + this.mapObject.mapAreaRect.width + 'px;';
+                                        'top:' + areaRect.y + 'px;' +
+                                        'left:' + areaRect.x + 'px;' +
+                                        'height:' + areaRect.height + 'px;' +
+                                        'width:' + areaRect.width + 'px;';
         if (this.currentLayer.layerData.length !== 0) {
             for (let i: number = 0; i < this.currentLayer.layerData.length; i++) {
                 let k: number;
@@ -416,11 +416,12 @@ export class LayerPanel {
                         this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer
                     );
                     if (k !== null) {
-                        if (this.currentLayer.dataSource[k as number][shapeSettings.borderColorValuePath]) {
-                            borderValue.color = this.currentLayer.dataSource[k as number][shapeSettings.borderColorValuePath];
+                        const currentDataSource: object = this.currentLayer.dataSource[k as number];
+                        if (currentDataSource[shapeSettings.borderColorValuePath]) {
+                            borderValue.color = currentDataSource[shapeSettings.borderColorValuePath];
                         }
-                        if (this.currentLayer.dataSource[k as number][shapeSettings.borderWidthValuePath]) {
-                            borderValue.width = this.currentLayer.dataSource[k as number][shapeSettings.borderWidthValuePath];
+                        if (currentDataSource[shapeSettings.borderWidthValuePath]) {
+                            borderValue.width = currentDataSource[shapeSettings.borderWidthValuePath];
                         }
                     }
                 }
@@ -480,16 +481,25 @@ export class LayerPanel {
                     switch (drawingType) {
                     case 'Polygon':
                         if (!currentShapeData['_isMultiPolygon']) {
-                            path += 'M' + (currentShapeData[0]['point']['x']) + ' ' + (currentShapeData[0]['point']['y']);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            currentShapeData.map((shapeData: any) => {
-                                path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
-                            });
+                            const shapeData: any[] = currentShapeData as any[];
+                            if (shapeData.length > 0) {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                const firstPoint: any = shapeData[0]['point'];
+                                const pathSegments: string[] = ['M', String(firstPoint['x']), String(firstPoint['y'])];
+                                for (let index: number = 0; index < shapeData.length; index++) {
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    const point: any = shapeData[index as number]['point'];
+                                    pathSegments.push('L', String(point['x']), String(point['y']));
+                                }
+                                pathSegments.push('z');
+                                path = pathSegments.join(' ');
+                            }
                         } else {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             path = this.generateMultiPolygonPath(<any[]>currentShapeData);
+                            path += ' z ';
                         }
-                        path += ' z ';
                         if (path.length > 3) {
                             pathOptions = new PathOption(
                                 shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
@@ -735,19 +745,19 @@ export class LayerPanel {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private generateMultiPolygonPath(currentShapeData: any[]): string {
-        let path: string = '';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let shape: any[];
-        for (let j: number = 0; j < currentShapeData.length; j++) {
-            path += 'M' + (currentShapeData[j as number][0]['point']['x']) + ' ' + (currentShapeData[j as number][0]['point']['y']);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            shape = <any[]>currentShapeData[j as number];
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            shape.map((shapeData: any) => {
-                path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
-            });
+        const parts: string[] = [];
+        for (const shape of currentShapeData) {
+            if (!shape || shape.length === 0) { continue; }
+            const startX: number = shape[0].point.x;
+            const startY: number = shape[0].point.y;
+            parts.push(`M${startX} ${startY}`);
+            for (let i: number = 1; i < shape.length; i++) {
+                const x: number = shape[i as number].point.x;
+                const y: number = shape[i as number].point.y;
+                parts.push(` L ${x} ${y}`);
+            }
         }
-        return path;
+        return parts.join(' ');
     }
     /**
      * To render bubble.
@@ -1074,36 +1084,60 @@ export class LayerPanel {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public calculatePolygonBox(coordinates: any[]): any {
+        // Use a simple for-loop, cache frequent lookups, and update rectBounds once
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newData: any[] = [];
         const bounds: GeoLocation = this.mapObject.baseMapBounds;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        coordinates.map((currentPoint: any) => {
+        const lonMin: number = bounds.longitude.min;
+        const lonMax: number = bounds.longitude.max;
+        const latMin: number = bounds.latitude.min;
+        const latMax: number = bounds.latitude.max;
+
+        let minX: number | undefined;
+        let minY: number | undefined;
+        let maxX: number | undefined;
+        let maxY: number | undefined;
+
+        for (let i: number = 0; i < coordinates.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const currentPoint: any = coordinates[i as number];
             const latitude: number = currentPoint[1];
             const longitude: number = currentPoint[0];
-            if ((longitude >= bounds.longitude.min && longitude <= bounds.longitude.max)
-                && (latitude >= bounds.latitude.min && latitude <= bounds.latitude.max)) {
+
+            if (longitude >= lonMin && longitude <= lonMax && latitude >= latMin && latitude <= latMax) {
                 const point: Point = convertGeoToPoint(
                     latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject
                 );
-                if (isNullOrUndefined(this.rectBounds)) {
-                    this.rectBounds = { min: { x: point.x, y: point.y }, max: { x: point.x, y: point.y } };
+
+                if (minX === undefined) {
+                    minX = maxX = point.x;
+                    minY = maxY = point.y;
                 } else {
-                    this.rectBounds['min']['x'] = Math.min(this.rectBounds['min']['x'], point.x);
-                    this.rectBounds['min']['y'] = Math.min(this.rectBounds['min']['y'], point.y);
-                    this.rectBounds['max']['x'] = Math.max(this.rectBounds['max']['x'], point.x);
-                    this.rectBounds['max']['y'] = Math.max(this.rectBounds['max']['y'], point.y);
+                    // Update local bounds only
+                    minX = Math.min(minX as number, point.x);
+                    minY = Math.min(minY as number, point.y);
+                    maxX = Math.max(maxX as number, point.x);
+                    maxY = Math.max(maxY as number, point.y);
                 }
-                newData.push({
-                    point: point,
-                    lat: latitude,
-                    lng: longitude
-                });
+
+                newData.push({ point: point, lat: latitude, lng: longitude });
             }
-        });
+        }
+
+        // Apply the accumulated bounds once to reduce repeated property access
+        if (newData.length) {
+            if (isNullOrUndefined(this.rectBounds)) {
+                this.rectBounds = { min: { x: minX as number, y: minY as number }, max: { x: maxX as number, y: maxY as number } };
+            } else {
+                this.rectBounds.min.x = Math.min(this.rectBounds.min.x, minX as number);
+                this.rectBounds.min.y = Math.min(this.rectBounds.min.y, minY as number);
+                this.rectBounds.max.x = Math.max(this.rectBounds.max.x, maxX as number);
+                this.rectBounds.max.y = Math.max(this.rectBounds.max.y, maxY as number);
+            }
+        }
+
         return newData;
     }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public calculateRectBox(coordinates: any[], type?: string, isFirstItem?: boolean): void {
         if ((type !== 'linestring' && type !== 'multilinestring') && (type !== 'point' && type !== 'multipoint')) {

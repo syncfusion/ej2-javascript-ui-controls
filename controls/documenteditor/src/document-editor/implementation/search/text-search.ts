@@ -7,7 +7,8 @@ import {
     BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget,
     HeaderFooters, ShapeElementBox, TextFrame, FootnoteElementBox,
     BookmarkElementBox,
-    CommentCharacterElementBox
+    CommentCharacterElementBox,
+    ImageElementBox
 } from '../viewer/page';
 import { ElementInfo, TextInLineInfo } from '../editor/editor-helper';
 import { TextSearchResult } from './text-search-result';
@@ -157,7 +158,9 @@ export class TextSearch {
                 if (isSpellCheck) {
                     stringBuilder = stringBuilder + CONTROL_CHARACTERS.Marker_Start;
                 }
-                previousElementCount += inlineElement.length;
+                if (!(isSpellCheck && inlineElement instanceof ImageElementBox)) {
+                    previousElementCount += inlineElement.length;
+                }
             }
             if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {
                 const splittedParagraph: ParagraphWidget = inlineElement.paragraph.nextSplitWidget as ParagraphWidget;

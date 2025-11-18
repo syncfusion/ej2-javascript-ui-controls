@@ -4043,9 +4043,17 @@ export class DropDownList extends DropDownBase implements IInput {
             }
         } else if (this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options[0]) {
             const selectElement: HTMLSelectElement = <HTMLSelectElement>this.element;
-            this.value = this.allowObjectBinding ? this.getDataByValue(selectElement.options[selectElement.selectedIndex].value) :
-                selectElement.options[selectElement.selectedIndex].value;
-            this.text = isNullOrUndefined(this.value) ? null : selectElement.options[selectElement.selectedIndex].textContent;
+            const selectIndex: number = selectElement.selectedIndex;
+            if (selectIndex >= 0) {
+                this.value = this.allowObjectBinding
+                    ? this.getDataByValue(selectElement.options[selectIndex as number].value)
+                    : selectElement.options[selectIndex as number].value;
+                this.text = isNullOrUndefined(this.value) ? null : selectElement.options[selectIndex as number].textContent;
+            } else {
+                if (this.index === null) {
+                    this.index = -1;
+                }
+            }
             this.initValue();
         }
         this.setEnabled();

@@ -2153,7 +2153,7 @@ describe('Orthogonal connector segment routing issue', () => {
         mouseEvents.mouseUpEvent(diagramCanvas, 600, 300);
         diagram.select([diagram.connectors[0]]);
         let prevPoint = (diagram.connectors[0].segments[2] as OrthogonalSegment).points.length;
-        mouseEvents.mouseDownEvent(diagramCanvas, 385, 380);
+        mouseEvents.mouseDownEvent(diagramCanvas, 385, 343);
         mouseEvents.mouseMoveEvent(diagramCanvas, 385, 395);
         mouseEvents.mouseMoveEvent(diagramCanvas, 385, 410);
         mouseEvents.mouseUpEvent(diagramCanvas, 385, 410);

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 31.2.12 (2025-11-18)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I781878` - Exported diagram images now properly include the entire diagram content without any blank spaces when the export region is set to `Content`.
+- `#I781360` - Selector position now correctly aligned when swimlane contains a pivot.
+- `#I776023` - Resolved issue where edited connector segments were moved incorrectly when dragging the source node.
+
 ## 31.2.10 (2025-11-13)
 
 ### Diagram

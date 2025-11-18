@@ -536,9 +536,13 @@ export class WParagraphFormat {
         this.setPropertyValue(property, undefined, true);
         if (!isNullOrUndefined(this.uniqueParagraphFormat)) {
             let key: number = WUniqueFormat.getPropertyType(this.uniqueParagraphFormat.uniqueFormatType, property);
-            if (this.uniqueParagraphFormat.propertiesHash.containsKey(key)) {
-                this.uniqueParagraphFormat.propertiesHash.remove(key);
+            let currentUniqueParagraphFormat: WUniqueFormat = new WUniqueFormat(this.uniqueParagraphFormat.uniqueFormatType);
+            let value: object = WParagraphFormat.getPropertyDefaultValue(property);
+            currentUniqueParagraphFormat.cloneItems(this.uniqueParagraphFormat, property, value, this.uniqueParagraphFormat.uniqueFormatType);
+            if (currentUniqueParagraphFormat.propertiesHash.containsKey(key)) {
+                currentUniqueParagraphFormat.propertiesHash.remove(key);
             }
+            this.uniqueParagraphFormat = currentUniqueParagraphFormat;
         }
     }
     public clearFormat(): void {

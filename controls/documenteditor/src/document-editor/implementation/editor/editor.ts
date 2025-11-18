@@ -2118,7 +2118,14 @@ export class Editor {
                     event.preventDefault();
                     if (!this.owner.isReadOnly && this.owner.optionsPaneModule) {
                         this.owner.optionsPaneModule.isReplace = true;
+                        this.owner.optionsPaneModule.isFind = false;
                         this.owner.documentEditorSettings.showNavigationPane = true;
+                        this.owner.optionsPaneModule.showHideOptionsPane(true);
+                        setTimeout(() => {
+                            if (this.owner.optionsPaneModule.isReplace) {
+                                this.owner.optionsPaneModule.isReplace = false;
+                            }
+                        }, 10);
                     }
                     break;
                 case 73:
@@ -3912,9 +3919,6 @@ export class Editor {
                         tempSpan.characterFormat.copyFormat(insertFormat);
                     }
                     this.setCharFormatForCollaborativeEditing(tempSpan.characterFormat);
-                    if (inline instanceof FootnoteElementBox) {
-                        tempSpan.characterFormat.baselineAlignment = 'Normal';
-                    }
                     let isRevisionCombined: boolean = false;
                     let insertIndex: number = inline.indexInOwner;
                     if (indexInInline === inline.length) {
@@ -4986,7 +4990,7 @@ export class Editor {
             newBodyWidget = temp_NewBody;
             newBodyWidget.sectionFormat = new WSectionFormat(newBodyWidget);
             if (sectionFormat.numberOfColumns > 1) {
-                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
+                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat, true);
                 isUpdated = false;
             }
             newBodyWidget.sectionFormat.breakCode = 'NewPage';
@@ -4995,11 +4999,11 @@ export class Editor {
         if (sectionBreakContinuous) {
             if (sectionFormat.numberOfColumns > 1 && isUpdated) {
                 newBodyWidget.sectionFormat = sectionFormat;
-                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
+                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat, true);
             } else {
                 newBodyWidget.sectionFormat = new WSectionFormat(newBodyWidget);
                 if (sectionFormat.numberOfColumns > 1 || (!isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.nextPage) && this.documentHelper.getPageWidth(bodyWidget.page) !== this.documentHelper.getPageWidth(bodyWidget.page.nextPage))) {
-                    this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
+                    this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat, true);
                 }
             }
             newBodyWidget.sectionFormat.breakCode = 'NoBreak';
@@ -5007,10 +5011,10 @@ export class Editor {
         if (sectionBreakNewPage) {
             if (sectionFormat.numberOfColumns > 1 && isUpdated) {
                 newBodyWidget.sectionFormat = sectionFormat;
-                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
+                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat, true);
             } else {
                 newBodyWidget.sectionFormat = new WSectionFormat(newBodyWidget);
-                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
+                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat, true);
             }
             newBodyWidget.sectionFormat.breakCode = 'NewPage';
         }
@@ -6413,7 +6417,7 @@ export class Editor {
             } else if (Browser.info.name !== 'msie' && clipbordData.items !== undefined && clipbordData.items.length !== 0) {
                 for (let m: number = 0; m < clipbordData.items.length; m++) {
                     let item: DataTransferItem = clipbordData.items[m];
-                    if (item.type === 'image/png' || (item.type === "image/svg+xml" && item.kind !== 'string')) {
+                    if (item.type === 'image/png' || (item.type === "image/svg+xml" && item.kind !== 'string') || (item.type === "image/jpeg" && item.kind !== 'string')) {
                         this.pasteImage(item.getAsFile());
                     }
                 }
@@ -10191,6 +10195,7 @@ export class Editor {
         let rowStartIndex: number = table.childWidgets.indexOf(startCell.ownerRow);
         let mergedCell: TableCellWidget = undefined;
         let firstBlock: BlockWidget;
+        table.updateCellFormatPreferredWidth();
         for (let i: number = rowStartIndex; i <= count; i++) {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
@@ -16012,7 +16017,12 @@ export class Editor {
         }
         this.documentHelper.removeEmptyPages();
         if (this.editorHistory && this.editorHistory.isUndoing && !(this.editorHistory.currentBaseHistoryInfo && (this.editorHistory.currentBaseHistoryInfo.endRevisionLogicalIndex || this.editorHistory.currentBaseHistoryInfo.lastDeletedNodeRevision))) {
-            nextSection.sectionFormat = section.sectionFormat; 
+            if (nextSection.sectionFormat.numberOfColumns > 1) {
+                nextSection.sectionFormat.copyFormat(section.sectionFormat, this.editorHistory);
+            }
+            else {
+                nextSection.sectionFormat = section.sectionFormat;
+            }
         }
         let page = nextSection.page;
         do {

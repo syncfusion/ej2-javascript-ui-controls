@@ -238,6 +238,7 @@ export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | Nod
                     maxWidth: container.maxWidth, maxHeight: container.maxHeight,
                     width: container.actualSize.width,
                     height: container.actualSize.height,
+                    pivot: container.pivot,  // 989749 - Incorrect lane position when SwimLane has pivot
                     style: { strokeDashArray: '2 2', fill: 'transparent', strokeColor: '#7D7D7D', strokeWidth: 2 }
                 };
                 nodes = createHelper(diagram, node as Node) as NodeModel;

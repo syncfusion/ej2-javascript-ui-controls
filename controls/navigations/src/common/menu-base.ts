@@ -281,6 +281,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private timer: number;
     private currentTarget: Element;
     private isCmenuHover: boolean;
+    protected isOpenCalled: boolean = false;
     private isAnimationNone: boolean = false;
     private isKBDAction: boolean = false;
     private touchStartFn: (e: TouchEvent) => void;
@@ -1506,7 +1507,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         }
         this.toggleVisiblity(ul, false);
-        if (this.isCMenu && this.enableScrolling && ul) {
+        if ((this.isCMenu || this.isOpenCalled) && this.enableScrolling && ul) {
             ul.style.height = '';
             ul.style.top = '';
             ul.style.left = '';

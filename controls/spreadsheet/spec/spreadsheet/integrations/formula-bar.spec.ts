@@ -314,7 +314,7 @@ describe('Spreadsheet formula bar module ->', () => {
     });
 
     describe('CR-issues->', () => {
-        describe('EJ2-50374, EJ2-54291,EJ2-55782,EJ2-980749,EJ2-980683->', () => {
+        describe('EJ2-50374, EJ2-54291,EJ2-55782,EJ2-980749,EJ2-980683, EJ2-988514 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }],
@@ -363,21 +363,20 @@ describe('Spreadsheet formula bar module ->', () => {
                     },40);
                 },50);
             });
-            it('EJ2-980749 - Text Deletion in Formula Bar Not Reflected in Cell After Losing Focus in Spreadsheet->', (done: Function) => {
+            it('EJ2-980749, EJ2-988514 - Enable edit mode when the user selects text from the formula bar.->', (done: Function) => {
                 helper.invoke('selectRange', ['A2']);
-                let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-formula-bar-panel .e-formula-bar');
-                let coords: DOMRect = <DOMRect>editorElem.getBoundingClientRect();
-                helper.triggerMouseAction('mousedown', { x: coords.x, y: coords.y }, null, editorElem);
-                helper.triggerMouseAction('mouseup', { x: coords.x, y: coords.y }, null, editorElem);
-                helper.triggerMouseAction('click', { x: coords.x, y: coords.y }, null, editorElem);
-                editorElem.focus();
                 setTimeout(() => {
-                    editorElem.value = 'l Shoes';
-                    helper.triggerKeyEvent('keyup', 8, null, false, false, editorElem);
-                    helper.triggerKeyNativeEvent(13);
-                    expect(editorElem.value).not.toBe('Casual Shoes');
-                    expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('l Shoes');
-                    done();
+                    const editorElem: HTMLTextAreaElement = helper.getElementFromSpreadsheet('.e-formula-bar-panel .e-formula-bar') as HTMLTextAreaElement;
+                    const coords: DOMRect = <DOMRect>editorElem.getBoundingClientRect();
+                    editorElem.focus();
+                    helper.triggerMouseAction('mousedown', { x: coords.x, y: coords.y }, null, editorElem);
+                    const mouseUpEvent = new MouseEvent('mouseup',
+                        { bubbles: true, cancelable: true, clientX: 408, clientY: 7 });
+                    document.body.dispatchEvent(mouseUpEvent);
+                    setTimeout(() => {
+                        expect(helper.getInstance().isEdit).toBe(true);
+                        done();
+                    });
                 });
             });
             it('EJ2-980683 - Alt + Enter retains focus and inserts newline in formula bar', (done: Function) => {

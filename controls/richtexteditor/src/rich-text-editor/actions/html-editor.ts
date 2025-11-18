@@ -644,9 +644,9 @@ export class HtmlEditor {
                 (!isNOU(currentRange.startContainer.previousSibling) && currentRange.startContainer.previousSibling.nodeName === 'BR')) {
                 return;
             }
+            const immediateBlockNode: Node = this.parent.formatter.editorManager.domNode.
+                getImmediateBlockNode(currentRange.startContainer);
             if (!isNOU(this.parent.codeBlockModule)) {
-                const immediateBlockNode: Node = this.parent.formatter.editorManager.domNode.
-                    getImmediateBlockNode(currentRange.startContainer);
                 const blockNode: Node = immediateBlockNode !== this.parent.inputElement ? immediateBlockNode : currentRange.startContainer;
                 const firstPosition: { node: Node; position: number } =
                     this.parent.formatter.editorManager.nodeSelection.findFirstContentNode(blockNode);
@@ -675,7 +675,7 @@ export class HtmlEditor {
                         this.rangeElement = liElement;
                     }
                 }
-            } else if (this.rangeElement === this.parent.inputElement || this.rangeElement.tagName === 'TABLE' ||
+            } else if (this.rangeElement === this.parent.inputElement || immediateBlockNode === this.parent.inputElement || this.rangeElement.tagName === 'TABLE' ||
               (!isNOU(this.rangeElement.previousElementSibling) && this.rangeElement.previousElementSibling.tagName === 'TABLE')) {
                 return;
             } else {

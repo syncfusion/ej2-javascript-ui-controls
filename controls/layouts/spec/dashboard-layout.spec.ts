@@ -8458,3 +8458,64 @@ describe('Null or undefined value testing ', () => {
         dashboardObj.destroy();
     });
 });
+describe('DashboardLayout - stacking column and moving into the stack (no overlap)', () => {
+  let host: HTMLElement;
+  let layout: DashboardLayout;
+
+  beforeEach(() => {
+    host = document.createElement('div');
+    host.id = 'portlet_default';
+    host.style.width = '1200px';
+    document.body.appendChild(host);
+
+    const panels: PanelModel[] = [
+      { id: 'Panel0',  sizeX: 1, sizeY: 1, row: 0, col: 0, header: '<div>Panel 0</div>',  content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel1',  sizeX: 1, sizeY: 1, row: 0, col: 1, header: '<div>Panel 1</div>',  content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel2',  sizeX: 1, sizeY: 1, row: 0, col: 2, header: '<div>Panel 2</div>',  content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel3',  sizeX: 1, sizeY: 1, row: 0, col: 3, header: '<div>Panel 3</div>',  content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel4',  sizeX: 1, sizeY: 1, row: 2, col: 0, header: '<div>Panel 4</div>',  content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel5',  sizeX: 1, sizeY: 1, row: 2, col: 1, header: '<div>Panel 5</div>',  content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel6',  sizeX: 1, sizeY: 1, row: 2, col: 2, header: '<div>Panel 6</div>',  content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel7',  sizeX: 1, sizeY: 1, row: 2, col: 3, header: '<div>Panel 7</div>',  content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel8',  sizeX: 1, sizeY: 1, row: 3, col: 0, header: '<div>Panel 8</div>',  content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel9',  sizeX: 1, sizeY: 1, row: 3, col: 1, header: '<div>Panel 9</div>',  content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel10', sizeX: 1, sizeY: 1, row: 3, col: 2, header: '<div>Panel 10</div>', content: '<div class="content">Panel Content<div>' },
+      { id: 'Panel11', sizeX: 1, sizeY: 1, row: 3, col: 3, header: '<div>Panel 11</div>', content: '<div class="content">Panel Content<div>' }
+    ];
+
+    layout = new DashboardLayout({
+      columns: 4,
+      cellSpacing: [10, 10],
+      allowDragging: true,
+      allowResizing: true,
+      panels
+    }, host);
+
+    layout.appendTo('#portlet_default');
+  });
+
+  afterEach(() => {
+    if (layout) {
+      layout.destroy();
+    }
+    if (host && host.parentNode) {
+      host.parentNode.removeChild(host);
+    }
+  });
+
+  it('moves Panel5 -> (4,0), Panel9 -> (5,0), then Panel1 -> (2,0) without overlap', () => {
+    layout.movePanel('Panel5', 4, 0);
+    layout.movePanel('Panel9', 5, 0);
+    layout.movePanel('Panel1', 2, 0);
+    const p1Model = (layout as any).getCellInstance('Panel1');
+    expect(p1Model.row).toBe(2);
+    expect(p1Model.col).toBe(0);
+    const p1El = document.getElementById('Panel1')!;
+    expect(parseInt(p1El.getAttribute('data-row')!, 10)).toBe(2);
+    expect(parseInt(p1El.getAttribute('data-col')!, 10)).toBe(0);
+    const p1E2 = document.getElementById('Panel8');
+    expect(parseInt(p1E2.getAttribute('data-row'), 10)).toBe(0);
+    expect(parseInt(p1E2.getAttribute('data-col'), 10)).toBe(1);
+
+  });
+});

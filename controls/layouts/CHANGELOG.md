@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.10 (2025-11-13)
+## 31.2.12 (2025-11-18)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#I780152` - The issue with the panel overlapping issue in the Dashboard component has been resolved.
+
+## 31.2.2 (2025-10-15)
 
 ### Timeline
 

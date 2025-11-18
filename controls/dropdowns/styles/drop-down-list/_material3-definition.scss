@@ -28,6 +28,9 @@ $ddl-filter-margin: 0 !default;
 $ddl-icon-hover-bg: rgba($content-text-color, .08) !default;
 $ddl-small-list-font-size: $text-xs !default;
 $ddl-bigger-small-list-font-size: $text-sm !default;
+$input-border: $ddl-zero-value $border-type !default;
+$input-margin-top: 16px !default;
+
 @include export-module('dropdownlist-Material3') {
   .e-ddl.e-control-wrapper .e-ddl-icon::before {
     transform: rotate(0deg);
