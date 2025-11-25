@@ -1911,6 +1911,9 @@ export class ChartRows extends DateProcessor {
                 parentTrNode[0].childNodes[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskbarContainerNode)[j as number]);
             }
             parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(leftLabelNode)[0]);
+            if (rightLabelNode && rightLabelNode.length > 0) {
+                parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(rightLabelNode)[0]);
+            }
             if (this.templateData.ganttProperties.indicators && this.templateData.ganttProperties.indicators.length > 0) {
                 this.appendIndicators(i, parentTrNode);
             }

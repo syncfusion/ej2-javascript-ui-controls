@@ -516,17 +516,16 @@ export class Sort implements IAction {
     private removeSortIcons(position?: number): void {
         const gObj: IGrid = this.parent;
         let header: Element;
-        const cols: SortDescriptorModel[] = this.sortSettings.columns;
         const fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
         for (let i: number = position ? position : 0,
-            len: number = !isNullOrUndefined(position) ? position + 1 : cols.length; i < len; i++) {
-            header = gObj.getColumnHeaderByField(cols[parseInt(i.toString(), 10)].field);
+            len: number = !isNullOrUndefined(position) ? position + 1 : fieldNames.length; i < len; i++) {
+            header = gObj.getColumnHeaderByField(fieldNames[parseInt(i.toString(), 10)]);
             if (isNullOrUndefined(header) || (gObj.allowGrouping
-                && gObj.groupSettings.columns.indexOf(cols[parseInt(i.toString(), 10)].field) > -1
+                && gObj.groupSettings.columns.indexOf(fieldNames[parseInt(i.toString(), 10)]) > -1
                 && !header.querySelector('.e-sortfilterdiv'))) {
                 continue;
             }
-            if (fieldNames.indexOf(cols[parseInt(i.toString(), 10)].field) === -1) { continue; }
+            if (isNullOrUndefined(fieldNames[parseInt(i.toString(), 10)])) { continue; }
             this.aria.setSort(<HTMLElement>header, 'none');
             classList(
                 header.querySelector('.e-sortfilterdiv'), [], ['e-descending', 'e-icon-descending', 'e-ascending', 'e-icon-ascending']);

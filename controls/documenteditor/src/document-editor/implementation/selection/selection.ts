@@ -1746,6 +1746,12 @@ export class Selection {
      * @returns {void}
      */
     public selectLine(): void {
+        if (!isNullOrUndefined(this.start) && this.start.paragraph.isInsideTable) {
+            let lastPara: ParagraphWidget = this.getLastParagraph(this.start.paragraph.associatedCell);
+            if (!isNullOrUndefined(lastPara) && lastPara.lastChild === this.start.paragraph.lastChild && this.start.paragraph.isEmpty()) {
+                return;
+            }
+        }
         if (!isNullOrUndefined(this.start)) {
             this.isSelectLine = true;
             this.moveToLineStart();
@@ -2059,7 +2065,6 @@ export class Selection {
         if (isNullOrUndefined(this.start)) {
             return;
         }
-
         if (this.isEmpty) {
             this.start.movePreviousPosition();
             this.end.setPositionInternal(this.start);
@@ -10363,7 +10368,7 @@ export class Selection {
                 field = this.getCurrentFormField();
             }
             if (field) {
-                if (field.formFieldData instanceof TextFormField && field.formFieldData.type === 'Text') {
+                if (field.formFieldData instanceof TextFormField) {
                     return true;
                 }
             }
@@ -10753,7 +10758,7 @@ export class Selection {
         if (!this.owner.enableImageResizerMode || (!this.owner.imageResizerModule.isImageResizerVisible || this.owner.imageResizerModule.isShapeResize)) {
             if (this.isHideSelection(this.start.paragraph)) {
                 this.caret.style.display = 'none';
-            } else if (this.isEmpty && (!this.owner.isReadOnly || this.owner.enableCursorOnReadOnly || this.isInlineFormFillMode())) {
+            } else if (this.isEmpty && ((!this.owner.isReadOnly && !this.documentHelper.isFormFillProtectedMode) || this.owner.enableCursorOnReadOnly || this.isInlineFormFillMode())) {
                 let caretLeft: number = parseInt(this.caret.style.left.replace('px', ''), 10);
                 if (caretLeft < left || caretLeft > right) {
                     this.caret.style.display = 'none';
@@ -12529,7 +12534,7 @@ export class Selection {
         let editRangeStartElementBox: EditRangeStartElementBox[] = [];
         for (let i: number = 0; i < this.editRangeCollection.length; i++) {
             let editStart: EditRangeStartElementBox = this.editRangeCollection[i];
-            let position: PositionInfo = this.getPosition(editStart, isNavigateToNextEditRegion);
+            let position: PositionInfo = this.getPosition(editStart, isNavigateToNextEditRegion, returnAllMatches);
             let start: TextPosition = position.startPosition;
             let end: TextPosition = position.endPosition;
             if ((this.start.isExistAfter(start) || this.start.isAtSamePosition(start))
@@ -12653,9 +12658,9 @@ export class Selection {
     /**
      * @private
      */
-    public getPosition(element: ElementBox, isNavigateToNextEditRegion?: boolean): PositionInfo {
+    public getPosition(element: ElementBox, isNavigateToNextEditRegion?: boolean, returnAllMatches?: boolean): PositionInfo {
         let offset: number = 0;
-        if (isNavigateToNextEditRegion && !isNullOrUndefined(element.previousElement) && element.previousElement instanceof BookmarkElementBox) {
+        if ((isNavigateToNextEditRegion || returnAllMatches) && !isNullOrUndefined(element.previousElement) && element.previousElement instanceof BookmarkElementBox) {
             offset = element.line.getOffset(element, 0)
         } else {
             offset = element.line.getOffset(element, 1);

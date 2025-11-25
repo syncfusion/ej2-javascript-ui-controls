@@ -599,8 +599,6 @@ export class CheckBoxFilterBase {
                             coll.push(existingPredicate[parseInt(j.toString(), 10)]);
                         }
                     }
-                } else {
-                    return;
                 }
             }
             if (!this.infiniteRenderMod) {
@@ -1590,7 +1588,14 @@ export class CheckBoxFilterBase {
         setChecked(elem.querySelector('input'), checked);
         const label: Element = elem.querySelector('.e-label');
         const dummyData: Object = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
-        const innerText: string = this.options.disableHtmlEncode ? 'textContent' : 'innerHTML';
+        let innerText: string;
+        const getModuleName: string = 'getModuleName';
+        const module: Function = this.parent[`${getModuleName}`];
+        if (!isNullOrUndefined(module) && module() === 'spreadsheet') {
+            innerText = 'textContent';
+        } else {
+            innerText = this.options.disableHtmlEncode ? 'textContent' : 'innerHTML';
+        }
         label[`${innerText}`] = !isNullOrUndefined(value) && value.toString().length ?
             this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(value) : value : this.getLocalizedLabel('Blanks');
         const checkboxUid: string = getUid('cbox');

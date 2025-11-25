@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.15 (2025-11-25)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I781706` - Align commands will now execute correctly inside swimlane elements.
+
 ## 31.2.12 (2025-11-18)
 
 ### Diagram

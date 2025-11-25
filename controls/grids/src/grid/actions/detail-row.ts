@@ -277,10 +277,10 @@ export class DetailRow {
             (gObj.expandedRows[rowObj.index].gridModel as IGrid).hierarchyPrintMode = gObj.childGrid.hierarchyPrintMode;
             gridModel = extend({}, gObj.expandedRows[rowObj.index].gridModel, gObj.childGrid, true);
         } else {
-            if (gObj.isPrinting && gObj.childGrid.allowPaging) {
-                gObj.childGrid.allowPaging = printMode === 'CurrentPage';
-            }
             gridModel = extend({}, {}, gObj.childGrid, true);
+        }
+        if (gObj.isPrinting && gObj.childGrid.allowPaging) {
+            (<{ allowPaging?: boolean }>gridModel).allowPaging = printMode === 'CurrentPage';
         }
         return gridModel;
     }

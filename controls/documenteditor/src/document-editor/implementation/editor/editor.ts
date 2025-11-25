@@ -10752,7 +10752,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public reLayout(selection: Selection, isSelectionChanged?: boolean, isLayoutChanged?: boolean, isFromGroupAcceptReject?: boolean): void {
+    public reLayout(selection: Selection, isSelectionChanged?: boolean, isLayoutChanged?: boolean, isFromGroupAcceptReject?: boolean, isFromIgnore?: boolean): void {
         if (!isNullOrUndefined(this.previousBlockToLayout)) {
             // Layout content for previous page to fix content based on KeepWithNext format.
             let previousBlock: BlockWidget = this.previousBlockToLayout;
@@ -10797,7 +10797,7 @@ export class Editor {
             if (!this.documentHelper.owner.enableHeaderAndFooter && !selection.isHighlightEditRegion) {
                 this.owner.viewer.updateScrollBars();
             }
-            if (!selection.owner.isShiftingEnabled || this.documentHelper.isRowOrCellResizing) {
+            if ((!selection.owner.isShiftingEnabled || this.documentHelper.isRowOrCellResizing) && !isFromIgnore) {
                 selection.fireSelectionChanged(true);
                 this.startParagraph = undefined;
                 this.endParagraph = undefined;
@@ -24479,7 +24479,7 @@ export class Editor {
      * @returns {void}
      */
     public removeUserRestrictions(user: string, editRegionStart?: EditRangeStartElementBox): void {
-        if (!this.selection.checkSelectionIsAtEditRegion() && !this.selection.isEditRangeCellSelected()) {
+        if (!this.selection.checkSelectionIsAtEditRegion() && !this.selection.isEditRangeCellSelected() && !(editRegionStart && editRegionStart.previousElement && editRegionStart.previousElement instanceof BookmarkElementBox)) {
             return;
         }
         this.selection.skipEditRangeRetrieval = true;
@@ -24986,6 +24986,7 @@ export class Editor {
             } else {
                 checkBoxTextElement.text = String.fromCharCode(9744);
             }
+            this.selection.selectFieldInternal(field, false, true);
             checkBoxTextElement.isWidthUpdated = false;
             this.owner.documentHelper.layout.reLayoutParagraph(field.line.paragraph, 0, 0);
             this.reLayout(this.selection, false);

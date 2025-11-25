@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+## 31.2.15 (2025-11-25)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I786194` – Fixed an issue where the scrollbar does not move properly when drag and drop the last item to the top.
+
+- `#I779353` - Fixed an issue where unwanted data requests were triggered during the initial rendering of the query builder.
+
 ## 31.2.12 (2025-11-18)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I776606` – Fixed an issue where the `MultiSelect` in Query Builder passes data requests without applying the filtered value.
+
+## 31.2.4 (2025-10-28)
 
 ### QueryBuilder
 

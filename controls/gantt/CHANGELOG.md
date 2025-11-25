@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 31.2.12 (2025-11-18)
+## 31.2.15 (2025-11-25)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I760382` - Fixed the issue where mouse events and selection were not working in the Gantt Chart after dynamically updating the datasource.
+- `#I783794` - Fixed an issue where the right label did not render when multi taskbar was enabled and the record was collapsed.
+
+## 31.2.10 (2025-11-13)
 
 ### GanttChart
 

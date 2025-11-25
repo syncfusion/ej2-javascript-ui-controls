@@ -743,6 +743,12 @@ export let tableCellItems: IDropDownItemModel[] = [
     { iconCss: 'e-icons e-cell-vertical-split', text: 'Vertical split', command: 'Table', subCommand: 'VerticalSplit' },
 ];
 
+let tableCellLocale: { [ket: string]: string }[] = [
+    { locale: 'mergecells', value: 'Merge' },
+    { locale: 'verticalsplit', value: 'HorizontalSplit' },
+    { locale: 'horizontalsplit', value: 'VerticalSplit' }
+];
+
 let tableRowLocale: { [ket: string]: string }[] = [
     { locale: 'tableInsertRowDropDownBefore', value: 'InsertRowBefore' },
     { locale: 'tableInsertRowDropDownAfter', value: 'InsertRowAfter' },
@@ -817,6 +823,9 @@ export function updateDropDownLocale(self: IRichTextEditor): void {
     });
     borderStyleItems.forEach((item: IDropDownItemModel, i: number) => {
         borderStyleItems[i as number].text = getLocale(self, borderStyleLocale, borderStyleItems[i as number]);
+    });
+    tableCellItems.forEach((item: IDropDownItemModel, i: number) => {
+        tableCellItems[i as number].text = getLocale(self, tableCellLocale, tableCellItems[i as number]);
     });
 }
 

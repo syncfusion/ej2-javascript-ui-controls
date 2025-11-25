@@ -248,6 +248,7 @@ export class GanttTreeGrid {
         }
         this.ensureScrollBar();
         this.parent.treeDataBound(args);
+        this.parent.isLoad = false;
         if (this.parent.isVirtualScroll) {
             if ((this.parent.enableVirtualMaskRow && this.parent.enableVirtualization) ||
                 (this.parent.enableVirtualization && !this.parent.enableVirtualMaskRow && this.parent.loadingIndicator.indicatorType === 'Shimmer') ||

@@ -216,7 +216,7 @@ export class TableResizer {
         this.owner.isShiftingEnabled = true;
         if (!isTableMarkerDragging) {
             if (this.resizeNode === 0) {
-                dragValue = touchPoint.x - this.startingPoint.x;
+                dragValue = HelperMethods.round(touchPoint.x - this.startingPoint.x, 2);
                 this.resizeTableCellColumn(dragValue);
             } else {
                 dragValue = touchPoint.y - this.startingPoint.y;

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 31.2.15 (2025-11-25)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I787017` - Now, inserting tables works properly when the Rich Text Editor is placed inside a list.
+
+- `#I783703` - Now, the inline toolbar in the Rich Text Editor is positioned properly without truncation at the edges.
+
+- `#I786061` - Now, localization works properly for the table cell dropdown items in the Rich Text Editor.
+
+- `#I773939` - Now, the emoji picker accessed through the `showEmojiPicker` public method works properly when inline mode is enabled in the Rich Text Editor.
+
 ## 31.2.12 (2025-11-18)
 
 ### RichTextEditor

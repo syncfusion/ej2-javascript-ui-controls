@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
-## 31.2.12 (2025-11-18)
+## 31.2.15 (2025-11-25)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I779257` - Fixed an issue where dataSource was not updating when new records were added using add record, even if it was initially empty.
+- `#I779836` - Resolved the issue where column properties were not updated and accessible during the initial rendering of the TreeGrid.
+
+## 31.2.10 (2025-11-13)
+
+### Tree Grid
+
+#### Features
+
+- `#982773` - Provided support for partial selection with virtualization and introduced the `isRowSelectable` API to disable selection for specific records.
 
 ### Tree Grid
 

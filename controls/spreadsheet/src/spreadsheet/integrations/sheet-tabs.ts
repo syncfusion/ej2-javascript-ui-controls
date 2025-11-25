@@ -634,7 +634,7 @@ export class SheetTabs {
         const eventArgs: AggregateArgs = { Count: 0, Sum: '0', Avg: '0', Min: '0', Max: '0', countOnly: true };
         this.parent.notify(aggregateComputation, eventArgs);
         if (eventArgs.Count > 1) {
-            this.aggregateContent = eventArgs.countOnly ? 'Count' : this.selaggregateCnt;
+            this.aggregateContent = (eventArgs.countOnly || eventArgs.isMaxNonNumericCells) ? 'Count' : this.selaggregateCnt;
             if (eventArgs.countOnly) {
                 this.aggregateContent = 'Count';
                 delete eventArgs.Sum; delete eventArgs.Avg; delete eventArgs.Min; delete eventArgs.Max;
@@ -642,6 +642,7 @@ export class SheetTabs {
             const btnClass: string = eventArgs.countOnly ? 'e-aggregate-list e-flat e-aggregate-list-countonly e-caret-hide'
                 : 'e-aggregate-list e-flat';
             delete eventArgs.countOnly;
+            delete eventArgs.isMaxNonNumericCells;
             const key: string = this.aggregateContent;
             const content: string = `${key}: ${eventArgs[key.toString()]}`;
             if (!this.aggregateDropDown) {
@@ -669,6 +670,8 @@ export class SheetTabs {
                 this.aggregateDropDown.appendTo(aggregateEle);
             } else {
                 this.updateAggregateContent(content, eventArgs);
+                this.aggregateDropDown.cssClass = btnClass;
+                this.aggregateDropDown.dataBind();
             }
         } else {
             this.removeAggregate();

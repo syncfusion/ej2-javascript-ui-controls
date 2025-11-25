@@ -679,6 +679,31 @@ export class TextSearch {
             .replace(/\u00A0/g, ' ');
     }
 
+    private buildMultiSearchAndMap(pageText: string): { text: string; map: number[] } {
+        const resultChars: string[] = [];
+        const indexMap: number[] = [];
+        let i: number = 0;
+        while (i < pageText.length) {
+            const ch: string = pageText[i as number];
+            if (i + 2 < pageText.length && /\s/.test(ch) && pageText[i + 1] === '\r' && pageText[i + 2] === '\n') {
+                resultChars.push(' ');
+                indexMap.push(i);
+                i += 3;
+                continue;
+            }
+            if (i + 1 < pageText.length && pageText[i as number] === '\r' && pageText[i + 1] === '\n') {
+                resultChars.push(' ');
+                indexMap.push(i);
+                i += 2;
+                continue;
+            }
+            resultChars.push(ch);
+            indexMap.push(i);
+            i += 1;
+        }
+        return { text: resultChars.join(''), map: indexMap };
+    }
+
     private calculateSearchCount(inputString: string, documentTextCollection: any): void {
         this.searchCount = 0;
         if (/[’']/g.test(inputString)) {
@@ -743,6 +768,9 @@ export class TextSearch {
             if (/[’']/g.test(inputString)) {
                 pageTextData = this.normalizeForSearch(pageTextData);
             }
+            const ms: any = this.buildMultiSearchAndMap(pageTextData);
+            let mappedMultiSearch: any = ms.text;
+            const multiToPageMap: any = ms.map;
             let multiSearch: string = (pageTextData.replace((/(\s\r\n)/gm), ' ')).replace((/(\r\n)/gm), ' ');
             let Multiline: string = (pageTextData.replace((/(\s\r\n)/gm), '  ')).replace((/(\r\n)/gm), ' ');
             let specialCharcterSearch: string = multiSearch.replace(/[^a-zA-Z0-9]+/g, ' ');
@@ -758,9 +786,12 @@ export class TextSearch {
             if (!this.isMatchCase) {
                 inputString = inputString.toLowerCase();
                 pageTextData = pageTextData.toLowerCase();
+                mappedMultiSearch = mappedMultiSearch.toLowerCase();
                 multiSearch = multiSearch.toLowerCase();
                 Multiline = Multiline.toLowerCase();
                 specialCharcterSearch = specialCharcterSearch.toLowerCase();
+            } else {
+                multiSearch = mappedMultiSearch;
             }
             while (matchIndex !== 0 || (matchIndex === 0 && matches.length > 0 && matches[0] === 0)) {
                 if (!inputString || inputString === ' ') {
@@ -807,8 +838,11 @@ export class TextSearch {
                     arrayReturns = this.correctLinetext(inputString, matchIndex, pageTextData, multiSearchIndex);
                     matchIndex = -arrayReturns[0].length;
                     for (let i: number = 0; i < arrayReturns.length; i++) {
-                        matchIndex = pageTextData.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(), multiSearchIndex);
-                        matchedArray.push(matchIndex);
+                        const segment: string = arrayReturns[i as number].trim();
+                        const msFound: number = multiSearch.indexOf(segment, multiSearchIndex);
+                        if (msFound === -1) { continue; }
+                        const pageIdx: number = multiToPageMap[msFound as number];
+                        matchedArray.push(pageIdx);
                         if (matchedArray.length > 1) {
                             if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
                                 matches.push(matchedArray);
@@ -1387,6 +1421,9 @@ export class TextSearch {
         let arrayReturns: any;
         let pageText: string = pageString;
         let searchText: string = searchString;
+        const ms: any = this.buildMultiSearchAndMap(pageString);
+        let mappedMultiSearch: any = ms.text;
+        const multiToPageMap: any = ms.map;
         let multiSearch: string = (pageText.replace((/(\s\r\n)/gm), ' ')).replace((/(\r\n)/gm), ' ');
         let Multiline: string = (pageString.replace((/(\s\r\n)/gm), '  ')).replace((/(\r\n)/gm), ' ');
         let specialCharcterSearch: string = multiSearch.replace(/[^a-zA-Z0-9]+/g, ' ');
@@ -1394,9 +1431,12 @@ export class TextSearch {
         if (!this.isMatchCase) {
             searchText = searchString.toLowerCase();
             pageText = pageString.toLowerCase();
+            mappedMultiSearch = mappedMultiSearch.toLowerCase();
             multiSearch = multiSearch.toLowerCase();
             Multiline = Multiline.toLowerCase();
             specialCharcterSearch = specialCharcterSearch.toLowerCase();
+        } else {
+            multiSearch = mappedMultiSearch;
         }
         const matches: any[] = [];
         const matchedArray: number[] = [];
@@ -1464,8 +1504,11 @@ export class TextSearch {
                 arrayReturns = this.correctLinetext(searchString, matchIndex, pageText, multiSearchIndex);
                 matchIndex = -arrayReturns[0].length;
                 for (let i: number = 0; i < arrayReturns.length; i++) {
-                    matchIndex = pageText.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(), multiSearchIndex);
-                    matchedArray.push(matchIndex);
+                    const segment: string = arrayReturns[i as number].trim();
+                    const msFound: number = multiSearch.indexOf(segment, multiSearchIndex);
+                    if (msFound === -1) { continue; }
+                    const pageIdx: number = multiToPageMap[msFound as number];
+                    matchedArray.push(pageIdx);
                     if (matchedArray.length > 1) {
                         if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
                             matches.push(matchedArray);

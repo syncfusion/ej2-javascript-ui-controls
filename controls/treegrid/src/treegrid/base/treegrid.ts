@@ -2184,6 +2184,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.isIndentEnabled) {
             this.refreshToolbarItems();
         }
+        this.updateColumnModel();
         this.wireEvents();
         this.renderComplete();
         const destroyTemplate: string = 'destroyTemplate';

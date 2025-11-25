@@ -6232,4 +6232,54 @@ describe('Change Event testing', () => {
             numericObj.destroy();
          });
     });
+    describe('EJ2-989922 NumericTextBox rounding > 7 decimals with suffix format', () => {
+        let numerictextbox: NumericTextBox;
+        beforeEach((): void => {
+            const ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'tsNumericSuffix' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (numerictextbox) {
+                numerictextbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Rounds to 10 decimals with literal suffix for negative value', () => {
+            numerictextbox = new NumericTextBox({
+                value: 0.000000000057,
+                format: "0.0000000000000 'test'",
+                showSpinButton: false
+            }, '#tsNumericSuffix');
+            const inputEl = <HTMLInputElement>document.getElementById('tsNumericSuffix');
+            expect(inputEl.value).toEqual('0.0000000000570 test');
+        });
+
+        it('Displays small negative value with n12 format', () => {
+            numerictextbox = new NumericTextBox({
+                value: -0.0000000056,
+                format: 'n12',
+                showSpinButton: false
+            },'#tsNumericSuffix');
+            const input = document.getElementById('tsNumericSuffix') as HTMLInputElement;
+            expect(input.value).toEqual('-0.000000005600');
+        });
+        it('Displays small positive value with n12 format', () => {
+            numerictextbox = new NumericTextBox({
+                value: 0.0000000056,
+                format: 'n12',
+                showSpinButton: false
+            },'#tsNumericSuffix');
+            const input = document.getElementById('tsNumericSuffix') as HTMLInputElement;
+            expect(input.value).toEqual('0.000000005600');
+        });
+        it('Displays small positive value with n12 format', () => {
+            numerictextbox = new NumericTextBox({
+                value: 0.00000000056,
+                format: 'n12',
+                showSpinButton: false
+            },'#tsNumericSuffix');
+            const input = document.getElementById('tsNumericSuffix') as HTMLInputElement;
+            expect(input.value).toEqual('0.000000000560');
+        });
+    });
 });

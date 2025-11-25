@@ -485,6 +485,7 @@ export interface AggregateArgs {
     Min?: string;
     Max?: string;
     countOnly?: boolean;
+    isMaxNonNumericCells?: boolean;
 }
 
 /**

@@ -2902,6 +2902,7 @@ export class DocumentHelper {
                 && this.protectionType === 'FormFieldsOnly' && this.selection) {
                 let widget: LineWidget = this.getLineWidget(touchPoint);
                 if (isNullOrUndefined(widget)) {
+                    this.isMouseDown = false;
                     return;
                 }
                 let formField: FieldElementBox = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
@@ -6132,7 +6133,7 @@ export abstract class LayoutViewer {
                                         const firstLineIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
 
                                         if (leftIndent + firstLineIndent + clientLayoutArea.x < textWrappingBounds.right) {
-                                            //paragraph.x = textWrappingBounds.right;
+                                            // paragraph.x = textWrappingBounds.right;
                                             clientLayoutArea.x = textWrappingBounds.right;
 
                                             if (isWord2013) {

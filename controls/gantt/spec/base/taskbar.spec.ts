@@ -4,7 +4,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, IQueryTaskbarInfoEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { baselineData, resourceData, projectData, projectNewData18, projectNewData19, projectNewData20, splitData, projectNewData21, taskModeData4, taskModeData5, projectNewData22, CR899690, addDependency, manualParentdata } from './data-source.spec';
+import { baselineData, resourceData, projectData, projectNewData18, projectNewData19, projectNewData20, splitData, projectNewData21, taskModeData4, taskModeData5, projectNewData22, CR899690, addDependency, manualParentdata, CR991733 } from './data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 describe('Gantt taskbar rendering', () => {
@@ -1585,6 +1585,65 @@ describe('MT:943439- Code coverage for resourceview offset calculate', () => {
     it('Verifying the offset call for resource view', () => {
         ganttObj.predecessorModule['calculateOffset'](ganttObj.currentViewData[1]);
         expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].offset).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR-991733-Right label not rendered when multitaskbar is enabled and record is collapsed', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: CR991733,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            allowSelection: true,
+            gridLines: "Both",
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                rightLabel: 'TaskID',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('Verifying the rightlabel while multi-taskbar is enabled', () => {
+        let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall') as HTMLElement;
+        triggerMouseEvent(collapseallToolbar, 'click');
+        let rightLabelElement: HTMLElement = ganttObj.chartPane.querySelectorAll('.e-label')[1] as HTMLElement;
+        expect(rightLabelElement.innerText).toBe('1');
     });
     afterAll(() => {
         if (ganttObj) {

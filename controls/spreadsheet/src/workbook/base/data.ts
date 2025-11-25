@@ -282,6 +282,8 @@ export function getValueFromFormat(
                     context.notify(parseDecimalNumber, options);
                     cellVal = options.fResult;
                 }
+            } else if (cell.value && typeof cell.value === 'string' && !cell.value.trim()) {
+                return '';
             }
             return cellVal;
         }

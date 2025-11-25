@@ -740,6 +740,9 @@ export class Edit {
     //   }
     // }
     private beginEdit(args: SaveEventArgs): void {
+        if (this.parent.flatData.length === 0 && !isNullOrUndefined(this.addRowRecord)) {
+            this.addRowRecord = undefined;
+        }
         if (args.requestType === 'refresh' && this.isOnBatch) {
             args.cancel = true; return;
         }

@@ -29,6 +29,7 @@ export function editAction(details: { value: ITreeData, action: string }, contro
     const key: string = control.grid.getPrimaryKeyFieldNames()[0];
     const treeData: ITreeData[] = control.dataSource instanceof DataManager ?
         control.dataSource.dataSource.json : <Object[]>control.dataSource;
+    const gridData: ITreeData[] = <Object[]>control.grid.dataSource;
     let modifiedData: Object[] = []; const originalData: ITreeData = value; let isSkip: boolean = false;
     if (control.editSettings.mode === 'Batch') {
         batchChanges = control.grid.editModule.getBatchChanges();
@@ -51,9 +52,9 @@ export function editAction(details: { value: ITreeData, action: string }, contro
             const keys: string[] = (modifiedData[parseInt(k.toString(), 10)] as ITreeData).taskData ?
                 Object.keys((modifiedData[parseInt(k.toString(), 10)] as ITreeData).taskData) :
                 Object.keys(modifiedData[parseInt(k.toString(), 10)]);
-            i = treeData.length;
+            i = treeData.length === 0 && gridData.length === 1 ? gridData.length : treeData.length;
             while (i-- && i >= 0) {
-                if (treeData[parseInt(i.toString(), 10)][`${key}`] === modifiedData[parseInt(k.toString(), 10)][`${key}`]) {
+                if ((treeData.length === 0 && gridData.length === 1 && gridData[parseInt(i.toString(), 10)][`${key}`] === modifiedData[parseInt(k.toString(), 10)][`${key}`]) || treeData[parseInt(i.toString(), 10)][`${key}`] === modifiedData[parseInt(k.toString(), 10)][`${key}`]) {
                     if (action === 'delete') {
                         const currentData: Object = treeData[parseInt(i.toString(), 10)]; treeData.splice(i, 1);
                         if (isSelfReference) {
@@ -96,7 +97,10 @@ export function editAction(details: { value: ITreeData, action: string }, contro
                         } else if (action === 'add' || action === 'batchsave') {
                             let index: number;
                             if (control.editSettings.newRowPosition === 'Child') {
-                                if (isSelfReference) {
+                                if (treeData.length === 0 && gridData.length === 1) {
+                                    treeData.push(originalData.taskData);
+                                }
+                                else if (isSelfReference) {
                                     originalData.taskData[`${control.parentIdMapping}`] = treeData[parseInt(i.toString(), 10)][`${control.idMapping}`];
                                     treeData.splice(i + 1, 0, originalData.taskData);
                                 } else {
@@ -167,7 +171,11 @@ export function addAction(details: { value: ITreeData, action: string }, treeDat
         if (!isNullOrUndefined(addRowRecord)) {
             value = extend({}, addRowRecord);
             value = getPlainData(value);
-        } else {
+        }
+        else if (currentViewRecords.length === 0) {
+            value = getPlainData(value);
+        }
+        else {
             value = extend({}, currentViewRecords[addRowIndex + 1]);
             value = getPlainData(value);
         }
@@ -179,8 +187,8 @@ export function addAction(details: { value: ITreeData, action: string }, treeDat
             value = getPlainData(value);
         } else {
             const primaryKeys: string = control.grid.getPrimaryKeyFieldNames()[0];
-            const currentdata: Object = currentViewRecords[parseInt(addRowIndex.toString(), 10)];
-            if (!isNullOrUndefined(currentdata) && currentdata[`${primaryKeys}`] === details.value[`${primaryKeys}`] || selectedIndex !== -1) {
+            const currentdata: Object = currentViewRecords.length > 0 ? currentViewRecords[parseInt(addRowIndex.toString(), 10)] : [];
+            if (!isNullOrUndefined(currentdata) && currentdata[`${primaryKeys}`] === details.value[`${primaryKeys}`] || selectedIndex !== -1 && treeData.length !== 0) {
                 value = extend({}, currentdata);
             } else {
                 value = extend({}, details.value);

@@ -2912,6 +2912,10 @@ export class FormDesigner {
             (actualObject as any).value = options.value;
             isEdited = true;
         }
+        if (!isNullOrUndefined(options.isChecked) && (actualObject as any).Selected !== options.isChecked) {
+            (actualObject as any).Selected = options.isChecked;
+            isEdited = true;
+        }
         if (!isNullOrUndefined(options.bounds) && actualObject.bounds.properties !== options.bounds) {
             const { X, Y, Width, Height } = options.bounds;
             const updatedBounds: any = { x: X, y: Y, width: Width, height: Height };
@@ -2967,6 +2971,10 @@ export class FormDesigner {
                     }
                     if (!isNullOrUndefined(options.value) && data[`${x}`].Value !== options.value) {
                         data[`${x}`].Value = options.value;
+                        isEdited = true;
+                    }
+                    if (!isNullOrUndefined(options.isChecked) && data[`${x}`].Selected !== options.isChecked) {
+                        data[`${x}`].Selected = options.isChecked;
                         isEdited = true;
                     }
                     if (!isNullOrUndefined(options.bounds)) {
@@ -3079,10 +3087,10 @@ export class FormDesigner {
         if (options.tooltip && currentData.tooltip !== options.tooltip) {
             currentData.tooltip = options.tooltip;
         }
-        if (currentData.type === 'Checkbox' && (!isNullOrUndefined((options as any).isChecked) && currentData.isChecked === (options as any).isChecked)) {
+        if (currentData.type === 'Checkbox' && (!isNullOrUndefined((options as any).isChecked) && currentData.isChecked !== (options as any).isChecked)) {
             currentData.isChecked = (options as any).isChecked;
         }
-        if (currentData.type === 'RadioButton' && (!isNullOrUndefined((options as any).isSelected) && currentData.isSelected === (options as any).isSelected)) {
+        if (currentData.type === 'RadioButton' && (!isNullOrUndefined((options as any).isSelected) && currentData.isSelected !== (options as any).isSelected)) {
             currentData.isSelected = (options as any).isSelected;
         }
         if ((currentData.type === 'DropdownList' || currentData.type === 'ListBox') && (options as any).options) {

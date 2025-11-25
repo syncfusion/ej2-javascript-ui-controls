@@ -2579,8 +2579,8 @@ export class AnnotationToolbar {
         if (args.element && args.element.parentElement) {
             const leftValue: number = parseFloat(args.element.parentElement.style.left);
             const width: number = args.element.parentElement.offsetWidth;
-            if ((leftValue + width) < (this.pdfViewer.element.offsetWidth + 10)) {
-                args.element.parentElement.style.left = (leftValue - width) + 'px';
+            if ((leftValue + width) > (this.pdfViewer.element.offsetWidth - 10)) {
+                args.element.parentElement.style.left = (leftValue - (width / 2)) + 'px';
             }
         }
     }

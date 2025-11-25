@@ -732,7 +732,10 @@ describe('Editor specs', ()=> {
                 tableVerticalAlignDropDownMiddle: 'Mitte ausrichten',
                 tableVerticalAlignDropDownBottom: 'Unten ausrichten',
                 tableStylesDropDownDashedBorder: 'Gestrichelte Grenzen',
-                tableStylesDropDownAlternateRows: 'Alternative Zeilen'
+                tableStylesDropDownAlternateRows: 'Alternative Zeilen',
+                mergecells: 'Zellen verbinden',
+                verticalsplit: 'Vertikale Aufteilung',
+                horizontalsplit: 'Horizontale Aufteilung',
             }
         }
     });
@@ -764,6 +767,45 @@ describe('Editor specs', ()=> {
         });
         afterAll(() => {
             destroy(rteObj);
+        });
+    });
+
+    describe('Bug 992484: Localization doesnt work properly for TableCell items in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                locale: 'de-DE',
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                    'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="td1" style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table><p><br></p>`
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' Ensure the Table Cell dropdown options are properly localized.', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            var clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            rteObj.inputElement.dispatchEvent(clickEvent);
+            let tdEle: HTMLElement = rteObj.element.querySelector(".td1");
+            tdEle.focus();
+            setCursorPoint(tdEle, 0);
+            var eventsArg = { pageX: 50, pageY: 300, target: tdEle };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            let tableQTBarEle: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            let tableCell: HTMLElement = (tableQTBarEle.querySelector('[title="Column"]').nextElementSibling as HTMLElement).childNodes[0] as HTMLElement;
+            tableCell.click();
+            tableCell.dispatchEvent(clickEvent);
+            let items: any = document.querySelectorAll('#' + controlId + '_quick_TableCell-popup .e-item');
+            expect(items[0].textContent === 'Zellen verbinden').toBe(true);
+            expect(items[1].textContent === 'Vertikale Aufteilung').toBe(true);
+            expect(items[2].textContent === 'Horizontale Aufteilung').toBe(true);
+            done();
         });
     });
 

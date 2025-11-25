@@ -4012,7 +4012,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     e.target && !(e.target as HTMLElement).classList.contains('e-img-inner')
                     && (e.target && (e.target as HTMLElement).parentElement
                         && !(e.target as HTMLElement).parentElement.classList.contains('e-img-wrap')))
-                || closest(active, '.e-rte-toolbar') === this.getToolbarElement()) {
+                || (!isNOU(this.getToolbarElement()) && closest(active, '.e-rte-toolbar') === this.getToolbarElement())) {
                 (this.contentModule.getEditPanel() as HTMLElement).focus();
                 if (!isNOU(this.getToolbarElement())) {
                     this.getToolbarElement().setAttribute('tabindex', '-1');

@@ -1020,25 +1020,48 @@ export class CommentView {
         let clipboardData = (event.clipboardData);
         let plainText = clipboardData.getData('text/plain');
         if (plainText) {
-            let htmlString = this.convertToHtml(plainText);
-            htmlString = SanitizeHtmlHelper.sanitize(htmlString);
-            element.innerHTML = element.innerHTML + htmlString;
+            // let htmlString = this.convertToHtml(plainText);
+            let htmlString = SanitizeHtmlHelper.sanitize(plainText);
+            const selection: Selection | null = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+                // Get the current range (caret or selected text)
+                const range: Range = selection.getRangeAt(0);
+
+                // Delete any selected content so the new content replaces it
+                range.deleteContents();
+
+                // Create a fragment from the HTML string
+                const frag: DocumentFragment = range.createContextualFragment(htmlString);
+
+                // Insert the fragment at the caret position
+                range.insertNode(frag);
+
+                // Move caret after the last inserted node
+                range.collapse(false);
+
+                // Update the selection to reflect the new caret position
+                selection.removeAllRanges();
+                selection.addRange(range);
+            } else {
+                // If no selection exists, append the HTML at the end of the element
+                element.innerHTML += htmlString;
+            }
         }
         this.enableDisableReplyPostButton();
     }
 
-    private convertToHtml(input: string): string {
-        // Split the input string by \r\n or \r
-        const lines = input.split(/(?:\r?\n|\r)/);
+    // private convertToHtml(input: string): string {
+    //     // Split the input string by \r\n or \r
+    //     const lines = input.split(/(?:\r?\n|\r)/);
 
-        // Map each line to a <div> element, adding <br> if the line is empty
-        const htmlLines = lines.map(line => line ? `<div>${line}</div>` : `<div><br></div>`);
+    //     // Map each line to a <div> element, adding <br> if the line is empty
+    //     const htmlLines = lines.map(line => line ? `<div>${line}</div>` : `<div><br></div>`);
 
-        // Join the array back into a single string
-        const output = htmlLines.join('');
+    //     // Join the array back into a single string
+    //     const output = htmlLines.join('');
 
-        return output;
-    }
+    //     return output;
+    // }
 
     private onSelect(e: MentionSelectEventArgs): void {
         this.owner.documentEditorSettings.mentionSettings.fields

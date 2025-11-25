@@ -381,8 +381,7 @@ describe('filter menu module =>', () => {
         it('mutipe filter testing string column', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'filterAfterOpen') {
-                    let instances: string = 'ej2_instances';
-                    let struiObj: AutoComplete = document.querySelector('#strui-' + gridObj.getColumns()[1].uid)[instances][0];
+                    let struiObj: any = document.querySelector('#strui-' + gridObj.getColumns()[1].uid);
                     struiObj.value = 'Vinet';
                     (<HTMLInputElement>document.querySelector('.e-flmenu-okbtn')).click();
                     expect(gridObj.filterSettings.columns.length).toBe(1);

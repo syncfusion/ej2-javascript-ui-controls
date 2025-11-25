@@ -2227,8 +2227,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('LEN Formula with text having spaces and comma->', (done: Function) => {
             helper.edit('A2', '   Casual Shoes ,   ');
-            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('14');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":14,"formula":"=LEN(A2)"}');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":20,"formula":"=LEN(A2)"}');
             done();
         });
         it('LEN Formula with cell having Number Value->', (done: Function) => {

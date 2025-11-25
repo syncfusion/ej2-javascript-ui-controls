@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 31.2.12 (2025-11-18)
+## 31.2.15 (2025-11-25)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I782616` - The issue where the header was not refreshed after updating the `sortSettings` in the grid has been resolved.
+- `#I783105` - The issue where `currentViewData` was not updated properly after row reordering with remote data has been resolved.
+- `#I783563` - The issue where `Add Current Selection to Filter` in Excel style filtering was not working when no existing filter was applied to the grid has been resolved.
+- `#I780338` - Resolved an issue where the `hierarchyExportMode` was not working in a hierarchy grid with pagination enabled.
+- `#I782594` - Resolved an issue where the filter value was not updated properly when filtering was performed immediately in the custom filter dialog on a string column.
+
+## 31.2.10 (2025-11-13)
 
 ### Grid
 

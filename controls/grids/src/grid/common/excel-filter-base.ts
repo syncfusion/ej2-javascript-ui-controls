@@ -634,9 +634,16 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         const isComplex: boolean = !isNullOrUndefined(col) && isComplexField(col);
         const complexFieldName: string = !isNullOrUndefined(col) && getComplexFieldID(col);
         const colValue: string = isComplex ? complexFieldName : col;
-        const fValue: NumericTextBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue')).ej2_instances[0];
+        let firstValue: NumericTextBox | HTMLInputElement;
+        let secondValue: NumericTextBox | HTMLInputElement;
+        if (this.options.type === 'string' && isNullOrUndefined(this.options.template)) {
+            firstValue = <HTMLInputElement>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue');
+            secondValue = <HTMLInputElement>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue');
+        } else {
+            firstValue = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue')).ej2_instances[0];
+            secondValue = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue')).ej2_instances[0];
+        }
         const fOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr')).ej2_instances[0];
-        const sValue: NumericTextBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue')).ej2_instances[0];
         const sOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr')).ej2_instances[0];
         let checkBoxValue: boolean;
         if (this.options.type === 'string') {
@@ -646,8 +653,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         const predicateSelector: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-frstpredicate')).ej2_instances[0];
         const predicate: string = (predicateSelector.checked ? 'and' : 'or');
         this.filterByColumn(
-            this.options.field, fOperator.value as string, fValue.value, predicate,
-            checkBoxValue, this.options.ignoreAccent, sOperator.value as string, sValue.value);
+            this.options.field, fOperator.value as string, firstValue.value, predicate,
+            checkBoxValue, this.options.ignoreAccent, sOperator.value as string, secondValue.value);
         this.removeDialog();
     }
     /**

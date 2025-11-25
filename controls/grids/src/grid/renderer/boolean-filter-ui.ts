@@ -20,8 +20,6 @@ import { PredicateModel } from '../base/grid-model';
  *
  * @hidden
  */
-MultiSelect.Inject(CheckBoxSelection);
-
 export class BooleanFilterUI implements IFilterMUI {
 
     private parent: IGrid;
@@ -39,6 +37,7 @@ export class BooleanFilterUI implements IFilterMUI {
     private multiSelectDropdownComplete: Function;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, filterSettings?: FilterSettings) {
+        MultiSelect.Inject(CheckBoxSelection);
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.filterSettings = filterSettings;

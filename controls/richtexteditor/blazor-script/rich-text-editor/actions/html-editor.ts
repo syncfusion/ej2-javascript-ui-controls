@@ -707,7 +707,7 @@ export class HtmlEditor {
                 (currentRange.startContainer.childNodes[index as number] &&
                     currentRange.startContainer.childNodes[index as number].textContent.trim() === '')) {
                 const node: Node = checkNode && checkNode.textContent.trim() === '' ? checkNode : currentRange.startContainer.childNodes[index as number];
-                if (hasAnyFormatting(node) && node.previousSibling && node.previousSibling.textContent.trim() === '') {
+                if (hasAnyFormatting(node) && node.previousSibling && node.previousSibling.textContent.trim() === '' && node !== this.parent.inputElement) {
                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                         this.parent.getDocument(), node.previousSibling as HTMLElement, 0);
                     detach(node);

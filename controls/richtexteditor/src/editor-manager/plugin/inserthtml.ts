@@ -2540,7 +2540,7 @@ export class InsertHtml {
         const relevantAncestorTags: string[] = ['table', 'li'];
         for (const ancestorTag of relevantAncestorTags) {
             const closestAncestorElement: Element = closest(currentElement, ancestorTag);
-            if (closestAncestorElement) {
+            if (closestAncestorElement && !closestAncestorElement.contains(editNode)) {
                 return closestAncestorElement;
             }
         }

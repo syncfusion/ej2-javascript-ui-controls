@@ -24,7 +24,10 @@ export class _PdfEncryptor {
         }
         return this._messageDigest;
     }
-    constructor(dictionary: _PdfDictionary, id: string, password: string = '') {
+    constructor(dictionary: _PdfDictionary, id: string, password?: string) {
+        if (password === null || typeof password === 'undefined') {
+            password = '';
+        }
         const filter: _PdfName = dictionary.get('Filter');
         if (!_isName(filter, 'Standard')) {
             throw new FormatError('unknown encryption method');

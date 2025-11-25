@@ -3752,13 +3752,17 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 await this.processSfdt(sfdtText as string, false);
             }
             else {
-                setTimeout(async () => {
-                    try {
-                        await this.processSfdt(sfdtText as string, true);
-                    } catch (error) {
-                        this.failureHandler('onError');
-                    }
-                }, 50);
+                return new Promise<void>((resolve: () => void, reject: (reason?: any) => void) => {
+                    setTimeout(async () => {
+                        try {
+                            await this.processSfdt(sfdtText as string, true);
+                            resolve();
+                        } catch (error) {
+                            this.failureHandler('onError');
+                            reject(error);
+                        }
+                    }, 50);
+                });
             }
         }
     }

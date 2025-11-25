@@ -325,7 +325,7 @@ export class EmojiPicker {
      */
     private positionDialogue(target: HTMLElement, spanElement: HTMLElement): void {
         const editContentElement: HTMLElement = this.parent.inputElement;
-        if (editContentElement === target) {
+        if (isNOU(spanElement) || editContentElement === target) {
             return;
         }
         const windowHeight: number = window.innerHeight;

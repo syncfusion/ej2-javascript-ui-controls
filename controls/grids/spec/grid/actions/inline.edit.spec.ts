@@ -5300,3 +5300,35 @@ describe('EJ2-981063-Double Left Border Displayed on First Visible Column When O
         gridObj = actionComplete = null;
     });
 });
+
+describe('For Coverage', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true},
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', visible: false },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' },
+                ],
+            }, done);
+    });
+
+    it('Coverage - 1', (done: Function) => {
+        gridObj.selectRow(0, true);
+        (gridObj as any).isTreeGrid = true;
+        gridObj.selectionModule.selectedRowIndexes = [ 0, 1 ];
+        gridObj.editModule.startEdit(null);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

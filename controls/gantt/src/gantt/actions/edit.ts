@@ -1420,12 +1420,19 @@ export class Edit {
                 this.parent.taskFields.hasChildMapping)) {
                 this.parent.dataOperation.updateParentItems(ganttRecord, true);
             }
-            const parentData: IGanttData = this.parent.getRecordByID(ganttRecord.parentItem.taskId);
-            if (!isNullOrUndefined(parentData)) {
-                if (!parentData.ganttProperties.predecessorsName) {
+            let currentParent: IGanttData | null = this.parent.getRecordByID(ganttRecord.parentItem.taskId);
+            // Traverse up the hierarchy to check for parent and grandparent
+            while (!isNullOrUndefined(currentParent)) {
+                if (!currentParent.ganttProperties.predecessorsName) {
                     this.isFirstCall = true;
-                    this.parent.predecessorModule.validatePredecessor(parentData, [], '');
+                    this.parent.predecessorModule.validatePredecessor(currentParent, [], '');
                     this.updateParentItemOnEditing();
+                }
+                // Check if the current parent has its own parent (grandparent)
+                if (currentParent.parentItem) {
+                    currentParent = this.parent.getRecordByID(currentParent.parentItem.taskId);
+                } else {
+                    currentParent = null; // No further parent, exit the loop
                 }
             }
         }

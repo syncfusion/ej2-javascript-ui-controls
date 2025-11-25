@@ -260,6 +260,31 @@ describe('RTE CR issues ', () => {
             expect(rteObj.contentModule.getEditPanel().innerHTML).toBe('<p>😀</p>');
         });
     });
+    describe('Bug 985502: Script error throws when using EmojiPicker with the Inline toolbar in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                inlineMode: {
+                    enable: true,
+                    onSelection: true,
+                },
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' When inline mode is enabled, invoking showEmojiPicker should bring up the emoji picker popup without throwing any error.', () => {
+            rteObj.focusIn();
+            rteObj.showEmojiPicker();
+            const emojiPickerPopup: HTMLElement = document.querySelector('.e-rte-emojipicker-popup') as HTMLElement;
+            expect(emojiPickerPopup).not.toBeNull();
+            const inputElement: HTMLElement = document.querySelector('.e-rte-emoji-search') as HTMLElement;
+            expect(document.activeElement).toBe(inputElement);
+        });
+    });
     describe('930848: Formatting, Shift+Enter, and zero-width space removal', () => {
         let rteObj: RichTextEditor;
         let keyboardEventArgs: any;
@@ -2785,6 +2810,48 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
+    describe('Bug 993693: Table inserted outside the Editor, when RichTextEditor is placed inside an ordered list', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let listHost: HTMLElement;
+        let rteHost: HTMLElement;
+        beforeEach(() => {
+            listHost = document.createElement('ol');
+            const listItem = document.createElement('li');
+            rteHost = document.createElement('div');
+            rteHost.id = 'rteElement';
+            listItem.appendChild(rteHost);
+            listHost.appendChild(listItem);
+            document.body.appendChild(listHost);
+            rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                }
+            });
+
+            rteObj.appendTo('#rteElement');
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+            listHost.remove();
+            rteHost.remove();
+            listHost = null;
+            rteHost = null;
+        });
+        it(' A table must be inserted inside the Rich Text Editor even when the editor is rendered within a list.', (done) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const createTableButton: HTMLElement = rteEle.querySelector('[aria-label="Create Table (Ctrl+Shift+E)"]');
+            createTableButton.click();
+            var tableDialogPrimaryButton: HTMLElement = document.body.querySelector('#' + rteObj.element.id + '_insertTable');
+            tableDialogPrimaryButton.click();
+            var insertButton: HTMLElement = document.querySelector('button.e-rte-elements.e-control.e-btn.e-lib.e-flat.e-insert-table.e-primary');
+            insertButton.click();
+            const tables = rteObj.contentModule.getEditPanel().querySelectorAll('table');
+            expect(tables.length).toBe(1);
+            done();
+        });
+    });
     describe('942812 - RichTextEditor Image Interaction', () => {
         let rteObj: RichTextEditor;
         let changeSpy: jasmine.Spy;
@@ -3128,6 +3195,67 @@ describe('RTE CR issues ', () => {
             const insertedTable1 = rteObj.contentModule.getEditPanel().querySelector('table');
             expect(insertedTable1).not.toBeNull();
             expect(rteObj.element.querySelector('.e-placeholder-enabled')).toBeNull();
+        });
+    });
+
+    describe('Bug 991487: Inline Toolbar popup cuts off at the edges in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let container: HTMLElement = createElement('div', {
+            id: 'container',
+            styles: 'width: 100px;right: 10px;position:absolute' });
+        beforeEach(() => {
+            document.body.appendChild(container);
+            container.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                value: `
+    <h3>Welcome to Inline Rich Text Editor!</h3>
+    <p>
+      This editor works directly within the page content area. You can select text and apply formatting 
+      using the toolbar above.
+    </p>
+    <ul>
+      <li>Click on any text and start typing.</li>
+      <li>Use toolbar options like bold, italic, underline, etc.</li>
+      <li>No separate editor box—content appears inline.</li>
+    </ul>
+  `,
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|',
+                        'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                        'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                        'SubScript', 'SuperScript', '|',
+                        'LowerCase', 'UpperCase', '|',
+                        'Formats', 'Alignments', 'Blockquote', 'HorizontalLine', '|', 'OrderedList', 'UnorderedList', '|',
+                        'Indent', 'Outdent', '|',
+                        'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                        'SourceCode', '|', 'FormatPainter', '|', 'ClearFormat', '|', 'EmojiPicker', '|', 'Print', 'InsertCode', 'Audio', 'Video']
+                },
+                inlineMode: {
+                    enable: true,
+                }
+            });
+            rteObj.appendTo('#defaultRTE');
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' Check that the inline toolbar displays at full width.', (done) => {
+            rteObj.focusIn();
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            const mouseDownEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(mouseDownEvent);
+            const target: HTMLElement = rteObj.inputElement.childNodes[1] as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, target.firstChild, target.firstChild, 10, 12);
+            target.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const inlinePopup: HTMLElement = rteObj.element.querySelector('.e-rte-inline-popup') as HTMLElement;
+                const editorRect: DOMRect = rteObj.element.getBoundingClientRect() as DOMRect;
+                const popupRect: DOMRect = inlinePopup.getBoundingClientRect() as DOMRect;
+                expect(popupRect.right).toBeLessThanOrEqual(editorRect.right);
+                expect(popupRect.left).toBeGreaterThanOrEqual(editorRect.left);
+                done();
+            }, 100);
         });
     });
 

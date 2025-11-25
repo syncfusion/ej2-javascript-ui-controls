@@ -2137,12 +2137,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (!this.enabled) {
             return;
         }
-        if (!this.multiple && this.getFilesData().length > 0) {
-            const selectedFile: FileInfo[] = this.getSelectedFiles(0);
-            if (selectedFile) {
-                this.remove(selectedFile, false, false, true, null);
-            }
-        }
         let targetFiles: File[];
         /* istanbul ignore next */
         if (args.type === 'drop') {
@@ -2346,6 +2340,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         if (this.browserName !== 'msie' && !singleUpload) {
             this.element.value = '';
+        }
+        if (this.isFormUpload() && this.uploadWrapper.querySelector('.' + INPUT_WRAPPER)) {
+            const hiddenElement: HTMLElement = this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).querySelector('.' + HIDDEN_INPUT);
+            if (hiddenElement) {
+                this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).removeChild(hiddenElement);
+            }
         }
         this.fileList = [];
         this.filesData = [];

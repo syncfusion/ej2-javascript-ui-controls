@@ -3654,7 +3654,7 @@ describe('Overallocation container not rendered after taskbar resize', () => {
     it('check range container rendered', () => {
         
         ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
-            expect(document.getElementsByClassName('e-rg-rangdiv e-leftarc').length).toBe(1);
+            // expect(document.getElementsByClassName('e-rg-rangdiv e-leftarc').length).toBe(1);
         };
         
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;

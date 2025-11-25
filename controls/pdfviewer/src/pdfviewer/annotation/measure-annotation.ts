@@ -1054,7 +1054,9 @@ export class MeasureAnnotation {
                     } else {
                         depthValue = 96;
                     }
-                    this.sourceTextBox.value = parseFloat(srcValueStr);
+                    if (!isNullOrUndefined(this.sourceTextBox)) {
+                        this.sourceTextBox.value = parseFloat(srcValueStr);
+                    }
                     const scaleRatio: MeasurementScaleRatio = {
                         id: annotation.uniqueKey,
                         annotName: annotation.annotationId,

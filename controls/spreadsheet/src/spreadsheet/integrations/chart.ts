@@ -655,7 +655,7 @@ export class SpreadsheetChart {
         const isFreezePane: boolean = !!(sheet.frozenRows || sheet.frozenColumns);
         if (lRange) {
             if (isFreezePane) {
-                range = lRange;
+                range = [...lRange];
             } else {
                 this.parent.notify(focusBorder, {
                     startcell: { rowIndex: lRange[0], colIndex: lRange[1] },
@@ -669,7 +669,7 @@ export class SpreadsheetChart {
                     range[0] = Math.min(lRange[0], xRange[0]); range[1] = Math.min(lRange[1], xRange[1]);
                     range[2] = Math.max(lRange[2], xRange[2]); range[3] = Math.max(lRange[3], xRange[3]);
                 } else {
-                    range = xRange;
+                    range = [...xRange];
                 }
             } else {
                 this.parent.notify(focusBorder, {

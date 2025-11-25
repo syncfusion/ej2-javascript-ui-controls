@@ -2,28 +2,37 @@
 
 ## [Unreleased]
 
+## 31.2.15 (2025-11-25)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I779496` - Fixed a script error that occurred when deleting content inside a table cell.
+`#I773785` - Resolved an issue where inline editing did not work for Date or Number form fields.
+`#I777100` - Resolved an issue where updating a checkbox form field did not navigate to the corresponding position.
+
 ## 31.2.12 (2025-11-18)
 
 ### DocumentEditor
 
 #### Bug Fixes
 
-`#I776220` - Table fill color was not applied correctly.
-`#I778750` - Alignment, line spacing, and font settings were not preserved.
-`#I770477` - Cell width became incorrect after merging cells.
-`#I783704` - Find pane did not open with the Ctrl + F shortcut.
-`#I779496` - Fixed a script error that occurred when deleting content inside a table cell.
-`#I775650` - "No Color" highlight option now shows the pointer cursor like other buttons.
+`#I776220` - Fixed an issue where the table fill color was not applied correctly.
+`#I778750` - Resolved loss of alignment, line spacing, and font settings.
+`#I770477` - Corrected cell width after merge operations.
+`#I783704` - Ctrl+F now opens the Find pane as expected.
+`#I775650` - “No Color” highlight option now shows a pointer cursor like other buttons.
 `#I783047` - Corrected superscript formatting when typing a comma.
 `#I770706` - Undo now restores the original bullet-point formatting.
-`#I774637` - Spell-check suggestions were not displayed properly.
-`#I779125` - Resolved script error when exporting the document as DOCX.
+`#I774637` - Spell-check suggestions now display properly.
+`#I779125` - Resolved a script error during DOCX export.
 `#I773853` - The `showRevisions` property now works correctly in protected documents.
-`#I763990` - Footnotes were undefined when serializing a document.
+`#I763990` - Resolved an issue where footnotes were undefined during serialization.
 `#I781625` - Resolved selection issues with nested bookmarks when using the `navigateToNextEditingRegion` API.
-`#I780167` - Reduced lag during text insertion and backspacing.
-`#I776105` - Prevented image clipping when "Exactly" line spacing is applied.
-`#I778204` - Cursor is now visible in an empty editable region.
+`#I780167` - Improved responsiveness during text insertion and backspacing.
+`#I776105` - Images no longer clip when “Exactly” line spacing is applied.
+`#I778204` - The cursor is now visible in empty editable regions.
 
 ## 31.2.10 (2025-11-13)
 
@@ -2218,17 +2227,17 @@
 - `#I340121` - Resolved the issue with rendering elbow connector as line connector.
 - `#I339453` - Resolved the issue with rendering a fixed width table.
 - `#I341119` - Resolved the overlapping issue for image with top and bottom wrapping inside table.
-- `#I339602` – Track changes is now updated properly in header and footer.
-- `#I341964`, `#I342165` – RTL text is now arranged properly when copy/paste.
-- `#I339714` – Footnote order is now updated properly.
+- `#I339602` - Track changes is now updated properly in header and footer.
+- `#I341964`, `#I342165` - RTL text is now arranged properly when copy/paste.
+- `#I339714` - Footnote order is now updated properly.
 - `#I339973` - Table is now preserved properly in the exported Word document.
-- `#I340795` – Field is now copied properly.
-- `#I339872` – Page number in footer is now updated properly.
-- `#I339576`, `#F168072` – Resolved the issue in applying page orientation with the section break.
-- `#I339027` – Resolved the script error in saving document with tracked changes in header/footer.
-- `#I340532` – Html elements are now properly disposed.
-- `#F168319` – Resolved the ViewChange event binding issue in Document Editor component.
-- `#I341375` – Resolved the undo/redo issue in comment editing operations.
+- `#I340795` - Field is now copied properly.
+- `#I339872` - Page number in footer is now updated properly.
+- `#I339576`, `#F168072` - Resolved the issue in applying page orientation with the section break.
+- `#I339027` - Resolved the script error in saving document with tracked changes in header/footer.
+- `#I340532` - Html elements are now properly disposed.
+- `#F168319` - Resolved the ViewChange event binding issue in Document Editor component.
+- `#I341375` - Resolved the undo/redo issue in comment editing operations.
 
 #### New Features
 
@@ -2308,18 +2317,18 @@
 - `#I340121` - Resolved the issue with elbow connector rendering as line connector.
 - `#I339453` - Resolved the rendering issue in fixed table width case.
 - `#I341119` - Resolved the image with top and bottom wrapping overlapping issue with table.
-- `#I339602` – Track changes is now updated properly in header and footer.
-- `#I341964`, `#I342165` – Resolved the text rearrange issue in copy/paste of RTL text.
-- `#I339714` – Footnote order is now updated properly.
+- `#I339602` - Track changes is now updated properly in header and footer.
+- `#I341964`, `#I342165` - Resolved the text rearrange issue in copy/paste of RTL text.
+- `#I339714` - Footnote order is now updated properly.
 - `#I339973` - Table serialization issue in word export is resolved.
-- `#I340795` – Issue with copying field is resolved.
-- `#I339872` – Page number is footer is now updated properly.
-- `#I339576`, `#F168072` – Resolved the issue in applying page orientation with the section break.
-- `#I339027` – Resolved the script error in saving tracked content in header/footer.
-- `#I340532` – Html elements are nor properly disposed.
-- `#F168319` – Resolved the ViewChange event binding issue in Document Editor component.
-- `#I341375` – Resolved the history issue in comment operations.
-- `#I341840` – Resolved the table rendering issue.
+- `#I340795` - Issue with copying field is resolved.
+- `#I339872` - Page number is footer is now updated properly.
+- `#I339576`, `#F168072` - Resolved the issue in applying page orientation with the section break.
+- `#I339027` - Resolved the script error in saving tracked content in header/footer.
+- `#I340532` - Html elements are nor properly disposed.
+- `#F168319` - Resolved the ViewChange event binding issue in Document Editor component.
+- `#I341375` - Resolved the history issue in comment operations.
+- `#I341840` - Resolved the table rendering issue.
 
 #### New Features
 
@@ -2393,18 +2402,18 @@
 
 #### Bug Fixes
 
-- `#I339602` – Track changes is now updated properly in header and footer.
-- `#I341964`, `#I342165` – Resolved the text rearrange issue in copy/paste of RTL text.
-- `#I339714` – Footnote order is now updated properly.
+- `#I339602` - Track changes is now updated properly in header and footer.
+- `#I341964`, `#I342165` - Resolved the text rearrange issue in copy/paste of RTL text.
+- `#I339714` - Footnote order is now updated properly.
 - `#I339973` - Table serialization issue in word export is resolved.
-- `#I340795` – Issue with copying field is resolved.
-- `#I339872` – Page number is footer is now updated properly.
-- `#I339576`, `#F168072` – Resolved the issue in applying page orientation with the section break.
-- `#I339027` – Resolved the script error in saving tracked content in header/footer.
-- `#I340532` – Html elements are now properly disposed.
-- `#F168319` – Resolved the ViewChange event binding issue in Document Editor component
-- `#I340643`, `#I341375` – Resolved the history issue in comment operations
-- `#I341840` – Resolved the table rendering issue.
+- `#I340795` - Issue with copying field is resolved.
+- `#I339872` - Page number is footer is now updated properly.
+- `#I339576`, `#F168072` - Resolved the issue in applying page orientation with the section break.
+- `#I339027` - Resolved the script error in saving tracked content in header/footer.
+- `#I340532` - Html elements are now properly disposed.
+- `#F168319` - Resolved the ViewChange event binding issue in Document Editor component
+- `#I340643`, `#I341375` - Resolved the history issue in comment operations
+- `#I341840` - Resolved the table rendering issue.
 
 #### New Features
 
@@ -2482,8 +2491,8 @@
 #### New Features
 
 - `#I256210`, `#F150773`, `#I295055`, `#I295551`, `#I324037`, `#I326715` - Added support for Widow/Orphan control, Keep with next and Keep lines together properties.
-- `#I298019`, `#I307321`, `#F160804`, `#F164217`, `#F164872` – Improved the accuracy of text size measurements such as to match Microsoft Word pagination for most Word documents.
-- `#I243246`, `#I249594`, `#I287633`, `#I295055`, `#I295549`, `#I299657`, `#I308408`, `#I326567` – Added support to preserve tables with position properties.
+- `#I298019`, `#I307321`, `#F160804`, `#F164217`, `#F164872` - Improved the accuracy of text size measurements such as to match Microsoft Word pagination for most Word documents.
+- `#I243246`, `#I249594`, `#I287633`, `#I295055`, `#I295549`, `#I299657`, `#I308408`, `#I326567` - Added support to preserve tables with position properties.
 - Added option to directly convert DocIO's WordDocument to SFDT and vice-versa in .NET and Java server-side library.
 - Added Word-to-SFDT conversion in Java server-side library.
 - Added new spell checker library for Java.

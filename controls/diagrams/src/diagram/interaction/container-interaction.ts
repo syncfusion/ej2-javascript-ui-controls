@@ -1,6 +1,6 @@
 import { isBlazor } from '@syncfusion/ej2-base';
 import { BpmnShapeModel, NodeModel, SwimLaneModel } from '../objects/node-model';
-import { Node, SwimLane } from '../objects/node';
+import { Node, SwimLane, Lane } from '../objects/node';
 import { Diagram } from '../diagram';
 import { ConnectorModel } from '../objects/connector-model';
 import { Connector } from '../objects/connector';
@@ -430,9 +430,10 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
                 for (let i: number = 0; i < lanes.length; i++) {
                     if ((container as Node).isLane && currentParentId === lanes[parseInt(i.toString(), 10)].id) {
                         // eslint-disable-next-line
-                        if (!((node as any).parentObj instanceof Diagram)) {
+                        if ((node as any).parentObj instanceof Diagram || ((node as any).parentObj instanceof Lane)) {
                             // eslint-disable-next-line
                             (node as any).parentObj = lanes[parseInt(i.toString(), 10)];
+                            (node as any).propName = 'children';
                         }
                         // 878719: Resolve ESLint errors
                         // eslint-disable-next-line no-prototype-builtins

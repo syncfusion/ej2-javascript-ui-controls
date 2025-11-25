@@ -3784,6 +3784,14 @@
           padding: 6px;
         }
       }
+
+      .e-content[aria-grabbed = 'true'] {
+        .e-rowcell .e-checkbox-wrapper,
+        .e-rowcell .e-css.e-checkbox-wrapper {
+          -webkit-user-select: none; /* stylelint-disable-line property-no-vendor-prefix */
+          user-select: none;
+        }
+      }
       
       span.e-ungroupbutton.e-icons {
         margin-left: $grid-group-ungroupicon-margin-left;

@@ -294,39 +294,62 @@ export class CellFormat {
         first: string, lastCell: boolean, manualUpdate: boolean, sheet: SheetModel, args: CellRenderArgs): void {
         if (first && first.includes('Row')) { return; }
         let col: number = colIdx;
-        let model: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+        const model: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
         if (model.colSpan > 1 && isHiddenCol(sheet, colIdx)) {
             col = skipHiddenIdx(sheet, colIdx, true, 'columns');
             if (col > colIdx + model.colSpan - 1)  {
                 col = colIdx;
             }
         }
-        const prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, col, <HTMLTableRowElement>pRow);
+        const prevRowIdx: number = rowIdx - 1;
+        const prevCell: HTMLElement = this.parent.getCell(prevRowIdx, col, <HTMLTableRowElement>pRow);
         if (prevCell) {
-            model = getCell(rowIdx - 1, colIdx, sheet, false, true);
-            if ((!!model.rowSpan && model.rowSpan !== 1) || (!!model.colSpan && model.colSpan !== 1)) {
-                const mergeArgs: { range: number[] } = { range: [rowIdx - 1, colIdx, rowIdx - 1, colIdx] };
+            const prevCellModel: CellModel = getCell(prevRowIdx, colIdx, sheet, false, true);
+            if ((!!prevCellModel.rowSpan && prevCellModel.rowSpan !== 1) || (!!prevCellModel.colSpan && prevCellModel.colSpan !== 1)) {
+                const mergeArgs: { range: number[] } = { range: [prevRowIdx, colIdx, prevRowIdx, colIdx] };
                 this.parent.notify(activeCellMergedRange, mergeArgs);
-                model = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet, false, true);
-                if (model.style && model.style.borderBottom && model.style.borderBottom !== 'none') {
+                const prevMergedCell: CellModel = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet, false, true);
+                if (prevMergedCell.style && prevMergedCell.style.borderBottom && prevMergedCell.style.borderBottom !== 'none') {
                     return;
                 } else {
-                    model = getCell(mergeArgs.range[2], mergeArgs.range[1], sheet, null, true);
-                    if (model.style && model.style.borderBottom && model.style.borderBottom !== 'none') { return; }
-                    cell.style.borderTop = border;
-                    if (args.mergeBorderRows !== undefined && args.mergeBorderRows.indexOf(rowIdx) === -1) {
-                        args.mergeBorderRows.push(rowIdx);
+                    const lastMergedCell: CellModel = getCell(mergeArgs.range[2], mergeArgs.range[1], sheet, null, true);
+                    if (lastMergedCell.style && lastMergedCell.style.borderBottom && lastMergedCell.style.borderBottom !== 'none') {
+                        return;
+                    }
+                    const updateAsTopBorder: Function = (): void => {
+                        cell.style.borderTop = border;
+                        if (args.mergeBorderRows !== undefined && args.mergeBorderRows.indexOf(rowIdx) === -1) {
+                            args.mergeBorderRows.push(rowIdx);
+                        }
+                    };
+                    const colSpan: number = !!model.colSpan && model.colSpan !== 1 && (colIdx === mergeArgs.range[1] ? model.colSpan :
+                        (colIdx + model.colSpan === mergeArgs.range[1] &&
+                            getCell(
+                                rowIdx + (!!model.rowSpan && model.rowSpan !== 1 ? model.rowSpan : 0),
+                                colIdx + model.colSpan, sheet, false, true).colSpan));
+                    if (colSpan && colSpan === prevMergedCell.colSpan) {
+                        if (model.colSpan > 1) {
+                            if (!prevMergedCell.rowSpan || prevMergedCell.rowSpan === 1) {
+                                this.setThickBorderHeight(
+                                    border, prevRowIdx, colIdx, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
+                                prevCell.style.borderBottom = border === 'none' ? prevCell.style.borderBottom : border;
+                            } else {
+                                updateAsTopBorder();
+                            }
+                        }
+                    } else {
+                        updateAsTopBorder();
                     }
                 }
             } else {
-                if (isHiddenRow(sheet, rowIdx - 1)) {
+                if (isHiddenRow(sheet, prevRowIdx)) {
                     const index: number[] = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
                     if ((this.parent.getCellStyleValue(['bottomPriority'], index) as CellStyleExtendedModel).bottomPriority) { return; }
                 }
                 if (actionUpdate && border !== '' && sheet.topLeftCell.includes(`${rowIdx + 1}`)) {
                     this.parent.getMainContent().parentElement.scrollTop -= this.getBorderSize(border);
                 }
-                this.setThickBorderHeight(border, rowIdx - 1, colIdx, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
+                this.setThickBorderHeight(border, prevRowIdx, colIdx, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
                 prevCell.style.borderBottom = (border === 'none') ? prevCell.style.borderBottom : border;
             }
         } else {

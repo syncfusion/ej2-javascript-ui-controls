@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.12 (2025-11-18)
+## 31.2.15 (2025-11-25)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved a script error that occurred during PDF document parsing when a null value was provided as the password.
+
+## 31.2.5 (2025-11-04)
 
 ### PDF Parser
 

@@ -55,7 +55,7 @@ export class Data implements IDataProcessor {
     }
 
     private reorderRows(e: { fromIndex: number, toIndex: number }): void {
-        if (this.parent.getDataModule().isRemote()) {
+        if (this.parent.isRemote()) {
             this.parent.getCurrentViewRecords().splice(e.toIndex, 0, this.parent.getCurrentViewRecords().splice(e.fromIndex, 1)[0]);
         } else {
             this.dataManager.dataSource.json.splice(e.toIndex, 0, this.dataManager.dataSource.json.splice(e.fromIndex, 1)[0]);

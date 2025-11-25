@@ -1919,7 +1919,7 @@ export class PdfViewerBase {
             this.documentLiveCount = data.documentLiveCount;
             this.isAnnotationCollectionRemoved = false;
             this.saveDocumentHashData();
-            if (data.pageCount < 100) {
+            if (data.pageCount <= 100) {
                 this.saveFormfieldsData(data);
             } else {
                 this.formFieldsData = data;
@@ -9439,12 +9439,17 @@ export class PdfViewerBase {
                                                             proxy.storeTextDetails(pageIndex, textBounds, textContent, pageText,
                                                                                    rotation, characterBounds);
                                                         } else {
-                                                            const textDetails: any = JSON.parse(proxy.pageTextDetails[`${tileData.textDetailsId}`]);
-                                                            tileData.textBounds = textDetails.textBounds;
-                                                            tileData.textContent = textDetails.textContent;
-                                                            tileData.rotation = textDetails.rotation;
-                                                            tileData.pageText = textDetails.pageText;
-                                                            tileData.characterBounds = textDetails.characterBounds;
+                                                            const pageTextDetails: any = proxy.pageTextDetails[`${tileData.textDetailsId}`];
+                                                            if (!isNullOrUndefined(pageTextDetails) && typeof pageTextDetails === 'string'
+                                                                && pageTextDetails.trim() !== '' && pageTextDetails.trim() !== 'undefined'
+                                                                && pageTextDetails.trim() !== 'null') {
+                                                                const textDetails: any = JSON.parse(proxy.pageTextDetails[`${tileData.textDetailsId}`]);
+                                                                tileData.textBounds = textDetails.textBounds;
+                                                                tileData.textContent = textDetails.textContent;
+                                                                tileData.rotation = textDetails.rotation;
+                                                                tileData.pageText = textDetails.pageText;
+                                                                tileData.characterBounds = textDetails.characterBounds;
+                                                            }
                                                         }
                                                         const storeObject: any = {
                                                             image: blobUrl, width: tileData.width, uniqueId: tileData.uniqueId,

@@ -1239,6 +1239,9 @@ export class WorkbookFormula {
         args.Avg = formatedValues[1];
         args.Min = formatedValues[2];
         args.Max = formatedValues[3];
+        if ((totalCount - numericCellsCount) > numericCellsCount) {
+            args.isMaxNonNumericCells = true;
+        }
     }
 
     private refreshInsertDelete(args: InsertDeleteEventArgs): void {

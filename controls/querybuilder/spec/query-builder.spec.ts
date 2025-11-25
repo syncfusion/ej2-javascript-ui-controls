@@ -12,7 +12,7 @@ import { DropDownList, MultiSelect, CheckBoxSelection, DropDownTree } from '@syn
 import { Slider } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateRangePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { profile , inMB, getMemoryProfile } from './common.spec';
-import { DataManager, WebApiAdaptor, UrlAdaptor, Query, Deferred } from '@syncfusion/ej2-data';
+import { DataManager, WebApiAdaptor, UrlAdaptor, Query, Deferred, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 MultiSelect.Inject(CheckBoxSelection);
 
@@ -6731,6 +6731,51 @@ describe('QueryBuilder', () => {
             dtObj[0].dataBind();
             queryBuilder.refresh();
             expect(queryBuilder.rule.rules[0].value[0]).toEqual('02/11/2025');
+        });
+    });
+    describe('MultiSelect DataManager coverage', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            if (queryBuilder) { queryBuilder.destroy(); }
+            remove(document.getElementById('querybuilder'));
+        });
+
+        it('multiSelectOpen cancels default open and binds data (Default fieldMode)', (done: Function) => {
+            const localData = [
+                { OrderID: 10248 }, { OrderID: 10249 }, { OrderID: 10250 }, { OrderID: 10251 }
+            ];
+            const dm = new DataManager(localData);
+            const cols: ColumnsModel[] = [
+                { field: 'OrderID', label: 'OrderID', type: 'number' }
+            ];
+            const rules: RuleModel = {
+                condition: 'and',
+                rules: [{ field: 'OrderID', label: 'OrderID', type: 'number', operator: 'in', value: [10248] }]
+            };
+            const msQuery: Query = new Query().select(['OrderID']).take(3);
+            const valueModel = { multiSelectModel: { query: msQuery } } as any;
+
+            queryBuilder = new QueryBuilder({ dataSource: dm, columns: cols, rule: rules, valueModel }, '#querybuilder');
+
+            setTimeout(() => {
+                let valueElem = document.getElementById('querybuilder_group0_rule0_valuekey0') as HTMLElement;
+                if (!valueElem) {
+                    const msElem = queryBuilder.element.querySelector('.e-rule-value .e-multiselect') as HTMLElement;
+                    if (msElem) { valueElem = msElem; }
+                }
+                expect(valueElem).toBeTruthy();
+                const args: any = { cancel: false };
+                (queryBuilder as any).multiSelectOpen('querybuilder_group0_rule0_valuekey0', args);
+                expect(args.cancel).toBe(false);
+                setTimeout(() => {
+                    const ms = getComponent(valueElem, 'multiselect') as MultiSelect;
+                    expect(ms).toBeTruthy();
+                    expect((ms as any).dataSource && (ms as any).dataSource.length > 0).toBe(true);
+                    done();
+                }, 100);
+            }, 50);
         });
     });
 });

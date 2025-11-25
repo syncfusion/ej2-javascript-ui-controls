@@ -3313,9 +3313,23 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             isValues = true;
         }
         let multiSelectValue: MultiSelectModel;
+        const multiSelectUserQuery: Query | null = (this.valueModel && this.valueModel.multiSelectModel && this.valueModel.multiSelectModel.query)
+            ? (this.valueModel.multiSelectModel.query as Query)
+            : null;
+        const multiSelectQuery: Query = (multiSelectUserQuery && typeof (multiSelectUserQuery as any).clone === 'function')
+            ? (multiSelectUserQuery.clone() as Query)
+            : new Query();
+        const selectedField: string = rule.field as string;
+        if (selectedField) {
+            multiSelectQuery.select([selectedField]);
+        }
+        let resolvedQuery: Query = new Query([rule.field]);
+        if (!isValues && !isFetched && (this.dataManager instanceof DataManager || this.dataSource instanceof DataManager)) {
+            resolvedQuery = multiSelectQuery;
+        }
         multiSelectValue = {
             dataSource: isValues ? values : (isFetched ? ds as { [key: string]: object }[] : this.dataManager),
-            query: new Query([rule.field]),
+            query: resolvedQuery,
             fields: { text: this.selectedRule.field, value: this.selectedRule.field },
             placeholder: this.l10n.getConstant('SelectValue'),
             value: selectedValue,
@@ -3364,7 +3378,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     private getMultiSelectData(element: Element, value: string): void {
         let dummyData: Object[]; const deferred: Deferred = new Deferred();
-        const data: Promise<Object> = this.dataManager.executeQuery(new Query().select(value)) as Promise<Object>;
+        const userQuery: Query | null = (this.valueModel && this.valueModel.multiSelectModel && this.valueModel.multiSelectModel.query)
+            ? (this.valueModel.multiSelectModel.query as Query)
+            : null;
+        const dataQuery: Query = (userQuery && typeof (userQuery as any).clone === 'function')
+            ? (userQuery.clone() as Query)
+            : new Query();
+        dataQuery.select([value]);
+        const data: Promise<Object> = this.dataManager.executeQuery(dataQuery) as Promise<Object>;
         const multiselectObj: MultiSelect = (getComponent(element as HTMLElement, 'multiselect') as MultiSelect);
         multiselectObj.hideSpinner();
         this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
@@ -4849,7 +4870,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.customOperators['numberOperator'] = this.customOperators['numberOperator'].concat(numberOper); // tslint:disable-line
         if (this.dataSource instanceof DataManager) {
             this.dataManager = this.dataSource as DataManager;
-            this.executeDataManager(new Query().take(1));
+            if (this.columns && this.columns.length) {
+                this.dataColl = this.columns;
+                this.initControl();
+            } else {
+                this.executeDataManager(new Query().take(1));
+            }
         } else {
             this.dataManager = new DataManager(this.dataSource as object[]);
             this.dataColl = this.dataManager.executeLocal(new Query());
@@ -4872,7 +4898,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             isReplaceDragEle: true,
             isPreventSelect: false,
             abort: '.e-parent-header',
-            isDragScroll: true
+            isDragScroll: true,
+            enableAutoScroll: true
         });
     }
 

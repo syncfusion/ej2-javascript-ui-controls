@@ -5003,3 +5003,164 @@ describe('isRowSelectable method', () => {
         destroy(gridObj);
     });
 });
+
+describe('EJ2-990496-Properties missing on initial render of treegrid when using getColumnByField() method', () => {
+    let gridObj: TreeGrid;
+    let isTaskName: boolean;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: 400,
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+                    { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+                    { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                    { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' }
+                ],
+                created: () => {
+                    const treegridElement = document.getElementsByClassName('e-treegrid')[0] as HTMLElement & { ej2_instances: any[] };
+                    const treegrid = treegridElement.ej2_instances[0];
+                    isTaskName = treegrid.getColumnByField('taskName').visible;
+                }
+            },
+            done
+        );
+    });
+    it('checking the visible property is assigned of column properties in created event', function (done: Function) {
+        expect(isTaskName).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    })
+});
+
+describe('Bug 988871: DataSource not updated on adding records using addRecords method.', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowResizing: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true
+                },
+                height: 400,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100, type: 'number' },
+                    { field: 'taskName', headerText: 'Task Name', width: 260, template: (data: any) => `<span>${data.taskName}</span>`, allowResizing: true },
+                ]
+            },
+            done
+        );
+    });
+    it('datasource should not be empty after adding data with addRecord method', (done) => {
+        let actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect((gridObj.dataSource as any).length).toBe(1);
+                done();
+            }
+        }
+        gridObj.actionComplete = actionComplete;
+        var dummy = { taskID: 1, taskName: 'planning' };
+        gridObj.addRecord(dummy, 0, 'Below');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+describe('Bug 988871: DataSource not updated on adding records using addRecords method.', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true
+                },
+                allowResizing: true,
+                height: 400,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100, type: 'number', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name', width: 260, template: (data: any) => `<span>${data.taskName}</span>`, allowResizing: true },
+                ]
+            },
+            done
+        );
+    });
+    it('adding child record to newly added record via child', (done) => {
+        let step = 0;
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                if (step === 0) {
+                    step++;
+                    gridObj.addRecord({ taskID: 2, taskName: 'planning TimeLine' }, 0, 'Child');
+                } else if (step === 1) {
+                    expect((gridObj.dataSource as any).length).toBe(1);
+                    const data = gridObj.dataSource as any[];
+                    const firstRecord = data[0];
+                    expect(firstRecord.subtasks.length).toBe(1);
+                    done();
+                }
+            }
+        };
+        // Start by adding first record
+        gridObj.addRecord({ taskID: 1, taskName: 'planning' }, 0, 'Child');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+describe('Bug 988871: DataSource not updated on adding records using addRecords method.', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true
+                },
+                allowResizing: true,
+                height: 400,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100, type: 'number', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name', width: 260, template: (data: any) => `<span>${data.taskName}</span>`, allowResizing: true },
+                ]
+            },
+            done
+        );
+    });
+    it('adding child record to newly added record', function (done) {
+        let step = 0;
+        gridObj.actionComplete = function (args) {
+            if (args.requestType === 'save') {
+                if (step === 0) {
+                    step++;
+                    gridObj.addRecord({ taskID: 2, taskName: 'planning TimeLine' }, 0, 'Child');
+                } else if (step === 1) {
+                    expect((gridObj.dataSource as any).length).toBe(1);
+                    const data = gridObj.dataSource as any[];
+                    expect(data[0].subtasks.length).toBe(1);
+                    done();
+                }
+            }
+        };
+        gridObj.addRecord({ taskID: 1, taskName: 'planning' }, 0, 'Below');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

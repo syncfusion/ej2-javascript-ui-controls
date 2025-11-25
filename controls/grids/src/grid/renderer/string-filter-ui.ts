@@ -160,7 +160,7 @@ export class StringFilterUI implements IFilterMUI {
             filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', this.parent.filterSettings.enableCaseSensitivity);
         } else {
             const autoCompleteObject: AutoComplete = this.getAutoCompleteInstance(column.uid);
-            let filterValue: string | number | Date | boolean = autoCompleteObject.value as string | number | Date | boolean;
+            let filterValue: string | number | Date | boolean = (element as HTMLInputElement).value as string | number | Date | boolean;
             if (Browser.isDevice) {
                 autoCompleteObject.hidePopup();
                 autoCompleteObject.focusOut();

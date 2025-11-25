@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.12 (2025-11-18)
+## 31.2.15 (2025-11-25)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I784564` - The chart is now updated properly after removing the multilevel label.
+
+## 31.2.7 (2025-11-25)
 
 ### Chart
 

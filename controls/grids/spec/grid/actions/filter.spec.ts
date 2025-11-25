@@ -1547,7 +1547,7 @@ describe('Filtering module => ', () => {
         it('Menu filter check with foreignkey', (done: Function) => {
             actionComplete = (args: any) => {
                 if(args.requestType == 'filterAfterOpen') {
-                    (args.filterModel.dlgDiv.querySelector('.e-flmenu-input') as any).ej2_instances[0].value = 'F';        
+                    (args.filterModel.dlgDiv.querySelector('.e-flmenu-input') as any).value = 'F';        
                     (args.filterModel.dlgDiv.querySelector('.e-flmenu-okbtn') as HTMLElement).click();
                 }
                 else if (args.requestType == 'filtering'){

@@ -246,6 +246,17 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         }
         if (this.element.style.maxWidth !== '75%') {
             setStyleAttribute(this.element, { maxWidth: '75%' });
+            const toolbarItemsContainer: HTMLElement = this.element.querySelector('.e-toolbar-items');
+            if (!isNOU(toolbarItemsContainer)) {
+                for (let i: number = 0; i < toolbarItemsContainer.children.length; i++) {
+                    const childElement: Element = toolbarItemsContainer.children[i as number];
+                    // If a child's width is greater, update toolbar width
+                    if (childElement.clientWidth > this.element.clientWidth) {
+                        this.element.style.removeProperty('max-width');
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -499,7 +510,13 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         case 'Inline': {
             const rangeEdge: number = args.direction === 'Backward' ? args.rangeRect.left : args.rangeRect.right;
             const relativePosition: number = this.parent.iframeSettings.enable === false ? rangeEdge - args.blockRect.left : rangeEdge;
-            if (relativePosition < width / 4) {
+            if (relativePosition + width > this.popupObj.element.parentElement.offsetWidth &&
+                args.blockRect.right - rangeEdge < tipPointerOffset) {
+                const editorRect: DOMRect = this.parent.element.getBoundingClientRect() as DOMRect;
+                finalX = rangeEdge - editorRect.left - width;
+                this.currentTipPosition = 'Top-Right';
+            }
+            else if (relativePosition < width / 4) {
                 finalX = relativePosition - tipPointerOffset;
                 this.currentTipPosition = 'Top-Left';
             } else if (relativePosition > width / 4 && relativePosition < width / 2) {
@@ -919,6 +936,8 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                     }
                 }
             }
+        }
+        if (!isBotPosition && !isTopPosition) {
             this.currentTipPosition = 'None';
         }
         return args;

@@ -472,7 +472,7 @@ export class BatchEdit {
                     }
                 } else {
                     const totalRecords: Object[] = extendArray(data);
-                    if (totalRecords.length) {
+                    if (totalRecords.length && currentViewRecords.length !== 0) {
                         const startIndex: number = totalRecords.map((e: Object) => { return e[`${primarykey}`]; })
                             .indexOf(currentViewRecords[0][`${primarykey}`]);
                         const endIndex: number = startIndex + this.parent.grid.pageSettings.pageSize;

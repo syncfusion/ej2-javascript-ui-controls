@@ -21,6 +21,7 @@ export interface IPopupAnnotation extends IAnnotation {
     customData: object
     allowedInteractions: AllowedInteraction
     isPrint: boolean
+    id?: any
 }
 
 /**
@@ -176,7 +177,7 @@ export class StickyNotesAnnotation {
                             annotationSelectorSettings: this.getSettings(annotation),
                             customData: this.pdfViewer.annotation.getCustomData(annotation),
                             annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions,
-                            isPrint: isPrint, isCommentLock: annotation.IsCommentLock
+                            isPrint: isPrint, isCommentLock: annotation.IsCommentLock, id: annotation.AnnotName
                         };
                         annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ?
                             annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;

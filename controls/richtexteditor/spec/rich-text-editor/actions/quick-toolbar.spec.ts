@@ -1686,6 +1686,36 @@ describe("Quick Toolbar Module", () => {
         });
     });
 
+    describe('Bug 994222: Tooltip for table cell option in table quick toolbar is not available', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="td1" style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table><p><br></p>`
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' Verify the tooltip text for the table cell option in the table quick toolbar.', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            var clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            rteObj.inputElement.dispatchEvent(clickEvent);
+            let tdEle: HTMLElement = rteObj.element.querySelector(".td1");
+            tdEle.focus();
+            setCursorPoint(tdEle, 0);
+            var eventsArg = { pageX: 50, pageY: 300, target: tdEle };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            let tableQTBarEle: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            let tableCell: HTMLElement = tableQTBarEle.querySelector('[title="Merge Cell"]') as HTMLElement;
+            expect(tableCell).not.toBe(null);
+            done();
+        });
+    });
+
     describe('942019 - Aria-Label Becomes Empty When Applying a Link to an Image.', () => {
         let rteEle: HTMLElement;
         let rteObj: any;

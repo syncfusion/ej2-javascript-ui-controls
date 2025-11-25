@@ -17,8 +17,6 @@ import { getZIndexCalcualtion, toggleFilterUI } from '../base/util';
  *
  * @hidden
  */
-MultiSelect.Inject(CheckBoxSelection);
-
 export class NumberFilterUI implements IFilterMUI {
 
     private parent: IGrid;
@@ -35,6 +33,7 @@ export class NumberFilterUI implements IFilterMUI {
     private dropdownComplete: Function;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, filterSettings?: FilterSettings) {
+        MultiSelect.Inject(CheckBoxSelection);
         this.filterSettings = filterSettings;
         this.parent = parent;
         this.serviceLocator = serviceLocator;

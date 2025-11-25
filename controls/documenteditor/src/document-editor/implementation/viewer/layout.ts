@@ -108,7 +108,6 @@ export class Layout {
       * @private
       */
     public isInsertFormField: boolean = false;
-    public isAsync: boolean = false;
     private fieldBegin: FieldElementBox = undefined;
     private maxTextHeight: number = 0;
     private maxBaseline: number = 0;
@@ -7768,7 +7767,7 @@ export class Layout {
     public getAfterSpacing(paragraph: ParagraphWidget): number {
         let afterSpacing: number = paragraph.paragraphFormat.afterSpacing;
         if (!this.documentHelper.dontUseHtmlParagraphAutoSpacing && paragraph.paragraphFormat.spaceAfterAuto) {
-            if (isNullOrUndefined(paragraph.nextWidget) && paragraph.isInsideTable) {
+            if (isNullOrUndefined(paragraph.nextWidget) && paragraph.isInsideTable && paragraph.paragraphFormat.listFormat.listId === -1) {
                 afterSpacing = 0;
             } else {
                 afterSpacing = 14;
@@ -9584,6 +9583,10 @@ export class Layout {
                         moveEntireBlock = true;
                         i = 0;
                         lineWidget = paragraphWidget.childWidgets[0] as LineWidget;
+                    } else if (this.documentHelper.compatibilityMode === 'Word2013' && i === 3 && i + 1 === paragraphWidget.childWidgets.length && isNullOrUndefined(splittedWidget)) {
+                        // If it is widowcontrol then single line should not move to next page. So moving the preevious line also to next page.
+                        lineWidget = paragraphWidget.childWidgets[i - 1] as LineWidget;
+                        i--;
                     }
                 }
                 if (i === 0) {

@@ -1985,7 +1985,7 @@ export class BasicFormulas {
         } else if (args.length > 1) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
         }
-        value = this.parent.getValueFromArg(args[0]).trim();
+        value = this.parent.getValueFromArg(args[0]);
         if (errorStrings.indexOf(value) > -1) { return value; }
         if (args[0].indexOf(this.parent.tic) > -1) {
             if (args[0] !== value && args[0].startsWith('n')) {
@@ -1998,6 +1998,8 @@ export class BasicFormulas {
             }
         } else if (!args[0].startsWith('n') && value.split('%').length === 2 && this.parent.isNumber(value.split('%')[0])) {
             value = (Number(value.split('%')[0]) / 100).toString();
+        } else if (this.parent.isNumber(value)) {
+            value = value.trim();
         }
         return value.length;
     }

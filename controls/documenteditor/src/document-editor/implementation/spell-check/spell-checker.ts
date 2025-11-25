@@ -408,7 +408,7 @@ export class SpellChecker {
             }
             this.handleErrorElements.push(textElement);
         }
-        this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
+        this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, false, false, false, true);
     }
     /**
      * Method to handle to ignore error Once intenral
@@ -452,7 +452,7 @@ export class SpellChecker {
             this.ignoreAllItems.push(retrievedText);
             this.removeErrorsFromCollection(contextItem);
             this.documentHelper.triggerSpellCheck = true;
-            this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
+            this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, false, false, false, true);
             this.documentHelper.triggerSpellCheck = false;
             this.documentHelper.clearSelectionHighlight();
         }

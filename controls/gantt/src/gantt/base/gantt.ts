@@ -3643,7 +3643,6 @@ export class Gantt extends Component<HTMLElement>
                                                           true, criticalModule.predecessorCollectionTaskIds);
         }
         this.initialChartRowElements = this.ganttChartModule.getChartRows();
-        this.isLoad = false;
         this.isExpandPerformed = !this.enableVirtualization ? false : this.isExpandPerformed;
         if (!this.isExpandPerformed && !this.isVirtualScroll && this.undoRedoModule) {
             this.previousFlatData = extend([], this.flatData, [], true) as IGanttData[];
@@ -3937,7 +3936,6 @@ export class Gantt extends Component<HTMLElement>
                     this.treeGrid.hasChildMapping = null;
                 }
                 this.dataOperation.checkDataBinding(true);
-                this.isLoad = false;
                 break;
             case 'enableContextMenu':
             case 'contextMenuItems':

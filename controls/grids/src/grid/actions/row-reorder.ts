@@ -519,16 +519,21 @@ export class RowDD {
         const recordobj: object = {};
         const rowObjects: Row<Column>[] = this.parent.getRowsObject();
         const currentViewData: Object[] = this.parent.getCurrentViewRecords();
+        const isRemoteData: boolean = this.parent.isRemote();
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
             const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1;
             rowObj[parseInt(i.toString(), 10)] = rowObjects[parseInt(index.toString(), 10)];
-            recordobj[parseInt(i.toString(), 10)] = currentViewData[parseInt(index.toString(), 10)];
+            if (!isRemoteData) {
+                recordobj[parseInt(i.toString(), 10)] = currentViewData[parseInt(index.toString(), 10)];
+            }
         }
         const rows: Element[] = this.parent.getRows();
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
             rows[parseInt(i.toString(), 10)] = tr[parseInt(i.toString(), 10)];
             rowObjects[parseInt(i.toString(), 10)] = rowObj[parseInt(i.toString(), 10)];
-            currentViewData[parseInt(i.toString(), 10)] = recordobj[parseInt(i.toString(), 10)];
+            if (!isRemoteData) {
+                currentViewData[parseInt(i.toString(), 10)] = recordobj[parseInt(i.toString(), 10)];
+            }
         }
         resetRowIndex(this.parent, rowObjects, tr);
     }
@@ -614,12 +619,13 @@ export class RowDD {
     // }
 
     public reorderRows(fromIndexes: number[], toIndex: number): void {
+        const isRemoteData: boolean = this.parent.isRemote();
         const selectedIndexes: number[] = this.parent.getSelectedRowIndexes();
         const selectedRecords: object[] = [];
         const draggedRecords: object[] = [];
-        const currentViewData: Object[] = this.parent.getDataModule().isRemote() ? this.parent.getCurrentViewRecords() :
+        const currentViewData: Object[] = isRemoteData ? this.parent.getCurrentViewRecords() :
             this.parent.renderModule.data.dataManager.dataSource.json;
-        const skip: number = this.parent.allowPaging ?
+        const skip: number = this.parent.allowPaging && !isRemoteData ?
             (this.parent.pageSettings.currentPage * this.parent.pageSettings.pageSize) - this.parent.pageSettings.pageSize : 0;
         let dropIdx: number = toIndex + skip;
         let actualIdx: number = fromIndexes[0] + skip;
@@ -1004,7 +1010,7 @@ export class RowDD {
         const gObj: IGrid = this.parent;
         if (!gObj.groupSettings.columns.length) {
             //Todo: drag and drop mapper & BatchChanges
-            const skip: number = gObj.allowPaging ?
+            const skip: number = gObj.allowPaging && !this.parent.isRemote() ?
                 (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : 0;
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const fromIndex: number = fromIndexes;

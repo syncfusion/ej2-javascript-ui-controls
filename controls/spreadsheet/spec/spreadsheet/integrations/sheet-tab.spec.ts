@@ -763,7 +763,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
         });
     });
 
-    describe('EJ2:967458->Spreadsheet Aggregate with discontinuous ranges->', () => {
+    describe('EJ2:967458,EJ2-990901 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{
@@ -809,6 +809,50 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                     helper.click('#' + helper.id + '_aggregate');
                     helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(4)');
                     expect(aggregateBtn.textContent).toBe('Min: 10');
+                    done();
+                });
+            });
+        });
+        it('EJ2-990901 - Dropdown Missing in Aggregate Column When Selecting Cells with Containing Text and Numbers', (done: Function) => {
+            helper.edit('A3', '76');
+            helper.edit('A5', '45');
+            helper.edit('A7', '23');
+            helper.edit('A9', '12');
+            helper.invoke('selectRange', ['A1:A10']);
+            setTimeout(() => {
+                let aggregateBtn: HTMLElement = helper.getElement(`#${helper.id}_aggregate`);
+                expect(aggregateBtn).not.toBeNull();
+                expect(aggregateBtn.textContent).toBe('Count: 10');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(2)');
+                expect(aggregateBtn.textContent).toBe('Sum: 156');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+                expect(aggregateBtn.textContent).toBe('Avg: 39');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(4)');
+                expect(aggregateBtn.textContent).toBe('Min: 12');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(5)');
+                expect(aggregateBtn.textContent).toBe('Max: 76');
+                helper.invoke('selectRange', ['A3:A9']);
+                setTimeout(() => {
+                    let aggregateBtn: HTMLElement = helper.getElement(`#${helper.id}_aggregate`);
+                    expect(aggregateBtn).not.toBeNull();
+                    expect(aggregateBtn.textContent).toBe('Max: 76');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(1)');
+                    expect(aggregateBtn.textContent).toBe('Count: 7');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(2)');
+                    expect(aggregateBtn.textContent).toBe('Sum: 156');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+                    expect(aggregateBtn.textContent).toBe('Avg: 39');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(4)');
+                    expect(aggregateBtn.textContent).toBe('Min: 12');
+                    helper.click('#' + helper.id + '_aggregate');
                     done();
                 });
             });

@@ -8,6 +8,17 @@
 
 #### Bug Fixes
 
+- `#I776714` - Resolved an issue where text search was not working when using an unclosed tag in the search box.
+- `#I780148` - Resolved an issue where signature field appeared empty when opening customer document in PDF Viewer.
+- `#I780154` - Resolved an issue where PDF was not rendering when opening customer document in `Vue 3` PDF Viewer.
+- `#I780207` - Resolved an issue where delete icon was not enabled in annotation toolbar when delete was set in `allowedInteractions`.
+
+## 31.2.10 (2025-11-13)
+
+### PDF Viewer
+
+#### Bug Fixes
+
 - `#I776716` - Resolved an issue where text search with straight quotes with the mentioned phrase was not functioning as expected.
 - `#I780099` - Resolved an issue where dynamic stamp annotation appearance was not proper when saving and exporting.
 - `#I781676` - Resolved an issue where `HandWrittenSignatureTool` was not hiding properly when using `toolbarSettings` API.

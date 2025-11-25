@@ -461,6 +461,9 @@ describe('Uploader Control', () => {
             let eventArgs = { type: 'click', target: {files: [fileObj, fileObj1]}, preventDefault: (): void => { } };
             uploadObj.onSelectFiles(eventArgs);
             expect(uploadObj.uploadWrapper.querySelectorAll('li').length).toBe(1);
+            eventArgs = { type: 'click', target: {files: [fileObj1]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.uploadWrapper.querySelectorAll('li').length).toBe(1);
             expect(uploadObj.element.hasAttribute('multiple')).toBe(false);
         });
         it('upload method with single file upload ', (done) => {
