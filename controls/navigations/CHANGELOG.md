@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 31.2.15 (2025-11-25)
+## 31.2.16 (2025-12-02)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I786111` - The issue where the tab component's overflow popup does not appear when global animation is disabled has been resolved.
+
+### Treeview
+
+#### Bug Fixes
+
+- `#I780323` -  The performance issue with `expandAll` method and `autoCheck` property in the TreeView component has been resolved.
+
+## 31.2.12 (2025-11-18)
 
 ### ContextMenu
 

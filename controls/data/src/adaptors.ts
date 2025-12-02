@@ -1263,7 +1263,7 @@ export class ODataAdaptor extends UrlAdaptor {
         for (let i: number = 0; i < predicate.predicates.length; i++) {
             res.push('(' + this.onEachWhere(predicate.predicates[i], query, requiresCast) + ')');
         }
-        return res.join(' ' + predicate.condition + ' ');
+        return '(' + res.join(' ' + predicate.condition + ' ') + ')';
     }
 
     /**
@@ -2335,6 +2335,11 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
     constructor() {
         super();
     }
+
+    protected getModuleName(): string {
+        return 'RemoteSaveAdaptor';
+    }
+
     public insert(dm: DataManager, data: Object, tableName: string, query: Query, position?: number): Object {
         this.pvt.position = position;
         this.updateType = 'add';

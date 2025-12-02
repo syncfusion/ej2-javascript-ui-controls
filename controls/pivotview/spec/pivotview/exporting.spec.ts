@@ -11,7 +11,8 @@ import { Toolbar } from '../../src/common/popups/toolbar';
 import { FieldList } from '../../src/common/actions/field-list';
 import { BeforeExportEventArgs, ExportCompleteEventArgs, PdfCellRenderArgs, PivotActionBeginEventArgs } from '../../src/common/base/interface';
 import { ExcelExportProperties, PdfExportProperties } from '@syncfusion/ej2-grids';
-import { PdfFontFamily, PdfFontStyle, PdfPageSize, PdfStandardFont, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
+import { PdfFontFamily, PdfFontStyle, PdfPageSize, PdfStandardFont, PdfStringFormat, PdfPageOrientation} from '@syncfusion/ej2-pdf-export';
+import { ILoadedEventArgs } from '@syncfusion/ej2-charts';
 
 let image: string = '/9j/4AAQSkZJRgABAQAAAQABAAD/9k=';
 
@@ -2474,6 +2475,126 @@ describe('PDF Export', () => {
                 expect(1).toBe(1);
                 done();
             }, 1000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+
+    describe('- Pivot Chart Export with Header and Footer', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        let pdfExportProperties: PdfExportProperties = {
+            pageSize: 'A4',
+            pageOrientation: 'Landscape',
+            header: {
+                fromTop: 0,
+                height: 130,
+                contents: [
+                    {
+                        type: 'Text',
+                        value: 'Northwind Traders',
+                        position: { x: 0, y: 50 },
+                        style: { textBrushColor: '#000000', fontSize: 13 }
+                    }
+                ]
+            },
+            footer: {
+                fromBottom: 160,
+                height: 150,
+                contents: [
+                    {
+                        type: 'PageNumber',
+                        pageNumberType: 'Arabic',
+                        format: 'Page {$current} of {$total}',
+                        position: { x: 0, y: 25 },
+                        style: { textBrushColor: '#02007a', fontSize: 15 }
+                    }
+                ]
+            },
+            fileName: 'result'
+        };
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                },
+                width: '100%',
+                height: 300,
+                allowPdfExport: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                actionBegin: function (args: PivotActionBeginEventArgs) {
+                    if (args.actionName === 'PDF export') {
+                        args.cancel = true;
+                        pivotGridObj.chartExport('PDF', pdfExportProperties, undefined, null, true);
+                    }
+                },
+                chartSettings: {
+                    load: function (args: ILoadedEventArgs) {
+                        args.chart.theme = 'HighContrast';
+                    }
+                },
+                beforeExport: (args: BeforeExportEventArgs) => {
+                    if (args.currentExportView === 'Chart') {
+                        args.pdfMargins.top = 10;
+                        args.pdfMargins.bottom = 15;
+                        args.pdfMargins.left = 12;
+                        args.pdfMargins.right = 4;
+                        args.orientation = PdfPageOrientation.Portrait;
+                        args.pdfExportProperties = pdfExportProperties;
+                    }
+                },
+                displayOption: { view: 'Chart' },
+                dataBound: () => done()
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('Rendering Example 16', (done: Function) => {
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 300);
+        });
+        it('Clicking the toolbar item for export', (done: Function) => {
+            setTimeout(() => {
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                done();
+            }, 100);
         });
         it('memory leak', () => {
             profile.sample();

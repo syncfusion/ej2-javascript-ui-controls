@@ -648,14 +648,12 @@ describe('Slash Menu ', () => {
             editor.inputElement.dispatchEvent(keyDownEvent);
             const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
             editor.inputElement.dispatchEvent(keyUpEvent);
+            const audioIterm: HTMLElement = document.querySelector('[data-value="Insert an audio."]')
+            audioIterm.click();
             setTimeout(() => {
-                const audioIterm: HTMLElement = document.querySelector('[data-value="Insert an audio."]')
-                audioIterm.click();
-                setTimeout(() => {
-                    expect(editor.element.querySelectorAll('.e-rte-audio-dialog').length).toBe(1);
-                    done();
-                }, 100);
-            }, 150);
+                expect(editor.element.querySelectorAll('.e-rte-audio-dialog').length).toBe(1);
+                done();
+            }, 100);
         });
         it ('Should open the video dialog.', (done: DoneFn) => {
             editor.focusIn();
@@ -668,14 +666,12 @@ describe('Slash Menu ', () => {
             editor.inputElement.dispatchEvent(keyDownEvent);
             const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
             editor.inputElement.dispatchEvent(keyUpEvent);
+            const videoIterm: HTMLElement = document.querySelector('[data-value="Insert a video."]')
+            videoIterm.click();
             setTimeout(() => {
-                const videoIterm: HTMLElement = document.querySelector('[data-value="Insert a video."]')
-                videoIterm.click();
-                setTimeout(() => {
-                    expect(editor.element.querySelectorAll('.e-rte-video-dialog').length).toBe(1);
-                    done();
-                }, 100);
-            }, 150);
+                expect(editor.element.querySelectorAll('.e-rte-video-dialog').length).toBe(1);
+                done();
+            }, 100);
         });
         it ('Should open the image dialog.', (done: DoneFn) => {
             editor.focusIn();
@@ -688,14 +684,12 @@ describe('Slash Menu ', () => {
             editor.inputElement.dispatchEvent(keyDownEvent);
             const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
             editor.inputElement.dispatchEvent(keyUpEvent);
+            const imageIterm: HTMLElement = document.querySelector('[data-value="Insert an image."]')
+            imageIterm.click();
             setTimeout(() => {
-                const imageIterm: HTMLElement = document.querySelector('[data-value="Insert an image."]')
-                imageIterm.click();
-                setTimeout(() => {
-                    expect(editor.element.querySelectorAll('.e-rte-img-dialog').length).toBe(1);
-                    done();
-                }, 100);
-            }, 150);
+                expect(editor.element.querySelectorAll('.e-rte-img-dialog').length).toBe(1);
+                done();
+            }, 100);
         });
         it ('Should open the link dialog.', (done: DoneFn) => {
             editor.focusIn();
@@ -708,14 +702,12 @@ describe('Slash Menu ', () => {
             editor.inputElement.dispatchEvent(keyDownEvent);
             const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
             editor.inputElement.dispatchEvent(keyUpEvent);
+            const linkIterm: HTMLElement = document.querySelector('[data-value="Insert a link."]')
+            linkIterm.click();
             setTimeout(() => {
-                const linkIterm: HTMLElement = document.querySelector('[data-value="Insert a link."]')
-                linkIterm.click();
-                setTimeout(() => {
-                    expect(editor.element.querySelectorAll('.e-rte-link-dialog').length).toBe(1);
-                    done();
-                }, 100);
-            }, 150);
+                expect(editor.element.querySelectorAll('.e-rte-link-dialog').length).toBe(1);
+                done();
+            }, 100);
         });
         it ('Should open the table dialog.', (done: DoneFn) => {
             editor.focusIn();
@@ -728,14 +720,12 @@ describe('Slash Menu ', () => {
             editor.inputElement.dispatchEvent(keyDownEvent);
             const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
             editor.inputElement.dispatchEvent(keyUpEvent);
+            const tableIterm: HTMLElement = document.querySelector('[data-value="Insert a table."]')
+            tableIterm.click();
             setTimeout(() => {
-                const tableIterm: HTMLElement = document.querySelector('[data-value="Insert a table."]')
-                tableIterm.click();
-                setTimeout(() => {
-                    expect(editor.element.querySelectorAll('.e-rte-edit-table').length).toBe(1);
-                    done();
-                }, 100);
-            }, 150);
+                expect(editor.element.querySelectorAll('.e-rte-edit-table').length).toBe(1);
+                done();
+            }, 100);
         });
         it ('Should open the Emoji Popup.', (done: DoneFn) => {
             editor.focusIn();
@@ -748,14 +738,12 @@ describe('Slash Menu ', () => {
             editor.inputElement.dispatchEvent(keyDownEvent);
             const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
             editor.inputElement.dispatchEvent(keyUpEvent);
+            const emojiItem: HTMLElement = document.querySelector('[data-value="Use emojis to express ideas and emoticons."]')
+            emojiItem.click();
             setTimeout(() => {
-                const emojiItem: HTMLElement = document.querySelector('[data-value="Use emojis to express ideas and emoticons."]')
-                emojiItem.click();
-                setTimeout(() => {
-                    expect(editor.element.querySelectorAll('.e-rte-emojipicker-popup').length).toBe(1);
-                    done();
-                }, 100);
-            }, 150);
+                expect(editor.element.querySelectorAll('.e-rte-emojipicker-popup').length).toBe(1);
+                done();
+            }, 100);
         });
     });
 
@@ -785,14 +773,12 @@ describe('Slash Menu ', () => {
             editor.inputElement.dispatchEvent(keyDownEvent);
             const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
             editor.inputElement.dispatchEvent(keyUpEvent);
+            const heading2: HTMLElement = document.querySelector('[data-value="Use this for key sections."]')
+            heading2.click();
             setTimeout(() => {
-                const heading2: HTMLElement = document.querySelector('[data-value="Use this for key sections."]')
-                heading2.click();
-                setTimeout(() => {
-                    expect(editor.inputElement.innerHTML).toBe('<h2><br></h2>');
-                    done();
-                }, 50);
-            }, 150);
+                expect(editor.inputElement.innerHTML).toBe('<h2><br></h2>');
+                done();
+            }, 50);
         });
     });
 
@@ -805,7 +791,8 @@ describe('Slash Menu ', () => {
                 },
                 slashMenuSettings: {
                     enable: true,
-                    items: ['Image']
+                    items: ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Audio', 'Video', 'Image', 'Table', 'Link', 'CodeBlock',
+                        'OrderedList', 'UnorderedList', 'Blockquote', 'Emojipicker']
                 },
                 value: '/'
             });
@@ -828,28 +815,26 @@ describe('Slash Menu ', () => {
             editor.inputElement.dispatchEvent(keyDownEvent);
             const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
             editor.inputElement.dispatchEvent(keyUpEvent);
+            // Click on the image option in slash menu
+            const imageItem: HTMLElement = document.querySelector('[data-value="Insert an image."]');
+            imageItem.click();
             setTimeout(() => {
-                // Click on the image option in slash menu
-                const imageItem: HTMLElement = document.querySelector('[data-value="Insert an image."]');
-                imageItem.click();
+                // Verify image dialog is opened
+                expect(editor.element.querySelectorAll('.e-rte-img-dialog').length).toBe(1);
+                let dialogEle: Element = editor.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+                let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+                (<any>editor).imageModule.uploadObj.onSelectFiles(eventArgs);
+                (document.querySelector('.e-insertImage') as HTMLElement).click();
                 setTimeout(() => {
-                    // Verify image dialog is opened
-                    expect(editor.element.querySelectorAll('.e-rte-img-dialog').length).toBe(1);
-                    let dialogEle: Element = editor.element.querySelector('.e-dialog');
-                    (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
-                    (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-                    let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
-                    let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-                    (<any>editor).imageModule.uploadObj.onSelectFiles(eventArgs);
-                    (document.querySelector('.e-insertImage') as HTMLElement).click();
-                    setTimeout(() => {
-                        // Verify image is inserted
-                        expect(editor.inputElement.querySelectorAll('img').length).toBe(1);
-                        //Should expect the image quicktoolbar since it will not be opened in test cases the expect is not added.
-                        done();
-                    }, 500);
+                    // Verify image is inserted
+                    expect(editor.inputElement.querySelectorAll('img').length).toBe(1);
+                    //Should expect the image quicktoolbar since it will not be opened in test cases the expect is not added.
+                    done();
                 }, 100);
-            }, 150);
+            }, 100);
         });
     });
 

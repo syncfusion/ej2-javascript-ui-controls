@@ -88,10 +88,12 @@ export class PDFExport {
         }
         documentSection.setPageSettings(eventParams.document.pageSettings);
         const page: PdfPage = documentSection.pages.add();
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)
+            && !isNullOrUndefined(this.pdfExportHelper)) {
             this.pdfExportHelper.drawHeader(pdfExportProperties, eventParams.document);
         }
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer)) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer)
+            && !isNullOrUndefined(this.pdfExportHelper)) {
             this.pdfExportHelper.drawFooter(pdfExportProperties, eventParams.document);
         }
         return page;

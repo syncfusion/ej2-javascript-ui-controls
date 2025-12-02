@@ -1681,11 +1681,19 @@ describe('Row Drag and Drop module', () => {
                 helper: dropClone,
                 event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
             });
-
+	    });
+        it('coverage improvement single grid with data drag and drop - 4', (done: Function) => {
             // for coverage
             gridObj1.rowDropSettings.targetID = undefined;
             gridObj1.selectionSettings.type = 'Multiple';
             gridObj1.selectRows([0, 1]);
+            done();
+        });
+        it('coverage improvement single grid with data drag and drop - 5', () => {
+            const dragRowElem: Element = gridObj1.getRowByIndex(11).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            let dropRowElem: Element = gridObj1.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            let dropClient: any = dropRowElem.getBoundingClientRect();
+            let dropClone: HTMLElement;
             // gridObj1.rowDragAndDropModule.dragTarget = dragRowElem;
             dropClone = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
             dropClone.querySelector('td').classList.add('e-selectionbackground');

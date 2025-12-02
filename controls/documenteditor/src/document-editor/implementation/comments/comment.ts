@@ -1020,10 +1020,9 @@ export class CommentView {
         let clipboardData = (event.clipboardData);
         let plainText = clipboardData.getData('text/plain');
         if (plainText) {
-            // let htmlString = this.convertToHtml(plainText);
-            let htmlString = SanitizeHtmlHelper.sanitize(plainText);
+            plainText = SanitizeHtmlHelper.sanitize(plainText);
             const selection: Selection | null = window.getSelection();
-            if (selection && selection.rangeCount > 0) {
+            if (!isNullOrUndefined(selection) && selection.rangeCount > 0) {
                 // Get the current range (caret or selected text)
                 const range: Range = selection.getRangeAt(0);
 
@@ -1031,7 +1030,7 @@ export class CommentView {
                 range.deleteContents();
 
                 // Create a fragment from the HTML string
-                const frag: DocumentFragment = range.createContextualFragment(htmlString);
+                const frag: DocumentFragment = range.createContextualFragment(plainText);
 
                 // Insert the fragment at the caret position
                 range.insertNode(frag);
@@ -1044,24 +1043,11 @@ export class CommentView {
                 selection.addRange(range);
             } else {
                 // If no selection exists, append the HTML at the end of the element
-                element.innerHTML += htmlString;
+                element.innerHTML += plainText;
             }
         }
         this.enableDisableReplyPostButton();
     }
-
-    // private convertToHtml(input: string): string {
-    //     // Split the input string by \r\n or \r
-    //     const lines = input.split(/(?:\r?\n|\r)/);
-
-    //     // Map each line to a <div> element, adding <br> if the line is empty
-    //     const htmlLines = lines.map(line => line ? `<div>${line}</div>` : `<div><br></div>`);
-
-    //     // Join the array back into a single string
-    //     const output = htmlLines.join('');
-
-    //     return output;
-    // }
 
     private onSelect(e: MentionSelectEventArgs): void {
         this.owner.documentEditorSettings.mentionSettings.fields

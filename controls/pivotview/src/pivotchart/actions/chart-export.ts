@@ -181,10 +181,12 @@ export class ChartExport {
         imageString = imageString.slice(imageString.indexOf(',') + 1);
         const image: PdfBitmap = new PdfBitmap(imageString);
         const pdfPage: PdfPage = documentSection.pages.add();
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)
+            && !isNullOrUndefined(this.pdfExportHelper)) {
             this.pdfExportHelper.drawHeader(pdfExportProperties, pdfDocument);
         }
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer)) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer)
+            && !isNullOrUndefined(this.pdfExportHelper)) {
             this.pdfExportHelper.drawFooter(pdfExportProperties, pdfDocument);
         }
         pdfPage.graphics.drawImage(image, 0, 0, (documentHeight < height || this.exportProperties.width

@@ -4990,8 +4990,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             editor = renderRTE({
                 insertImageSettings: {
                     display: 'Break',
-                    saveUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/SaveFile',
-                    path: 'https://ej2services.syncfusion.com/js/development/RichTextEditor/'
+                    saveUrl: 'https://blazor.syncfusion.com/services/development/api/RichTextEditor/SaveFile',
+                    path: 'https://blazor.syncfusion.com/services/development/RichTextEditor/'
                 }
             });
             done();
@@ -5122,9 +5122,9 @@ client side. Customer easy to edit the contents and get the HTML content for
             editor = renderRTE({
                 insertImageSettings: {
                     display: 'Break',
-                    saveUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/SaveFile',
-                    removeUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/DeleteFile',
-                    path: 'https://ej2services.syncfusion.com/js/development/RichTextEditor/'
+                    saveUrl: 'https://blazor.syncfusion.com/services/development/api/RichTextEditor/SaveFile',
+                    removeUrl: 'https://blazor.syncfusion.com/services/development/api/RichTextEditor/DeleteFile',
+                    path: 'https://blazor.syncfusion.com/services/development/RichTextEditor/'
                 },
                 imageUploadSuccess: (e: any) => {
                     if (editor.inputElement.querySelector('img').src === 'RTE-Landscape.png') {
@@ -5804,6 +5804,9 @@ client side. Customer easy to edit the contents and get the HTML content for
             destroy(editor);
         });
         it('Should insert the element in to the editor when the image is dropped into the editor.', (done: DoneFn) => {
+            editor.focusIn();
+            const heading: HTMLElement = editor.inputElement.querySelector('h1');
+            heading.scrollIntoView();
             const dataTransfer: DataTransfer = new DataTransfer();
             dataTransfer.items.add(editor.inputElement.innerHTML, 'text/html');
             const eventInit: DragEventInit = {
@@ -5815,7 +5818,6 @@ client side. Customer easy to edit the contents and get the HTML content for
             editor.inputElement.querySelector('img').dispatchEvent(dragOverEvent);
             const dragEnterEvent: DragEvent = new DragEvent('dragend', eventInit);
             editor.inputElement.querySelector('h1').dispatchEvent(dragEnterEvent);
-            const heading: HTMLElement = editor.inputElement.querySelector('h1');
             const clientRect: DOMRect = heading.getBoundingClientRect() as DOMRect;
             const dropEvent: DragEvent = new DragEvent('drop', {
                 dataTransfer: dataTransfer,
@@ -5830,6 +5832,9 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
 
         it('Should not insert the element in to the editor when the image is dropped into the toolbar.', (done: DoneFn) => {
+            editor.focusIn();
+            const heading: HTMLElement = editor.inputElement.querySelector('h1');
+            heading.scrollIntoView();
             const dataTransfer: DataTransfer = new DataTransfer();
             dataTransfer.items.add(editor.inputElement.innerHTML, 'text/html');
             const eventInit: DragEventInit = {

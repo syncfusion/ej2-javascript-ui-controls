@@ -292,6 +292,20 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
+     * @param {string} pageValue - specifies the page value
+     * @returns {void}
+     * @private
+     */
+    protected setCurrentPageValue(pageValue: string): void {
+        const currentPageValue: number = parseInt(pageValue, 10);
+        if (this.hasParent) {
+            (this.parent as { setProperties(prop: Object, muteOnChange: boolean): void })
+                .setProperties({ pageSettings: { currentPage: currentPageValue } }, true);
+        }
+        this.currentPage = currentPageValue;
+    }
+
+    /**
      * To Initialize the component rendering
      *
      * @returns {void}
@@ -316,12 +330,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.enableQueryString) {
             const pageValue: string = new URL(window.location.href).searchParams.get('page');
             if (!isNullOrUndefined(pageValue) && window.location.href.indexOf('?page=') > 0) {
-                const currentPageValue: number = parseInt(pageValue, 10);
-                if (this.hasParent) {
-                    (this.parent as { setProperties(prop: Object, muteOnChange: boolean): void })
-                        .setProperties({ pageSettings: { currentPage: currentPageValue } }, true);
-                }
-                this.currentPage = currentPageValue;
+                this.setCurrentPageValue(pageValue);
             }
         }
         if (this.template) {
@@ -1177,6 +1186,57 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
+     * @param {number} pagerWidth - specifies the Pager Width value
+     * @param {number} bufferWidth - specifies the Buffer Width value
+     * @param {number} totDetailWidth - specifies the Total Detail Width value
+     * @param {NodeListOf<HTMLElement>} detailItems - specifies the detail Items value
+     * @returns {void}
+     * @private
+     */
+    private hideDetailItems(pagerWidth: number, bufferWidth: number, totDetailWidth: number,
+                            detailItems: NodeListOf<HTMLElement>): void {
+        const pagerDetailItemsWidth: number = this.calculateActualWidth();
+        if ((pagerDetailItemsWidth) > (pagerWidth - bufferWidth)) {
+            let detailtoHide: number = Math.floor((pagerWidth - (pagerDetailItemsWidth - totDetailWidth))
+                / this.averageDetailWidth);
+            detailtoHide = detailItems.length - detailtoHide;
+            for (let i: number = 0; i < (detailtoHide > detailItems.length ? detailItems.length : detailtoHide); i++) {
+                detailItems[parseInt(i.toString(), 10)].classList.add('e-hide');
+            }
+        }
+    }
+
+    /**
+     * @param {number} diff - specifies the diff value
+     * @param {number} numericItemWidth - specifies the numeric Item Width value
+     * @param {number} bufferWidth - specifies the buffer Width value
+     * @param {number} showFrom - specifies the show From value
+     * @param {NodeListOf<HTMLElement>} hiddenNumItems - specifies the hidden Num Items value
+     * @returns {void}
+     * @private
+     */
+    private setShowItems(diff: number, numericItemWidth: number, bufferWidth: number, showFrom: number,
+                         hiddenNumItems: NodeListOf<HTMLElement>): void {
+        // To calculate number of numeric items need to be shown.
+        let numToShow: number = Math.floor((diff) / (numericItemWidth + bufferWidth));
+        numToShow = (numToShow > hiddenNumItems.length) ? hiddenNumItems.length : (numToShow - 1);
+        //Seggregating hidden num items as less index and greater index values than current page value.
+        const lesserIndexItems: HTMLElement[] = Array.from(hiddenNumItems).filter((item: HTMLElement) => parseInt(item.getAttribute('data-index'), 10) < this.currentPage).sort((a: HTMLElement, b: HTMLElement) => parseInt(b.getAttribute('data-index'), 10) - parseInt(a.getAttribute('data-index'), 10));
+        const greaterIndexItems: HTMLElement[] = Array.from(hiddenNumItems).filter((item: HTMLElement) => parseInt(item.getAttribute('data-index'), 10) > this.currentPage);
+        let showItems: HTMLElement[] = (lesserIndexItems.length && lesserIndexItems)
+            || (greaterIndexItems.length && greaterIndexItems);
+        for (let i: number = 1; i <= numToShow; i++) {
+            const showItem: HTMLElement = showItems && showItems[Math.abs(showFrom - i)];
+            if (showItem) {
+                showItem.classList.remove('e-hide');
+                if (showItem === showItems[showItems.length - 1]) {
+                    showItems = null;
+                }
+            }
+        }
+    }
+
+    /**
      * Resize pager component by hiding pager component's numeric items based on total width available for pager.
      *
      * @returns {void}
@@ -1247,15 +1307,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 numItems = pagerContainer.querySelectorAll('.e-numericitem:not(.e-hide):not([style*="display: none"]):not(.e-np):not(.e-pp)');
                 // To hide Pager message elements when no more numeric items available to hide.
                 if (numItems.length <= 1 && detailItems.length && window.innerWidth >= 768) {
-                    const pagerDetailItemsWidth: number = this.calculateActualWidth();
-                    if ((pagerDetailItemsWidth) > (pagerWidth - bufferWidth)) {
-                        let detailtoHide: number = Math.floor((pagerWidth - (pagerDetailItemsWidth - totDetailWidth))
-                         / this.averageDetailWidth);
-                        detailtoHide = detailItems.length - detailtoHide;
-                        for (let i: number = 0; i < (detailtoHide > detailItems.length ? detailItems.length : detailtoHide); i++) {
-                            detailItems[parseInt(i.toString(), 10)].classList.add('e-hide');
-                        }
-                    }
+                    this.hideDetailItems(pagerWidth, bufferWidth, totDetailWidth, detailItems);
                 }
             }
             /**
@@ -1269,27 +1321,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                     hiddenDetailItems[(hiddenDetailItems.length - 1)].classList.remove('e-hide');
                 }
                 if ((diff > (numericItemWidth * 2) && !hiddenDetailItems.length  && window.innerWidth >= 768)) {
-                    // To calculate number of numeric items need to be shown.
-                    let numToShow: number = Math.floor((diff) / (numericItemWidth + bufferWidth));
-                    numToShow = (numToShow > hiddenNumItems.length) ? hiddenNumItems.length : (numToShow - 1);
-                    //Seggregating hidden num items as less index and greater index values than current page value.
-                    const lesserIndexItems: HTMLElement[] = Array.from(hiddenNumItems).filter((item: HTMLElement) => parseInt(item.getAttribute('data-index'), 10) < this.currentPage).sort((a: HTMLElement, b: HTMLElement) => parseInt(b.getAttribute('data-index'), 10) - parseInt(a.getAttribute('data-index'), 10));
-                    const greaterIndexItems: HTMLElement[] = Array.from(hiddenNumItems).filter((item: HTMLElement) => parseInt(item.getAttribute('data-index'), 10) > this.currentPage);
-
-                    let showItems: HTMLElement[] = (lesserIndexItems.length && lesserIndexItems)
-                        || (greaterIndexItems.length && greaterIndexItems);
-
-                    for (let i: number = 1; i <= numToShow; i++) {
-                        const showItem: HTMLElement = showItems && showItems[Math.abs(showFrom - i)];
-
-                        if (showItem) {
-                            showItem.classList.remove('e-hide');
-
-                            if (showItem === showItems[showItems.length - 1]) {
-                                showItems = null;
-                            }
-                        }
-                    }
+                    this.setShowItems(diff, numericItemWidth, bufferWidth, showFrom, hiddenNumItems);
                 }
             }
             numItems = pagerContainer.querySelectorAll(

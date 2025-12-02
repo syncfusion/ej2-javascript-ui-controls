@@ -221,7 +221,7 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
             this.updateToggleButtonState(id + JUSTIFY_ID, paragraphFormat.textAlignment === 'Justify');
 
             // Update show hidden marks button
-            this.updateToggleButtonState(id + SHOW_HIDE_MARKS_ID, this.container.documentEditorSettings.showHiddenMarks);
+            this.updateToggleButtonState(id + SHOW_HIDE_MARKS_ID, this.container.documentEditor.documentEditorSettings.showHiddenMarks);
 
             // Update line spacing
             this.lineSpacingGroup.setLineSpacing();
@@ -293,7 +293,8 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
 
     private toggleHiddenMarks(): void {
         if (this.documentEditor) {
-            this.container.documentEditorSettings.showHiddenMarks = !this.container.documentEditorSettings.showHiddenMarks;
+            this.container.documentEditor.documentEditorSettings.showHiddenMarks =
+            !this.container.documentEditor.documentEditorSettings.showHiddenMarks;
             setTimeout(() => {
                 this.documentEditor.focusIn();
             }, 30);

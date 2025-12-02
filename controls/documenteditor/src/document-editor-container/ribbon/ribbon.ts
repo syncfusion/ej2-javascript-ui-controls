@@ -120,7 +120,7 @@ export class Ribbon implements IToolbarHandler {
 
     private createRibbonElement(): void {
         this.ribbonElement = document.createElement('div');
-        this.ribbonElement.id = 'document-editor-ribbon';
+        this.ribbonElement.id = this.container.element.id + '_document-editor-ribbon';
         this.ribbonElement.classList.add('e-de-ribbon');
 
         if (this.container.enableRtl) {

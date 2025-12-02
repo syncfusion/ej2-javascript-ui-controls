@@ -465,10 +465,8 @@ describe('Emoji picker module', () => {
         it('In tollbar render the iconCss property', (done: Function) => {
             const element: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
             element.click();
-            setTimeout(() => {
-                expect(rteObj.element.querySelector('.e-emoji')).not.toBe(null);
-                done();
-            }, 100);
+            expect(rteObj.element.querySelector('.e-emoji')).not.toBe(null);
+            done();
         });
         it('Focus the input box by keyboard Navigation', () => {
             const element: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
@@ -571,11 +569,9 @@ describe('Emoji picker module', () => {
                 (<any>rteObj).keyDown(keyboardEventArgs);
                 const btnGroup: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-rte-emojipickerbtn-group button');
                 btnGroup[0].click();
-                setTimeout(function () {
-                    expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
-                    expect(firstP.innerHTML).toBe('Emoji picker : : : : : : 😀');
-                    done();
-                }, 100);
+                expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
+                expect(firstP.innerHTML).toBe('Emoji picker : : : : : : 😀');
+                done();
         });
     });
     describe('Bug 963296: Empty Bullet List Retains in Editor After Selecting All Content and Inserting Emoji ', () => {
@@ -622,11 +618,9 @@ describe('Emoji picker module', () => {
             selection.addRange(range);
             const btnGroup: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-rte-emojipickerbtn-group button');
             btnGroup[0].click();
-            setTimeout(function () {
-                expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
-                expect(rteObj.inputElement.innerHTML).toBe('<p>😀</p>');
-                done();
-            }, 100);
+            expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
+            expect(rteObj.inputElement.innerHTML).toBe('<p>😀</p>');
+            done();
         });
     });
     describe('In rich editor content - intial we type colon render the popup ' , () => {

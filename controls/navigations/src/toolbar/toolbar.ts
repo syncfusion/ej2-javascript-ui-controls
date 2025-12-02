@@ -355,6 +355,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private isVertical: boolean;
     private tempId: string[];
     private isExtendedOpen: boolean;
+    private popupTriggeredByToolbar: boolean;
     private clickEvent: EventListenerOrEventListenerObject;
     private scrollEvent: EventListenerOrEventListenerObject;
     private resizeContext: EventListenerObject = this.resize.bind(this);
@@ -625,6 +626,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private docEvent(e: Event): void {
         const popEle: Element = closest(<Element>e.target, '.e-popup');
+        if (this.popupTriggeredByToolbar) {
+            this.popupTriggeredByToolbar = false;
+            return;
+        }
         if (this.popObj && isVisible(this.popObj.element) && !popEle && this.overflowMode === 'Popup') {
             this.popObj.hide({ name: 'FadeOut', duration: 100 });
         }
@@ -979,6 +984,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         const isPopupElement: boolean = !isNOU(closest(trgt, '.' + CLS_POPUPCLASS));
         let clsList: DOMTokenList = trgt.classList;
         let popupNav: HTEle = <HTEle>closest(trgt, ('.' + CLS_TBARNAV));
+        const popupDownIcon: HTEle = <HTEle>closest(trgt, ('.' + CLS_POPUPDOWN));
+        if (popupDownIcon || popupNav) {
+            this.popupTriggeredByToolbar = true;
+        }
         if (!popupNav) {
             popupNav = trgt;
         }

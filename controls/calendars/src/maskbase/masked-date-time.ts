@@ -751,6 +751,9 @@ export class MaskedDateTime {
 
     private maskInputHandler(): void {
         let start: number = this.parent.inputElement.selectionStart;
+        if (Browser.isDevice && (Browser.isIos || Browser.isIos7)) {
+            start = this.normalizeTokenIndex(start);
+        }
         let formatText: string = '';
         if (this.validCharacters.indexOf(this.hiddenMask[start as number]) !== -1) {
             formatText = this.hiddenMask[start as number];
@@ -770,10 +773,17 @@ export class MaskedDateTime {
                 break;
             }
         }
-        let scrollPositionY: number;
+        let scrollContext: any = null;
+        let savedScrollTop: number = 0;
         if (Browser.isDevice && (Browser.isIos || Browser.isIos7)) {
             const scrollableParent: HTMLElement | null = this.findScrollableParent(this.parent.inputElement);
-            scrollPositionY = scrollableParent ? scrollableParent.getBoundingClientRect().top : window.scrollY;
+            if (scrollableParent) {
+                scrollContext = scrollableParent;
+                savedScrollTop = scrollableParent.scrollTop;
+            } else {
+                scrollContext = window;
+                savedScrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+            }
         }
         this.parent.inputElement.selectionStart = start;
         this.validCharacterCheck();
@@ -783,7 +793,12 @@ export class MaskedDateTime {
             this.navigateSelection(isbackward);
             if (Browser.isDevice && (Browser.isIos || Browser.isIos7)) {
                 setTimeout(() => {
-                    window.scrollTo(0, scrollPositionY);
+                    if (scrollContext) {
+                        scrollContext.scrollTop = savedScrollTop;
+                    }
+                    else {
+                        window.scrollTo(0, savedScrollTop);
+                    }
                 }, 0);
             }
         }
@@ -998,6 +1013,23 @@ export class MaskedDateTime {
         }
         this.dayTypeCount = 0;
         this.monthTypeCount = 0;
+    }
+    private isMaskToken(i: number): boolean {
+        return i >= 0 && i < this.hiddenMask.length &&
+            this.validCharacters.indexOf(this.hiddenMask[i as number]) !== -1;
+    }
+    private normalizeTokenIndex(index: number, preferPrev: boolean = false): number {
+        if (this.isMaskToken(index)) { return index; }
+        const prev: number = index - 1;
+        const next: number = index + 1;
+        if (preferPrev) {
+            if (this.isMaskToken(prev)) { return prev; }
+            if (this.isMaskToken(next)) { return next; }
+        } else {
+            if (this.isMaskToken(next)) { return next; }
+            if (this.isMaskToken(prev)) { return prev; }
+        }
+        return index;
     }
 
     public destroy(): void {

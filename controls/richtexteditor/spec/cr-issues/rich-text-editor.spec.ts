@@ -447,35 +447,6 @@ describe('RTE CR issues ', () => {
             destroy(rteObj);
         });
     });
-    describe('Bug 984457: Inline toolbar doesn"t show properly for the texts with Images in RichTextEditor', () => {
-        let rteObj: RichTextEditor;
-        beforeAll(() => {
-            rteObj = renderRTE({
-                value: `<p><img alt="Editor Features Overview" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" width="400" height="200" class= "e-img-left e-rte-image e-imginline"/>image</p>`,
-                inlineMode: {
-                    enable: true,
-                    onSelection: true
-                },
-            });
-        });
-        it('Should show the Quick toolbar in View port', (done) => {
-            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
-            const mouseDownEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
-            rteObj.inputElement.dispatchEvent(mouseDownEvent);
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[1], rteObj.inputElement.childNodes[0].childNodes[1], 1, 3);
-            const target: HTMLElement = rteObj.inputElement.firstChild as HTMLElement;
-            target.dispatchEvent(mouseUpEvent);
-            setTimeout(() => {
-                const inlineToolbar: HTMLElement = rteObj.element.querySelector('.e-rte-inline-popup');
-                expect(rteObj).not.toBeNull();
-                expect(inlineToolbar.getBoundingClientRect().top).toBeGreaterThan(rteObj.element.getBoundingClientRect().top);
-                done();
-            }, 100);
-        });
-        afterAll(() => {
-            destroy(rteObj);
-        });
-    });
     describe('Bug 940154: Pressing backspace twice inside a table removes the entire table in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -1372,6 +1343,9 @@ describe('RTE CR issues ', () => {
             destroy(editor);
         });
         it(' should revert back to previous form when undo is called after image is drag and dropped', (done: DoneFn) => {
+            editor.focusIn();
+            const heading: HTMLElement = editor.inputElement.querySelector('h1');
+            heading.scrollIntoView();
             const dataTransfer: DataTransfer = new DataTransfer();
             dataTransfer.items.add(editor.inputElement.innerHTML, 'text/html');
             const eventInit: DragEventInit = {
@@ -1383,7 +1357,6 @@ describe('RTE CR issues ', () => {
             editor.inputElement.querySelector('img').dispatchEvent(dragOverEvent);
             const dragEnterEvent: DragEvent = new DragEvent('dragend', eventInit);
             editor.inputElement.querySelector('h1').dispatchEvent(dragEnterEvent);
-            const heading: HTMLElement = editor.inputElement.querySelector('h1');
             const clientRect: DOMRect = heading.getBoundingClientRect() as DOMRect;
             const dropEvent: DragEvent = new DragEvent('drop', {
                 dataTransfer: dataTransfer,

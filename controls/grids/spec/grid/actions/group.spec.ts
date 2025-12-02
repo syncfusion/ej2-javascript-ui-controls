@@ -3297,3 +3297,43 @@ describe('EJ2-981209: Script Error When Grouping with Frozen Columns Enabled and
         gridObj = actionComplete = null;
     });
 });
+
+describe('991898: Updating the Chrome version in coverage test cases of EJ2 components', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                frozenColumns: 1,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', },
+                    { field: 'Freight', format: 'C2', },
+                    { field: 'CustomerID', headerText: 'Customer ID', },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 100 }
+                ],
+                allowGrouping: true,
+                allowPaging: true,
+                actionComplete: actionComplete,
+            }, done);
+    });
+    it('Coverage - 1', (done: Function) => {
+        let target: HTMLElement = document.createElement('div');
+        target.classList.add('e-groupdroparea');
+        var args: any = {
+            target: target,
+            type: 'focusin'
+        };
+        (gridObj.groupModule as any).addOrRemoveFocus(args);
+        args = {
+            target: target,
+            type: 'focusout'
+        };
+        (gridObj.groupModule as any).addOrRemoveFocus(args);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 31.2.16 (2025-12-02)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I775851` - Fixed issue with exporting nested inline content controls.
+`#I773456`, `#I783927`, `#I781201` - Addressed table resizing problems by enabling resizing via the page ruler.
+`#I771705` - Corrected behaviour where the TOC was inserted multiple times when updating in Track Changes mode.
+`#I772957` - Resolved text positioning errors when selecting and inserting text inside a bookmark.
+
 ## 31.2.15 (2025-11-25)
 
 ### DocumentEditor

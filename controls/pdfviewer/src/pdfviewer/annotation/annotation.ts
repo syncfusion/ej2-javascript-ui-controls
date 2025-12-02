@@ -2846,10 +2846,11 @@ export class Annotation {
     /**
      * @param {string} dynamicText - dynamicText
      * @param {string} annotName - annotName
+     * @param {any} previousValue - gets the previous value of the freetext
      * @private
      * @returns {void}
      */
-    public modifyDynamicTextValue(dynamicText: string, annotName: string): void {
+    public modifyDynamicTextValue(dynamicText: string, annotName: string, previousValue: any): void {
         let currentAnnotation: PdfAnnotationBaseModel = null;
         currentAnnotation = this.pdfViewer.annotations.filter((s: PdfAnnotationBaseModel) => s.annotName === annotName)[0];
         if (currentAnnotation) {
@@ -2867,10 +2868,11 @@ export class Annotation {
                 this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'dynamicText Change', '', clonedObject, redoClonedObject);
                 this.modifyInCollections(currentAnnotation, 'dynamicText');
             }
-            if (!isNullOrUndefined(this.freeTextAnnotationModule) && this.freeTextAnnotationModule.previousText
-             !== currentAnnotation.dynamicText) {
+            const previousText: any = previousValue ? previousValue : this.freeTextAnnotationModule ?
+                this.freeTextAnnotationModule.previousText : 'Type Here';
+            if (previousText !== currentAnnotation.dynamicText) {
                 this.triggerAnnotationPropChange(currentAnnotation, false, false, false, false, false, false, false,
-                                                 true, this.freeTextAnnotationModule.previousText, currentAnnotation.dynamicText);
+                                                 true, previousText, currentAnnotation.dynamicText);
             }
             this.pdfViewer.renderDrawing();
         }

@@ -3967,7 +3967,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 requireRefresh = true;
                 if (this.height === '100%') {
                     this.scrollModule.refresh();
-                } break;
+                }
+                this.getDataModule().clearCache();
+                break;
             case 'pageSettings':
                 if (this.pageTemplateChange) {
                     this.pageTemplateChange = false;

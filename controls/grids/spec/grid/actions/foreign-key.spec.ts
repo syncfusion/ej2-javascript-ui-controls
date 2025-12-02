@@ -651,9 +651,10 @@ describe('EJ2-867015 - Coverage for foreign key file =>', () => {
             searchSettings: { fields: ['ShipCity'], operator: 'contains', key: 'Reims', ignoreCase: true },
             enableVirtualization: true,
             enableColumnVirtualization: true,
+            height: 200,
             pageSettings: { pageSize: 50 },
             columns: [
-                { field: 'OrderID', width: 120 },
+                { field: 'OrderID', width: 120, isPrimaryKey: true },
                 { field: 'ShipCity', width: 120 },
                 { field: 'CustomerID', width: 100, foreignKeyValue: 'ShipName',  foreignKeyField: 'CustomerID', dataSource: remoteData }
             ],
@@ -662,15 +663,17 @@ describe('EJ2-867015 - Coverage for foreign key file =>', () => {
         gridObj = createGrid(options, done);
     });
 
-    it('Genarate Column Query', () => {
+    it('Genarate Column Query', (done: Function) => {
         (gridObj as any).foreignKeyModule.genarateColumnQuery(gridObj.getColumns()[2]);
+        done();
     });
 
-    it('Destroying the event', () => {
+    it('Destroying the event', (done: Function) => {
         (gridObj as any).foreignKeyModule.destroyEvent();
+        done();
     });
 
-    afterAll((done) => {
+    afterAll(() => {
         destroy(gridObj);
         gridObj = null;
     });

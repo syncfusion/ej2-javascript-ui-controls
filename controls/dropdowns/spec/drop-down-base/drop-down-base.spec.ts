@@ -697,7 +697,19 @@ describe('DropDownBase', () => {
             let next: HTMLUListElement = listObj.element.nextElementSibling.children[0] as HTMLUListElement;
             (<any>listObj).updateListValues();
             expect(listObj.getDataByValue(true)).toBe(true);
-            //expect();
+            (<any>listObj).enableRtlElements = element;
+            (<any>listObj).list = null;
+            (<any>listObj).setFloatingHeader();
+            (<any>listObj).setEnableRtl();
+            (<any>listObj).debounceTimer = 500;
+            (<any>listObj).debouncedFiltering();
+            element.cloneNode = null;
+            (<any>listObj).groupHeaderItems = null;
+            (<any>listObj).fields.groupBy = null;
+            (<any>listObj).fixedHeaderElement = createElement('div', { id: 'dropdownbase'});
+            (<any>listObj).updateFixedGroupTemplateHader(element);
+            (<any>listObj).list = createElement('div', { id: 'dropdownbase', className: 'e-virtual-ddl-content' });
+            (<any>listObj).createVirtualContent();
         });
     });
     it('memory leak', () => {     

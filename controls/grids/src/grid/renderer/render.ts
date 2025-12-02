@@ -2,7 +2,7 @@ import { L10n, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { remove, resetBlazorTemplate, blazorTemplates, getValue } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Group, Query, Deferred, Predicate, DataUtil } from '@syncfusion/ej2-data';
-import { IGrid, NotifyArgs, IValueFormatter, GroupEventArgs } from '../base/interface';
+import { IGrid, NotifyArgs, IValueFormatter, GroupEventArgs, PageEventArgs } from '../base/interface';
 import { ValueFormatter } from '../services/value-formatter';
 import { RenderType, CellType, Action } from '../base/enum';
 import { ReturnType } from '../base/type';
@@ -151,6 +151,10 @@ export class Render {
                     }
                 }
                 return;
+            }
+            if (e && (e as PageEventArgs).pageSize && (e as PageEventArgs).previousPageSize &&
+                (e as PageEventArgs).pageSize !== (e as PageEventArgs).previousPageSize) {
+                this.parent.getDataModule().clearCache();
             }
             this.parent.notify(events.destroyEditForm, args);
             if (args.requestType === 'virtualscroll' && (this.parent.getDataModule().isRemote() || 'result' in this.parent.dataSource)

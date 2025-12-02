@@ -32,6 +32,8 @@ import { ExcelExport } from '../../../src/grid/actions/excel-export';
 import { PdfExport } from '../../../src/grid/actions/pdf-export';
 import { Resize } from '../../../src/grid/actions/resize';
 import { RowDD } from '../../../src/grid/actions/row-reorder';
+import { StringFilterUI } from '../../../src/grid/renderer/string-filter-ui';
+
 Grid.Inject(Aggregate, Page, Edit, Resize, Toolbar, Group, ColumnChooser, VirtualScroll, InfiniteScroll, DetailRow, PdfExport, ExcelExport, Filter, RowDD);
 
 describe('Grid base module', () => {
@@ -5472,6 +5474,50 @@ describe('EJ2-986366: calculatePageSizeByParentHeight not working with number va
         expect(() => gridObj.calculatePageSizeByParentHeight(400)).not.toThrow();
     });
 
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('991898: Updating the Chrome version in coverage test cases of EJ2 components', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        const btn = document.createElement('button');
+        btn.id = 'myButton';
+        btn.textContent = 'Click Me';
+        document.body.appendChild(btn);
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', width: 150 },
+                    { headerText: 'CustomerID', field: 'CustomerID', width: 150 },
+                    { headerText: 'EmployeeID', field: 'EmployeeID', width: 150 },
+                    { headerText: 'ShipCountry', field: 'ShipCountry', width: 150 },
+                    { headerText: 'ShipCity', field: 'ShipCity', width: 150 },
+                ],
+            }, done);
+    });
+    it('Coverage for Focus - 1', function () {
+        let e: any = {
+            target : gridObj.getHeaderContent().querySelector('.e-headercell:not(.e-hide)'),
+            relatedTarget: document.getElementById('myButton')
+        };
+        (gridObj.focusModule as any).firstHeaderCellClick = false;
+        (gridObj.focusModule as any).passiveFocus(e);
+    });
+    it('Coverage for StringFilterUI - 1', function () {
+        let instanceofFilterUI: any = new StringFilterUI((<any>gridObj), (<any>gridObj).serviceLocator, (<any>gridObj).filterSettings);
+        let args = {
+            popup: { element: document.createElement('div') } ,
+            zIndex: 1000
+        }
+        instanceofFilterUI.dialogObj = { zIndex: 1}
+        instanceofFilterUI.openPopup(args);
+    });
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

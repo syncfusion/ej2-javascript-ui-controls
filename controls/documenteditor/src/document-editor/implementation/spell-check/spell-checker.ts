@@ -215,8 +215,12 @@ export class SpellChecker {
      * @aspType bool
      */
     public set removeUnderline(value: boolean) {
+        this.documentHelper.triggerElementsOnLoading = true;
+        this.documentHelper.triggerSpellCheck = true;
         this.removeUnderlineInternal = value;
         this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
+        this.documentHelper.triggerElementsOnLoading = false;
+        this.documentHelper.triggerSpellCheck = false;
     }
     /**
      * Getter indicates whether spell check has to be performed or not.
@@ -408,7 +412,7 @@ export class SpellChecker {
             }
             this.handleErrorElements.push(textElement);
         }
-        this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, false, false, false, true);
+        this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
     }
     /**
      * Method to handle to ignore error Once intenral
@@ -452,7 +456,7 @@ export class SpellChecker {
             this.ignoreAllItems.push(retrievedText);
             this.removeErrorsFromCollection(contextItem);
             this.documentHelper.triggerSpellCheck = true;
-            this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, false, false, false, true);
+            this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
             this.documentHelper.triggerSpellCheck = false;
             this.documentHelper.clearSelectionHighlight();
         }

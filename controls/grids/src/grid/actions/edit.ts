@@ -1179,6 +1179,32 @@ export class Edit implements IAction {
         }
     }
 
+    private setScrollTop(div: HTMLElement, arrow: Element, gcontent: HTMLElement): void {
+        const contentDiv: HTMLElement = this.parent.getContent().querySelector('.e-content');
+        if (this.parent.currentViewData.length === 0 && contentDiv.scrollTop === 0) {
+            contentDiv.scrollTop = div.offsetHeight + arrow.scrollHeight;
+        }
+        else {
+            gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
+        }
+    }
+
+    private setBottomStyles(div: HTMLElement, gcontent: HTMLElement, inputClient: ClientRect): void {
+        const scrollWidth: number = gcontent.scrollWidth > gcontent.offsetWidth ? getScrollBarWidth() : 0;
+        const gHeight: number | string = this.parent.height.toString().indexOf('%') === -1 ?
+            parseInt(this.parent.height as string, 10) : gcontent.offsetHeight;
+        div.style.bottom = ((gHeight as number) - gcontent.querySelector('table').offsetHeight
+            - scrollWidth) + inputClient.height + 9 + 'px';
+    }
+
+    private setPositionStyles(isAddNewRow: boolean, rows: Element[], div: HTMLElement): void {
+        const rowsCount: number = this.parent.frozenRows ? (isAddNewRow ? this.parent.frozenRows + 1 : this.parent.frozenRows) +
+            (rows.length - 1) : rows.length - 1;
+        const rowsHeight: number = rowsCount * this.parent.getRowHeight();
+        const position: number = this.parent.getContent().clientHeight - rowsHeight;
+        div.style.bottom = position + 9 + 'px';
+    }
+
     private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
         let formObj: HTMLFormElement = this.formObj.element;
         const customForm: Element = parentsUntil(element, 'e-virtual-validation');
@@ -1315,13 +1341,7 @@ export class Edit implements IAction {
             }
         }
         if (!validationForBottomRowPos && isInline && gcontent.getBoundingClientRect().bottom < inputClient.bottom + inputClient.height) {
-            const contentDiv: HTMLElement = this.parent.getContent().querySelector('.e-content');
-            if (this.parent.currentViewData.length === 0 && contentDiv.scrollTop === 0) {
-                contentDiv.scrollTop = div.offsetHeight + arrow.scrollHeight;
-            }
-            else {
-                gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
-            }
+            this.setScrollTop(div, arrow, gcontent);
         }
         const lineHeight: number = parseInt(
             document.defaultView.getComputedStyle(div, null).getPropertyValue('font-size'), 10
@@ -1344,21 +1364,13 @@ export class Edit implements IAction {
             if (isScroll && this.parent.height !== 'auto' && (!this.parent.frozenRows || !isAddNewRow)
                 && !this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling && !(div.classList.contains('e-freezeerror')
              && div.classList.contains('e-fixederror'))) {
-                const scrollWidth: number = gcontent.scrollWidth > gcontent.offsetWidth ? getScrollBarWidth() : 0;
-                const gHeight: number | string = this.parent.height.toString().indexOf('%') === -1 ?
-                    parseInt(this.parent.height as string, 10) : gcontent.offsetHeight;
-                div.style.bottom = ((gHeight as number) - gcontent.querySelector('table').offsetHeight
-                    - scrollWidth) + inputClient.height + 9 + 'px';
+                this.setBottomStyles(div, gcontent, inputClient);
             } else {
                 div.style.bottom = inputClient.height + 9 + 'px';
             }
             if (rows.length < viewPortRowCount && this.parent.editSettings.newRowPosition === 'Bottom' && (this.editModule.args
                 && this.editModule.args.requestType === 'add')) {
-                const rowsCount: number = this.parent.frozenRows ? (isAddNewRow ? this.parent.frozenRows + 1 : this.parent.frozenRows) +
-                    (rows.length - 1) : rows.length - 1;
-                const rowsHeight: number = rowsCount * this.parent.getRowHeight();
-                const position: number = this.parent.getContent().clientHeight - rowsHeight;
-                div.style.bottom = position + 9 + 'px';
+                this.setPositionStyles(isAddNewRow, rows, div);
             }
             div.style.top = null;
         }

@@ -1131,7 +1131,11 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
             gridObj.actionBegin = actionBegin;
             gridObj.pageSettings.pageSize = 5;
         });
-
+	    it('coverager for resizePager', function (done: Function) {
+            (gridObj.pagerModule.pagerObj as any).element.style.borderStyle = 'solid';
+            (gridObj.pagerModule.pagerObj as any).resizePager();
+            done();
+        });
         afterAll(() => {
             destroy(gridObj);
             gridObj = actionBegin = null;
@@ -1183,6 +1187,54 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
         afterAll(() => {
             destroy(gridObj);
             gridObj = actionBegin = null;
+        });
+    });
+
+    describe('991898: Updating the Chrome version in coverage test cases of EJ2 components', () => {
+        let gridObj: Grid;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                dataSource: [
+                    { EmployeeID: 1, FirstName: 'Nancy', Country: 'USA' },
+                    { EmployeeID: 2, FirstName: 'Andrew', Country: 'USA' },
+                    { EmployeeID: 3, FirstName: 'Janet', Country: 'USA' },
+                    { EmployeeID: 4, FirstName: 'John', Country: 'UK' }
+                ],
+                allowPaging: true,
+                pageSettings: {
+                    pageCount: 5,
+                    pageSize: 3,
+                    pageSizes: [3, 5, 10, 'All'],
+                },
+                toolbar: ['Search'],
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'Country', headerText: 'Country', width: 110 }
+                ],
+                }, done);
+        });
+        it('Converage - 5', function (done: Function) {
+            gridObj.pagerModule.pagerObj.hasParent = true;
+            (gridObj.pagerModule.pagerObj as any).setCurrentPageValue('1');
+            done();
+        });
+        it('Converage - 6', function (done: Function) {
+            const pagerContainer: any = gridObj.pagerModule.pagerObj.element.querySelector('.e-pagercontainer')
+            const hiddenNumItems = pagerContainer.querySelectorAll('.e-numericitem.e-hide:not([style*="display: none"])');
+            (gridObj.pagerModule.pagerObj as any).setShowItems(2, 1, 1, true, hiddenNumItems);
+            done();
+        });
+        it('Converage - 7', function (done: Function) {
+             const detailItems: NodeListOf<HTMLElement> = gridObj.pagerModule.pagerObj.element.querySelectorAll('.e-parentmsgbar:not(.e-hide):not([style*="display: none"]), .e-pagesizes:not(.e-hide):not([style*="display: none"])');
+            (gridObj.pagerModule.pagerObj as any).hideDetailItems(0, 0, 0, detailItems);
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = preventDefault = null;
         });
     });
 });

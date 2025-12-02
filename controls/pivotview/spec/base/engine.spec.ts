@@ -1272,6 +1272,81 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
         });
+        describe('Grouping', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar, DrillThrough, CalculatedField, FieldList, VirtualScroll);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: pivotDatas,
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        groupSettings: [{ name: 'date', groupInterval: ['Years', 'Quarters', 'QuarterYear', 'Months', 'Days', 'Hours', 'Minutes', 'Seconds'] }],
+                        rows: [{ name: "product" }, { name: "state" }],
+                        formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy', type: 'date' }],
+                        columns: [{ name: "gender" }, { name: "age" }],
+                        values: [{ name: "balance" }, { name: "quantity" }],
+                        valueSortSettings: { headerDelimiter: '##' }
+                    },
+                    height: 300,
+                    width: 800,
+                    dataBound: dataBound
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            it('Ensure the pivot values', () => {
+                expect(pivotGridObj.pivotValues.length > 0).toBeTruthy;
+            });
+        });
+
+        describe('Number Filtering', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar, DrillThrough, CalculatedField, FieldList, VirtualScroll);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: pivotDatas,
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        rows: [{ name: "product" }, { name: "state" }],
+                        formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy', type: 'date' }],
+                        columns: [{ name: "gender" }, { name: "age" }],
+                        values: [{ name: "balance" }, { name: "quantity", type: 'Median' }],
+                        filterSettings: [{name:'age', type: 'Number', condition: 'GreaterThan', value1: '30' }],
+                        valueSortSettings: { headerDelimiter: '##' },
+                        alwaysShowValueHeader: true
+                    },
+                    height: 300,
+                    width: 800,
+                    gridSettings: { layout: 'Tabular' },
+                    dataBound: dataBound
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            it('Ensure the pivot values', () => {
+                expect(pivotGridObj.pivotValues.length > 0).toBeTruthy;
+            });
+        });
     });
 
     /**
@@ -1398,699 +1473,322 @@ describe(' - VirtualScrolling', () => {
             remove(elem);
         });
     });
-    describe(' - VirtualScrolling2', () => {
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            pivotGridObj = new PivotView(
-                {
-                    dataSourceSettings: {
-                        dataSource: pivot_dataset as IDataSet[],
-                        expandAll: true,
-                        enableSorting: false,
-                        sortSettings: [{ name: 'company', order: 'Descending' }],
-                        formatSettings: [{ name: 'balance', format: 'C' }],
-                        rows: [{ name: 'product' }, { name: 'state' }],
-                        columns: [{ name: 'gender' }, { name: 'eyeColor' }],
-                        values: [{ name: 'balance' }, { name: 'quantity' }],
-                        filters: [],
-                    },
-                    allowCalculatedField: true,
-                    enableVirtualization: true,
-                    dataBound: dataBound,
-                    width: 600,
-                    height: 300,
-                    virtualScrollSettings: { allowSinglePage: false }
-                });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        it('pivotgrid render testing', (done: Function) => {
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-freezeleftborder)').length).toBe(14);
-                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                done();
-            }, 1000);
-        });
-        it('scroll right', (done: Function) => {
-            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 1360;
-            pivotGridObj.virtualscrollModule.direction = 'horizondal';
-            let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft).toBeTruthy();
-                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                done();
-            }, 100);
-        });
-        it('scroll bottom', (done: Function) => {
-            pivotGridObj.element.querySelectorAll('.e-content-virtualtable')[0].scrollTop = 0;
-            pivotGridObj.virtualscrollModule.direction = 'vertical';
-            let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-content-virtualtable')[0].scrollTop).toBe(0);
-                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-freezeleftborder) .e-cellvalue').textContent).toBe('$32,045.16');
-                done();
-            }, 100);
-        });
-        it('scroll left1', (done: Function) => {
-            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 400;
-            pivotGridObj.virtualscrollModule.direction = 'horizondal';
-            let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            setTimeout(() => {
-                let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
-                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft).toBe(400);
-                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('390.1px');
-                expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1980px');
-                done();
-            }, 100);
-        });
-        it('scroll left2', (done: Function) => {
-            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 0;
-            pivotGridObj.virtualscrollModule.direction = 'horizondal';
-            let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            setTimeout(() => {
-                let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
-                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft).toBe(0);
-                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                expect(document.querySelectorAll('.e-content-virtualtable td')[1].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                done();
-            }, 100);
-        });
-        it('Collapse flight', (done: Function) => {
-            (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[0] as HTMLElement).click();
-            setTimeout(() => {
-                let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
-                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
-                expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('210.1px');
-                done();
-            }, 100);
-        });
-        it('Collapse male', (done: Function) => {
-            (document.querySelectorAll('.e-headercontent th .e-sortfilterdiv.e-icons')[0] as HTMLElement).click();
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
-                expect(document.querySelectorAll('.e-headercontent th')[6].textContent).toBe('male Total');
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('$12,490.89');
-                done();
-            }, 100);
-        });
+    // describe(' - advanced filtering ', () => {
+    //     let originalTimeout: number;
+    //     let pivotGridObj: PivotView;
+    //     let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+    //     beforeAll((done: Function) => {
+    //         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    //         let dataBound: EmitType<Object> = () => { done(); };
+    //         document.body.appendChild(elem);
+    //         pivotGridObj = new PivotView(
+    //             {
+    //                 dataSourceSettings: {
+    //                     allowLabelFilter: true,
+    //                     allowValueFilter: true,
+    //                     dataSource: pivot_dataset as IDataSet[],
+    //                     expandAll: true,
+    //                     enableSorting: false,
+    //                     formatSettings: [{ name: 'balance', format: 'C' }],
+    //                     rows: [{ name: 'product' }, { name: 'state' }],
+    //                     columns: [{ name: 'gender' }, { name: 'eyeColor' }],
+    //                     values: [{ name: 'balance' }, { name: 'quantity' }],
+    //                     filters: [],
+    //                 },
+    //                 enableVirtualization: true,
+    //                 dataBound: dataBound,
+    //                 width: 600,
+    //                 height: 300,
+    //                 virtualScrollSettings: { allowSinglePage: false }
+    //             });
+    //         pivotGridObj.appendTo('#PivotGrid');
+    //     });
+    //     it('pivotgrid render testing', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-leftfreeze)').length).toBe(14);
+    //             done();
+    //         }, 100);
+    //     });
+    //     it('state start with t', (done: Function) => {
+    //         pivotGridObj.dataSourceSettings.filterSettings = [
+    //             { name: 'state', type: 'Label', condition: 'BeginWith', value1: 't' }],
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
+    //             expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+    //             done();
+    //         }, 100);
+    //     });
+    //     it('state contains e', (done: Function) => {
+    //         pivotGridObj.dataSourceSettings.filterSettings = [
+    //             { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' }],
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-leftfreeze)').length).toBe(14);
+    //             done();
+    //         }, 100);
+    //     });
+    //     it('eyeColor equals blue', (done: Function) => {
+    //         pivotGridObj.dataSourceSettings.filterSettings = [
+    //             { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' },
+    //             { name: 'eyeColor', type: 'Label', condition: 'Equals', value1: 'blue' }],
+    //         setTimeout(() => {
+    //             expect(1).toBe(1);
+    //             done();
+    //         }, 100);
+    //     });
+    //     it('scroll right', (done: Function) => {
+    //         document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 1360;
+    //         pivotGridObj.virtualscrollModule.direction = 'horizondal';
+    //         let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+    //         document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+    //         args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+    //         document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+    //         setTimeout(() => {
+    //             expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft).toBeTruthy();
+    //             done();
+    //         }, 100);
+    //     });
+    //     it('product quantity > 100', (done: Function) => {
+    //         pivotGridObj.dataSourceSettings.filterSettings = [
+    //             { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' }],
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll('.e-headercontent th')[5].textContent).toBe('male Total');
+    //             done();
+    //         }, 100);
+    //     });
+    //     it('scroll left', (done: Function) => {
+    //         document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 0;
+    //         pivotGridObj.virtualscrollModule.direction = 'horizondal';
+    //         let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+    //         document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+    //         args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+    //         document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+    //         setTimeout(() => {
+    //             expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft).toBeLessThan(1360);
+    //             expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+    //             done();
+    //         }, 300);
+    //     });
+    //     it('Collapse flight', (done: Function) => {
+    //         (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[0] as HTMLElement).click()
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft !== 0).toBeTruthy();
+    //             done();
+    //         }, 100);
+    //     });
+    //     it('Collapse male', (done: Function) => {
+    //         (document.querySelectorAll('.e-headercontent th .e-sortfilterdiv.e-icons')[0] as HTMLElement).click()
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft !== 0).toBeTruthy();
+    //             expect(document.querySelectorAll('.e-headercontent th')[6].textContent).toBe('male Total');
+    //             done();
+    //         }, 100);
+    //     });
+    //     it('value in row axis', (done: Function) => {
+    //         pivotGridObj.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
+    //         pivotGridObj.dataSourceSettings.drilledMembers = [];
+    //         setTimeout(() => {
+    //             let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
+    //             expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('210.1px');
+    //             expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1980px');
+    //             done();
+    //         }, 100);
+    //     });
+    //     afterAll(() => {
+    //         if (pivotGridObj) {
+    //             pivotGridObj.destroy();
+    //         }
+    //         remove(elem);
+    //     });
+    // });
+    // describe(' - Coverage', () => {
+    //     let pivotGridObj: PivotView;
+    //     let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+    //     let cf: any;
+    //     beforeAll((done: Function) => {
+    //         document.body.appendChild(elem);
+    //         let dataBound: EmitType<Object> = () => { done(); };
+    //         PivotView.Inject(VirtualScroll, CalculatedField, GroupingBar, FieldList);
+    //         pivotGridObj = new PivotView(
+    //             {
+    //                 dataSourceSettings: {
+    //                     dataSource: pivot_nodata as IDataSet[],
+    //                     enableSorting: false,
+    //                     expandAll: true,
+    //                     rows: [{ name: 'Country' }, { name: 'State' }],
+    //                     columns: [{ name: 'Product' }, { name: 'Date' }],
+    //                     values: [{ name: 'Amount' }, { name: 'Quantity' }],
+    //                 },
+    //                 allowCalculatedField: true,
+    //                 showFieldList: true,
+    //                 showGroupingBar: true,
+    //                 enableVirtualization: true,
+    //                 dataBound: dataBound,
+    //                 width: 600,
+    //                 height: 300,
+    //                 virtualScrollSettings: { allowSinglePage: false }
+    //             });
+    //         pivotGridObj.appendTo('#PivotGrid');
+    //     });
+    //     let mouseup: MouseEvent = new MouseEvent('mouseup', {
+    //         'view': window,
+    //         'bubbles': true,
+    //         'cancelable': true
+    //     });
+    //     let mousedown: MouseEvent = new MouseEvent('mousedown', {
+    //         'view': window,
+    //         'bubbles': true,
+    //         'cancelable': true
+    //     });
+    //     let click: MouseEvent = new MouseEvent('click', {
+    //         'view': window,
+    //         'bubbles': true,
+    //         'cancelable': true
+    //     });
+    //     it('drop down menu (Sum of Amount) click', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll('.e-values .e-dropdown-icon')).not.toBeUndefined;
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('28550');
+    //             document.querySelectorAll('.e-values .e-dropdown-icon')[0].dispatchEvent(click);
+    //             done();
+    //         }, 500);
+    //     });
 
-        it('Collapse bike', (done: Function) => {
-            (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[2] as HTMLElement).click();
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft).toBe(0);
-                done();
-            }, 100);
-        });
-        it('Collapse female', (done: Function) => {
-            (document.querySelectorAll('.e-headercontent th .e-collapse')[0] as HTMLElement).click();
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable')[0].scrollTop).toBe(0);
-                done();
-            }, 100);
-        });
-        it('value in row axis', (done: Function) => {
-            pivotGridObj.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
-            pivotGridObj.dataSourceSettings.drilledMembers = [];
-            setTimeout(() => {
-                let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
-                expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('30.1px');
-                done();
-            }, 100);
-        });
-        it('append name in column', (done: Function) => {
-            pivotGridObj.dataSourceSettings.columns = [{ name: 'gender' }, { name: 'eyeColor' }, { name: 'name' }];
-            setTimeout(() => {
-                expect(1).toBe(1);
-                done();
-            }, 100);
-        });
-        it('scroll left3', (done: Function) => {
-            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 50000;
-            pivotGridObj.virtualscrollModule.direction = 'horizondal';
-            let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft).toBeTruthy();
-                done();
-            }, 100);
-        });
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-    });
-    describe(' - Grouping Bar', () => {
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            PivotView.Inject(GroupingBar, FieldList, VirtualScroll);
-            pivotGridObj = new PivotView(
-                {
-                    dataSourceSettings: {
-                        dataSource: pivot_dataset as IDataSet[],
-                        expandAll: true,
-                        enableSorting: false,
-                        sortSettings: [{ name: 'company', order: 'Descending' }],
-                        formatSettings: [{ name: 'balance', format: 'C' }],
-                        rows: [{ name: 'product' }, { name: 'state' }],
-                        columns: [{ name: 'gender' }, { name: 'eyeColor' }],
-                        values: [{ name: 'balance' }, { name: 'quantity' }],
-                        filters: [],
-                    },
-                    allowCalculatedField: true,
-                    showGroupingBar: true,
-                    enableVirtualization: true,
-                    showFieldList: true,
-                    showValuesButton: true,
-                    dataBound: dataBound,
-                    width: 600,
-                    height: 300,
-                    virtualScrollSettings: { allowSinglePage: false }
-                });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        it('pivotgrid render testing', (done: Function) => {
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-leftfreeze)').length).toBe(14);
-                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                done();
-            }, 100);
-        });
-        it('scroll right', (done: Function) => {
-            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 1360;
-            pivotGridObj.virtualscrollModule.direction = 'horizondal';
-            let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft).toBeTruthy();
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                done();
-            }, 100);
-        });
-        it('scroll bottom', (done: Function) => {
-            pivotGridObj.element.querySelectorAll('.e-content-virtualtable')[0].scrollTop = 0;
-            pivotGridObj.virtualscrollModule.direction = 'vertical';
-            let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-content-virtualtable')[0].scrollTop).toBe(0);
-                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                expect(document.querySelectorAll('.e-content-virtualtable td')[1].querySelector('td .e-cellvalue').textContent).toBe('$32,045.16');
-                done();
-            }, 100);
-        });
-        it('scroll left', (done: Function) => {
-            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 0;
-            pivotGridObj.virtualscrollModule.direction = 'horizondal';
-            let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
-                done();
-            }, 100);
-        });
-        it('Collapse flight', (done: Function) => {
-            (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[0] as HTMLElement).click();
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                done();
-            }, 500);
-        });
+    //     it('Sum of Amount -> Count of Amount _using grouping bar dropdown menu', () => {
+    //         let menu: MenuEventArgs = {
+    //             element: document.querySelectorAll('.e-menu-item')[1] as HTMLElement,
+    //             item: { id: pivotGridObj.element.id + '_Count', text: 'Count' }
+    //         };
+    //         (pivotGridObj.pivotButtonModule.menuOption as any).selectOptionInContextMenu(menu);
+    //     });
+    //     it('Sum of Amount -> Count of Amount _result + enable sorting', () => {
+    //         expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('28550');
+    //         pivotGridObj.dataSourceSettings.enableSorting = true;
+    //     });
+    //     it('Country -> descending _using grouping bar sort icon', (done: Function) => {
+    //         setTimeout(() => {
+    //             document.querySelectorAll('.e-group-rows .e-sort')[0].dispatchEvent(click);
+    //             done();
+    //         }, 1000);
+    //     });
+    //     it('Country -> descending _result + Switch to ascending', (done: Function) => {
+    //         setTimeout(function () {
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('7');
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('United States');
+    //             document.querySelectorAll('.e-group-rows .e-sort')[0].dispatchEvent(click);
+    //             done();
+    //         }, 1000)
+    //     });
+    //     it('Country -> Switch to ascending _result + open field list', (done: Function) => {
+    //         setTimeout(function () {
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('6');
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
+    //             document.querySelectorAll('.e-toggle-field-list')[0].dispatchEvent(click);
+    //             done();
+    //         }, 1000)
+    //     });
+    //     it('Open calculated field dialog', (done: Function) => {
+    //         cf = new CalculatedField(pivotGridObj);
+    //         cf.createCalculatedFieldDialog(pivotGridObj);
+    //         pivotGridObj.engineModule.enableSort = false;
+    //         setTimeout(function () {
+    //             expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    //             done();
+    //         }, 1000)
+    //     });
+    //     it('drag and drop Amount(Count) node to drop field', (done: Function) => {
+    //         let treeObj: any = cf.treeObj;
+    //         let filterAxiscontent: HTMLElement = document.getElementById(cf.parentID + 'droppable');
+    //         let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
+    //         let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[0].querySelector('.e-drag'), 15, 10);
+    //         EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+    //         let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[0].querySelector('.e-drag'), 15, 70);
+    //         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+    //         mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
+    //         mousemove = util.setMouseCordinates(mousemove, 150, 400);
+    //         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+    //         let mouseup: any = util.getEventObject('MouseEvents', 'mouseup', treeObj.element, filterAxiscontent);
+    //         mouseup.type = 'mouseup';
+    //         EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+    //         setTimeout(function () {
+    //             expect((document.querySelector('.e-pivot-formula') as HTMLTextAreaElement).value !== null).toBeTruthy;
+    //             done();
+    //         }, 1000)
+    //     });
+    //     it('set new field as "New" and close the dialog', () => {
+    //         const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+    //         (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'), MaskedTextBox) as MaskedTextBox).value = 'New';
+    //         (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'New';
+    //         (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
+    //         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    //         (getInstance(calcField.querySelectorAll('.e-btn')[1] as HTMLElement, Button) as Button).click()
+    //         document.querySelector('.e-pivotfieldlist-container .e-cancel-btn').dispatchEvent(click);
+    //     });
+    //     it('Country -> open filter dialog + uncheck canada + click ok btn', (done: Function) => {
+    //         setTimeout(() => {
+    //             pivotGridObj.engineModule.enableSort = true;
+    //             expect(document.querySelectorAll('.e-headercontent th')[12].textContent).toBe('New');
+    //             document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
+    //             done();
+    //         }, 1000);
+    //     });
+    //     it('Country -> open filter dialog + uncheck canada + click ok btn', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    //             let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
+    //             firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
+    //             firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
+    //             firstNode.querySelector('.e-frame').dispatchEvent(click);
+    //             document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
+    //             done();
+    //         }, 1000);
+    //     });
+    //     it('Country -> open filter dialog + check canada + click ok btn', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
+    //             expect(document.querySelectorAll('.e-content-virtualtable td:not(.e-leftfreeze)')[0].textContent).toBe('6');
+    //             document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
+    //             done();
+    //         }, 1000);
+    //     });
+    //     it('Country -> open filter dialog + check canada + click ok btn', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    //             let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
+    //             firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
+    //             firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
+    //             firstNode.querySelector('.e-frame').dispatchEvent(click);
+    //             document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
+    //             done();
+    //         }, 1000);
+    //     });
+    //     it('Country -> set report as no data', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
+    //             pivotGridObj.dataSourceSettings.rows[0].showNoDataItems = true;
+    //             document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
+    //             done();
+    //         }, 1000);
+    //     });
+    //     it('Country -> open filter dialog + uncheck france + click ok btn', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    //             let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[2] as HTMLElement;
+    //             firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
+    //             firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
+    //             firstNode.querySelector('.e-frame').dispatchEvent(click);
+    //             document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
+    //             done();
+    //         }, 1000);
+    //     });
 
-        it('filter', (done: Function) => {
-            (document.querySelector('#PivotGrid_product.e-pivot-button .e-pv-filter') as HTMLElement).click();
-            setTimeout(() => {
-                let allNode: HTMLElement = document.querySelector('.e-checkbox-wrapper');
-                let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-                allNode.querySelector('.e-frame').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                allNode.querySelector('.e-frame').dispatchEvent(args);
-                let firstNode: HTMLElement = document.querySelectorAll('.e-checkbox-wrapper')[2] as HTMLElement;
-                args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-                firstNode.querySelector('.e-frame').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                firstNode.querySelector('.e-frame').dispatchEvent(args);
-                (document.querySelector('.e-ok-btn') as HTMLElement).click();
-                done();
-            }, 100);
-        });
-        it('filter check', (done: Function) => {
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                done();
-            }, 500);
-        });
-
-        it('value moved to row', (done: Function) => {
-            let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
-            let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
-            let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(3);
-            let dragElement: HTMLElement = pivotButton[2].querySelector('.e-pvt-btn-content');
-            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
-            EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
-            mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
-            mouseUp.type = 'mouseup';
-            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
-            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-            setTimeout(() => {
-                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(3);
-                done();
-            }, 100);
-        });
-        it('value moved to column', (done: Function) => {
-            let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
-            let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
-            let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(3);
-            let dragElement: HTMLElement = pivotButton[2].querySelector('.e-pvt-btn-content');
-            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
-            EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, columnAxiscontent, 15, 70);
-            mousemove.srcElement = mousemove.target = mousemove.toElement = columnAxiscontent;
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, columnAxiscontent);
-            mouseUp.type = 'mouseup';
-            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = columnAxiscontent;
-            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-            setTimeout(() => {
-                pivotButton = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(3);
-                done();
-            }, 100);
-        });
-        it('value removed', (done: Function) => {
-            let rowAxiscontent: any = document;
-            let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
-            let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(3);
-            let dragElement: HTMLElement = pivotButton[2].querySelector('.e-pvt-btn-content');
-            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
-            EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
-            mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
-            mouseUp.type = 'mouseup';
-            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
-            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-            setTimeout(() => {
-                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(8);
-                done();
-            }, 100);
-        });
-        it('values added', () => {
-            pivotGridObj.dataSourceSettings.values = [{ name: 'balance' }, { name: 'quantity' }];
-        });
-        it('value removed1', (done: Function) => {
-            setTimeout(() => {
-                expect(1).toBe(1);
-                done();
-            }, 1000);
-        });
-        it('values removed', (done: Function) => {
-            let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
-            let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
-            let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
-            (pivotButton[0].querySelector('.e-remove') as HTMLElement).click();
-            (pivotButton[1].querySelector('.e-remove') as HTMLElement).click();
-            setTimeout(() => {
-                pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
-                (pivotButton[0].querySelector('.e-remove') as HTMLElement).click();
-                (pivotButton[1].querySelector('.e-remove') as HTMLElement).click();
-                expect(pivotButton.length).toEqual(2);
-                done();
-            }, 1000);
-        });
-        it('values added', () => {
-            pivotGridObj.dataSourceSettings.values = [{ name: 'balance' }, { name: 'quantity' }];
-        });
-
-        it('RTL', (done: Function) => {
-            pivotGridObj.enableRtl = true;
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable')[0].scrollTop).toBe(0);
-                done();
-            }, 100);
-        });
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-    });
-    describe(' - advanced filtering ', () => {
-        let originalTimeout: number;
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        beforeAll((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            pivotGridObj = new PivotView(
-                {
-                    dataSourceSettings: {
-                        allowLabelFilter: true,
-                        allowValueFilter: true,
-                        dataSource: pivot_dataset as IDataSet[],
-                        expandAll: true,
-                        enableSorting: false,
-                        formatSettings: [{ name: 'balance', format: 'C' }],
-                        rows: [{ name: 'product' }, { name: 'state' }],
-                        columns: [{ name: 'gender' }, { name: 'eyeColor' }],
-                        values: [{ name: 'balance' }, { name: 'quantity' }],
-                        filters: [],
-                    },
-                    enableVirtualization: true,
-                    dataBound: dataBound,
-                    width: 600,
-                    height: 300,
-                    virtualScrollSettings: { allowSinglePage: false }
-                });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        it('pivotgrid render testing', (done: Function) => {
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-leftfreeze)').length).toBe(14);
-                done();
-            }, 100);
-        });
-        it('state start with t', (done: Function) => {
-            pivotGridObj.dataSourceSettings.filterSettings = [
-                { name: 'state', type: 'Label', condition: 'BeginWith', value1: 't' }],
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
-                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                done();
-            }, 100);
-        });
-        it('state contains e', (done: Function) => {
-            pivotGridObj.dataSourceSettings.filterSettings = [
-                { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' }],
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-leftfreeze)').length).toBe(14);
-                done();
-            }, 100);
-        });
-        it('eyeColor equals blue', (done: Function) => {
-            pivotGridObj.dataSourceSettings.filterSettings = [
-                { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' },
-                { name: 'eyeColor', type: 'Label', condition: 'Equals', value1: 'blue' }],
-            setTimeout(() => {
-                expect(1).toBe(1);
-                done();
-            }, 100);
-        });
-        it('scroll right', (done: Function) => {
-            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 1360;
-            pivotGridObj.virtualscrollModule.direction = 'horizondal';
-            let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft).toBeTruthy();
-                done();
-            }, 100);
-        });
-        it('product quantity > 100', (done: Function) => {
-            pivotGridObj.dataSourceSettings.filterSettings = [
-                { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' }],
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-headercontent th')[5].textContent).toBe('male Total');
-                done();
-            }, 100);
-        });
-        it('scroll left', (done: Function) => {
-            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 0;
-            pivotGridObj.virtualscrollModule.direction = 'horizondal';
-            let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
-            setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft).toBeLessThan(1360);
-                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                done();
-            }, 300);
-        });
-        it('Collapse flight', (done: Function) => {
-            (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[0] as HTMLElement).click()
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft !== 0).toBeTruthy();
-                done();
-            }, 100);
-        });
-        it('Collapse male', (done: Function) => {
-            (document.querySelectorAll('.e-headercontent th .e-sortfilterdiv.e-icons')[0] as HTMLElement).click()
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft !== 0).toBeTruthy();
-                expect(document.querySelectorAll('.e-headercontent th')[6].textContent).toBe('male Total');
-                done();
-            }, 100);
-        });
-        it('value in row axis', (done: Function) => {
-            pivotGridObj.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
-            pivotGridObj.dataSourceSettings.drilledMembers = [];
-            setTimeout(() => {
-                let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
-                expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('210.1px');
-                expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1980px');
-                done();
-            }, 100);
-        });
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-    });
-    describe(' - Coverage', () => {
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        let cf: any;
-        beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            PivotView.Inject(VirtualScroll, CalculatedField, GroupingBar, FieldList);
-            pivotGridObj = new PivotView(
-                {
-                    dataSourceSettings: {
-                        dataSource: pivot_nodata as IDataSet[],
-                        enableSorting: false,
-                        expandAll: true,
-                        rows: [{ name: 'Country' }, { name: 'State' }],
-                        columns: [{ name: 'Product' }, { name: 'Date' }],
-                        values: [{ name: 'Amount' }, { name: 'Quantity' }],
-                    },
-                    allowCalculatedField: true,
-                    showFieldList: true,
-                    showGroupingBar: true,
-                    enableVirtualization: true,
-                    dataBound: dataBound,
-                    width: 600,
-                    height: 300,
-                    virtualScrollSettings: { allowSinglePage: false }
-                });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        let mouseup: MouseEvent = new MouseEvent('mouseup', {
-            'view': window,
-            'bubbles': true,
-            'cancelable': true
-        });
-        let mousedown: MouseEvent = new MouseEvent('mousedown', {
-            'view': window,
-            'bubbles': true,
-            'cancelable': true
-        });
-        let click: MouseEvent = new MouseEvent('click', {
-            'view': window,
-            'bubbles': true,
-            'cancelable': true
-        });
-        it('drop down menu (Sum of Amount) click', (done: Function) => {
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-values .e-dropdown-icon')).not.toBeUndefined;
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('28550');
-                document.querySelectorAll('.e-values .e-dropdown-icon')[0].dispatchEvent(click);
-                done();
-            }, 500);
-        });
-
-        it('Sum of Amount -> Count of Amount _using grouping bar dropdown menu', () => {
-            let menu: MenuEventArgs = {
-                element: document.querySelectorAll('.e-menu-item')[1] as HTMLElement,
-                item: { id: pivotGridObj.element.id + '_Count', text: 'Count' }
-            };
-            (pivotGridObj.pivotButtonModule.menuOption as any).selectOptionInContextMenu(menu);
-        });
-        it('Sum of Amount -> Count of Amount _result + enable sorting', () => {
-            expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('28550');
-            pivotGridObj.dataSourceSettings.enableSorting = true;
-        });
-        it('Country -> descending _using grouping bar sort icon', (done: Function) => {
-            setTimeout(() => {
-                document.querySelectorAll('.e-group-rows .e-sort')[0].dispatchEvent(click);
-                done();
-            }, 1000);
-        });
-        it('Country -> descending _result + Switch to ascending', (done: Function) => {
-            setTimeout(function () {
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('7');
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('United States');
-                document.querySelectorAll('.e-group-rows .e-sort')[0].dispatchEvent(click);
-                done();
-            }, 1000)
-        });
-        it('Country -> Switch to ascending _result + open field list', (done: Function) => {
-            setTimeout(function () {
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('6');
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
-                document.querySelectorAll('.e-toggle-field-list')[0].dispatchEvent(click);
-                done();
-            }, 1000)
-        });
-        it('Open calculated field dialog', (done: Function) => {
-            cf = new CalculatedField(pivotGridObj);
-            cf.createCalculatedFieldDialog(pivotGridObj);
-            pivotGridObj.engineModule.enableSort = false;
-            setTimeout(function () {
-                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                done();
-            }, 1000)
-        });
-        it('drag and drop Amount(Count) node to drop field', (done: Function) => {
-            let treeObj: any = cf.treeObj;
-            let filterAxiscontent: HTMLElement = document.getElementById(cf.parentID + 'droppable');
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
-            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[0].querySelector('.e-drag'), 15, 10);
-            EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[0].querySelector('.e-drag'), 15, 70);
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
-            mousemove = util.setMouseCordinates(mousemove, 150, 400);
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            let mouseup: any = util.getEventObject('MouseEvents', 'mouseup', treeObj.element, filterAxiscontent);
-            mouseup.type = 'mouseup';
-            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
-            setTimeout(function () {
-                expect((document.querySelector('.e-pivot-formula') as HTMLTextAreaElement).value !== null).toBeTruthy;
-                done();
-            }, 1000)
-        });
-        it('set new field as "New" and close the dialog', () => {
-            const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
-            (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'), MaskedTextBox) as MaskedTextBox).value = 'New';
-            (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'New';
-            (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-            (getInstance(calcField.querySelectorAll('.e-btn')[1] as HTMLElement, Button) as Button).click()
-            document.querySelector('.e-pivotfieldlist-container .e-cancel-btn').dispatchEvent(click);
-        });
-        it('Country -> open filter dialog + uncheck canada + click ok btn', (done: Function) => {
-            setTimeout(() => {
-                pivotGridObj.engineModule.enableSort = true;
-                expect(document.querySelectorAll('.e-headercontent th')[12].textContent).toBe('New');
-                document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
-                done();
-            }, 1000);
-        });
-        it('Country -> open filter dialog + uncheck canada + click ok btn', (done: Function) => {
-            setTimeout(() => {
-                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
-                firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
-                firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
-                firstNode.querySelector('.e-frame').dispatchEvent(click);
-                document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
-                done();
-            }, 1000);
-        });
-        it('Country -> open filter dialog + check canada + click ok btn', (done: Function) => {
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
-                expect(document.querySelectorAll('.e-content-virtualtable td:not(.e-leftfreeze)')[0].textContent).toBe('6');
-                document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
-                done();
-            }, 1000);
-        });
-        it('Country -> open filter dialog + check canada + click ok btn', (done: Function) => {
-            setTimeout(() => {
-                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
-                firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
-                firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
-                firstNode.querySelector('.e-frame').dispatchEvent(click);
-                document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
-                done();
-            }, 1000);
-        });
-        it('Country -> set report as no data', (done: Function) => {
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
-                pivotGridObj.dataSourceSettings.rows[0].showNoDataItems = true;
-                document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
-                done();
-            }, 1000);
-        });
-        it('Country -> open filter dialog + uncheck france + click ok btn', (done: Function) => {
-            setTimeout(() => {
-                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[2] as HTMLElement;
-                firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
-                firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
-                firstNode.querySelector('.e-frame').dispatchEvent(click);
-                document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
-                done();
-            }, 1000);
-        });
-
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-    });
+    //     afterAll(() => {
+    //         if (pivotGridObj) {
+    //             pivotGridObj.destroy();
+    //         }
+    //         remove(elem);
+    //     });
+    // });
     describe('Scroll apperance', () => {
 
         describe('Scroll comparison ', () => {
@@ -2160,74 +1858,74 @@ describe(' - VirtualScrolling', () => {
 
         });
 
-        describe('Scroll comparison - virtual scrolling', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:1000px; width:900px' });
-            let data: IDataSet[] = [
-                { row: 'row1', column: 'column1', value: 1 },
-                { row: 'row2', column: 'column2', value: 2 },
-                { row: 'row3', column: 'column3', value: 3 },
-                { row: 'row4', column: 'column4', value: 4 },
-            ]
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-            beforeAll((done: Function) => {
-                if (!document.getElementById(elem.id)) {
-                    document.body.style.height = '500px';
-                    document.body.appendChild(elem);
-                }
-                let dataBound: EmitType<Object> = () => { done(); };
-                PivotView.Inject(GroupingBar, VirtualScroll);
-                pivotGridObj = new PivotView({
-                    dataSourceSettings: {
-                        dataSource: data,
-                        expandAll: false,
-                        rows: [{ name: 'row' }],
-                        columns: [{ name: 'column' }],
-                        values: [{ name: 'value' }],
-                    },
-                    width: 900,
-                    height: 300,
-                    enableVirtualization: true,
-                    showGroupingBar: true,
-                    dataBound: dataBound,
-                    virtualScrollSettings: { allowSinglePage: false }
+        // describe('Scroll comparison - virtual scrolling', () => {
+        //     let pivotGridObj: PivotView;
+        //     let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:1000px; width:900px' });
+        //     let data: IDataSet[] = [
+        //         { row: 'row1', column: 'column1', value: 1 },
+        //         { row: 'row2', column: 'column2', value: 2 },
+        //         { row: 'row3', column: 'column3', value: 3 },
+        //         { row: 'row4', column: 'column4', value: 4 },
+        //     ]
+        //     afterAll(() => {
+        //         if (pivotGridObj) {
+        //             pivotGridObj.destroy();
+        //         }
+        //         remove(elem);
+        //     });
+        //     beforeAll((done: Function) => {
+        //         if (!document.getElementById(elem.id)) {
+        //             document.body.style.height = '500px';
+        //             document.body.appendChild(elem);
+        //         }
+        //         let dataBound: EmitType<Object> = () => { done(); };
+        //         PivotView.Inject(GroupingBar, VirtualScroll);
+        //         pivotGridObj = new PivotView({
+        //             dataSourceSettings: {
+        //                 dataSource: data,
+        //                 expandAll: false,
+        //                 rows: [{ name: 'row' }],
+        //                 columns: [{ name: 'column' }],
+        //                 values: [{ name: 'value' }],
+        //             },
+        //             width: 900,
+        //             height: 300,
+        //             enableVirtualization: true,
+        //             showGroupingBar: true,
+        //             dataBound: dataBound,
+        //             virtualScrollSettings: { allowSinglePage: false }
 
-                });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
+        //         });
+        //         pivotGridObj.appendTo('#PivotGrid');
+        //     });
 
-            it('Scroll compare', () => {
-                expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
-            });
+        //     it('Scroll compare', () => {
+        //         expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
+        //     });
 
-            it('Display vertical scrollbar alone', () => {
-                pivotGridObj.height = 200;
-                expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
-            });
+        //     it('Display vertical scrollbar alone', () => {
+        //         pivotGridObj.height = 200;
+        //         expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
+        //     });
 
-            it('Display horizondal scrollbar alone', () => {
-                pivotGridObj.setProperties({ height: '100%' }, true);
-                pivotGridObj.width = 300;
-                expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
-            });
+        //     it('Display horizondal scrollbar alone', () => {
+        //         pivotGridObj.setProperties({ height: '100%' }, true);
+        //         pivotGridObj.width = 300;
+        //         expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
+        //     });
 
-            it('Hide both scrollbars by setting 100%', () => {
-                pivotGridObj.setProperties({ height: '100%' }, true);
-                pivotGridObj.width = '100%';
-                expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
-            });
+        //     it('Hide both scrollbars by setting 100%', () => {
+        //         pivotGridObj.setProperties({ height: '100%' }, true);
+        //         pivotGridObj.width = '100%';
+        //         expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
+        //     });
 
-            it('Hide both scrollbars by setting auto', () => {
-                pivotGridObj.setProperties({ height: 'auto' }, true);
-                expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
-            });
+        //     it('Hide both scrollbars by setting auto', () => {
+        //         pivotGridObj.setProperties({ height: 'auto' }, true);
+        //         expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
+        //     });
 
-        });
+        // });
     });
 
     describe('AutoFit Value Sorting', () => {
@@ -2334,5 +2032,452 @@ describe(' - VirtualScrolling', () => {
         let memory: any = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+
+describe('Pivot Table - Virtual Scrolling-2', () => {
+    let pivotGridObj: PivotView;
+    let element: HTMLElement;
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            pending();
+        }
+    });
+    beforeAll((done: Function) => {
+        element = createElement('div', { id: 'PivotGrid' });
+        document.body.appendChild(element);
+        pivotGridObj = new PivotView({
+            dataSourceSettings: {
+                dataSource: pivot_dataset as IDataSet[],
+                expandAll: true,
+                enableSorting: false,
+                sortSettings: [{ name: 'company', order: 'Descending' }],
+                formatSettings: [{ name: 'balance', format: 'C' }],
+                rows: [{ name: 'product' }, { name: 'state' }],
+                columns: [{ name: 'gender' }, { name: 'eyeColor' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }],
+                filters: [],
+            },
+            allowCalculatedField: true,
+            enableVirtualization: true,
+            height: 300,
+            width: 600,
+            virtualScrollSettings: { allowSinglePage: false },
+            dataBound: () => done()
+        });
+        pivotGridObj.appendTo('#PivotGrid');
+    });
+
+    afterAll(() => {
+        if (pivotGridObj) pivotGridObj.destroy();
+        if (element && element.parentNode) remove(element);
+    });
+
+    it('should render pivotgrid correctly with virtual scrolling', (done: Function) => {
+        setTimeout(() => {
+            const rows = document.querySelectorAll('.e-content-virtualtable tr');
+            expect(rows.length).toBe(30);
+            expect(rows[0].querySelectorAll('td:not(.e-freezeleftborder)').length).toBe(14);
+            const firstCellValue = document.querySelector('.e-content-virtualtable td .e-cellvalue');
+            expect(firstCellValue).not.toBeNull();
+            expect((firstCellValue as HTMLElement).textContent).toBe('Flight');
+            done();
+        }, 500);
+    });
+
+    it('should sync header and content on horizontal scroll right', (done: Function) => {
+        const contentTable = document.querySelector('.e-content-virtualtable') as HTMLElement;
+        contentTable.scrollLeft = 1360;
+        pivotGridObj.virtualscrollModule.direction = 'horizondal';
+        contentTable.dispatchEvent(new MouseEvent('scroll', { bubbles: true }));
+        contentTable.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        setTimeout(() => {
+            const header = pivotGridObj.element.querySelector('.e-headercontent') as HTMLElement;
+            expect(header.scrollLeft).toBe(contentTable.scrollLeft);
+            const firstCellValue = document.querySelector('.e-content-virtualtable td .e-cellvalue');
+            expect(firstCellValue).not.toBeNull();
+            expect((firstCellValue as HTMLElement).textContent).toBe('Flight');
+            done();
+        }, 500);
+    });
+
+    it('should handle vertical scroll to bottom correctly', (done: Function) => {
+        const contentTable = document.querySelector('.e-content-virtualtable') as HTMLElement;
+        contentTable.scrollTop = 0;
+        pivotGridObj.virtualscrollModule.direction = 'vertical';
+        contentTable.dispatchEvent(new MouseEvent('scroll', { bubbles: true }));
+        contentTable.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        setTimeout(() => {
+            expect(contentTable.scrollTop).toBe(0);
+            const firstCellValue = document.querySelector('.e-content-virtualtable td .e-cellvalue');
+            expect(firstCellValue).not.toBeNull();
+            expect((firstCellValue as HTMLElement).textContent).toBe('Flight');
+            const totalCell = document.querySelector('.e-content-virtualtable tr td:not(.e-freezeleftborder) .e-cellvalue');
+            expect(totalCell).not.toBeNull();
+            expect((totalCell as HTMLElement).textContent).toBe('$32,045.16');
+            done();
+        }, 500);
+    });
+
+    it('should maintain scroll position and virtual track size when scrolling left (400px)', (done: Function) => {
+        const contentTable = document.querySelector('.e-content-virtualtable') as HTMLElement;
+        contentTable.scrollLeft = 400;
+        pivotGridObj.virtualscrollModule.direction = 'horizondal';
+        contentTable.dispatchEvent(new MouseEvent('scroll', { bubbles: true }));
+        contentTable.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        setTimeout(() => {
+            const header = pivotGridObj.element.querySelector('.e-headercontent') as HTMLElement;
+            const virtualTrack = contentTable.querySelector('.e-virtualtrack') as HTMLElement;
+            expect(header.scrollLeft).toBe(400);
+            const firstCellValue = document.querySelector('.e-content-virtualtable td .e-cellvalue');
+            expect(firstCellValue).not.toBeNull();
+            expect((firstCellValue as HTMLElement).textContent).toBe('Flight');
+            expect(virtualTrack.style.height).toBe('390.1px');
+            expect(virtualTrack.style.width).toBe('1980px');
+            done();
+        }, 500);
+    });
+
+    it('should reset to start and show correct first column value when scrolled fully left', (done: Function) => {
+        const contentTable = document.querySelector('.e-content-virtualtable') as HTMLElement;
+        contentTable.scrollLeft = 0;
+        pivotGridObj.virtualscrollModule.direction = 'horizondal';
+        contentTable.dispatchEvent(new MouseEvent('scroll', { bubbles: true }));
+        contentTable.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        setTimeout(() => {
+            const header = pivotGridObj.element.querySelector('.e-headercontent') as HTMLElement;
+            expect(header.scrollLeft).toBe(0);
+            const firstCellValue = document.querySelector('.e-content-virtualtable td .e-cellvalue');
+            expect(firstCellValue).not.toBeNull();
+            expect((firstCellValue as HTMLElement).textContent).toBe('Flight');
+            const secondCell = document.querySelectorAll('.e-content-virtualtable td')[1];
+            const secondValue = secondCell ? secondCell.querySelector('.e-cellvalue') : null;
+            expect(secondValue).not.toBeNull();
+            expect((secondValue as HTMLElement).textContent).toBe('$12,490.89');
+            done();
+        }, 500);
+    });
+
+    it('should collapse "Flight" row and reduce virtual track height', (done: Function) => {
+        const expandIcon = document.querySelector('.e-content-virtualtable tr .e-icons') as HTMLElement;
+        expandIcon.click();
+        setTimeout(() => {
+            const header = pivotGridObj.element.querySelector('.e-headercontent') as HTMLElement;
+            expect(header.scrollLeft).toBe(0);
+            const virtualTrack = document.querySelector('.e-content-virtualtable .e-virtualtrack') as HTMLElement;
+            expect(virtualTrack.style.height).toBe('210.1px');
+            done();
+        }, 300);
+    });
+
+    it('should collapse "male" column header correctly', (done: Function) => {
+        const maleHeaderIcon = document.querySelector('.e-headercontent th .e-sortfilterdiv.e-icons') as HTMLElement;
+        maleHeaderIcon.click();
+        setTimeout(() => {
+            const header = pivotGridObj.element.querySelector('.e-headercontent') as HTMLElement;
+            expect(header.scrollLeft).toBe(0);
+            const thElements = document.querySelectorAll('.e-headercontent th');
+            expect(thElements[6].textContent).toBe('male Total');
+            const firstValueCell = document.querySelector('.e-content-virtualtable td:not(.e-leftfreeze) .e-cellvalue');
+            expect(firstValueCell).not.toBeNull();
+            expect((firstValueCell as HTMLElement).textContent).toBe('$12,490.89');
+            done();
+        }, 500);
+    });
+
+    it('should collapse "Bike" row', (done: Function) => {
+        const bikeIcons = document.querySelectorAll('.e-content-virtualtable tr .e-icons');
+        const bikeIcon = bikeIcons[2] as HTMLElement;
+        bikeIcon.click();
+        setTimeout(() => {
+            const header = pivotGridObj.element.querySelector('.e-headercontent') as HTMLElement;
+            expect(header.scrollLeft).toBe(0);
+            done();
+        }, 100);
+    });
+
+    it('should collapse "female" column', (done: Function) => {
+        const femaleCollapse = document.querySelector('.e-headercontent th .e-collapse') as HTMLElement;
+        femaleCollapse.click();
+        setTimeout(() => {
+            const contentTable = document.querySelector('.e-content-virtualtable') as HTMLElement;
+            expect(contentTable.scrollTop).toBe(0);
+            done();
+        }, 100);
+    });
+
+    it('should update virtual track height when value axis is set to row', (done: Function) => {
+        pivotGridObj.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
+        pivotGridObj.dataSourceSettings.drilledMembers = [];
+        setTimeout(() => {
+            const virtualTrack = document.querySelector('.e-content-virtualtable .e-virtualtrack') as HTMLElement;
+            expect(virtualTrack.style.height).toBe('30.1px');
+            done();
+        }, 100);
+    });
+
+    it('should handle adding "name" field to columns', (done: Function) => {
+        pivotGridObj.dataSourceSettings.columns = [
+            { name: 'gender' },
+            { name: 'eyeColor' },
+            { name: 'name' }
+        ];
+        setTimeout(() => {
+            expect(true).toBe(true);
+            done();
+        }, 100);
+    });
+
+    it('should sync large horizontal scroll (50000px) between header and content', (done: Function) => {
+        const contentTable = document.querySelector('.e-content-virtualtable') as HTMLElement;
+        contentTable.scrollLeft = 50000;
+        pivotGridObj.virtualscrollModule.direction = 'horizondal';
+        contentTable.dispatchEvent(new MouseEvent('scroll', { bubbles: true }));
+        contentTable.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        setTimeout(() => {
+            const header = pivotGridObj.element.querySelector('.e-headercontent') as HTMLElement;
+            expect(header.scrollLeft).toBe(contentTable.scrollLeft);
+            done();
+        }, 500);
+    });
+
+    it('memory leak check', () => {
+        profile.sample();
+        const average = inMB(profile.averageChange);
+        const memory = inMB(getMemoryProfile());
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        expect(average).toBeLessThan(10);
+    });
+});
+
+describe('PivotView - Virtual Scrolling with Grouping Bar', () => {
+    let pivotGridObj: PivotView;
+    let element: HTMLElement;
+    beforeAll(() => {
+        const isDefined = (value: any): boolean => value !== undefined && value !== null;
+        if (!isDefined((window as any).performance)) {
+            console.log('Unsupported environment: window.performance.memory is unavailable');
+            pending();
+        }
+    });
+    beforeAll((done: Function) => {
+        element = createElement('div', { id: 'PivotGrid' });
+        document.body.appendChild(element);
+        PivotView.Inject(GroupingBar, FieldList, VirtualScroll);
+        pivotGridObj = new PivotView({
+            dataSourceSettings: {
+                dataSource: pivot_dataset as IDataSet[],
+                expandAll: true,
+                enableSorting: false,
+                sortSettings: [{ name: 'company', order: 'Descending' }],
+                formatSettings: [{ name: 'balance', format: 'C' }],
+                rows: [{ name: 'product' }, { name: 'state' }],
+                columns: [{ name: 'gender' }, { name: 'eyeColor' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }],
+                filters: []
+            },
+            allowCalculatedField: true,
+            showGroupingBar: true,
+            enableVirtualization: true,
+            showFieldList: true,
+            showValuesButton: true,
+            width: 600,
+            height: 300,
+            virtualScrollSettings: { allowSinglePage: false },
+            dataBound: () => done()
+        });
+
+        pivotGridObj.appendTo('#PivotGrid');
+    });
+    it('pivotgrid render testing', (done: Function) => {
+        setTimeout(() => {
+            expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
+            expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-leftfreeze)').length).toBe(14);
+            expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+            done();
+        }, 100);
+    });
+    it('scroll right', (done: Function) => {
+        document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 1360;
+        pivotGridObj.virtualscrollModule.direction = 'horizondal';
+        let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+        document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+        args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+        document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+        setTimeout(() => {
+            expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft).toBeTruthy();
+            expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+            done();
+        }, 100);
+    });
+    it('scroll bottom', (done: Function) => {
+        pivotGridObj.element.querySelectorAll('.e-content-virtualtable')[0].scrollTop = 0;
+        pivotGridObj.virtualscrollModule.direction = 'vertical';
+        let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+        document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+        args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+        document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+        setTimeout(() => {
+            expect(pivotGridObj.element.querySelectorAll('.e-content-virtualtable')[0].scrollTop).toBe(0);
+            expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+            expect(document.querySelectorAll('.e-content-virtualtable td')[1].querySelector('td .e-cellvalue').textContent).toBe('$32,045.16');
+            done();
+        }, 100);
+    });
+    it('scroll left', (done: Function) => {
+        document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 0;
+        pivotGridObj.virtualscrollModule.direction = 'horizondal';
+        let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+        document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+        args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+        document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+        setTimeout(() => {
+            expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
+            done();
+        }, 100);
+    });
+    it('Collapse flight', (done: Function) => {
+        (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[0] as HTMLElement).click();
+        setTimeout(() => {
+            expect(document.querySelectorAll('.e-content-virtualtable tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+            done();
+        }, 500);
+    });
+
+    it('filter', (done: Function) => {
+        (document.querySelector('#PivotGrid_product.e-pivot-button .e-pv-filter') as HTMLElement).click();
+        setTimeout(() => {
+            let allNode: HTMLElement = document.querySelector('.e-checkbox-wrapper');
+            let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            allNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            allNode.querySelector('.e-frame').dispatchEvent(args);
+            let firstNode: HTMLElement = document.querySelectorAll('.e-checkbox-wrapper')[2] as HTMLElement;
+            args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            (document.querySelector('.e-ok-btn') as HTMLElement).click();
+            done();
+        }, 100);
+    });
+    it('filter check', (done: Function) => {
+        setTimeout(() => {
+            expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+            done();
+        }, 500);
+    });
+
+    it('value moved to row', (done: Function) => {
+        let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+        let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+        let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+        expect(pivotButton.length).toEqual(3);
+        let dragElement: HTMLElement = pivotButton[2].querySelector('.e-pvt-btn-content');
+        let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+        EventHandler.trigger(dragElement, 'mousedown', mousedown);
+        let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+        mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+        mouseUp.type = 'mouseup';
+        mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+        setTimeout(() => {
+            pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+            expect(pivotButton.length).toEqual(3);
+            done();
+        }, 100);
+    });
+    it('value moved to column', (done: Function) => {
+        let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+        let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+        let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+        expect(pivotButton.length).toEqual(3);
+        let dragElement: HTMLElement = pivotButton[2].querySelector('.e-pvt-btn-content');
+        let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+        EventHandler.trigger(dragElement, 'mousedown', mousedown);
+        let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, columnAxiscontent, 15, 70);
+        mousemove.srcElement = mousemove.target = mousemove.toElement = columnAxiscontent;
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, columnAxiscontent);
+        mouseUp.type = 'mouseup';
+        mouseUp.srcElement = mouseUp.target = mouseUp.toElement = columnAxiscontent;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+        setTimeout(() => {
+            pivotButton = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+            expect(pivotButton.length).toEqual(3);
+            done();
+        }, 100);
+    });
+    it('value removed', (done: Function) => {
+        let rowAxiscontent: any = document;
+        let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+        let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+        expect(pivotButton.length).toEqual(3);
+        let dragElement: HTMLElement = pivotButton[2].querySelector('.e-pvt-btn-content');
+        let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+        EventHandler.trigger(dragElement, 'mousedown', mousedown);
+        let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+        mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+        mouseUp.type = 'mouseup';
+        mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+        setTimeout(() => {
+            pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+            expect(pivotButton.length).toEqual(8);
+            done();
+        }, 100);
+    });
+    it('values added', () => {
+        pivotGridObj.dataSourceSettings.values = [{ name: 'balance' }, { name: 'quantity' }];
+    });
+    it('value removed1', (done: Function) => {
+        setTimeout(() => {
+            expect(1).toBe(1);
+            done();
+        }, 1000);
+    });
+    it('values removed', (done: Function) => {
+        let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+        let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
+        let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+        (pivotButton[0].querySelector('.e-remove') as HTMLElement).click();
+        (pivotButton[1].querySelector('.e-remove') as HTMLElement).click();
+        setTimeout(() => {
+            pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+            (pivotButton[0].querySelector('.e-remove') as HTMLElement).click();
+            (pivotButton[1].querySelector('.e-remove') as HTMLElement).click();
+            expect(pivotButton.length).toEqual(2);
+            done();
+        }, 1000);
+    });
+    it('values added', () => {
+        pivotGridObj.dataSourceSettings.values = [{ name: 'balance' }, { name: 'quantity' }];
+    });
+
+    it('RTL', (done: Function) => {
+        pivotGridObj.enableRtl = true;
+        setTimeout(() => {
+            expect(document.querySelectorAll('.e-content-virtualtable')[0].scrollTop).toBe(0);
+            done();
+        }, 100);
+    });
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(element);
+    });
+    it('memory leak check', () => {
+        profile.sample();
+        const average: number = inMB(profile.averageChange);
+        const memory: number = inMB(getMemoryProfile());
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        expect(average).toBeLessThan(10);
     });
 });

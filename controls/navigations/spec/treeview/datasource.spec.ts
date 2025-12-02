@@ -1367,3 +1367,23 @@ export const localData14: { [key: string]: Object }[] = [
     { id: 9, pid: 7, name: 'Ceará' },
     { id: 10, pid: 7, name: 'Acre' },
 ];
+
+export const  PerformanceData: { [key: string]: Object }[]  = [];
+var totalParents = 100;
+var childrenPerParent = 50;
+
+for (var i = 1; i <= totalParents; i++) {
+    var parent = {
+        text: "Parent " + i,
+        value: "p" + i,
+        children: [] as any
+    };
+    for (var j = 1; j <= childrenPerParent; j++) {
+        parent.children.push({
+            text: "Child " + i + "-" + j,
+            value: "c" + i + "-" + j,
+            isChecked: (Math.random() < 0.2)
+        });
+    }
+    PerformanceData.push(parent);
+}

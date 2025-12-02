@@ -3832,6 +3832,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (!isNullOrUndefined(engine.fieldList) || !isNullOrUndefined(engine.pivotValues)) {
                     this.notify(events.dataReady, {});
                 }
+                if (this.isScrolling && Object.prototype.hasOwnProperty.call(newProp, 'pivotValues') && newProp.pivotValues.length > 0) {
+                    this.showWaitingPopup();
+                }
                 break;
             }
             case 'gridSettings':
@@ -3849,6 +3852,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 }
                 if (newProp.gridSettings.layout) {
                     this.initialLoad();
+                }
+                if (Object.prototype.hasOwnProperty.call(newProp.gridSettings, 'allowAutoResizing') || newProp.gridSettings.columnWidth) {
+                    this.layoutRefresh();
+                    if (this.toolbarModule && this.showToolbar) {
+                        this.toolbarModule.refreshToolbar();
+                    }
                 }
                 break;
             case 'chartSettings': {
@@ -5223,6 +5232,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.element.style.minWidth = this.minWidth ? this.minWidth + 'px' : '310px';
                 this.grid.element.style.minWidth = this.minWidth ? this.minWidth + 'px' : '310px';
             }
+            if (this.showToolbar && this.toolbarModule && this.toolbarModule.toolbar &&
+                this.gridSettings && !this.gridSettings.allowAutoResizing) {
+                this.toolbarModule.toolbar.width = this.grid ? this.getGridWidthAsNumber() : this.getWidthAsNumber();
+            }
         }
         this.unwireEvents();
         this.wireEvents();
@@ -5990,12 +6003,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.olapEngineModule.pivotValues[0].length : (this.dataSourceSettings.values.length > 0 &&
                         this.engineModule && this.engineModule.pivotValues.length > 0 ? this.engineModule.pivotValues[0].length : 2);
                 const colWidth: number = this.renderModule.calculateColWidth(colLength);
+                this.setCommonColumnsWidth(this.grid.columns as ColumnModel[], colWidth);
+                this.triggerColumnRenderEvent(this.grid.columns as ColumnModel[]);
                 this.grid.width = this.renderModule.calculateGridWidth();
                 this.renderModule.calculateGridHeight(true);
-                if (this.gridSettings.allowAutoResizing) {
-                    this.setCommonColumnsWidth(this.grid.columns as ColumnModel[], colWidth);
-                }
-                this.triggerColumnRenderEvent(this.grid.columns as ColumnModel[]);
                 this.grid.refreshColumns();
                 if (this.renderModule.isAutoFitEnabled) {
                     this.renderModule.addPivotAutoFitClass();

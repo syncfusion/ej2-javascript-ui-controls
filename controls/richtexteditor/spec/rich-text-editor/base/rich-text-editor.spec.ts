@@ -9249,6 +9249,7 @@ Rich Text Editor 3`,
         it('Check the change event is triggered for the value change in the markdown editor', (done: Function) => {
             setTimeout(() => {
                 setTimeout(() => {
+                    rteObj.focusIn();
                     expect(changetriggered).toBe(false);
                     let textArea = rteObj.inputElement;
                     (rteObj as any).formatter.editorManager.markdownSelection.setSelection(textArea, 5, 5);

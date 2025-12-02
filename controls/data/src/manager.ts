@@ -903,6 +903,12 @@ export class DataManager {
         this.persistQuery = {};
         window.localStorage.setItem(this.dataSource.id, '[]');
     }
+
+    public clearCache(): void {
+        if (this.isEnableCache) {
+            window.localStorage.setItem(this.guidId, JSON.stringify({ keys: [], results: [] }));
+        }
+    }
 }
 
 /**

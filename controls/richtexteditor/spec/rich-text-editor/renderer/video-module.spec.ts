@@ -1561,6 +1561,92 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    //Added for coverage purpose
+    describe('991516: Video with align testing for embedded video -', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `<p><span class="e-embed-video-wrap" contenteditable="false" style="display: inline-block;"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/N7CAo5lWS8c?si=44NxG9au9zbZ9oxM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen="" class="e-video-inline e-rte-embed-url" style="min-width: 0px; max-width: 1457px; min-height: 0px;">&amp;ZeroWidthSpace;</iframe></span></span></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('left applied', (done: Function) => {
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            const target: HTMLElement = rteObj.inputElement.querySelector('.e-video-clickelem');
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (rteObj as any).videoModule.onDocumentClick(clickEvent);
+            setSelection(target, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(function () {
+                const quickToolbar: HTMLElement = document.body.querySelector('.e-video-quicktoolbar');
+                const alignDropDownButton: HTMLElement = quickToolbar.querySelector('.e-justify-left').parentElement;
+                alignDropDownButton.click();
+                const alignDropDownPopup: HTMLElement = document.body.querySelector('.e-dropdown-popup.e-popup-open');
+                (alignDropDownPopup.querySelector('.e-justify-left') as HTMLElement).click();
+                setTimeout(() => {
+                    let video: HTMLElement = rteObj.element.querySelector('.e-video-clickelem') as HTMLElement;
+                    expect(video.style.cssFloat).toBe('left');
+                    done();
+                }, 100);
+            }, 200);
+        });
+        it('right applied', (done: Function) => {
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            const target: HTMLElement = rteObj.inputElement.querySelector('.e-video-clickelem');
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (rteObj as any).videoModule.onDocumentClick(clickEvent);
+            setSelection(target, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(function () {
+                const quickToolbar: HTMLElement = document.body.querySelector('.e-video-quicktoolbar');
+                const alignDropDownButton: HTMLElement = quickToolbar.querySelector('.e-justify-left').parentElement;
+                alignDropDownButton.click();
+                const alignDropDownPopup: HTMLElement = document.body.querySelector('.e-dropdown-popup.e-popup-open');
+                (alignDropDownPopup.querySelector('.e-justify-right') as HTMLElement).click();
+                setTimeout(() => {
+                    let video: HTMLElement = rteObj.element.querySelector('.e-video-clickelem') as HTMLElement;
+                    expect(video.style.cssFloat).toBe('right');
+                    done();
+                }, 100);
+            }, 200);
+        });
+        it('center applied', (done: Function) => {
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            const target: HTMLElement = rteObj.inputElement.querySelector('.e-video-clickelem');
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (rteObj as any).videoModule.onDocumentClick(clickEvent);
+            setSelection(target, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(function () {
+                const quickToolbar: HTMLElement = document.body.querySelector('.e-video-quicktoolbar');
+                const alignDropDownButton: HTMLElement = quickToolbar.querySelector('.e-justify-left').parentElement;
+                alignDropDownButton.click();
+                const alignDropDownPopup: HTMLElement = document.body.querySelector('.e-dropdown-popup.e-popup-open');
+                (alignDropDownPopup.querySelector('.e-justify-center') as HTMLElement).click();
+                setTimeout(() => {
+                    let video: HTMLElement = rteObj.element.querySelector('.e-video-clickelem') as HTMLElement;
+                    expect(video.style.cssFloat).toBe('');
+                    done();
+                }, 100);
+            }, 200);
+        });
+    });
+
     describe('Video quick toolbar - iframe', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -3642,7 +3728,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                         let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
                         (videoQTBarEle.querySelector("[title='Remove']") as HTMLElement).click();
                         setTimeout(() => {
-                            expect(isNullOrUndefined(document.querySelector('.e-embed-video-wrap') as HTMLElement)).toBe(true);
+                            expect(isNullOrUndefined(rteObj.inputElement.querySelector('.e-embed-video-wrap') as HTMLElement)).toBe(true);
                             expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
                             done();
                         }, 100);
@@ -4629,6 +4715,10 @@ describe('962339: Script error and improper video selection removal after alignm
                     <div id="dateError"></div>
                 </div>
                 ` });
+            let videos: NodeListOf<HTMLVideoElement> = document.body.querySelectorAll('.e-embed-video-wrap');
+            for (let i: number = 0; i < videos.length; i++) {
+                videos[i].remove();
+            }
             document.body.appendChild(element);
             rteObj = new RichTextEditor({
                 insertVideoSettings: {

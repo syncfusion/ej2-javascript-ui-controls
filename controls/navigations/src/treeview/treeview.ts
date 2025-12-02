@@ -683,6 +683,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private DDTTreeData: { [key: string]: Object }[];
     private OldCheckedData: { [key: string]: Object; }[] = [];
     private isHiddenItem: boolean = false;
+    private nodeIndex: Map<string, { [key: string]: object }>;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -2070,26 +2071,25 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         const dataId: string = this.fields.id;
         const parentKey: string = this.fields.parentID;
 
+        if (!this.nodeIndex) {
+            this.nodeIndex = new Map<string, { [key: string]: object }>();
+            this.buildNodeIndex(this.treeData);
+        }
+
         const matchesDataUid: (childNode: { [key: string]: any }) => boolean = (childNode: { [key: string]: any }): boolean => {
             if (!isNOU(childKey) && childKey in childNode && Array.isArray(childNode[childKey as keyof typeof childNode])) {
                 const matchNode: string = childNode[dataId as keyof typeof childNode];
-                if (!isNOU(matchNode)) {
-                    return matchNode.toString() === dataUid;
-                }
+                return !isNOU(matchNode) &&
+                       matchNode.toString() === dataUid;
             } else {
                 const childNodePid: string = childNode[parentKey as keyof typeof childNode];
-                if (!isNOU(childNodePid)) {
-                    return childNodePid.toString() === dataUid;
-                }
+                return !isNOU(childNodePid) && childNodePid.toString() === dataUid;
             }
-            return false;
         };
 
         return this.checkedNodes
-            .map((checkedNodeId: string): { [key: string]: any } => {
-                return this.getNodeObject(checkedNodeId);
-            })
-            .filter((childNode: object | null | undefined): boolean => {
+            .map((id: string) => this.nodeIndex!.get(id))
+            .filter((childNode: { [key: string]: any } | null | undefined): boolean => {
                 if (childNode && typeof childNode === 'object' && (childKey in childNode)) {
                     return matchesDataUid(childNode);
                 } else if (this.dataType !== 2 && typeof childNode === 'object' && (parentKey in childNode || childKey in childNode)) {
@@ -2098,6 +2098,27 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 return false;
             });
     }
+
+    private buildNodeIndex(nodes: { [key: string]: object }[]): void {
+        const childKey: string | null = typeof this.fields.child === 'string' ? this.fields.child : null;
+        nodes.forEach((node: { [key: string]: object }) => {
+            const idVal: string | number | null = getValue(this.fields.id, node);
+            if (idVal != null) {
+                if (!this.nodeIndex) {
+                    this.nodeIndex = new Map<string, { [key: string]: object }>();
+                }
+                this.nodeIndex.set(idVal.toString(), node);
+            }
+            if (childKey) {
+                const children: Array<{ [key: string]: object }> | undefined =
+                    getValue(childKey, node) as { [key: string]: object }[] | undefined;
+                if (Array.isArray(children)) {
+                    this.buildNodeIndex(children);
+                }
+            }
+        });
+    }
+
     private getAllChildNodes(data: { [key: string]: Object }[], parentId: string | number): { [key: string]: Object }[] {
         if (isNOU(data) || isNOU(parentId)) {
             return [];
@@ -2129,7 +2150,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         return [];
     }
-
     private ensureChildCheckState(element: Element | Document, e?: MouseEvent | KeyboardEventArgs, isFromExpandAll?: boolean): void {
         if (!isNOU(element)) {
             const childElement: Element = select('.' + PARENTITEM, element);

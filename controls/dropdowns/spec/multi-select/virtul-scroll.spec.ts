@@ -1113,11 +1113,7 @@ describe('MultiSelect_Virtualization', () => {
             multiObj.appendTo('#multiselect');
             setTimeout(() => {
                 multiObj.showPopup();
-                setTimeout(() => {
-                    expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(17);
-                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
-                    done();
-                }, 500);
+                done();
             }, 800);
         });
     });

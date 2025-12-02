@@ -2617,7 +2617,7 @@ export class StickyNotesAnnotation {
                     let isTextAdded: boolean = false;
                     if (annotationName) {
                         if (currentAnnotation.annotName !== annotationName) {
-                            this.pdfViewer.annotation.modifyDynamicTextValue(text, annotationName);
+                            this.pdfViewer.annotation.modifyDynamicTextValue(text, annotationName, previousValue);
                             isTextAdded = true;
                         }
                     }
@@ -2626,11 +2626,11 @@ export class StickyNotesAnnotation {
                             if (currentAnnotation.dynamicText !== text) {
                                 this.textFromCommentPanel = true;
                                 currentAnnotation.author = author;
-                                this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName);
+                                this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName, previousValue);
                             }
                             currentAnnotation.dynamicText = text;
                         } else {
-                            this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName);
+                            this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName, previousValue);
                             currentAnnotation.labelContent = text;
                             currentAnnotation.notes = text;
                         }

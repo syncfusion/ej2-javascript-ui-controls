@@ -132,24 +132,20 @@ describe('Inline Quick Toolbar -', () => {
             rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             rteObj.inlineMode.enable = true;
             rteObj.dataBind();
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            pEle.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
-                let pEle: HTMLElement = rteObj.element.querySelector('#rte');
-                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
-                pEle.dispatchEvent(MOUSEUP_EVENT);
-                setTimeout(() => {
-                    let item: HTMLElement = document.querySelector('#' + controlId + '_quick_Alignments');
-                    item.click();
-                    let popup: HTMLElement = document.getElementById(controlId + '_quick_Alignments-popup');
-                    dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
-                    setTimeout(() => {
-                        (popup.querySelectorAll('.e-item')[3] as HTMLElement).click()
-                        let tag: HTMLElement = rteObj.element.querySelector('#rte');
-                        expect(tag.parentElement.style.textAlign === 'justify').toBe(true);
-                        document.body.click();
-                        done();
-                    }, 200);
-                }, 200);
-            }, 100);
+                let item: HTMLElement = document.querySelector('#' + controlId + '_quick_Alignments');
+                item.click();
+                let popup: HTMLElement = document.getElementById(controlId + '_quick_Alignments-popup');
+                dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
+                (popup.querySelectorAll('.e-item')[3] as HTMLElement).click()
+                let tag: HTMLElement = rteObj.element.querySelector('#rte');
+                expect(tag.parentElement.style.textAlign === 'justify').toBe(true);
+                document.body.click();
+                done();
+            }, 200);
         });
 
         it(' Test - enable as false the inline toolbar dynamically', (done) => {
@@ -177,7 +173,7 @@ describe('Inline Quick Toolbar -', () => {
                     expect(document.querySelectorAll('.e-rte-quick-popup').length > 0).toBe(true);
                     done();
                 }, 200);
-            }, 100);
+            }, 200);
         });
     });
 

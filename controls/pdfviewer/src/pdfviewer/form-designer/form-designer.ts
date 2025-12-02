@@ -2876,6 +2876,7 @@ export class FormDesigner {
             this.updateFormFieldsInCollections(formFieldId, options);
             this.updateFormFieldsInFieldsSession(formFieldId, options);
         }
+        this.isFormFieldUpdated = false;
     }
 
     /**

@@ -1759,3 +1759,63 @@ describe('EJ2: 957122: Need to change the beforeCustomFilterOpen event as public
         gridObj = null;
     });
 });
+
+describe('991898: Updating the Chrome version in coverage test cases of EJ2 components => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                allowPaging: true,
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    { field: 'CustomerID', width: 120, headerText: 'Customer ID'},
+                    { field: 'ShipCountry', headerText: 'Ship Country' }
+                ]
+            }, done);
+    });
+    it('Prevent custom filter dialog open', () => {
+        (gridObj.element.querySelectorAll(".e-filtermenudiv")[0] as HTMLElement).click();
+        let mockValueInputInstance: any = { enabled: true };
+        let args: any = {
+            value: 123,
+            element: {
+                id: 'my-xlfl-frstoptr-xyz',
+                ej2_instances: [{ value: 'isempty', enabled: true }],
+                closest: (selector: any) => ({
+                children: [null, { querySelector: () => ({ ej2_instances: [mockValueInputInstance] }) }]
+                })
+            }
+        };
+        (gridObj.filterModule as any).filterModule.excelFilterBase.dropDownValueChange(args);
+        mockValueInputInstance = {
+            enabled: false,
+            getAttribute: (attr: any) => {
+                return attr === 'disabled' ? '' : null;
+            }
+        };
+        args = {
+            value: 123,
+            element: {
+                id: 'my-xlfl',
+                ej2_instances: [{ value: null, enabled: false }],
+                closest: (selector: any) => ({
+                children: [null, { querySelector: () => ({ ej2_instances: [mockValueInputInstance], getAttribute: mockValueInputInstance.getAttribute }) }]
+                })
+            }
+        };
+        (gridObj.filterModule as any).filterModule.excelFilterBase.dropDownValueChange(args);
+        (gridObj.filterModule as any).filterModule.excelFilterBase.acFocus({}, null, null, null);
+    });
+    it('Coverage - 2', () => {
+        (gridObj.filterModule as any).filterModule.excelFilterBase.options.isResponsiveFilter = true;
+        const mockEvent = { target: gridObj.createElement('div', { className: 'e-resfilterback' }), };
+        const args = { event: mockEvent, cancel: false };
+        (gridObj.filterModule as any).filterModule.excelFilterBase.preventClose(args);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

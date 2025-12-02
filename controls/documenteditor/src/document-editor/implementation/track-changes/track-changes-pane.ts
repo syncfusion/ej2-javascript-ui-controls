@@ -991,7 +991,7 @@ export class ChangesSingleView {
                     } else if (element.formFieldData instanceof DropDownFormField) {
                         fragment.appendChild(this.addSpan(element.formFieldData.dropdownItems.length > 0 ? element.formFieldData.dropdownItems[0] : emptyChar, 'e-de-tc-field'));
                     } else {
-                        fragment.appendChild(this.addSpan((element.formFieldData as CheckBoxFormField).checked ? String.fromCharCode(9745) : String.fromCharCode(9744), 'e-de-tc-field'));
+                        fragment.appendChild(this.addSpan((element.formFieldData as CheckBoxFormField).checked ? this.owner.editorModule.getCheckBoxText() : String.fromCharCode(9744), 'e-de-tc-field'));
                     }
                 }
             } else if (element instanceof ImageElementBox) {

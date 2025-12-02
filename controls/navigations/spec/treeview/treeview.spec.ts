@@ -13,7 +13,7 @@ import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteDat
 import { localData7, localData8, localData9, localData12, localData13, localData14, hierarchicalDataSource2, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
 import { updatedremoteNode_3, updatedremoteNode_4, updatedremoteNode_5, updatedAddNodes, updatedremoteNode_6, updatedremoteNode_7} from '../../spec/treeview/datasource.spec';
 import {  deletedRemoteData, updatedAddNodes1, autoCheckData, autoCheckHierarcialData, hierarchicalData7, localDataSource, hierarchicalDataSource, hierarchicalDataSource1} from '../../spec/treeview/datasource.spec';
-import { remoteData4, remoteData4_1, remoteData4_2, remoteData4_3 } from '../../spec/treeview/datasource.spec';
+import { remoteData4, remoteData4_1, remoteData4_2, remoteData4_3, PerformanceData } from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
@@ -3915,6 +3915,23 @@ describe('TreeView control', () => {
                 },'#tree1');
                 treeObj.destroy();
                 expect(i).toEqual(1);
+            });
+            it('Performance Testing with expandall method in created event', (done: Function) => {
+                treeObj = new TreeView({
+                    fields: { dataSource: PerformanceData, text: 'text', id: 'value', child: 'children' },
+                    showCheckBox: true,
+                    autoCheck: true,
+                    created: function () {
+                        this.expandAll();
+                    }
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(li[0].getAttribute('aria-expanded')).toBe('true');
+                    expect(treeObj.expandedNodes.length).toBe(100);
+                    done();
+                }, 450);        
             });
         });
         describe('methods testing', () => {

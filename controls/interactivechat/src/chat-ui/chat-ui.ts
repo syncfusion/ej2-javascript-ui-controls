@@ -1866,7 +1866,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 requireLeadingSpace: false,
                 suffixText: '&nbsp;',
                 noRecordsTemplate: this.l10n.getConstant('noRecordsTemplate'),
-                fields: { text: 'user' },
+                fields: { text: 'user', value: 'id' },
                 popupWidth: '250px',
                 popupHeight: '200px',
                 allowSpaces: true,

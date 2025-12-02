@@ -374,6 +374,7 @@ describe('List revert with BR configured - ', () => {
 
     it('Default value when `BR` is configured with OL', function (): void {
         const orderListEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[0];
+        rteObj.focusIn();
         orderListEle.click();
         orderListEle.click();
         expect(rteObj.inputElement.innerHTML).toBe('RTE BR configured<br>');
@@ -381,6 +382,7 @@ describe('List revert with BR configured - ', () => {
 
     it('Default value when `BR` is configured with UL', function (): void {
         const unorderListEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[1];
+        rteObj.focusIn();
         unorderListEle.click();
         unorderListEle.click();
         expect(rteObj.inputElement.innerHTML).toBe('RTE BR configured<br>');

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.15 (2025-11-25)
+## 31.2.16 (2025-12-02)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I788505` - Hovering over the scatter chart in the spreadsheet now does not throw a console error.
+
+## 31.2.8 (2025-12-02)
 
 ### Chart
 

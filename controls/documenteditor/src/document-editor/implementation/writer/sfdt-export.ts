@@ -48,10 +48,6 @@ export class SfdtExport {
     private writeInlineStyles: boolean = undefined;
     private nextBlock: any;
     private blockContent: boolean = false;
-    private startContent: boolean = false;
-    private multipleLineContent: boolean = false;
-    private nestedContent: boolean = false;
-    private contentType: string;
     private editRangeId: number = -1;
     private selectedCommentsId: string[] = [];
     private selectedRevisionId: string[] = [];
@@ -63,12 +59,12 @@ export class SfdtExport {
      * @private
      */
     public blocks: any = [];
-    private contentInline: any = [];
     private isContentControl: boolean = false;
     private isBlockClosed: boolean = true;
     private isWriteInlinesFootNote = false;
     private isWriteEndFootNote = false;
     public bookmarkCollection: BookmarkElementBox[] = [];
+    private inlineContentControls: { inlines: any[]; props: ContentControlProperties }[] = [];
     /**
      * @private
      */
@@ -1012,11 +1008,12 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
         }
     }
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
-        this.contentInline = [];
         let lineWidget: LineWidget = line;
         let isformField: boolean = false;
+
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let element: ElementBox = lineWidget.children[i];
+
             if (this.isExport && this.checkboxOrDropdown) {
                 if (isformField && element instanceof TextElementBox) {
                     continue;
@@ -1028,21 +1025,53 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
             if (element instanceof ListTextElementBox) {
                 continue;
             }
+
+            // Footnote: keep as-is, just route push via stack-aware helper
             if (element instanceof FootnoteElementBox) {
-                inlines.push(this.writeInlinesFootNote(element));
+                this.AddInlineToBlock(inlines, this.writeInlinesFootNote(element));
                 continue;
             }
-            if (element instanceof ContentControl || this.startContent || this.blockContent) {
-                this.writeInlinesContentControl(element, line, inlines, i);
-            } else {
-                if (!this.skipExporting && element instanceof TextElementBox && !isNullOrUndefined(element.previousNode) && element.previousNode instanceof TextElementBox
-                    && !(element.previousNode instanceof FootnoteEndnoteMarkerElementBox)
-                    && !this.isSpecialCharacter(element.text) && !this.isSpecialCharacter(element.previousNode.text)
-                    && element.previousNode.characterFormat.isEqualFormat(element.characterFormat)
-                    && element.previousNode.scriptType === element.scriptType
-                    && element.revisionLength === 0 && element.previousNode.revisionLength === 0
-                    && (element.previousNode.text.length > 0 && element.previousNode.text[element.previousNode.text.length - 1] !== '-' 
-                    && element.previousNode.text[element.previousNode.text.length - 1] !== '/') && inlines.length > 0 && !isNullOrUndefined(inlines[inlines.length - 1][textProperty[this.keywordIndex]])) {
+
+            // ContentControl handling
+            if (element instanceof ContentControl) {
+                // Keep existing behavior for Block content controls
+                if (element.contentControlWidgetType === 'Block') {
+                    this.writeBlockContentControl(element, line, inlines, i);
+                    continue;
+                }
+                // Inline Content Control: use stack (open/close only; do not change anything else)
+                if (element.contentControlWidgetType === 'Inline') {
+                    if (element.type === 0) {
+                        // start
+                        this.inlineContentControls.push({ inlines: [], props: element.contentControlProperties });
+                    } else if (element.type === 1) {
+                        // end
+                        const inlineContentControl: any = this.inlineContentControls.pop();
+                        if (inlineContentControl) {
+                            const contentControlNode: any = {};
+                            contentControlNode[inlinesProperty[this.keywordIndex]] = inlineContentControl.inlines;
+                            contentControlNode[contentControlPropertiesProperty[this.keywordIndex]] =
+                                this.contentControlProperty(inlineContentControl.props);
+                            this.AddInlineToBlock(inlines, contentControlNode);
+                        }
+                    }
+                    continue;
+                }
+            }
+
+            // Everything else remains the same (text merge or normal inline write)
+            if (!this.skipExporting
+                && element instanceof TextElementBox
+                && !isNullOrUndefined(element.previousNode) && element.previousNode instanceof TextElementBox
+                && !(element.previousNode instanceof FootnoteEndnoteMarkerElementBox)
+                && !this.isSpecialCharacter(element.text) && !this.isSpecialCharacter(element.previousNode.text)
+                && element.previousNode.characterFormat.isEqualFormat(element.characterFormat)
+                && element.previousNode.scriptType === element.scriptType
+                && element.revisionLength === 0 && element.previousNode.revisionLength === 0) {
+                const currentInlines: any = this.getCurrentInlines(inlines); // the only change: write into CC if open
+                if (currentInlines.length > 0 && !isNullOrUndefined(currentInlines[currentInlines.length - 1][textProperty[this.keywordIndex]])
+                    && (element.previousNode.text.length > 0 && element.previousNode.text[element.previousNode.text.length - 1] !== '-'
+                        && element.previousNode.text[element.previousNode.text.length - 1] !== '/')) {
                     let elementText: string = element.text;
                     if (!this.isWriteEndFootNote && (isNullOrUndefined(this.owner.editorModule) || !this.owner.editorModule.isPaste)) {
                         elementText = HelperMethods.removeInvalidXmlChars(elementText);
@@ -1051,20 +1080,24 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
                         && element.paragraph.indexInOwner == 0 && HelperMethods.checkTextFormat(elementText)) {
                         elementText = "\u0002";
                     }
-                    // replacing the no break hyphen character by '-'
                     if (elementText.indexOf(String.fromCharCode(30)) !== -1) {
-                        elementText.replace(/\u001e/g, '-');
+                        elementText = elementText.replace(/\u001e/g, '-');
                     } else if (elementText.indexOf(String.fromCharCode(31)) !== -1) {
-                        elementText.replace(/\u001f/g, '');
+                        elementText = elementText.replace(/\u001f/g, '');
                     }
-                    inlines[inlines.length - 1][textProperty[this.keywordIndex]] += elementText;
-                } else {
-                    let inline: any = this.writeInline(element);
-                    if (!isNullOrUndefined(inline)) {
-                        inlines.push(inline);
-                    }
+                    currentInlines[currentInlines.length - 1][textProperty[this.keywordIndex]] += elementText;
+                    // merged, continue
+                    continue;
                 }
+            } else {
+                // no-merge or non-text: serialize normally
             }
+
+            let inline: any = this.writeInline(element);
+            if (!isNullOrUndefined(inline)) {
+                this.AddInlineToBlock(inlines, inline); // route through inline CC if open
+            }
+
             if (this.isExport && element instanceof FieldElementBox && element.fieldType === 1) {
                 isformField = false;
                 this.checkboxOrDropdown = false;
@@ -1074,79 +1107,6 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
     private isSpecialCharacter(text: string): boolean {
         const specialChars: string[] = ['\t', '\v', '\f', '\r', String.fromCharCode(14), String.fromCharCode(31), String.fromCharCode(8194)];
         return specialChars.indexOf(text) !== -1;
-    }
-    private inlineContentControl(element: ElementBox, nextElement: any, inlines?: any): any {
-        let inline: any = {};
-        let nestedContentInline: any = [];
-        if (!isNullOrUndefined(inlines)) {
-            if (this.nestedContent) {
-                inlines = inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]];
-                if(inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]]==undefined){
-                    inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]] = [];
-                }
-                // if (isNullOrUndefined(inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]])) {
-                //     let nestInlines:any =[];
-                //     // nestInlines.inlines=[];
-                //     let inlineObject:{}={[inlinesProperty[this.keywordIndex]]:nestInlines}
-                //     inlines.push(inlineObject);
-                // }
-                inline = this.inlineContentControls(element, inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]]);
-                let nestedContentinline: any = this.nestedContentProperty(nextElement, inlines[inlines.length - 1]);
-                if (!isNullOrUndefined(nestedContentinline)) {
-                    this.contentInline.push(inline);
-                    nestedContentInline = [];
-                }
-            } else {
-                this.inlineContentControls(element, inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]]);
-            }
-        } else {
-            if (this.nestedContent) {
-                inline[inlinesProperty[this.keywordIndex]] = this.inlineContentControls(element, undefined, nestedContentInline);
-                let nestedContentinline: any = this.nestedContentProperty(nextElement, inline);
-                if (!isNullOrUndefined(nestedContentinline) || this.multipleLineContent) {
-                    this.contentInline.push(inline);
-                    nestedContentInline = [];
-                }
-            } else {
-                inline[inlinesProperty[this.keywordIndex]] = this.inlineContentControls(element, this.contentInline);
-            }
-        }
-        if (nextElement instanceof ContentControl && nextElement.type === 1 && !this.nestedContent) {
-            if (this.multipleLineContent && !isNullOrUndefined(inlines)) {
-                inlines[inlines.length - 1][contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(nextElement.contentControlProperties);
-                this.multipleLineContent = false;
-                return;
-            } else {
-                inline[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(nextElement.contentControlProperties);
-            }
-            return inline;
-        } else if (this.startContent) {
-            this.multipleLineContent = true;
-            return inline;
-        }
-    }
-    private nestedContentProperty(nextElement: any, inline: any, inlines?: any): any {
-        if (!isNullOrUndefined(nextElement)) {
-            if (nextElement.type === 1) {
-                inline[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(nextElement.contentControlProperties);
-                return inline;
-            } else if (this.startContent) {
-                this.multipleLineContent = true;
-                return inline;
-            }
-        } else if (this.startContent) {
-            this.multipleLineContent = true;
-            return inline;
-        }
-    }
-    private inlineContentControls(element: ElementBox, contentInline: any, nestedContentInline?: any): any {
-        let inline: any = this.writeInline(element);
-        if (!isNullOrUndefined(nestedContentInline)) {
-            nestedContentInline.push(inline);
-            return nestedContentInline;
-        }
-        contentInline.push(inline);
-        return contentInline;
     }
     /* eslint-disable  */
     private writeInline(element: ElementBox): any {
@@ -1737,15 +1697,26 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
         }
         return endParagraph;
     }
+    // Return the active inlines list: either current CC's inlines (top of stack) or paragraph inlines
+    private getCurrentInlines(rootInlines: any[]): any[] {
+        return (this.inlineContentControls.length > 0)
+            ? this.inlineContentControls[this.inlineContentControls.length - 1].inlines
+            : rootInlines;
+    }
+
+    // Push a node to the correct list (either CC inlineContentControl or paragraph)
+    private AddInlineToBlock(targetInlines: any[], inline: any): void {
+        if (!inline) return;
+        this.getCurrentInlines(targetInlines).push(inline);
+    }
     private writeLine(line: LineWidget, offset: number, inlines: any): void {
-        this.contentInline = [];
-        // let isContentStarted: boolean = false;
-        // let contentControl: boolean = false;
         let isEnd: boolean = line === this.endLine;
         let lineWidget: LineWidget = line;
+
         let started: boolean = false;
         let ended: boolean = false;
         let length: number = 0;
+
         for (let j: number = 0; j < lineWidget.children.length; j++) {
             let element: ElementBox = lineWidget.children[j];
             if (element instanceof ListTextElementBox) {
@@ -1754,57 +1725,78 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
             let inline: any = undefined;
             length += element.length;
             started = length > offset;
-            // if (element instanceof ContentControl) {
-            //     if (!started) {
-            //         isContentStarted = element.type === 0 ? true : false;
-            //     }
-            //     contentControl = true;
-            // }
-            // if (element instanceof TextElementBox && element.hasOwnProperty('contentControlProperties') && started && !contentControl) {
-            //     isContentStarted = true;
-            // }
-            // if (element instanceof ContentControl) {
-            //     if (isContentStarted) {
-            //         if (element.type === 1) {
-            //             isContentStarted = false;
-            //         }
-            //     }
-            //     if (contentControl) {
-            //         if (element.type === 1) {
-            //             contentControl = false;
-            //         }
-            //     }
-            // }
             ended = isEnd && length >= this.endOffset;
+
+            // Keep the original bookmark filter (unchanged)
+            if (element instanceof BookmarkElementBox && !isNullOrUndefined(this.bookmarkCollection) &&
+                ((element.bookmarkType === 0 && this.bookmarkCollection.indexOf(element) === -1) ||
+                    (element.bookmarkType === 1 && this.bookmarkCollection.indexOf(element.reference) === -1))) {
+                continue;
+            }
+
             if (!started) {
+                // Maintain inline CC stack pairing even before selection starts, but do not emit output
+                if (element instanceof ContentControl && element.contentControlWidgetType === 'Inline') {
+                    if (element.type === 0) {
+                        this.inlineContentControls.push({ inlines: [], props: element.contentControlProperties });
+                    } else if (element.type === 1) {
+                        this.inlineContentControls.pop();
+                    }
+                }
                 continue;
             }
-            if (element instanceof BookmarkElementBox && !isNullOrUndefined(this.bookmarkCollection) && ((element.bookmarkType === 0 && this.bookmarkCollection.indexOf(element) === -1) || (element.bookmarkType === 1 && this.bookmarkCollection.indexOf(element.reference) === -1))) {
-                continue;
-            }
-            if (element instanceof ContentControl || this.startContent || this.blockContent) {
+
+            // ContentControl: only change inline CC behavior; do not affect anything else
+            if (element instanceof ContentControl && element.contentControlWidgetType === 'Inline') {
+                if (element.type === 0) {
+                    this.inlineContentControls.push({ inlines: [], props: element.contentControlProperties });
+                } else if (element.type === 1) {
+                    const inlineContentControl: any = this.inlineContentControls.pop();
+                    if (inlineContentControl) {
+                        const contentControlNode: any = {};
+                        contentControlNode[inlinesProperty[this.keywordIndex]] = inlineContentControl.inlines;
+                        contentControlNode[contentControlPropertiesProperty[this.keywordIndex]] =
+                            this.contentControlProperty(inlineContentControl.props);
+                        this.AddInlineToBlock(inlines, contentControlNode);
+                    }
+                }
                 if (ended) {
-                    this.startContent = false;
                     break;
                 }
-                this.writeInlinesContentControl(element, line, inlines, j);
                 continue;
             }
+
+            // All other elements stay exactly as-is
             inline = this.writeInline(element);
-            if(!isNullOrUndefined(inline)) {
-                inlines[inlines.length] = inline;
+            if (!isNullOrUndefined(inline)) {
+                // original selection slicing only applies to text
                 if (length > offset || ended) {
                     if (inline.hasOwnProperty(textProperty[this.keywordIndex])) {
                         let startIndex: number = length - element.length;
                         let indexInInline: number = offset - startIndex;
                         let endIndex: number = ended ? this.endOffset - startIndex : element.length;
-                        inline[textProperty[this.keywordIndex]] = inline[textProperty[this.keywordIndex]].substring(indexInInline, endIndex);
+                        inline[textProperty[this.keywordIndex]] =
+                            inline[textProperty[this.keywordIndex]].substring(indexInInline, endIndex);
                     }
                     offset = -1;
                 }
+                this.AddInlineToBlock(inlines, inline); // route into CC if currently open
             }
+
             if (ended) {
                 break;
+            }
+        }
+
+        // Close any still-open inline CCs at end of line so output remains well-formed
+        if (isEnd) {
+            while (this.inlineContentControls.length > 0) {
+                const inlineContentControl = this.inlineContentControls.pop();
+                const contentControlNode: any = {};
+                contentControlNode[inlinesProperty[this.keywordIndex]] = inlineContentControl.inlines;
+                contentControlNode[contentControlPropertiesProperty[this.keywordIndex]] =
+                    this.contentControlProperty(inlineContentControl.props);
+                this.AddInlineToBlock(inlines, contentControlNode);
             }
         }
     }
@@ -1836,7 +1828,7 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
         this.isWriteInlinesFootNote = false;
         return inline;
     }
-    private writeInlinesContentControl(element: ElementBox, lineWidget: LineWidget, inlines: any, i: number): any {
+    private writeBlockContentControl(element: ElementBox, lineWidget: LineWidget, inlines: any, i: number): any {
         if (element instanceof ContentControl) {
             if (element.contentControlWidgetType === 'Block') {
                 this.isBlockClosed = false;
@@ -1859,55 +1851,7 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
                 return true;
             }
         }
-        if (element instanceof ContentControl) {
-            if (this.startContent && element.type === 0) {
-                this.nestedContent = true;
-                return true;
-            } else if (this.startContent && this.nestedContent) {
-                let inline: any = {};
-                inline[inlinesProperty[this.keywordIndex]] = this.contentInline;
-                if (this.contentInline.length > 0) {
-                    let nestedContent: any = this.nestedContentProperty(lineWidget.children[i + 1], inline);
-                    inlines.push(nestedContent);
-                    this.contentInline = [];
-                }
-                if (this.multipleLineContent) {
-                    inline = inlines[inlines.length - 1];
-                    this.nestedContentProperty(lineWidget.children[i + 1], inline);
-                    this.multipleLineContent = false;
-                }
-                this.nestedContent = false;
-                return true;
-            }
-            this.contentType = element.contentControlWidgetType;
-            this.startContent = (element.type === 0) ? true : false;
-            return true;
-        }
-        if (this.startContent && ((this.contentType === 'Inline'))) {
-            if (this.multipleLineContent && !isNullOrUndefined(inlines) && inlines.length > 0) {
-                this.inlineContentControl(element, element.nextNode, inlines);
-                this.contentInline = [];
-            } else {
-                let contentinline: any = this.inlineContentControl(element, element.nextNode);
-                if (!isNullOrUndefined(contentinline)) {
-                    if (this.nestedContent && this.multipleLineContent) {
-                        let inline: any = {};
-                        inline[inlinesProperty[this.keywordIndex]] = this.contentInline;
-                        inlines.push(inline);
-                        this.contentInline = [];
-                    } else {
-                        inlines.push(contentinline);
-                        this.contentInline = [];
-                        return false;
-                    }
-                }
-            }
-        } else {
-            let inline: any = this.writeInline(element);
-            if (!isNullOrUndefined(inline)) {
-                inlines.push(inline);
-            }
-        }
+        return false;      
     }
     private createParagraph(paragraphWidget: ParagraphWidget): any {
         let paragraph: any = {};

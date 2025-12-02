@@ -3,7 +3,7 @@ import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, rem
 import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise, setChecked, clearReactVueTemplates, padZero, Global } from '../base/util';
 import { remove, debounce, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
-import { DataUtil, Query, DataManager, Predicate, Deferred, QueryOptions, ReturnOption } from '@syncfusion/ej2-data';
+import { DataUtil, Query, DataManager, Predicate, Deferred, QueryOptions, ReturnOption, DataOptions } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { ReturnType } from '../base/type';
 import { IFilterArgs, FilterSearchBeginEventArgs, CheckBoxBeforeRenderer, IGrid } from '../base/interface';
@@ -552,8 +552,17 @@ export class CheckBoxFilterBase {
             field: this.options.field, predicate: this.isMenuNotEqual ? 'and' : 'or', uid: this.options.uid,
             operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.options.ignoreAccent
         };
-        const isNotEqual: boolean = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
-        if (isNotEqual && searchInput && searchInput.value === '') {
+        let isNotEqual: boolean = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
+        const addCurrSelection: HTMLElement = this.infiniteRenderMod ? this.sBox.querySelector('.e-add-current') :
+            this.cBox.querySelector('.e-add-current');
+        const selectAll: HTMLElement = this.infiniteRenderMod ? this.sBox.querySelector('.e-selectall') : this.cBox.querySelector('.e-selectall');
+        const isAddFilterToExisting: boolean = searchInput && searchInput.value !== '' && addCurrSelection && selectAll &&
+            addCurrSelection.classList.contains('e-check') && selectAll.classList.contains('e-stop');
+        const existingPredicate: PredicateModel[] = this.existingPredicate && this.existingPredicate[this.options.field];
+        if (isAddFilterToExisting) {
+            isNotEqual = existingPredicate && existingPredicate.length ? false : true;
+        }
+        if (isNotEqual && searchInput && (searchInput.value === '' || isAddFilterToExisting)) {
             optr = this.isMenuNotEqual ? 'equal' : 'notequal';
             checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
             defaults.predicate = this.isMenuNotEqual ? 'or' : 'and';
@@ -588,10 +597,7 @@ export class CheckBoxFilterBase {
                     });
                 }
             }
-            const addCurrSelection: HTMLElement = this.infiniteRenderMod ? this.sBox.querySelector('.e-add-current') :
-                this.cBox.querySelector('.e-add-current');
             if (addCurrSelection && addCurrSelection.classList.contains('e-check')) {
-                const existingPredicate: PredicateModel[] = this.existingPredicate[this.options.field];
                 if (existingPredicate) {
                     for (let j: number = 0; j < existingPredicate.length; j++) {
                         if (!coll.some(function (data: PredicateModel): boolean { return data
@@ -599,6 +605,8 @@ export class CheckBoxFilterBase {
                             coll.push(existingPredicate[parseInt(j.toString(), 10)]);
                         }
                     }
+                } else if (!isAddFilterToExisting) {
+                    return;
                 }
             }
             if (!this.infiniteRenderMod) {
@@ -1019,9 +1027,16 @@ export class CheckBoxFilterBase {
             this.options.dataSource = this.options.dataSource instanceof DataManager ?
                 this.options.dataSource : new DataManager(this.options.dataSource as JSON[]);
             this.infinitePermenantLocalData = [...this.options.dataSource.dataSource.json];
+            let moduleName: Function;
+            if (this.options && this.options.dataManager && this.options.dataManager.adaptor
+                && (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName) {
+                moduleName = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
+            }
+            const dataSource: Object[] | DataOptions = moduleName && (moduleName() === 'RemoteSaveAdaptor') && this.infinitePermenantLocalData ?
+                this.infinitePermenantLocalData : this.options.dataSource.dataSource;
             const query1: Query = new Query();
             this.queryGenerate(query1);
-            const result : Object[] = new DataManager(this.options.dataSource.dataSource).executeLocal(query1);
+            const result : Object[] = new DataManager(dataSource).executeLocal(query1);
             this.options.dataSource = new DataManager(DataUtil.distinct(result, this.options.column.field, true));
             if (this.isForeignColumn(this.options.column as Column)) {
                 this.options.column.dataSource = this.options.column.dataSource instanceof DataManager ?

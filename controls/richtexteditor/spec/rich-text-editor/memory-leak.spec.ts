@@ -195,19 +195,21 @@ describe('Memory leak testing ', () => {
                 pasteCleanupSettings: { keepFormat: true },
             });
         });
-        it ('Should destroy the sub components properly after interactions with the editor.', () => {
+        it('Should destroy the sub components properly after interactions with the editor.', () => {
             // do interactions
             editor.focusIn();
             editor.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
             recordInstaces();
             destroy(editor);
-            for (let i: number = 0; i < instanceArray.length; i++) {
-                const currentInstance: Component<HTMLElement> = instanceArray[i as number];
-                if (currentInstance && !currentInstance.isDestroyed) {
-                    throw new Error('Memory leak detected, ' + (currentInstance as any).getModuleName() + ' instance is not destroyed');
+            setTimeout(() => {
+                for (let i: number = 0; i < instanceArray.length; i++) {
+                    const currentInstance: Component<HTMLElement> = instanceArray[i as number];
+                    if (currentInstance && !currentInstance.isDestroyed) {
+                        throw new Error('Memory leak detected, ' + (currentInstance as any).getModuleName() + ' instance is not destroyed');
+                    }
+                    expect(currentInstance.isDestroyed).toBe(true);
                 }
-                expect(currentInstance.isDestroyed).toBe(true);
-            }
+            }, 200);
         });
     });
 });

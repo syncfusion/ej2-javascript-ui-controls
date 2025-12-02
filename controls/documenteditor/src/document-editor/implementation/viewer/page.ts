@@ -1042,7 +1042,20 @@ export abstract class BlockWidget extends Widget {
                     return containerWidth;
                 }
             }
-            return this.associatedCell.getCellWidth(this);
+            let width: number = this.associatedCell.getCellWidth(this);
+            const ownerCell: TableCellWidget = this.associatedCell;		
+            const cellSpacing: number = !isNullOrUndefined(ownerCell.ownerRow) && !isNullOrUndefined(ownerCell.ownerRow.ownerTable) ?		
+            ownerCell.ownerRow.ownerTable.tableFormat.cellSpacing : 0;		
+            let leftPad: number = 0;		
+            let rightPad: number = 0;		
+            if (block instanceof TableWidget && cellSpacing > 0)		
+            {		
+                leftPad = cellSpacing * 2 + block.tableFormat.borders.left.getLineWidth();		
+                rightPad = cellSpacing * 2 + block.tableFormat.borders.right.getLineWidth();		
+                width -= leftPad + rightPad;		
+            }		
+            //Calculates the cell client width reducing padding and cell spacing.		
+            return width;
         }
         if (this.containerWidget instanceof TextFrame) {
             let shape: ShapeElementBox = this.containerWidget.containerShape as ShapeElementBox;
@@ -2579,6 +2592,10 @@ export class TableWidget extends BlockWidget {
         /* eslint-disable-next-line max-len */
         let isAutoWidth: boolean = (this.tableFormat.preferredWidthType === 'Auto' || (this.tableFormat.preferredWidthType === "Point" && this.tableFormat.preferredWidth === 0));
         let isAutoFit: boolean = this.tableFormat.allowAutoFit;
+        if (!isAutoFit && !isNullOrUndefined(this.bodyWidget.page) && this.bodyWidget.page.documentHelper && this.bodyWidget.page.documentHelper.owner
+            && this.bodyWidget.page.documentHelper.owner.isTableMarkerDragging) {
+            isAutoWidth = true;
+        }
         // For continuous layout, window width should be considered. 
         // If preferred width exceeds this limit, it can take upto maximum of 2112 pixels (1584 points will be assigned by Microsoft Word).
         if (((!isNullOrUndefined(this.bodyWidget.page)) && this.bodyWidget.page.viewer instanceof WebLayoutViewer && isAutoFit && !this.isInsideTable && !(this.containerWidget instanceof TextFrame))) {
@@ -2702,6 +2719,13 @@ export class TableWidget extends BlockWidget {
      * @private
      */
     public setWidthToCells(tableWidth: number, isAutoWidth: boolean): void {
+        let isTableResizing: boolean = false;
+        if (this.containerWidget instanceof BodyWidget && (this.containerWidget as BodyWidget).page
+            && ((this.containerWidget as BodyWidget).page as Page).documentHelper
+            && (((this.containerWidget as BodyWidget).page as Page).documentHelper.owner.isTableMarkerDragging
+                || ((this.containerWidget as BodyWidget).page as Page).documentHelper.isRowOrCellResizing)) {
+            isTableResizing = true
+        }
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let rw: TableRowWidget = this.childWidgets[i] as TableRowWidget;
             let rowFormat: WRowFormat = rw.rowFormat;
@@ -2710,7 +2734,8 @@ export class TableWidget extends BlockWidget {
             }
             for (let j: number = 0; j < rw.childWidgets.length; j++) {
                 let cell: TableCellWidget = rw.childWidgets[j] as TableCellWidget;
-                cell.cellFormat.cellWidth = this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth);
+                cell.cellFormat.cellWidth =
+                    this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth, isTableResizing);
                 //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
             }
             if (rowFormat.gridAfter > 0) {
@@ -3929,6 +3954,8 @@ export class TableCellWidget extends BlockWidget {
             } else {
                 cellWidth = this.cellFormat.preferredWidth - leftMargin - rightMargin;
             }
+        } else if (!isNullOrUndefined(ownerTable) && ownerTable.tableFormat.preferredWidthType === 'Percent' && ownerTable.tableFormat.allowAutoFit && this.cellFormat.preferredWidthType === 'Auto' && block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Percent' && block.tableFormat.allowAutoFit) {		
+            cellWidth = this.cellFormat.cellWidth - leftMargin - rightMargin;		
         }
         // For grid before and grid after with auto width, no need to calculate minimum preferred width.
         return cellWidth;
@@ -5159,7 +5186,7 @@ export abstract class ElementBox {
     get isCheckBoxElement(): boolean {
         let element: ElementBox = this;
         if (element instanceof TextElementBox && !isNullOrUndefined(element.text)) {
-            return element.text === String.fromCharCode(9745) || element.text === String.fromCharCode(9744);
+            return element.text === String.fromCharCode(9745) || element.text === String.fromCharCode(9746) || element.text === String.fromCharCode(9744);
         }
         return false;
     }
@@ -10428,10 +10455,11 @@ export class WTableHolder {
     /**
      * @private
      */
-    public getCellWidth(columnIndex: number, columnSpan: number, preferredTableWidth: number): number {
+    public getCellWidth(columnIndex: number, columnSpan: number, preferredTableWidth: number, isTableResizing?: boolean): number {
         let width: number = 0;
         for (let i: number = 0; i < columnSpan; i++) {
-            width += this.tableColumns[i + columnIndex].preferredWidth;
+            width += isTableResizing ? HelperMethods.round(this.tableColumns[i + columnIndex].preferredWidth, 2)
+                : this.tableColumns[i + columnIndex].preferredWidth;
         }
         return width;
     }

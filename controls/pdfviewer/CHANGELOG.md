@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 31.2.16 (2025-12-02)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I788326` - Fixed an issue where the `previousText` value in the `annotationPropertiesChange` event was incorrect when updating annotation text from the Comments panel.
+- Resolved an issue where the signature was rendered twice in the same field after updating other form fields.
+
+## 31.2.15 (2025-11-25)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I783067` - Resolved an issue where page became unresponsive when `findTextAsync` was executed for non-existent words.
+- `#I783922` - Resolved an issue where programmatically updating the `isChecked` property for a checkbox field did not work on non-rendered pages.
+- `#I780028` - Resolved an issue where the last added reply was missing after exporting the sticky note annotations.
+- `#I783430` - Resolved an issue where form fields were not visible when opening a PDF document with exactly 100 pages.
+- `#I779883` - Fixed a script error that occurred after completing measurement annotations with the provided document.
+- `#I782204` - Fixed an issue where annotation property sliders were hidden when `toolbarSettings` was applied.
+
 ## 31.2.12 (2025-11-18)
 
 ### PDF Viewer

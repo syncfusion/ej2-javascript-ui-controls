@@ -125,13 +125,14 @@ describe('Filtering module => ', () => {
         });
 
         it('Filter number column testing', (done: Function) => {
-            actionComplete = (args?: Object): void => {
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'equal', 10249, 'and', true)).toBeTruthy();
-                done();
-            };
-            gridObj.actionComplete = actionComplete;
+            gridObj.actionComplete = null;
             filterColumn(gridObj, 'OrderID', '10249');
+            setTimeout(() => { done(); }, 100);
+        });
+        
+        it('Filter number column testing', () => {
+            expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+            expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'equal', 10249, 'and', true)).toBeTruthy();
         });
 
         it('clear Filtering testing', (done: Function) => {

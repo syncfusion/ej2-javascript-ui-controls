@@ -122,9 +122,10 @@ export class Tooltip extends BaseTooltip {
         const isStockSvg: boolean = this.chart.stockChart && svgElement && (svgElement.firstChild.childNodes.length > 1);
         const isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0 && !isStockSvg);
         const tooltipDiv: HTMLDivElement = this.getTooltipElement(isTooltip);
-        if (this.chart.enableCanvas && tooltipDiv) {
+        const tooltipSvg: HTMLElement = (document.getElementById(this.chart.element.id + '_tooltip_svg'));
+        if (this.chart.enableCanvas && tooltipDiv && tooltipSvg) {
             document.getElementById(this.chart.element.id + '_Secondary_Element').appendChild(tooltipDiv);
-            tooltipDiv.appendChild(document.getElementById(this.chart.element.id + '_tooltip_svg'));
+            tooltipDiv.appendChild(tooltipSvg);
         }
         if (!this.chart.tooltip.shared) {
             this.renderSeriesTooltip(this.chart, !isTooltip, tooltipDiv);

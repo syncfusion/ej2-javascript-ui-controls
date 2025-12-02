@@ -3192,6 +3192,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.getFocusElement();
                 this.checkCollision(popupEle);
                 if (Browser.isDevice) {
+                    this.popupObj.resolveCollision();
                     if ((parseInt(this.popupWidth.toString(), 10) > window.outerWidth) &&
                     !(this.getModuleName() === 'dropdownlist' && this.allowFiltering)) {
                         this.popupObj.element.classList.add('e-wide-popup');
@@ -4561,7 +4562,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const container: HTMLElement = this.inputWrapper.container;
         const label: HTMLElement | null = container.querySelector('.e-float-text');
         const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
-        if (label && calculateWidth) {
+        if (label && calculateWidth && !(this.cssClass && this.cssClass.split(' ').indexOf('e-outline') !== -1)) {
             label.style.width = calculateWidth + 'px';
         }
     }

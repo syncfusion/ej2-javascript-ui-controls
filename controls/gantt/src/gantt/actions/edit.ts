@@ -1428,7 +1428,6 @@ export class Edit {
                     this.parent.predecessorModule.validatePredecessor(currentParent, [], '');
                     this.updateParentItemOnEditing();
                 }
-                // Check if the current parent has its own parent (grandparent)
                 if (currentParent.parentItem) {
                     currentParent = this.parent.getRecordByID(currentParent.parentItem.taskId);
                 } else {

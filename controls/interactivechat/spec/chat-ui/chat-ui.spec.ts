@@ -3294,7 +3294,6 @@ describe('ChatUI Component', () => {
             expect(displayTemplate).toContain('e-chat-mention-user-chip');
             expect(displayTemplate).toContain('data-user-id="${id}"');
         });
-
     });
 
     describe('ChatUI Mention User Tests', () => {
@@ -3443,6 +3442,7 @@ describe('ChatUI Component', () => {
     });
 
     describe('Mention Support - ', () => {
+        let mentionKeyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', code: 'ArrowDown', keyCode: 40, key: 'ArrowDown' };
         let mentionchatUI: ChatUI;
         const mentionchatUIElem: HTMLElement = createElement('div', { id: 'mentionchatUI' });
         document.body.appendChild(mentionchatUIElem);
@@ -3664,6 +3664,78 @@ describe('ChatUI Component', () => {
                     }, 200);
                 }, 300);
             }, 400);
+        });
+
+        it('keyboard interaction in mention items', (done) => {
+            const mentionUsers = [
+                { id: "user1", user: "John" },
+                { id: "user2", user: "Smith" },
+                { id: "user3", user: "Albert" },
+            ];
+
+            mentionchatUI = new ChatUI({
+                mentionUsers: mentionUsers
+            });
+            mentionchatUI.appendTo(mentionchatUIElem);
+            const mentionObj: any = (mentionchatUI as any).mentionObj;
+            mentionObj.showPopup();
+            setTimeout(() => {
+                expect(mentionObj.list.querySelector('.e-active').getAttribute('data-value') === "user1").toBe(true);
+                expect(mentionObj.list.querySelector('.e-active').querySelector('.e-chat-mention-user-name').textContent === "John").toBe(true);
+                mentionObj.onKeyUp(mentionKeyEventArgs);
+                mentionObj.keyActionHandler(mentionKeyEventArgs);
+                expect(mentionObj.list.querySelector('.e-active').getAttribute('data-value') === "user2").toBe(true);
+                expect(mentionObj.list.querySelector('.e-active').querySelector('.e-chat-mention-user-name').textContent === "Smith").toBe(true);
+                mentionObj.onKeyUp(mentionKeyEventArgs);
+                mentionObj.keyActionHandler(mentionKeyEventArgs);
+                expect(mentionObj.list.querySelector('.e-active').getAttribute('data-value') === "user3").toBe(true);
+                expect(mentionObj.list.querySelector('.e-active').querySelector('.e-chat-mention-user-name').textContent === "Albert").toBe(true);
+                mentionObj.onKeyUp(mentionKeyEventArgs);
+                mentionObj.keyActionHandler(mentionKeyEventArgs);
+                expect(mentionObj.list.querySelector('.e-active').getAttribute('data-value') === "user1").toBe(true);
+                expect(mentionObj.list.querySelector('.e-active').querySelector('.e-chat-mention-user-name').textContent === "John").toBe(true);
+                mentionObj.onKeyUp(mentionKeyEventArgs);
+                mentionObj.keyActionHandler(mentionKeyEventArgs);
+                expect(mentionObj.list.querySelector('.e-active').getAttribute('data-value') === "user2").toBe(true);
+                expect(mentionObj.list.querySelector('.e-active').querySelector('.e-chat-mention-user-name').textContent === "Smith").toBe(true);
+                done();
+            }, 500);
+        });
+
+        it('keyboard interaction in mention items with same values', (done) => {
+            const mentionUsers = [
+                { id: "user1", user: "John" },
+                { id: "user2", user: "John" },
+                { id: "user3", user: "John" },
+            ];
+
+            mentionchatUI = new ChatUI({
+                mentionUsers: mentionUsers
+            });
+            mentionchatUI.appendTo(mentionchatUIElem);
+            const mentionObj: any = (mentionchatUI as any).mentionObj;
+            mentionObj.showPopup();
+            setTimeout(() => {
+                expect(mentionObj.list.querySelector('.e-active').getAttribute('data-value') === "user1").toBe(true);
+                expect(mentionObj.list.querySelector('.e-active').querySelector('.e-chat-mention-user-name').textContent === "John").toBe(true);
+                mentionObj.onKeyUp(mentionKeyEventArgs);
+                mentionObj.keyActionHandler(mentionKeyEventArgs);
+                expect(mentionObj.list.querySelector('.e-active').getAttribute('data-value') === "user2").toBe(true);
+                expect(mentionObj.list.querySelector('.e-active').querySelector('.e-chat-mention-user-name').textContent === "John").toBe(true);
+                mentionObj.onKeyUp(mentionKeyEventArgs);
+                mentionObj.keyActionHandler(mentionKeyEventArgs);
+                expect(mentionObj.list.querySelector('.e-active').getAttribute('data-value') === "user3").toBe(true);
+                expect(mentionObj.list.querySelector('.e-active').querySelector('.e-chat-mention-user-name').textContent === "John").toBe(true);
+                mentionObj.onKeyUp(mentionKeyEventArgs);
+                mentionObj.keyActionHandler(mentionKeyEventArgs);
+                expect(mentionObj.list.querySelector('.e-active').getAttribute('data-value') === "user1").toBe(true);
+                expect(mentionObj.list.querySelector('.e-active').querySelector('.e-chat-mention-user-name').textContent === "John").toBe(true);
+                mentionObj.onKeyUp(mentionKeyEventArgs);
+                mentionObj.keyActionHandler(mentionKeyEventArgs);
+                expect(mentionObj.list.querySelector('.e-active').getAttribute('data-value') === "user2").toBe(true);
+                expect(mentionObj.list.querySelector('.e-active').querySelector('.e-chat-mention-user-name').textContent === "John").toBe(true);
+                done();
+            }, 500);
         });
     });
 

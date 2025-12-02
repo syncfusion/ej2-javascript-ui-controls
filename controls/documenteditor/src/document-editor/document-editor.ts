@@ -33,7 +33,7 @@ import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
-import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';
+import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties, CheckboxSymbolOptions } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { Revision, RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
@@ -265,6 +265,21 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     @Property(false)
     public enableSpellCheckOnScroll: boolean;
 
+    /**
+     * Gets or sets the default checkbox symbol rendering in the Document Editor.
+     *
+     * @default Tick
+     *
+     * @remarks
+     * This property customizes the visual style of checkboxes in the Document Editor to a 'Tick' or 'Cross'.
+     *
+     * **Export:** Checkboxes are exported as a Boolean (`true` or `false`) indicating their checked state, not as visual symbols.
+     *
+     * **Import:** The visual icon is rendered based on the imported Boolean value and the current `defaultCheckBoxOption` setting.
+     *
+     */
+    @Property('Tick')
+    public defaultCheckBoxOption: CheckboxSymbolOptions;
 }
 
 /**

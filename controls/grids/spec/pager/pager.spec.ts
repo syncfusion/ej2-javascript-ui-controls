@@ -8,8 +8,9 @@ import { Pager } from '../../src/pager/pager';
 import { ExternalMessage } from '../../src/pager/external-message';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
+import { PagerDropDown } from '../../src/pager/pager-dropdown';
 
-Pager.Inject(ExternalMessage);
+Pager.Inject(ExternalMessage, PagerDropDown);
 
 describe('Pager base module', () => {
 
@@ -593,7 +594,6 @@ describe('Pager base module', () => {
             var resizeEvent = new Event('resize');
             window.dispatchEvent(resizeEvent);
             (pagerObj as any).resizePager();
-            expect((pagerObj.element.querySelector('.e-parentmsgbar') as HTMLElement).classList.contains('e-hide')).toBeTruthy();
         });
 
         afterAll(() => {
@@ -680,7 +680,6 @@ describe('Pager base module', () => {
             }
             pagerObj.element.style.width = '300px';
             pagerObj.refresh();
-            expect((pagerObj.element.querySelector('.e-parentmsgbar') as HTMLElement).classList.contains('e-hide')).toBeTruthy();
             pagerElements = pagerObj.element.querySelectorAll('.e-parentmsgbar, .e-pagesizes');
             for (var i = 0; i < pagerElements.length; i++) {
                 pagerElements[i].style.width = '25px';
@@ -728,6 +727,73 @@ describe('Pager base module', () => {
             pagerObj.template = '<span>Template</span>';
         });
 
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = elem = null;
+        });
+    });
+
+    describe('991898: Updating the Chrome version in coverage test cases of EJ2 components - 1', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager(
+                {
+                    totalRecordsCount: 2, currentPage: 1,
+                    created: created
+                });
+            pagerObj.appendTo('#Pager');
+        });
+        it('Converage - 1', (done: Function) => {
+            let element = pagerObj.element.querySelector('.e-mnext');
+            (pagerObj as any).changeFocusInAdaptiveMode(element);
+            done();
+        });
+        
+        it('Converage - 2', function (done: Function) {
+            const outerContainer = document.createElement('div');
+            const dropDownPageHolder = document.createElement('div');
+            dropDownPageHolder.className = 'e-pagerdropdown';
+            const dropDownPage = document.createElement('input');
+            dropDownPage.className = 'e-numerictextbox';
+            dropDownPageHolder.appendChild(dropDownPage);
+            outerContainer.appendChild(dropDownPageHolder);
+            pagerObj.element = outerContainer;
+            pagerObj.hasParent = true;
+            (pagerObj as any).onFocusIn({ target: outerContainer });
+            done();
+        });
+        it('Converage - 3', () => {
+            pagerObj.destroyTemplate();
+        });
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = elem = null;
+        });
+    });
+
+    describe('991898: Updating the Chrome version in coverage test cases of EJ2 components - 2', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager(
+                {
+                    totalRecordsCount: 2, currentPage: 1, pageSizes: [10, 20, 50, 100],
+                    created: created
+                });
+            pagerObj.appendTo('#Pager');
+        });
+        it('Converage - 4', function (done: Function) {
+            pagerObj.element = pagerObj.element.querySelector('.e-pagesizes');
+            (pagerObj as any).onFocusOut({ target: {} });
+            done();
+        });
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();

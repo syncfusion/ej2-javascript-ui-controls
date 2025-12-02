@@ -1667,20 +1667,28 @@ describe('Checkbox Filter module => ', () => {
             (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderDate').querySelector('.e-filtermenudiv')));
         });
 
-        it('EJ2-7690-Search In Filtering Dialog Box Get Closed While Press "Enter Key" ', (done: Function) => {
+        it('EJ2-7690-Search In Filtering Dialog Box Get Closed While Press "Enter Key" - step 1 ', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterAfterOpen'){
+                if (args.requestType === 'filterAfterOpen') {
                     (<any>gridObj.filterModule).filterModule.checkBoxBase.sInput.value = 'Vinet';
-                    (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({target: (<any>gridObj.filterModule).filterModule.checkBoxBase.sInput});
-                }
-                if (args.requestType === 'filtering') {
-                    expect(gridObj.currentViewData[0]['CustomerID']).toBe('VINET');
-                    gridObj.actionComplete =null;
+                    gridObj.actionComplete = null;
                     done();
                 }
             };
-            gridObj.actionComplete = actionComplete;        
+            gridObj.actionComplete = actionComplete;
             (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('EJ2-7690-Search In Filtering Dialog Box Get Closed While Press "Enter Key" - step2 ', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filtering') {
+                    expect(gridObj.currentViewData[0]['CustomerID']).toBe('VINET');
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: (<any>gridObj.filterModule).filterModule.checkBoxBase.sInput });
         });
 
         // time - delayed issue

@@ -4295,7 +4295,7 @@ export class Layout {
                     fieldBegin.line.children.splice(index, 0, checkBoxTextElement);
                     checkBoxTextElement.characterFormat.copyFormat(fieldBegin.characterFormat);
                     if (formFieldData.checked) {
-                        checkBoxTextElement.text = String.fromCharCode(9745);
+                        checkBoxTextElement.text = this.viewer.owner.editorModule.getCheckBoxText();
                     } else {
                         checkBoxTextElement.text = String.fromCharCode(9744);
                     }

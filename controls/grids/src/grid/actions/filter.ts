@@ -678,7 +678,8 @@ export class Filter implements IAction {
                 if (this.contentRefresh && this.skipUid(e.properties[`${col}`])) {
                     this.parent.notify(events.modelChanged, args);
                     if ((<{ cancel?: boolean }>args).cancel) {
-                        if ((this.filterSettings.type === 'CheckBox' || this.filterSettings.type === 'Excel')){
+                        if ((this.filterSettings.type === 'CheckBox' || this.filterSettings.type === 'Excel') &&
+                           !(this.column && this.column.filter && this.column.filter.type === 'Menu')) {
                             this.filterSettings.columns = (this.actualData.length <= 1) ? this.checkboxPrevFilterObject :
                                 this.checkboxFilterObject;
                             this.actualPredicate[this.column.field] = this.filterSettings.columns;

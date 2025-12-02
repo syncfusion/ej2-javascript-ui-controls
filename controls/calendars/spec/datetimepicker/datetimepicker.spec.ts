@@ -5243,5 +5243,33 @@ describe('Null or undefined value testing', () => {
         datetimepickerObj.destroy();
     });
 });
+describe('Masked date time code coverage improvements ', () => {
+    let date: DateTimePicker;
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'date' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        if (date) {
+            date.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Create Mask', () => {
+        datetimepicker = new DateTimePicker({
+            value: new Date('5/6/2017 10:30 AM'),
+            enableMask: true,
+            format: 'MM/dd/yyyy hh:mm'
+            
+        });
+        let mask : MaskedDateTime = new MaskedDateTime(datetimepicker);
+        (<any>mask).parent = datetimepicker;
+        datetimepicker.appendTo('#date');
+        (<any>mask).normalizeTokenIndex(11 , true);
+        (<any>mask).normalizeTokenIndex(12 , false);
+        datetimepicker.destroy();
+    });
+});
 });
 

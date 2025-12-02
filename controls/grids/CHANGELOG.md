@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 31.2.16 (2025-12-02)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I783563` - The issue where `Add Current Selection to Filter` in Excel style filtering was not working when no existing filter was applied to the grid has been resolved.
+- `#I786132` - Resolved a script error that occurred when opening the filter dialog in a grid with `enableInfiniteScrolling` enabled in `filterSettings` while using the `RemoteSaveAdaptor`.
+- `#I788372` - Fixed a script error that occurred when the grid was rendered with `CheckBox` filtering and one column configured with `Menu` filtering, when the filtering action was cancelled in the `actionBegin` event.
+- `#I786004` - The issue where changing the page size via the pager dropdown did not update the page size correctly when the `enableCache` property was set in the `DataManager` within the grid has been resolved.
+
 ## 31.2.15 (2025-11-25)
 
 ### Grid
@@ -10,7 +21,6 @@
 
 - `#I782616` - The issue where the header was not refreshed after updating the `sortSettings` in the grid has been resolved.
 - `#I783105` - The issue where `currentViewData` was not updated properly after row reordering with remote data has been resolved.
-- `#I783563` - The issue where `Add Current Selection to Filter` in Excel style filtering was not working when no existing filter was applied to the grid has been resolved.
 - `#I780338` - Resolved an issue where the `hierarchyExportMode` was not working in a hierarchy grid with pagination enabled.
 - `#I782594` - Resolved an issue where the filter value was not updated properly when filtering was performed immediately in the custom filter dialog on a string column.
 

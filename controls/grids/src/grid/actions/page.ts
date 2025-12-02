@@ -5,7 +5,7 @@ import { Pager } from '../../pager/pager';
 import { PagerDropDown } from '../../pager/pager-dropdown';
 import { ExternalMessage } from '../../pager/external-message';
 import { PageSettingsModel } from '../models/page-settings-model';
-import { IGrid, IAction, NotifyArgs } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, PageEventArgs } from '../base/interface';
 import { extend as gridExtend, getActualProperties, isActionPrevent, addRemoveEventListener, appendChildren } from '../base/util';
 import * as events from '../base/constant';
 import { PagerModel } from '../../pager';
@@ -242,10 +242,13 @@ export class Page implements IAction {
         gObj.pageSettings.pageSize = this.pagerObj.pageSize;
         gObj.prevPageMoving = false;
         const prevPage: number = this.pageSettings.currentPage;
-        const args: Object = {
+        const args: object = {
             cancel: false, requestType: 'paging', previousPage: prevPage,
             currentPage: e.currentPage, pageSize: gObj.pageSettings.pageSize, type: events.actionBegin
         };
+        if (e.oldProp && e.oldProp.pageSize) {
+            (args as PageEventArgs).previousPageSize = e.oldProp.pageSize;
+        }
         if (!this.isCancel) {
             this.pageSettings.currentPage = e.currentPage;
             this.parent.notify(events.modelChanged, args);

@@ -82,7 +82,7 @@ export class PivotEngine {
     /** @hidden */
     public headerCollection: HeaderCollection = { rowHeaders: [], columnHeaders: [], rowHeadersCount: 0, columnHeadersCount: 0 };
     /** @hidden */
-    public lastMember: { [key: string]: string | number | Date } = {};
+    public lastMember: { [key: string]: string | number | Date | (string | number | Date)[] } = {};
     /** @hidden */
     public isValueFilterEnabled: boolean;
     /** @hidden */
@@ -2740,8 +2740,19 @@ export class PivotEngine {
                 const levelName: string[] =
                     (headers[count as number].valueSort.levelName as string).split(this.valueSortSettings.headerDelimiter);
                 if (drilledItem.memberName === levelName.join(drilledItem.delimiter ? drilledItem.delimiter : '**')) {
+                    const rowSubTotals: boolean = drilledItem.axis === 'row' && this.dataSourceSettings && this.dataSourceSettings.showSubTotals &&
+                        this.dataSourceSettings.showRowSubTotals && headers[count as number] && headers[count as number].valueSort &&
+                        headers[count as number].valueSort.axis && this.fieldList &&
+                        this.fieldList[headers[count as number].valueSort.axis as string] ? (!isNullOrUndefined(
+                            this.fieldList[headers[count as number].valueSort.axis as string].showSubTotals
+                        ) ? this.fieldList[headers[count as number].valueSort.axis as string].showSubTotals : true) : undefined;
+                    const canUpdateRowCount: boolean = this.isPagingOrVirtualizationEnabled && this.customProperties.isTabularLayout && drilledItem.axis === 'row' &&
+                        this.rowCount > 0 && !rowSubTotals;
                     if (drilledItem.action === 'down') {
                         headers[count as number].isDrilled = true;
+                        if (canUpdateRowCount) {
+                            this.rowCount -= this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1;
+                        }
                         headers[count as number].members = this.getIndexedHeaders(
                             fields, this.data, position + 1, headers[count as number].index, drilledItem.axis, drilledItem.memberName.
                                 split(drilledItem.delimiter ? drilledItem.delimiter : '**').join(this.valueSortSettings.headerDelimiter));
@@ -2761,6 +2772,9 @@ export class PivotEngine {
                         }
                     } else {
                         headers[count as number].isDrilled = false;
+                        if (canUpdateRowCount) {
+                            this.rowCount += this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1;
+                        }
                         this.updateHeadersCount(headers[count as number].members, drilledItem.axis, position, fields, 'minus', true);
                         headers[count as number].members = [];
                         if (drilledItem.axis === 'row' && !this.customProperties.isTabularLayout) {
@@ -2886,13 +2900,21 @@ export class PivotEngine {
                 }
                 rawHeaders = this.getSortedHeaders(
                     rawHeaders.concat(excessHeaders), this.fieldList[headersInfo.fields[0].name].sort).concat(grandHeader);
+                const rowFlag: boolean = (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) ? true :
+                    (this.dataSourceSettings.rows.length > 0) ? false : true;
+                const columnFlag: boolean = (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) ?
+                    true : (this.dataSourceSettings.columns.length > 0) ? false : true;
                 if (headersInfo.axis === 'row') {
                     this.cMembers = this.getIndexedHeaders(this.dataSourceSettings.columns, this.data, 0, this.filterMembers, 'column', '');
-                    this.insertAllMember(this.cMembers, this.filterMembers, '', 'column');
+                    if (columnFlag) {
+                        this.insertAllMember(this.cMembers, this.filterMembers, '', 'column');
+                    }
                 }
                 else {
                     this.rMembers = this.getIndexedHeaders(this.dataSourceSettings.rows, this.data, 0, this.filterMembers, 'row', '');
-                    this.insertAllMember(this.rMembers, this.filterMembers, '', 'row');
+                    if (rowFlag) {
+                        this.insertAllMember(this.rMembers, this.filterMembers, '', 'row');
+                    }
                 }
             }
             if (headersInfo.axis === 'row') {
@@ -3020,9 +3042,18 @@ export class PivotEngine {
         }
         while (lenCnt < headers.length) {
             if (axis === 'row') {
-                this.rowCount = this.rowCount - (
-                    action === 'plus' ? -(this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1) :
-                        (this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1));
+                const rowSubTotals: boolean = this.dataSourceSettings && this.dataSourceSettings.showSubTotals &&
+                    this.dataSourceSettings.showRowSubTotals && headers[lenCnt as number] && headers[lenCnt as number].valueSort &&
+                    headers[lenCnt as number].valueSort.axis && this.fieldList &&
+                    this.fieldList[headers[lenCnt as number].valueSort.axis as string] ? (!isNullOrUndefined(
+                        this.fieldList[headers[lenCnt as number].valueSort.axis as string].showSubTotals
+                    ) ? this.fieldList[headers[lenCnt as number].valueSort.axis as string].showSubTotals : true) : undefined;
+                if (!(this.isPagingOrVirtualizationEnabled && this.customProperties.isTabularLayout && !rowSubTotals &&
+                    headers[lenCnt as number].members.length && headers[lenCnt as number].hasChild)) {
+                    this.rowCount = this.rowCount - (action === 'plus'
+                        ? -(this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1)
+                        : (this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1));
+                }
             } else {
                 this.columnCount = this.columnCount - (
                     action === 'plus' ? -(this.valueAxis === 1 ? 1 : this.dataSourceSettings.values.length) :
@@ -3702,9 +3733,18 @@ export class PivotEngine {
                 if (!this.frameHeaderObjectsCollection) {
                     if (axis === 'row') {
                         const isParent: boolean = hierarchy[iln as number].isDrilled && hierarchy[iln as number].hasChild;
-                        this.rowCount += (this.rowValuesLength + (
-                            isParent && this.showSubTotalsAtBottom && !this.customProperties.isTabularLayout ? 1 : 0
-                        ));
+                        const shouldAddSubtotalRow: boolean = isParent && this.showSubTotalsAtBottom &&
+                            !this.customProperties.isTabularLayout;
+                        const shouldRemoveForTabular: boolean = this.isPagingOrVirtualizationEnabled &&
+                            this.customProperties.isTabularLayout && isParent && this.dataSourceSettings &&
+                            (!this.dataSourceSettings.showRowSubTotals || !this.dataSourceSettings.showSubTotals ||
+                                !(this.fieldList && hierarchy[iln as number] && hierarchy[iln as number].valueSort &&
+                                    hierarchy[iln as number].valueSort.axis as string &&
+                                    this.fieldList[hierarchy[iln as number].valueSort.axis as string] &&
+                                    this.fieldList[hierarchy[iln as number].valueSort.axis as string].showSubTotals)
+                            );
+                        const additionalRows: number = (shouldAddSubtotalRow ? 1 : 0) - (shouldRemoveForTabular ? 1 : 0);
+                        this.rowCount += (this.rowValuesLength + additionalRows);
                     } else {
                         this.columnCount += this.colValuesLength;
                     }
@@ -3986,7 +4026,9 @@ export class PivotEngine {
                 if (axis === 'column') {
                     this.colFirstLvl = this.colFirstLvl + headers[pos as number].level;
                 } else {
-                    this.rowFirstLvl = this.rowFirstLvl + headers[pos as number].level;
+                    if (!this.customProperties.isTabularLayout) {
+                        this.rowFirstLvl = this.rowFirstLvl + headers[pos as number].level;
+                    }
                 }
                 this.pageInLimit = true;
             }
@@ -4007,12 +4049,26 @@ export class PivotEngine {
                     }
                 }
             }
-            if (headers[pos as number].members.length > 0 && axis === 'row') {
-                this.lastMember[headers[pos as number].actualText] =
-                    headers[pos as number].members[headers[pos as number].members.length - 1].valueSort.levelName;
+            if (axis === 'row' && headers[pos as number] && headers[pos as number].members &&
+                headers[pos as number].members.length > 0 &&
+                headers[pos as number].members[headers[pos as number].members.length - 1] &&
+                headers[pos as number].members[headers[pos as number].members.length - 1].valueSort &&
+                headers[pos as number].members[headers[pos as number].members.length - 1].valueSort.levelName) {
+                this.addLastMember(
+                    headers[pos as number].actualText as string,
+                    headers[pos as number].members[headers[pos as number].members.length - 1].valueSort.levelName as string
+                );
             }
             slicedHeaders.push(headers[pos as number].members.length > 0 ?
                 this.removeChildMembers(headers[pos as number] as { [key: string]: Object }) : headers[pos as number]);
+            const isParent: boolean = headers[pos as number].isDrilled && headers[pos as number].hasChild;
+            if (this.isPagingOrVirtualizationEnabled && this.customProperties.isTabularLayout && isParent &&
+                this.dataSourceSettings && (!this.dataSourceSettings.showRowSubTotals || !this.dataSourceSettings.showSubTotals ||
+                    !(this.fieldList && headers[pos as number] && headers[pos as number].valueSort &&
+                        headers[pos as number].valueSort.axis as string && this.fieldList[headers[pos as number].valueSort.axis as string]
+                        && this.fieldList[headers[pos as number].valueSort.axis as string].showSubTotals))) {
+                this.memberCnt -= 1;
+            }
             if (headers[pos as number].members.length > 0) {
                 if (axis === 'column') {
                     this.memberCnt -= !(this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals &&
@@ -4033,6 +4089,25 @@ export class PivotEngine {
         }
         return slicedHeaders;
     }
+
+    /**
+     * Stores the last member level name for each field member in the pivot table.
+     *
+     * @param  {string} key - The field member key identifier in the pivot table hierarchy.
+     * @param  {string} levelName - The member level name to be stored or added to the field member.
+     * @returns {void}
+     */
+    private addLastMember(key: string, levelName: string): void {
+        const lastFieldMemberName: string = this.lastMember[key as string] as string;
+        if (!lastFieldMemberName) {
+            this.lastMember[key as string] = levelName;
+        } else if (typeof lastFieldMemberName === 'string' && lastFieldMemberName !== levelName) {
+            this.lastMember[key as string] = [lastFieldMemberName, levelName] as string[];
+        } else if (Array.isArray(lastFieldMemberName) && !lastFieldMemberName.includes(levelName)) {
+            lastFieldMemberName.push(levelName);
+        }
+    }
+
     private removeChildMembers(member: { [key: string]: Object }): IAxisSet {
         const keys: string[] = Object.keys(member);
         let keyPos: number = 0;
@@ -4233,11 +4308,31 @@ export class PivotEngine {
                 subTotal.members = []; subTotal.isDrilled = false; subTotal.hasChild = false;
                 subTotal.isSum = true; subTotal.type = 'sum';
                 const parentIndex: number = isValueAxis ? this.getParentIndex(reformAxis, subTotal) : 0;
-                if ((this.enableVirtualization && reformAxis[tnum as number].members &&
-                    reformAxis[tnum as number].members[reformAxis[tnum as number].members.length - 1]
-                    && reformAxis[tnum as number].members[reformAxis[tnum as number].members.length - 1].valueSort &&
-                    reformAxis[tnum as number].members[reformAxis[tnum as number].members.length - 1].valueSort.levelName ===
-                    this.lastMember[reformAxis[tnum as number].actualText]) || !this.enableVirtualization) {
+                let levelName: string;
+                let expectedLevels: string | string[];
+                let matchesExpectedLevel: boolean = false;
+                if (reformAxis && reformAxis[tnum as number] && reformAxis[tnum as number].members &&
+                    reformAxis[tnum as number].members.length > 0) {
+                    const lastMember: {
+                        valueSort?: { levelName?: string };
+                    } = reformAxis[tnum as number].members[reformAxis[tnum as number].members.length - 1];
+                    if (lastMember.valueSort && typeof lastMember.valueSort.levelName === 'string') {
+                        levelName = lastMember.valueSort.levelName;
+                    }
+                }
+                if (this.lastMember && reformAxis && reformAxis[tnum as number] &&
+                    typeof reformAxis[tnum as number].actualText === 'string' &&
+                    this.lastMember[reformAxis[tnum as number].actualText]) {
+                    expectedLevels = this.lastMember[reformAxis[tnum as number].actualText] as string;
+                }
+                if (typeof levelName === 'string' && expectedLevels) {
+                    if (Array.isArray(expectedLevels)) {
+                        matchesExpectedLevel = expectedLevels.indexOf(levelName) !== -1;
+                    } else if (typeof expectedLevels === 'string') {
+                        matchesExpectedLevel = expectedLevels === levelName;
+                    }
+                }
+                if (!this.enableVirtualization || (this.enableVirtualization && matchesExpectedLevel)) {
                     this.getTableData([subTotal], reformAxis, columns, tnum, data, vlt, level, rTotal, cTotal, parentIndex);
                 }
                 parentIndexes = [tnum as number];

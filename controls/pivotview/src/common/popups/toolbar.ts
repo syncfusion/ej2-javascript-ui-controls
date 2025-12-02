@@ -105,6 +105,7 @@ export class Toolbar {
             this.toolbar.appendTo(element);
         }
         this.toolbar.width = this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber();
+        this.toolbar.element.style.minWidth = this.parent.minWidth ? this.parent.minWidth + 'px' : '400px';
         if (this.parent.chart) {
             this.parent.chart.setProperties(
                 { width: this.parent.grid ? this.parent.getGridWidthAsNumber().toString() : this.parent.getWidthAsNumber().toString() },

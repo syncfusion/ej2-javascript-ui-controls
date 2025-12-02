@@ -397,6 +397,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private isValueEmpty: boolean = false;
     private isPropChange: boolean = false;
     private isRuleClicked: boolean = false;
+    private groupCloned: boolean = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private ddTree: any;
 
@@ -1054,7 +1055,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 break;
             case target.className.indexOf('e-clone-grp-btn') > -1:
                 this.actionButton = target;
-                this.cloneGrpBtnClick = true;
+                this.cloneGrpBtnClick = this.groupCloned = true;
                 this.isRuleClicked = true;
                 this.groupClone(closest(target, '.e-group-container'));
                 break;
@@ -4412,7 +4413,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public addGroups(groups: RuleModel[], groupID: string): void {
         if (this.isAddSuccess || this.element.querySelectorAll('.e-group-container').length <= this.maxGroupCount) {
             groupID = this.element.id + '_' + groupID;
-            const groupElem: Element = document.getElementById(groupID);
+            const groupElem: Element = document.getElementById(groupID); const temp: number = this.groupIndex;
             const rule: RuleModel = this.getParentGroup(groupElem); const grouplen: number = groups.length;
             if (grouplen) {
                 this.isPublic = true;
@@ -4431,6 +4432,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     not = this.updatedRule.not;
                     isLocked = this.updatedRule.isLocked;
                 }
+                if (this.groupCloned) {
+                    const parent: HTMLElement = this.element.querySelector('#' + groupID);
+                    const topLevelGroups: NodeListOf<HTMLElement> = parent.querySelectorAll(':scope > .e-group-body > .e-rule-list > .e-group-container');
+                    this.groupIndex = topLevelGroups.length > 1 ? topLevelGroups.length - 1 : 0;
+                }
                 if (this.groupIndex < 0) {
                     if (this.enableNotCondition) {
                         rule.rules.push({ 'condition': condition, 'not': not, rules: [] });
@@ -4444,6 +4450,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         rule.rules.splice(this.groupIndex + 1, 0, { condition: condition, rules: [], isLocked: isLocked });
                     }
                 }
+                if (this.groupCloned) { this.groupIndex = temp; }
             }
             if (!this.headerTemplate) {
                 this.disableRuleCondition(groupElem, rule, null, this.enableSeparateConnector ? true : null);
@@ -6785,13 +6792,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let isCloneGroup: boolean = this.showButtons.cloneGroup;
         groupID = groupID.replace(this.element.id + '_', '');
         this.groupIndex = index;
-        this.cloneGrpBtnClick = true;
+        this.cloneGrpBtnClick = this.groupCloned = true;
         this.showButtons.cloneGroup = true;
         this.addGroups([{ 'condition': group.condition, 'not': group.not, 'rules': group.rules }], groupID);
         this.groupIndex = -1;
         this.cloneGrpBtnClick = false;
         this.showButtons.cloneGroup = isCloneGroup;
-        isCloneGroup = false;
+        isCloneGroup = this.groupCloned = false;
     }
 
     /**
@@ -7291,6 +7298,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.groupIndex = Array.prototype.indexOf.call(target.closest('.e-rule-list').children, target.closest('.e-group-container'));
         this.addGroups([{ 'condition': group.condition, 'not': group.not, 'rules': group.rules }], groupId);
         this.groupIndex = -1;
+        this.groupCloned = false;
     }
 
     private ruleClone(target: Element): void {

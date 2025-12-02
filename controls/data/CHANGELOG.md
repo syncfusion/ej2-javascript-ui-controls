@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 31.2.15 (2025-11-25)
+## 31.2.16 (2025-12-02)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I786132` - Resolved a script error that occurred when opening the filter dialog in a grid with `enableInfiniteScrolling` enabled in filterSettings while using the `RemoteSaveAdaptor`.
+- `#I786004` - The issue where changing the pageSize via the pager dropdown did not update the page size correctly when the `enableCache` property was set in the `DataManager` within the grid has been resolved.
+
+## 31.2.5 (2025-11-04)
 
 ### DataManager
 

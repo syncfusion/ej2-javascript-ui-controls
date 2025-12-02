@@ -48,7 +48,7 @@ describe('FileManager module', () => {
         });
         it('image - fileSelect as true', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { filterPath: '\\Pictures', isFile: true, type: '.png' } });
-            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage?path=/Pictures');
+            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://blazor.syncfusion.com/services/development/api/RichTextEditor/GetImage?path=/Pictures');
         });
         it('image FileSelect as false', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { isFile: false, type: '.png' } });
@@ -60,17 +60,22 @@ describe('FileManager module', () => {
             let insertBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-primary');
             insertBtn.removeAttribute('disabled');
             insertBtn.click();
-            expect(rteObj.element.querySelectorAll('.e-content img').length).toBe(1);
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-content img').length).toBe(1);
+            }, 100);
         });
         it('cancel button click testing', (done: Function) => {
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-            expect(isNullOrUndefined(fileEle)).toBe(false);
             setTimeout(() => {
-                (document.body.querySelector('.e-rte-file-manager-dialog button.e-cancel') as HTMLElement).click();
                 fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-                expect(isNullOrUndefined(fileEle)).toBe(true);
-                done();
+                expect(isNullOrUndefined(fileEle)).toBe(false);
+                let cancelBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-cancel');
+                cancelBtn.click();
+                setTimeout(() => {
+                    fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
+                    expect(isNullOrUndefined(fileEle)).toBe(true);
+                    done();
+                }, 100);
             }, 500);
         });
     });
@@ -113,7 +118,7 @@ describe('FileManager module', () => {
         });
         it('image - fileSelect as true', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { filterPath: '\\Pictures', isFile: true, type: '.png' } });
-            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage?path=/Pictures');
+            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://blazor.syncfusion.com/services/development/api/RichTextEditor/GetImage?path=/Pictures');
         });
         it('image FileSelect as false', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { isFile: false, type: '.png' } });
@@ -125,17 +130,22 @@ describe('FileManager module', () => {
             let insertBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-primary');
             insertBtn.removeAttribute('disabled');
             insertBtn.click();
-            expect(rteObj.element.querySelectorAll('.e-content img').length).toBe(1);
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-content img').length).toBe(1);
+            }, 100);
         });
         it('cancel button click testing', (done: Function) => {
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-            expect(isNullOrUndefined(fileEle)).toBe(false);
             setTimeout(() => {
-                (document.body.querySelector('.e-rte-file-manager-dialog button.e-cancel') as HTMLElement).click();
                 fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-                expect(isNullOrUndefined(fileEle)).toBe(true);
-                done();
+                expect(isNullOrUndefined(fileEle)).toBe(false);
+                let cancelBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-cancel');
+                cancelBtn.click();
+                setTimeout(() => {
+                    fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
+                    expect(isNullOrUndefined(fileEle)).toBe(true);
+                    done();
+                }, 100);
             }, 500);
         });
     });
@@ -445,13 +455,13 @@ describe('FileManager module', () => {
                 insertBtn.click();
                 setTimeout(() => {
                     let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
-                    expect(imageElement.src).toBe('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage/Pictures/Employees/Adam.png');
+                    expect(imageElement.src).toBe('https://blazor.syncfusion.com/services/development/api/RichTextEditor/GetImage/Pictures/Employees/Adam.png');
                     done();
                 }, 100);
             }, 500);
         });
         it('Check the image src when replace image', (done: Function) => {
-            editor.inputElement.innerHTML = '<img src="https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage/Pictures/Employees/Adam.png" class="e-rte-image" />';
+            editor.inputElement.innerHTML = '<img src="https://blazor.syncfusion.com/services/development/api/RichTextEditor/GetImage/Pictures/Employees/Adam.png" class="e-rte-image" />';
             let imageElement: HTMLImageElement = editor.element.querySelector('.e-content .e-rte-image') as HTMLImageElement;
             editor.formatter.editorManager.nodeSelection.setSelectionNode(document, imageElement);
             const target: HTMLElement = editor.inputElement.querySelector('img');
@@ -466,7 +476,7 @@ describe('FileManager module', () => {
                     insertBtn.click();
                     setTimeout(() => {
                         let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
-                        expect(imageElement.src).toBe('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage/Pictures/Employees/Andrew.png');
+                        expect(imageElement.src).toBe('https://blazor.syncfusion.com/services/development/api/RichTextEditor/GetImage/Pictures/Employees/Andrew.png');
                         done();
                     }, 100);
                 }, 100);

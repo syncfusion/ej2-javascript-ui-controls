@@ -1658,7 +1658,7 @@ describe("Toolbar - Actions Module", () => {
     describe("Expand toolbar testing", () => {
         let rteObj: any;
         let rteEle: HTMLElement;
-
+        let toolbarHeight: number;
         beforeAll((done: DoneFn) => {
             rteObj = renderRTE({
                 width: '200px',
@@ -1688,8 +1688,11 @@ describe("Toolbar - Actions Module", () => {
 
         it("Expand popup open testing", (done: Function) => {
             let trg: HTMLElement = document.querySelector('.e-hor-nav');
+            toolbarHeight = rteObj.toolbarModule.getToolbarElement().getBoundingClientRect().height;
             trg.click();
             setTimeout(() => {
+                const currentToolbarHeight: number = rteObj.toolbarModule.getToolbarElement().getBoundingClientRect().height;
+                expect(currentToolbarHeight).toBeGreaterThan(toolbarHeight);
                 expect(document.querySelectorAll(".e-toolbar-extended")[0].classList.contains('e-popup-close')).toBe(false);
                 expect(document.querySelectorAll(".e-toolbar-extended")[0].classList.contains('e-popup-open')).toBe(true);
                 done();
@@ -1709,6 +1712,38 @@ describe("Toolbar - Actions Module", () => {
         it("resize event trigger testing", () => {
             rteObj.resizeHandler();
             expect(document.querySelector(".e-richtexteditor").classList.contains("e-rte-tb-expand")).toBe(true);
+        });
+    });
+
+    describe("876912 - Use the flex to align the toolbar and editor area - 3 ", () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        let toolbarHeight: number;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                width: '200px',
+                toolbarSettings: {
+                    type: ToolbarType.Expand
+                },
+                iframeSettings: {
+                    enable: true
+                }
+            });
+            rteEle = rteObj.element;
+            rteEle.style.height = 300 + 'px';
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Check for the RTE Toolbar Height and Content Height after clicking the toolbar expand icon", (done: Function) => {
+            let trg: HTMLElement = document.querySelector('.e-hor-nav');
+            toolbarHeight = rteObj.toolbarModule.getToolbarElement().getBoundingClientRect().height;
+            trg.click();
+            setTimeout(() => {
+                const currentToolbarHeight: number = rteObj.toolbarModule.getToolbarElement().getBoundingClientRect().height;
+                expect(currentToolbarHeight).toBeGreaterThan(toolbarHeight);
+                done();
+            }, 400);
         });
     });
 
@@ -2261,9 +2296,11 @@ describe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => 
         ((rteObj as any).toolbarModule as any).destroy();
         expect(((rteObj as any).toolbarModule as any).isDestroyed).toBe(true);
         detach(rteObj.element);
-        const allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-        expect(allDropDownPopups.length).toBe(0);
-        done();
+        setTimeout(() => {
+            const allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+            expect(allDropDownPopups.length).toBe(0);
+            done();
+        }, 200);
     });
 });
 

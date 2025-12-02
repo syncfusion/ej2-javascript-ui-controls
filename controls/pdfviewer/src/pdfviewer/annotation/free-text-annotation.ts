@@ -952,7 +952,7 @@ export class FreeTextAnnotation {
                 this.selectedAnnotation.wrapper.children[1].margin.left = this.freeTextPaddingLeft + 1;
                 this.selectedAnnotation.wrapper.children[1].margin.top =
                  ((parseFloat(this.inputBoxElement.style.paddingTop) / Math.max(1, zoomFactor))) + lineSpace - 1;
-                this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName);
+                this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName, this.previousText);
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 this.modifyInCollection('bounds', pageIndex, this.selectedAnnotation, isNewlyAdded);

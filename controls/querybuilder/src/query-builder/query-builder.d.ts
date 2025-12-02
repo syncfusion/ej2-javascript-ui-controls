@@ -350,6 +350,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private isValueEmpty;
     private isPropChange;
     private isRuleClicked;
+    private groupCloned;
     private ddTree;
     /**
      * Triggers when the component is created.

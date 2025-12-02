@@ -4120,8 +4120,8 @@ describe("896253 - ImageRemoving event not get triggered when we delete the past
     beforeAll((done: Function) => {
         rteObj = renderRTE({
             insertImageSettings: {
-                saveUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/SaveFile',
-                path:   'https://ej2services.syncfusion.com/js/development/RichTextEditor/'
+                saveUrl: 'https://blazor.syncfusion.com/services/development/api/RichTextEditor/SaveFile',
+                path:   'https://blazor.syncfusion.com/services/development/RichTextEditor/'
             },
             imageUploading: function (args) {
                 if (rteObj.toolbarModule.baseToolbar.toolbarObj.element.className.indexOf('e-overlay') > 0) {

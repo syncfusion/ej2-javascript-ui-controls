@@ -1182,15 +1182,15 @@ export class ToolbarModule {
         }
         const frame: HTMLElement = document.querySelector('#' + id + '_frame');
         if (frame && ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop)) {
-            frame.classList.add('e-overlay');
+            frame.parentElement.classList.add('e-overlay');
         } else if (frame) {
-            frame.classList.remove('e-overlay');
+            frame.parentElement.classList.remove('e-overlay');
         }
         const ratio: HTMLElement = document.querySelector('#' + id + '_aspectratio');
         if (ratio && ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop)) {
-            ratio.classList.add('e-overlay');
+            ratio.parentElement.classList.add('e-overlay');
         } else if (ratio) {
-            ratio.classList.remove('e-overlay');
+            ratio.parentElement.classList.remove('e-overlay');
         }
     }
 
@@ -1416,18 +1416,18 @@ export class ToolbarModule {
             (isNullOrUndefined(parent.activeObj.pointColl) || (parent.activeObj.pointColl
             && parent.activeObj.pointColl.length === 0)) &&
             isNullOrUndefined(obj['freehandDrawSelectedId'])) {
-            if (duplicateElement) {duplicateElement.classList.add('e-overlay'); }
-            if (removeElement) {removeElement.classList.add('e-overlay'); }
-            if (editTextElement) {editTextElement.classList.add('e-overlay'); }
-            if (zOrderElement) {zOrderElement.classList.add('e-overlay'); }
+            if (duplicateElement) {duplicateElement.parentElement.classList.add('e-overlay'); }
+            if (removeElement) {removeElement.parentElement.classList.add('e-overlay'); }
+            if (editTextElement) {editTextElement.parentElement.classList.add('e-overlay'); }
+            if (zOrderElement) {zOrderElement.parentElement.classList.add('e-overlay'); }
         } else {
-            if (duplicateElement) {duplicateElement.classList.remove('e-overlay'); }
-            if (removeElement) {removeElement.classList.remove('e-overlay'); }
-            if (editTextElement) {editTextElement.classList.remove('e-overlay'); }
-            if (zOrderElement) {zOrderElement.classList.remove('e-overlay'); }
+            if (duplicateElement) {duplicateElement.parentElement.classList.remove('e-overlay'); }
+            if (removeElement) {removeElement.parentElement.classList.remove('e-overlay'); }
+            if (editTextElement) {editTextElement.parentElement.classList.remove('e-overlay'); }
+            if (zOrderElement) {zOrderElement.parentElement.classList.remove('e-overlay'); }
         }
         if (zOrderElement && (parent.shapeColl.length === 0 || (obj['freehandDrawSelectedId'] && parent.shapeColl.length === 1))) {
-            zOrderElement.classList.add('e-overlay');
+            zOrderElement.parentElement.classList.add('e-overlay');
         }
     }
 
@@ -3214,7 +3214,7 @@ export class ToolbarModule {
                 const drawingObject: Object = { shape: '' };
                 parent.notify('selection', { prop: 'getCurrentDrawingShape', onPropertyChange: false, value: { obj: drawingObject } });
                 if (drawingObject['shape'] === 'path' && okBtn) {
-                    okBtn.classList.add('e-overlay');
+                    okBtn.parentElement.classList.add('e-overlay');
                 }
             }
             if (parent.activeObj.shape === 'line' || parent.activeObj.shape === 'path') {
@@ -4610,10 +4610,10 @@ export class ToolbarModule {
                 const orderObj: Object = {order: null };
                 parent.notify('shape', { prop: 'getHighestOrder', onPropertyChange: false, value: {obj: orderObj } });
                 if (parent.activeObj.order > orderObj['order'] && document.getElementById(parent.element.id + '_bringToFront')) {
-                    document.getElementById(parent.element.id + '_bringToFront').classList.add('e-overlay');
+                    document.getElementById(parent.element.id + '_bringToFront').parentElement.classList.add('e-overlay');
                 } else {
                     if (document.getElementById(parent.element.id + '_bringToFront')) {
-                        document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-overlay');
+                        document.getElementById(parent.element.id + '_bringToFront').parentElement.classList.remove('e-overlay');
                     }
                 }
                 qtArea.style.width = 'auto';
@@ -4660,10 +4660,10 @@ export class ToolbarModule {
                 parent.notify('shape', { prop: 'getHighestOrder', onPropertyChange: false, value: {obj: orderObj } });
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((parent.getObjFromId(parent.pointColl[indexObj['freehandSelectedIndex']].id) as any).order >= orderObj['order'] && document.getElementById(parent.element.id + '_bringToFront')) {
-                    document.getElementById(parent.element.id + '_bringToFront').classList.add('e-overlay');
+                    document.getElementById(parent.element.id + '_bringToFront').parentElement.classList.add('e-overlay');
                 } else {
                     if (document.getElementById(parent.element.id + '_bringToFront')) {
-                        document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-overlay');
+                        document.getElementById(parent.element.id + '_bringToFront').parentElement.classList.remove('e-overlay');
                     }
                 }
                 const obj: Object = {activePoint: null };
@@ -4818,30 +4818,28 @@ export class ToolbarModule {
                 parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
                 break;
             case 'bringtofront':
-                if (!parent.element.querySelector('#' + id + '_bringToFront').classList.contains('e-overlay')) {
-                    parent.notify('freehand-draw', {prop: 'getFreehandSelectedIndex', onPropertyChange: false, value: {obj: indexObj }});
-                    shapeId = indexObj['freehandSelectedIndex'] !== null ? parent.pointColl[indexObj['freehandSelectedIndex']].id :
-                        parent.activeObj.currIndex;
-                    parent.updateShapeOrder(shapeId, type);
-                    isDisabled = false;
-                    parent.notify('shape', { prop: 'getHighestOrder', onPropertyChange: false, value: {obj: orderObj } });
-                    if (shapeId.indexOf('pen') > -1) {
-                        parent.notify('shape', { prop: 'updateShapeColl', onPropertyChange: false });
-                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                        const order: number = (parent.getObjFromId(shapeId) as any).order;
-                        isDisabled = order >= orderObj['order'] ? true : false;
-                    } else {
-                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                        const order: number = (parent.getObjFromId(shapeId) as any).order;
-                        isDisabled = order > orderObj['order'] ? true : false;
-                    }
-                    if (isDisabled) {
-                        document.getElementById(parent.element.id + '_bringToFront').classList.add('e-overlay');
-                    } else {
-                        document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-overlay');
-                    }
-                    parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
+                parent.notify('freehand-draw', {prop: 'getFreehandSelectedIndex', onPropertyChange: false, value: {obj: indexObj }});
+                shapeId = indexObj['freehandSelectedIndex'] !== null ? parent.pointColl[indexObj['freehandSelectedIndex']].id :
+                    parent.activeObj.currIndex;
+                parent.updateShapeOrder(shapeId, type);
+                isDisabled = false;
+                parent.notify('shape', { prop: 'getHighestOrder', onPropertyChange: false, value: {obj: orderObj } });
+                if (shapeId.indexOf('pen') > -1) {
+                    parent.notify('shape', { prop: 'updateShapeColl', onPropertyChange: false });
+                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                    const order: number = (parent.getObjFromId(shapeId) as any).order;
+                    isDisabled = order >= orderObj['order'] ? true : false;
+                } else {
+                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                    const order: number = (parent.getObjFromId(shapeId) as any).order;
+                    isDisabled = order > orderObj['order'] ? true : false;
                 }
+                if (isDisabled) {
+                    document.getElementById(parent.element.id + '_bringToFront').classList.add('e-overlay');
+                } else {
+                    document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-overlay');
+                }
+                parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
                 break;
             }
             if (type === 'duplicate' || type === 'remove') {

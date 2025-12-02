@@ -1400,12 +1400,18 @@ export interface GroupEventArgs extends GridActionEventArgs {
 export interface PageEventArgs extends GridActionEventArgs {
     /** Defines the previous page number. */
     previousPage?: string;
+    /** Defines the previous page size.
+     *
+     * @hidden
+     */
+    previousPageSize?: string | number;
     /** Defines the current page number. */
     currentPage?: string;
     /** Defines the number of records displayed per page. */
     pageSize?: string;
     /** Defines the row information of the current page. */
     rows?: Row<Column>[];
+
 }
 
 export interface SortEventArgs extends GridActionEventArgs {

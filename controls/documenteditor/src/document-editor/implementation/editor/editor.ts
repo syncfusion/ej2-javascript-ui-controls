@@ -10752,7 +10752,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public reLayout(selection: Selection, isSelectionChanged?: boolean, isLayoutChanged?: boolean, isFromGroupAcceptReject?: boolean, isFromIgnore?: boolean): void {
+    public reLayout(selection: Selection, isSelectionChanged?: boolean, isLayoutChanged?: boolean, isFromGroupAcceptReject?: boolean): void {
         if (!isNullOrUndefined(this.previousBlockToLayout)) {
             // Layout content for previous page to fix content based on KeepWithNext format.
             let previousBlock: BlockWidget = this.previousBlockToLayout;
@@ -10797,7 +10797,7 @@ export class Editor {
             if (!this.documentHelper.owner.enableHeaderAndFooter && !selection.isHighlightEditRegion) {
                 this.owner.viewer.updateScrollBars();
             }
-            if ((!selection.owner.isShiftingEnabled || this.documentHelper.isRowOrCellResizing) && !isFromIgnore) {
+            if (!selection.owner.isShiftingEnabled || this.documentHelper.isRowOrCellResizing) {
                 selection.fireSelectionChanged(true);
                 this.startParagraph = undefined;
                 this.endParagraph = undefined;
@@ -19704,6 +19704,7 @@ export class Editor {
                 return;
             }
             if (!paragraph.paragraphFormat.bidi && paragraph.paragraphFormat.textAlignment !== 'Left' && paragraph.paragraphFormat.textAlignment !== 'Justify') {
+                selection.skipFormatRetrieval = false;
                 this.onApplyParagraphFormat('textAlignment', 'Left', false, true);
                 return;
             }
@@ -19809,6 +19810,7 @@ export class Editor {
                 // }
             } else {
                 if (this.editorHistory) {
+                    selection.skipFormatRetrieval = false;
                     this.editorHistory.currentBaseHistoryInfo = undefined;
                 }
             }
@@ -23245,7 +23247,17 @@ export class Editor {
         let cells: TableCellWidget[];
         const table: TableWidget = startCell.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
         let appliedFormat: WCellFormat;
-        for (let k: number = startCell.columnIndex; k <= endCell.columnIndex; k++) {
+        let startCellValue: number;
+        let endCellValue: number;
+        if (startCell.columnIndex < endCell.columnIndex) {
+            startCellValue = startCell.columnIndex;
+            endCellValue = endCell.columnIndex;
+        }
+        else {
+            startCellValue = endCell.columnIndex;
+            endCellValue = startCell.columnIndex;
+        }
+        for (let k: number = startCellValue; k <= endCellValue; k++) {
             cells = this.getSelectedCellInColumn(startCell.ownerTable, startCell.ownerRow.rowIndex, k, endCell.ownerRow.rowIndex);
             for (let i: number = 0; i < cells.length; i++) {
                 appliedFormat = this.applyCellPropertyValue(this.documentHelper.selection, property, value, cells[i].cellFormat);
@@ -23704,6 +23716,10 @@ export class Editor {
         if (widgets.length === 0) {
             this.owner.editorHistoryModule.undo();
             this.owner.editorHistoryModule.redoStack.pop();
+        }
+        if (this.owner.enableTrackChanges) {
+            this.setPositionForCurrentIndex(this.selection.start, initialStart);
+            this.setPositionForCurrentIndex(this.selection.end, initialStart);
         }
     }
 
@@ -24920,10 +24936,23 @@ export class Editor {
         return true;
     }
 
+    /**
+     * @private
+     * @returns {string}
+     */
+    public getCheckBoxText(): string {
+        if (this.owner.documentEditorSettings.defaultCheckBoxOption === 'Cross') {
+            return String.fromCharCode(9746);
+        }
+        else {
+            return String.fromCharCode(9745);
+        }
+    }
+
     private getDefaultText(formField: FormField): string {
         let defaultText: string = '';
         if (formField instanceof CheckBoxFormField) {
-            defaultText = formField.defaultValue ? String.fromCharCode(9745) : String.fromCharCode(9744);
+            defaultText = formField.defaultValue ? this.getCheckBoxText() : String.fromCharCode(9744);
         } else if (formField instanceof DropDownFormField) {
             if (formField.dropdownItems.length > 0) {
                 defaultText = formField.dropdownItems[0];
@@ -24982,7 +25011,7 @@ export class Editor {
             const separator: FieldElementBox = field.fieldSeparator;
             const checkBoxTextElement: TextElementBox = separator.nextNode as TextElementBox;
             if ((formFieldData as CheckBoxFormField).checked) {
-                checkBoxTextElement.text = String.fromCharCode(9745);
+                checkBoxTextElement.text = this.getCheckBoxText();
             } else {
                 checkBoxTextElement.text = String.fromCharCode(9744);
             }

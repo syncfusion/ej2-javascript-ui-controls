@@ -1640,6 +1640,11 @@ export type FootEndNoteNumberFormat = 'Arabic' | 'UpperCaseRoman' | 'LowerCaseRo
 export type ImageFormat = 'Png' | 'Jpeg';
 
 /**
+ * Specifies the Check box icon when checked
+ */
+export type CheckboxSymbolOptions = 'Cross' | 'Tick';
+
+/**
  * Represents the compatibility mode of the document.
  */
 export type CompatibilityMode =

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.15 (2025-11-25)
+## 31.2.16 (2025-12-02)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I788770` - Fixed console error occurring when clicking the `Z-Order` icon while Pen annotation is active.
+
+## 31.2.10 (2025-11-13)
 
 ### Image Editor
 

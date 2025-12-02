@@ -544,6 +544,17 @@ export class Data implements IDataProcessor {
             this.dataManager.dataSource.url !== '';
     }
 
+    /**
+     * clears the cache
+     * @returns {void}
+     * @hidden
+     */
+    public clearCache(): void {
+        if (this.isRemote()) {
+            (this.parent.dataSource as DataManager).clearCache();
+        }
+    }
+
     private addRows(e: { toIndex: number, records: Object[] }): void {
         for (let i: number = e.records.length; i > 0; i--) {
             if (this.parent.dataSource instanceof DataManager && this.dataManager.dataSource.offline){

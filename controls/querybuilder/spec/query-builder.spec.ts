@@ -4720,6 +4720,12 @@ describe('QueryBuilder', () => {
             template.innerHTML = '<div class="e-rule e-rule-template"><div class="e-rule-filter"><input id = ${ruleID}_filterkey class="e-filter-input"></div><div class="e-rule-operator e-operator"><input id = ${ruleID}_operatorkey class="e-operator-input"></div><div class="e-value e-rule-value e-slider-value"><div id = ${ruleID}_valuekey0 class="ticks_slider"></div></div><div class="e-rule-btn"><button class="e-removerule e-rule-delete e-css e-btn e-small e-round"><span class="e-btn-icon e-icons e-delete-icon"/></button></div></div>';
             document.body.appendChild(template);
         });
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
+        });
         it('EJ2 - 96184 - When dynamically changing the locale property the custom operator was not set in QueryBuilder', () => {
             const columnData: ColumnsModel[] = [
                 {
@@ -4888,6 +4894,110 @@ describe('QueryBuilder', () => {
             queryBuilder.setRulesFromSql(actualSql);
             queryBuilder.dataBind();
             expect(queryBuilder.element.querySelector('.e-rule-operator .e-dropdownlist').value).toEqual('Starts With');
+        });
+        it('994403 - Getting RuleModel by using getrules method is not proper after we cloned group in QueryBuilder', () => {
+            let dateOperators: any = [
+                { value: 'equal', key: 'Equal' },
+                { value: 'greaterthan', key: 'Greater Than' },
+                { value: 'greaterthanorequal', key: 'Greater Than Or Equal' },
+                { value: 'lessthan', key: 'Less Than' },
+                { value: 'lessthanorequal', key: 'Less Than Or Equal' },
+                { value: 'notequal', key: 'Not Equal' },
+                { value: 'between', key: 'Between' },
+                { value: 'notbetween', key: 'Not Between' }
+            ];
+            let boolOperators: any = [
+                { value: 'equal', key: 'Equal' },
+            ];
+            let columns: ColumnsModel[] = [
+                { field: "EmployeeID", label: "Employee ID", type: "number" },
+                { field: "FirstName", label: "First Name", type: "string" },
+                { field: "LastName", label: "Last Name", type: "string" },
+                { field: "Age", label: "Age", type: "number" },
+                { field: "IsDeveloper", label: "Is Developer", type: "boolean", operators: boolOperators },
+                { field: "PrimaryFramework", label: "Primary Framework", type: "string" },
+                { field: "HireDate", label: "Hire Date", type: "date", format: "MM/dd/yyyy", operators: dateOperators },
+                { field: "Country", label: "Country", type: "string" },
+            ]
+            let importRules: RuleModel = {
+                "condition": "and",
+                "rules": [
+                    {
+                        "condition": "or",
+                        "rules": [
+                            {
+                                "label": "Age",
+                                "field": "Age",
+                                "type": "number",
+                                "operator": "equal",
+                                "value": 0
+                            },
+                            {
+                                "condition": "and",
+                                "rules": [
+                                    {
+                                        "label": "Hire Date",
+                                        "field": "HireDate",
+                                        "type": "date",
+                                        "operator": "equal",
+                                        "value": "11/19/2025"
+                                    }
+                                ]
+                            },
+                            {
+                                "condition": "and",
+                                "rules": [
+                                    {
+                                        "label": "Country",
+                                        "field": "Country",
+                                        "type": "string",
+                                        "operator": "equal",
+                                        "value": "OPtion"
+                                    },
+                                    {
+                                        "condition": "and",
+                                        "rules": [
+                                            {
+                                                "label": "Country",
+                                                "field": "Country",
+                                                "type": "string",
+                                                "operator": "equal",
+                                                "value": "Option1"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "condition": "and",
+                                        "rules": [
+                                            {
+                                                "label": "Is Developer",
+                                                "field": "IsDeveloper",
+                                                "type": "boolean",
+                                                "operator": "equal",
+                                                "value": true
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: columns,
+                rule: importRules,
+                showButtons: {
+                    cloneGroup: true,
+                    cloneRule: true
+                },
+                maxGroupCount: 50
+            }, '#querybuilder');
+            const cloneBtn: HTMLElement = document.getElementsByClassName('e-clone-grp-btn')[0] as HTMLElement;
+            cloneBtn.click();
+            expect(queryBuilder.rule.rules.length).toBe(2);
+            expect(queryBuilder.rule.rules[1].rules[1].rules[0].field === 'HireDate').toBe(true);
         });
     });
 

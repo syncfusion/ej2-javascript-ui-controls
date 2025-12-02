@@ -6548,7 +6548,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.renderItems(this.mainData as any[], this.fields);
                     }
                     this.virtualCustomData = null;
-                    this.isVirtualTrackHeight = false;
+                    this.isVirtualTrackHeight = this.totalItemCount > (this.itemCount * 2) ? false : true;
                 }
             });
         }
@@ -6596,7 +6596,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                         if (this.hideSelectedItem && this.value && Array.isArray(this.value) && this.value.length > 0) {
                             this.totalItemsCount();
                         }
-                        if (!this.preventSetCurrentData && !isNullOrUndefined(this.viewPortInfo.startIndex) &&
+                        if (!this.preventSetCurrentData && this.totalItemCount > (this.itemCount * 2) &&
+                           !isNullOrUndefined(this.viewPortInfo.startIndex) &&
                             !isNullOrUndefined(this.viewPortInfo.endIndex)) {
                             this.notify('setCurrentViewDataAsync', {
                                 component: this.getModuleName(),
@@ -6664,7 +6665,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         const container: HTMLElement = this.overAllWrapper;
         const label: HTMLElement | null = container.querySelector('.e-float-text');
         const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
-        if (label && calculateWidth) {
+        if (label && calculateWidth && !(this.cssClass && this.cssClass.split(' ').indexOf('e-outline') !== -1)) {
             label.style.width = calculateWidth + 'px';
         }
     }

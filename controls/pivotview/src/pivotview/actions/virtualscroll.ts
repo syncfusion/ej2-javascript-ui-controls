@@ -222,9 +222,6 @@ export class VirtualScroll {
                     addClass([this.parent.grid.element.querySelector('.e-spinner-inner')], [cls.PIVOT_HIDE_LOADER]);
                 }
                 this.parent.actionBeginMethod();
-                if (!enableOptimizedRendering) {
-                    this.parent.showWaitingPopup();
-                }
                 this.parent.scrollPosObject.vertical = section;
                 this.parent.pageSettings.currentRowPage = engine.pageSettings.currentRowPage = section > 1 ? section : 1;
                 let rowStartPos: number = 0;

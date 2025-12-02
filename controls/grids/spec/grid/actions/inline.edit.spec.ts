@@ -539,6 +539,50 @@ describe('Inline Editing module', () => {
         });
     });
 
+    describe('991898: Updating the Chrome version in coverage test cases of EJ2 components -> 2 ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending; //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    allowFiltering: true,
+                    allowGrouping: true,
+                    height: 50,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', showConfirmDialog: false, showDeleteConfirmDialog: false },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: false,
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'EmployeeID', type: 'number', allowEditing: false },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity' },
+                        { field: 'Verified', type: 'boolean', editType: 'booleanedit' },
+                        { field: 'ShipName', isIdentity: true },
+                        { field: 'ShipCountry', type: 'string', editType: 'dropdownedit' },
+                        { field: 'ShipRegion', type: 'string' },
+                        { field: 'ShipAddress', allowFiltering: true, visible: false },
+                        { field: 'OrderDate', format: { skeleton: 'yMd', type: 'date' }, type: 'date', editType: 'datepickeredit' }
+                    ],
+                }, done);
+        });
+        it('991898 - Coverage', (done: Function) => {
+            gridObj.clearSelection();
+            gridObj.selectRow(0, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+            done();
+        });
+        afterAll(() => {
+            gridObj.notify('tooltip-destroy', {});
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 
     describe('Keyboard shortcuts => ', () => {
         let gridObj: Grid;
@@ -5327,6 +5371,107 @@ describe('For Coverage', () => {
         done();
     });
 
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('991898: Updating the Chrome version in coverage test cases of EJ2 components -> 1 ', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true},
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', visible: false },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' },
+                ],
+            }, done);
+    });
+    it('Coverage - 1', (done: Function) => {
+        gridObj.selectRow(0, true);
+        (gridObj as any).isTreeGrid = true;
+        gridObj.selectionModule.selectedRowIndexes = [ 0, 1 ];
+        gridObj.editModule.startEdit(null);
+        done();
+    });
+    
+    it('Coverage - 2', (done: Function) => {
+        gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getHeaderContent() });
+        gridObj.editModule.editCellDialogClose = true;
+        gridObj.keyboardModule.keyAction({ action: 'escape', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') });
+        done();
+    });
+    it('Coverage - 3', (done: Function) => {
+        let e = { metaKey: true, action: 'ctrlEnter' };
+        Object.defineProperty(navigator, 'platform', { value: 'MacIntel', configurable: true });
+        (gridObj.editModule as any).keyPressHandler(e);
+        done();
+    });
+    it('Coverage - 4', (done: Function) => {
+        let e = { target: gridObj.getContent().querySelector('.e-rowcell') };
+        gridObj.editSettings.showAddNewRow = true;
+        (gridObj.editModule.editModule as any).dblClickHandler(e);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('991898: Updating the Chrome version in coverage test cases of EJ2 components -> 2', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true},
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', visible: false },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' },
+                ],
+            }, done);
+    });
+    it('Coverage - 1', (done: Function) => {
+        const div: HTMLElement = gridObj.createElement('div', {
+            className: 'e-tooltip-wrap',
+        });
+        let arrow = { scrollHeight : 0};
+        let gcontent = { scrollTop: 0};
+        (gridObj.editModule as any).setScrollTop(div, arrow, gcontent);
+        done();
+    });
+    it('Coverage - 2', (done: Function) => {
+        const div: HTMLElement = gridObj.createElement('div', {
+            className: 'e-tooltip-wrap',
+        });
+        gridObj.height = 200;
+        let inputClient = { height: 10 };
+        let gcontent: HTMLElement = gridObj.getContent().firstElementChild as HTMLElement;
+        (gridObj.editModule as any).setBottomStyles(div, gcontent, inputClient);
+        done();
+    });
+    it('Coverage - 3', (done: Function) => {
+        let isAddNewRow = true;
+        let rows = gridObj.getContent().getElementsByClassName('e-row');
+        const div: HTMLElement = gridObj.createElement('div', {
+            className: 'e-tooltip-wrap',
+        });
+        (gridObj.editModule as any).setPositionStyles(isAddNewRow, rows, div);
+        done();
+    });
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

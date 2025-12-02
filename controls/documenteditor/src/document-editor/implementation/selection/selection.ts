@@ -6058,7 +6058,10 @@ export class Selection {
      */
     public getNextParagraphRow(row: BlockWidget): ParagraphWidget {
         if (!isNullOrUndefined(row.nextRenderedWidget)) {
-            const cell: TableCellWidget = (row.nextRenderedWidget as TableRowWidget).childWidgets[0] as TableCellWidget;
+            let cell: TableCellWidget = (row.nextRenderedWidget as TableRowWidget).childWidgets[0] as TableCellWidget;
+            while (cell.childWidgets.length == 0 && !isNullOrUndefined(cell.previousSplitWidget) && !isNullOrUndefined(cell.nextRenderedWidget) && cell.nextRenderedWidget instanceof TableCellWidget) {
+                cell = cell.nextRenderedWidget as TableCellWidget;
+            }
             const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
             if (isNullOrUndefined(block)) {
                 return this.getNextParagraphCell(cell);

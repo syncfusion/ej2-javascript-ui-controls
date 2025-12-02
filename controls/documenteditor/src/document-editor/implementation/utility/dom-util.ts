@@ -2472,7 +2472,8 @@ export class RulerHelper {
                 tableMarkerOffset = e.clientX - tableMarker.getBoundingClientRect().left;
                 documentEditor.startXPosition = HelperMethods.convertPixelToPoint(e.clientX);
                 documentEditor.isTableMarkerDragging = true;
-                const cursorPoint: Point = new Point(e.clientX, e.clientY);
+                const clientX: number = e.clientX - tableMarkerOffset - tableMarker.getBoundingClientRect().width;
+                const cursorPoint: Point = new Point(clientX, e.clientY);
                 const touchPoint: Point = documentEditor.viewer.findFocusedPage(cursorPoint, true, true);
                 let currentMarkerPostion: number;
                 if (e.currentTarget instanceof HTMLElement) {
