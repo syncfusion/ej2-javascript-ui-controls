@@ -2,7 +2,31 @@
 
 ## [Unreleased]
 
-## 30.1.37 (2025-06-25)
+## 31.2.18 (2025-12-09)
+
+### Button
+
+#### Bug Fixes
+
+- `#I785731` - Fixed the issue where a CSP violation occurs when clicking the Apply button in the `DateRangePicker` component.
+
+## 31.2.3 (2025-10-22)
+
+### Chip
+
+#### Bug Fixes
+
+- `#I771127` - Implemented a fix to prevent chip reordering when random clicks occur, ensuring consistent behaviour when the `allowDragAndDrop` feature is enabled.
+
+## 31.1.21 (2025-09-23)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#FD69833`- Fixed an issue where `EnablePersistence` was not functioning correctly in the CheckBox component.
+
+## 31.1.17 (2025-09-05)
 
 ### Chip
 

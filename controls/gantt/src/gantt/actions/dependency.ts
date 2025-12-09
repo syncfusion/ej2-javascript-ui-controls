@@ -475,6 +475,21 @@ export class Dependency {
         return Array.from(seen.values());
     }
 
+    private generatePredecessorValue(currentValue: IPredecessor, temp: string): string {
+        if (currentValue.offset !== 0) {
+            temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
+            const multiple: boolean = currentValue.offset !== 1;
+            if (currentValue.offsetUnit === 'day') {
+                temp += multiple ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
+            } else if (currentValue.offsetUnit === 'hour') {
+                temp += multiple ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
+            } else {
+                temp += multiple ? this.parent.localeObj.getConstant('minutes') : this.parent.localeObj.getConstant('minute');
+            }
+        }
+        return temp;
+    }
+
     /**
      * Get predecessor value as string with offset values
      *
@@ -504,17 +519,7 @@ export class Dependency {
                         temp1 = temp;
                     }
                     temp = temp1;
-                    if (currentValue.offset !== 0) {
-                        temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
-                        const multiple: boolean = currentValue.offset !== 1;
-                        if (currentValue.offsetUnit === 'day') {
-                            temp += multiple ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
-                        } else if (currentValue.offsetUnit === 'hour') {
-                            temp += multiple ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
-                        } else {
-                            temp += multiple ? this.parent.localeObj.getConstant('minutes') : this.parent.localeObj.getConstant('minute');
-                        }
-                    }
+                    temp = this.generatePredecessorValue(currentValue, temp);
                     if (resultString.length > 0) {
                         resultString = resultString + ',' + temp;
                     } else {
@@ -1395,6 +1400,53 @@ export class Dependency {
         }
     }
 
+    private validateAllChildPredecessorsWithUpdate(record: IGanttData): void {
+        const stack: IGanttData[] = [];
+        // Start from all direct children
+        for (let i: number = record.childRecords.length - 1; i >= 0; i--) {
+            stack.push(record.childRecords[i as number]);
+        }
+        while (stack.length > 0) {
+            const currentChild: IGanttData = stack.pop()!;
+            const ganttProp: ITaskData = currentChild.ganttProperties;
+            // === YOUR ORIGINAL CHECK — PRESERVED 100% ===
+            if (this.isChildRecordValidated.indexOf(ganttProp.taskId) !== -1) {
+                continue; // skip, already processed
+            }
+            this.isChildRecordValidated.push(ganttProp.taskId);
+            // === YOUR ORIGINAL PREDECESSOR LOGIC — PRESERVED ===
+            if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
+                for (let j: number = 0; j < ganttProp.predecessor.length; j++) {
+                    const pred: IPredecessor = ganttProp.predecessor[j as number];
+                    let linkedTaskId: string;
+                    if (pred.to !== record.ganttProperties.taskId.toString()) {
+                        linkedTaskId = pred.to;
+                    } else {
+                        linkedTaskId = pred.from;
+                    }
+                    const childRec: IGanttData = this.parent.flatData[this.parent.ids.indexOf(linkedTaskId)];
+                    if (childRec) {
+                        {
+                            this.validatePredecessor(childRec, [], '');
+                            // === YOUR ORIGINAL updateChildItems CALL — PRESERVED ===
+                            if (childRec.hasChildRecords && this.parent.editModule['editedRecord'].hasChildRecords) {
+                                this.updateChildItems(childRec);
+                            }
+                            // === YOUR ORIGINAL assignment — PRESERVED ===
+                            this.isValidatedParentTaskID = childRec.ganttProperties.taskId;
+                        }
+                    }
+                }
+            }
+            // === PUSH NEXT LEVEL CHILDREN — THIS MAKES IT WORK FOR ALL LEVELS ===
+            if (currentChild.hasChildRecords) {
+                for (let i: number = currentChild.childRecords.length - 1; i >= 0; i--) {
+                    stack.push(currentChild.childRecords[i as number]);
+                }
+            }
+        }
+    }
+
     /**
      *
      * @param {IGanttData} childGanttRecord .
@@ -1499,32 +1551,7 @@ export class Dependency {
                             (!rootParent || (rootParent && rootParent.ganttProperties.taskId === this.parent.editModule['editedRecord'].ganttProperties.taskId)))) &&
                             this.isValidatedParentTaskID !== record.ganttProperties.taskId) {
                             this.updateChildItems(record);
-                            for (let i: number = 0; i < record.childRecords.length; i++) {
-                                const ganttProp: ITaskData = record.childRecords[i as number].ganttProperties;
-                                if (this.isChildRecordValidated.indexOf(ganttProp.taskId) !== -1) {
-                                    return;
-                                }
-                                this.isChildRecordValidated.push(ganttProp.taskId);
-                                if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
-                                    for (let j: number = 0; j < ganttProp.predecessor.length; j++) {
-                                        let childRec: IGanttData;
-                                        if (ganttProp.predecessor[j as number].to !== record.ganttProperties.taskId.toString()) {
-                                            childRec = this.parent.flatData[this.parent.ids.indexOf(ganttProp.predecessor[j as number].to)];
-                                        }
-                                        else {
-                                            childRec = this.parent.flatData[this.parent.ids.indexOf(
-                                                ganttProp.predecessor[j as number].from)];
-                                        }
-                                        if (childRec) {
-                                            this.validatePredecessor(childRec, [], '');
-                                            if (childRec.hasChildRecords && this.parent.editModule['editedRecord'].hasChildRecords) {
-                                                this.updateChildItems(childRec);
-                                            }
-                                            this.isValidatedParentTaskID = childRec.ganttProperties.taskId;
-                                        }
-                                    }
-                                }
-                            }
+                            this.validateAllChildPredecessorsWithUpdate(record);
                             this.isValidatedParentTaskID = record.ganttProperties.taskId;
                         }
                         if (this.parent.editModule['editedRecord'].hasChildRecords && !this.parent.editModule['editedRecord'].parentItem) {

@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 31.2.18 (2025-12-09)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I788313` - Resolved an issue where free text justify alignment was not working properly.
+- `#I788324` - Resolved an issue where the post button was enabled even after clearing the text in comment panel.
+- `#I788308` - Resolved an issue where the free text border overlapped with text when changing the thickness.
+- `#I790733` - Resolved an issue where annotation toolbar items were not visible when `enableDesktop` API was set to true on devices with smaller widths.
+- `#I791260` - Resolved an issue where the comment panel did not open on double-click when the `enableDesktop` API was set to true on smaller-width devices.
+- `#I791261` - Resolved an issue where free text annotation color changed to black in the downloaded document when FillColor in `freeTextSettings` was set to transparent.
+
 ## 31.2.16 (2025-12-02)
 
 ### PDF Viewer

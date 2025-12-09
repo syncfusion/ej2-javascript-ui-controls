@@ -526,6 +526,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         let element: HTMLInputElement = this.element;
         this.tagName = this.element.tagName;
         element = wrapperInitialize(this.createElement, 'EJS-CHECKBOX', 'checkbox', element, WRAPPER, 'checkbox');
+        if (this.element.hasAttribute('id') && this.isAngular && this.element.tagName === 'EJS-CHECKBOX') {
+            element.id = this.element.id;
+            this.element.removeAttribute('id');
+        }
         this.element = element;
         if (this.element.getAttribute('type') !== 'checkbox') {
             this.element.setAttribute('type', 'checkbox');

@@ -377,4 +377,7 @@
       }
     }
   }
+  .e-radio-wrapper.e-error .e-radio + label::before {
+    border-color: $radio-btn-border-error-color;
+  }
 }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.18 (2025-12-09)
+
+### Drawings
+
+#### Bug Fixes
+
+- `#I788313` - Now, the free text justify alignment is working properly.
+
 ## 31.1.17 (2025-09-05)
 
 ### Drawings

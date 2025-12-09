@@ -713,7 +713,7 @@ export class CriticalPath {
                 }
             }
             // Recurse for nested children
-            if (child.hasChildRecords && child.childRecords && child.childRecords.length) {
+            if (child.childRecords && child.childRecords.length) {
                 const nextParentCriticalEndDate: Date = child.isCritical ? child.ganttProperties.endDate : parentCriticalEndDate;
                 this.updateChildCriticalTasks(child, criticalPathIds, nextParentCriticalEndDate);
             }

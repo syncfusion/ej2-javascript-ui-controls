@@ -29,6 +29,7 @@ export interface BaseAttributes extends StyleAttributes {
     visible: boolean;
     description?: string;
     canApplyStyle?: boolean;
+    relativeMode?: string
 }
 
 /** @private */

@@ -3384,6 +3384,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private nudgeCommand(direction: NudgeDirection, x?: number, y?: number): void {
+        if (this.eventHandler['keyArgs'] && this.eventHandler['keyArgs'].keyModifiers !== undefined
+            && this.eventHandler['keyArgs'].keyModifiers !== 0) {
+            return null;
+        }
         if (typeof direction !== 'object' && (this.selectedItems.nodes.length || this.selectedItems.connectors.length) > 0) {
             let type: string;
             if ((x as IKeyDownType).type && (x as IKeyDownType).type === 'KEYDOWN') {
@@ -5280,11 +5284,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.refreshCanvasLayers();
         if (currentObj.wrapper) {
-            const children: DiagramElement[] = currentObj.wrapper.children;
+            let children: DiagramElement[] = currentObj.wrapper.children;
             let element: HTMLElement;
 
             let view: View;
             if (children) {
+                if (children.length > 0 && !(currentObj.wrapper instanceof Canvas)) {
+                    children = (children[0] as GroupableView).children;
+                }
                 for (let i: number = 0; i < children.length; i++) {
                     if (children[parseInt(i.toString(), 10)] instanceof DiagramNativeElement || ((children[parseInt(i.toString(), 10)].id) && (children[parseInt(i.toString(), 10)].id).indexOf('icon_content') > 0)) {
                         if ((children[parseInt(i.toString(), 10)].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
@@ -11707,6 +11714,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     //To move the diagram elements five pixel based on the arrow keys
     private shiftCommand(direction: string): void {
+        if (this.eventHandler['keyArgs'] && this.eventHandler['keyArgs'].keyModifiers !== undefined
+            && this.eventHandler['keyArgs'].keyModifiers !== 4) {
+            return null;
+        }
         if (this.selectedItems instanceof Selector && this.selectedItems.wrapper
             && this.constraints & DiagramConstraints.RestrictNegativeAxisDragDrop) {
             const bounds: Rect = this.selectedItems.wrapper.bounds;

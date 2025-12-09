@@ -885,7 +885,9 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             multipleUsersTyping: '{0}, {1}, and {2} others are typing',
             noRecordsTemplate: 'No records found',
             forwarded: 'Forwarded',
-            send: 'Send'
+            send: 'Send',
+            unpin: 'Unpin',
+            viewChat: 'View in Chat'
         }, this.locale);
         this.l10n.setLocale(this.locale);
     }
@@ -1255,16 +1257,16 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
 
         this.dropDownButton = new DropDownButton({
             items: [
-                { text: 'View in Chat', iconCss: 'e-icons e-chat-view' },
-                { text: 'Unpin', iconCss: 'e-icons e-chat-unpin' }
+                { text: this.l10n.getConstant('viewChat'), iconCss: 'e-icons e-chat-view' },
+                { text: this.l10n.getConstant('unpin'), iconCss: 'e-icons e-chat-unpin' }
             ],
             cssClass: 'e-pinned-dropdown-popup e-caret-hide',
             iconCss: 'e-icons e-more-vertical-1',
             select: (args: MenuEventArgs) => {
                 const messageId: string = this.pinnedMessageWrapper.querySelector('.e-pinned-message-text').getAttribute('data-index');
-                if (args.item.text === 'View in Chat') {
+                if (args.item.text === this.l10n.getConstant('viewChat')) {
                     this.scrollToMessage(messageId);
-                } else if (args.item.text === 'Unpin') {
+                } else if (args.item.text === this.l10n.getConstant('unpin')) {
                     this.unpinMessage(messageId);
                 }
             }
@@ -1609,14 +1611,23 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             innerHTML: this.showTimeStamp ? formattedTime : ''
         });
     }
+    private containsDateParts(format: string): boolean {
+        if (!format) { return false; }
+        // Remove quoted literals like 'at' to avoid false positives
+        const fmt: string = format.replace(/'[^']*'/g, '');
+        // Match month (M/MM/MMM/MMMM), day (d/dd), or year (y/yy/yyy/yyyy)
+        const dateTokenRegex: RegExp = /(M{1,4}|d{1,2}|y{1,4})/;
+        return dateTokenRegex.test(fmt);
+    }
     private updateTimeFormats(timeStampFormat: string, fullTime: string, index?: number): void {
-        if (this.messages[parseInt(index.toString(), 10)]) {
+        if (this.messages[parseInt(index!.toString(), 10)]) {
             const prevOnChange: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
-            this.messages[parseInt(index.toString(), 10)].timeStamp = this.intl.parseDate(
-                fullTime,
-                { format: 'dd/MM/yyyy hh:mm a'});
-            this.messages[parseInt(index.toString(), 10)].timeStampFormat = timeStampFormat;
+
+            // Only parse and overwrite when the format includes date parts
+            if (this.containsDateParts(timeStampFormat)) {
+                this.messages[parseInt(index!.toString(), 10)].timeStamp = this.intl.parseDate(fullTime, { format: timeStampFormat });
+            }
             this.isProtectedOnChange = prevOnChange;
         }
     }
@@ -1786,10 +1797,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         }, 1000);
     }
     private updateMessageTimeFormats(msg: MessageModel, index: number): void {
+        const hasValue: boolean = !isNOU(msg.timeStampFormat) && msg.timeStampFormat.length > 0;
+        const timeStampFormat: string = this.getFormat(hasValue ? msg.timeStampFormat : this.timeStampFormat);
         const fullTime: string = this.getFormattedTime(msg.timeStamp
             ? msg.timeStamp
-            : new Date(), 'dd/MM/yyyy hh:mm a');
-        this.updateTimeFormats(msg.timeStampFormat, fullTime, index);
+            : new Date(), timeStampFormat);
+        this.updateTimeFormats(timeStampFormat, fullTime, index);
     }
     private getMessageDate(index: number): Date {
         return new Date(this.messages[parseInt(index.toString(), 10)].timeStamp);

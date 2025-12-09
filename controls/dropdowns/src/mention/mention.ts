@@ -712,6 +712,10 @@ export class Mention extends DropDownBase {
             this.isUpDownKey = false;
             return;
         }
+        if (!this.allowSpaces && e.code === 'Space' && this.beforePopupOpen && this.isPopupOpen) {
+            this.hidePopup();
+            return;
+        }
         this.isTyped = e.code !== 'Enter' && e.code !== 'Space' && e.code !== 'ArrowDown' && e.code !== 'ArrowUp' ? true : false;
         const isRteImage: boolean = document.activeElement.parentElement && document.activeElement.parentElement.querySelector('.e-rte-image') ? true : false;
         if (document.activeElement !== this.inputElement && !isRteImage) {
@@ -738,6 +742,9 @@ export class Mention extends DropDownBase {
             if (!this.requireLeadingSpace && lastWordRange && (lastWordRange as any).includes(this.mentionChar)) {
                 lastWordRange = this.mentionChar + lastWordRange.split(this.mentionChar).pop();
             }
+            if ((lastWordRange as any).includes(' ')) {
+                return;
+            }
         }
         const lastTwoLetters: string = this.mentionChar.toString() + this.mentionChar.toString();
         // eslint-disable-next-line security/detect-non-literal-regexp
@@ -756,8 +763,7 @@ export class Mention extends DropDownBase {
             (rangetextContent.length === 1 || rangetextContent[rangetextContent.length - 2].indexOf('') === -1 ||
             this.range.startContainer.nodeType === 1))) {
             if (isValid && this.isPopupOpen && this.allowSpaces && currentRange && currentRange.trim() !== '' && charRegex.test(currentRange) && currentRange.indexOf(this.mentionChar) !== -1
-                && !this.isMatchedText() && (currentRange.length > 1 && currentRange.replace(/\u00A0/g, ' ').charAt(currentRange.length - 2) !== ' ') &&
-                (this.list && this.list.querySelectorAll('ul').length > 0) && e.code !== 'Enter') {
+                && !this.isMatchedText() && this.list && e.code !== 'ArrowDown' && e.code !== 'ArrowUp' && e.code !== 'Enter') {
                 this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
                 this.searchLists(e);
             } else if (!this.requireLeadingSpace || this.isPopupOpen && (!this.allowSpaces || !lastWordRange) && (e.code !== 'ArrowDown' && e.code !== 'ArrowUp')) {
@@ -1029,7 +1035,7 @@ export class Mention extends DropDownBase {
     private getLastLetter(text: string): string {
         if (isNullOrUndefined(text)) {return ''; }
         const textValue: string = text.indexOf('\u200B') > -1 ? text.replace(/\u200B/g, '').replace(/\u00A0/g, ' ') : text.replace(/\u00A0/g, ' ');
-        const words: string[] = textValue.split(/\s+/);
+        const words: string[] = this.allowSpaces && this.isPopupOpen ? [textValue] : textValue.split(/\s+/);
         const wordCnt: number = words.length - 1;
         return words[wordCnt as number].trim();
     }
@@ -1728,15 +1734,16 @@ export class Mention extends DropDownBase {
         if (!isNullOrUndefined(this.displayTemplate) && !isNullOrUndefined(this.displayTempElement)) {
             value = this.displayTempElement.innerHTML;
         }
+        const rteRoot: HTMLElement = this.inputElement.parentElement ? (this.inputElement.parentElement.closest('.e-richtexteditor') as HTMLElement) : null;
         if (this.isContentEditable(this.inputElement)) {
+            const suffix: string = typeof this.suffixText === 'string' ? this.suffixText : (rteRoot ? '&#8203;' : ' ');
+            const chipContent: string = showChar + value;
             if (Browser.isAndroid) {
-                return '<span contenteditable="true" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '&#8203;');
-            }
-            else if (Browser.info.name === 'mozilla') {
-                return '<span>&#65279;<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>&#65279;</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '&#8203;');
-            }
-            else {
-                return '<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '&#8203;');
+                return `<span contenteditable="true" class="e-mention-chip">${chipContent}</span>${suffix}`;
+            } else if (Browser.info.name === 'mozilla') {
+                return `<span>&#65279;<span contenteditable="false" class="e-mention-chip">${chipContent}</span>&#65279;</span>${suffix}`;
+            } else {
+                return `<span contenteditable="false" class="e-mention-chip">${chipContent}</span>${suffix}`;
             }
         } else {
             return showChar + value;

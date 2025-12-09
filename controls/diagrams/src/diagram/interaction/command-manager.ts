@@ -53,7 +53,7 @@ import { SelectorConstraints, Direction, DiagramConstraints } from '../enum/enum
 import { PageSettings } from '../diagram/page-settings';
 import { DiagramScroller, Segment } from '../interaction/scroller';
 import { remove, isBlazor, isNullOrUndefined, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { ConnectTool, PolyLineDrawingTool } from './tool';
+import { ConnectTool, PolyLineDrawingTool, ConnectorDrawingTool } from './tool';
 import { getOppositeDirection, getPortDirection, findAngle, Intersection } from './../utility/connector';
 import { ILayout } from '../layout/layout-base';
 import { swapBounds, findPoint, orthoConnection2Segment, End, getIntersection } from './../utility/connector';
@@ -467,8 +467,15 @@ export class CommandHandler {
         if (obj instanceof Selector) {
             selectorModel = obj as SelectorModel;
             connector = selectorModel.connectors[0] as Connector;
-        } else if (obj instanceof Connector && this.diagram.currentDrawingObject) {
+        }
+        // Bug 992848 - Exception Occurs When Creating a Connector from a Port
+        else if (obj instanceof Connector && this.diagram.currentDrawingObject &&
+            this.diagram.currentDrawingObject instanceof Connector) {
             connector = this.diagram.currentDrawingObject as Connector;
+        }
+        else if ((this.diagram as any).eventHandler.tool && (this.diagram as any).eventHandler.tool instanceof ConnectorDrawingTool
+            && (this.diagram as any).eventHandler.tool.drawingObject) {
+            connector = (this.diagram as any).eventHandler.tool.drawingObject;
         }
         if (obj && connector && (hasSingleConnection(this.diagram) || this.diagram.currentDrawingObject)) {
             if (endPoint && (endPoint === 'ConnectorSourceEnd' || endPoint === 'ConnectorTargetEnd')) {
@@ -756,12 +763,16 @@ export class CommandHandler {
         if (args.source instanceof Selector) {
             selectorModel = args.source as SelectorModel;
             connector = selectorModel.connectors[0] as Connector;
-        } else if (args.source instanceof Connector && this.diagram.currentDrawingObject) {
+        }
+        // Bug 992848 - Exception Occurs When Creating a Connector from a Port
+        else if (args.source instanceof Connector && this.diagram.currentDrawingObject &&
+            this.diagram.currentDrawingObject instanceof Connector) {
             connector = this.diagram.currentDrawingObject as Connector;
         }
         // 962382: Drawing polyLine from port and node
-        else if ( (this.diagram as any).eventHandler.tool && (this.diagram as any).eventHandler.tool instanceof PolyLineDrawingTool
-        && (this.diagram as any).eventHandler.tool.drawingObject) {
+        else if ((this.diagram as any).eventHandler.tool && ((this.diagram as any).eventHandler.tool instanceof PolyLineDrawingTool ||
+            (this.diagram as any).eventHandler.tool instanceof ConnectorDrawingTool) &&
+            (this.diagram as any).eventHandler.tool.drawingObject) {
             connector = (this.diagram as any).eventHandler.tool.drawingObject;
         }
         const target: NodeModel | PointPortModel = this.findTarget(

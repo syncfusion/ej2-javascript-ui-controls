@@ -2955,6 +2955,7 @@ export class DialogEdit {
         }
     }
     private gridActionComplete(args: GridActionEventArgs): void {
+        /* eslint-disable-next-line */
         if (args.requestType === 'save') {
             const dialogElement: HTMLElement = this.parent.editModule.dialogModule.dialog.querySelector('#' + this.parent.element.id + 'DependencyTabContainer');
             if (!isNullOrUndefined(dialogElement)) {

@@ -128,7 +128,9 @@ export class Selection {
                     isNullOrUndefined(getValue('data.ganttProperties.left', args))) {
                     args.data = this.parent.getRecordByID((args.data as any).taskId);
                 }
-                this.parent.ganttChartModule.updateScrollLeft(getValue('data.ganttProperties.left', args));
+                if (!this.parent.ganttChartModule['isTouchMoved']) {
+                    this.parent.ganttChartModule.updateScrollLeft(getValue('data.ganttProperties.left', args));
+                }
             }
         }
         args.target = this.actualTarget as Element;

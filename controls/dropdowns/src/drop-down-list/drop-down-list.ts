@@ -3215,6 +3215,9 @@ export class DropDownList extends DropDownBase implements IInput {
                         EventHandler.add(this.clearIconElement, 'click', this.clearText, this);
                     }
                 }
+                if (this.selectedLI && this.fields.groupBy) {
+                    this.setScrollPosition();
+                }
                 popupEle.style.visibility = 'visible';
                 addClass([popupEle], 'e-popup-close');
                 const scrollParentElements: HTMLElement[] = this.popupObj.getScrollableParent(this.inputWrapper.container);

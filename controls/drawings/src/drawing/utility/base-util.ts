@@ -120,6 +120,9 @@ export function textAlignToString(value: TextAlign): string {
         case 'Right':
             state = 'right';
             break;
+        case 'Justify':
+            state = 'justify';
+            break;
     }
     return state;
 }

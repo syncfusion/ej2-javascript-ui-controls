@@ -336,10 +336,16 @@ function convertToChar(cArr: number[]): string {
  * @returns {void}
  */
 export function registerLicense(key: string): void {
+    if (typeof window !== 'undefined') {
+        key = (window as any).syncfusionLicenseKey ? (window as any).syncfusionLicenseKey : key;
+    }
     licenseValidator = new LicenseValidator(key);
 }
 
 export const validateLicense: Function = (component: string, key?: string): boolean => {
+    if (typeof window !== 'undefined') {
+        key = (window as any).syncfusionLicenseKey ? (window as any).syncfusionLicenseKey : key;
+    }
     if (key) {
         registerLicense(key);
     }

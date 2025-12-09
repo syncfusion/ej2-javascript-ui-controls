@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.18 (2025-12-09)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I785670` - Resolved the resize issue in web layout.
+
 ## 31.2.16 (2025-12-02)
 
 ### DocumentEditor

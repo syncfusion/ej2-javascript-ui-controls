@@ -568,6 +568,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 preventDefault: false,
                 clone: true,
                 dragArea: this.dragArea,
+                distance: 8,
                 helper: () => {
                     clonedChipElement = chip.cloneNode(true) as HTMLElement;
                     clonedChipElement.classList.add(classNames.cloneChip);

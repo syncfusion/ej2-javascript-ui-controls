@@ -260,7 +260,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
             this.element.removeAttribute('disabled');
         }
         if (this.content) {
-            this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
+            this.element.textContent = '';
         }
         const span: Element = this.element.querySelector('span.e-btn-icon') as Element;
         if (span) {

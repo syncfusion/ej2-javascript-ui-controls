@@ -127,7 +127,8 @@ function getTextOptions(element: TextElement, maxWidth?: number): BaseAttributes
         visible: element.visible, id: element.id,
         width: maxWidth || element.actualSize.width, height: element.actualSize.height,
         x: element.offsetX - element.actualSize.width * element.pivot.x + 0.5,
-        y: element.offsetY - element.actualSize.height * element.pivot.y + 0.5
+        y: element.offsetY - element.actualSize.height * element.pivot.y + 0.5,
+        relativeMode: element.relativeMode
     };
     (options as TextAttributes).fontSize = element.style.fontSize;
     (options as TextAttributes).fontFamily = element.style.fontFamily;
@@ -142,7 +143,7 @@ function getTextOptions(element: TextElement, maxWidth?: number): BaseAttributes
     (options as TextAttributes).color = element.style.color;
     (options as TextAttributes).italic = element.style.italic;
     (options as TextAttributes).bold = element.style.bold;
-    options.dashArray = ''; options.strokeWidth = 0; options.fill = '';
+    options.dashArray = ''; options.strokeWidth = element.style.strokeWidth; options.fill = '';
     return options;
 }
 
@@ -261,11 +262,16 @@ function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextEl
                 }                
                 txtValue = content[k + 1] || '';
             }
-            isFreeTextHeightAllowed = ((maxHeight === undefined || maxHeight === null || height <= maxHeight));
-            if (k === content.length - 1 && txtValue.length > 0 && isFreeTextHeightAllowed) {
-                childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
+            if (k === content.length - 1 && txtValue.length > 0) {
+                if (txt.strokeWidth > 1 && txt.relativeMode === 'Point') {
+                    height = height + bBoxTextHeight(txtValue, txt);
+                }
+                isFreeTextHeightAllowed = ((maxHeight === undefined || maxHeight === null || height <= maxHeight));
+                if (isFreeTextHeightAllowed) {
+                    childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
+                }
                 txtValue = '';
-            }            
+            }       
         }
     }
     return childNode;
@@ -279,17 +285,30 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
         txtWidth = childNodes[parseInt(k.toString(), 10)].width;
         width = txtWidth;
         if (text.textAlign === 'left') {
-            txtWidth = 0;
+            txtWidth = 0 + text.strokeWidth / 2;
         } else if (text.textAlign === 'center') {
             if (txtWidth > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {
                 txtWidth = 0;
             } else {
-                txtWidth = -txtWidth / 2;
+                if (childNodes.length === 1) {
+                    txtWidth = -txtWidth / 2;
+                } else {
+                    txtWidth = -txtWidth / 2 + text.strokeWidth / 2;
+                }
             }
         } else if (text.textAlign === 'right') {
-            txtWidth = -txtWidth;
+            if (childNodes.length === 1) {
+                txtWidth = -txtWidth - text.strokeWidth / 2;
+            } else {
+                txtWidth = -txtWidth + text.strokeWidth / 2;
+            }
         } else {
-            txtWidth = childNodes.length > 1 ? 0 : -txtWidth / 2;
+            if (childNodes.length === 1) {
+                txtWidth = childNodes.length > 1 ? 0 : -txtWidth / 2;
+            } else {
+                txtWidth = childNodes.length > 1 ? 0 : -txtWidth / 2;
+                txtWidth += text.strokeWidth / 2;
+            }
         }
         childNodes[parseInt(k.toString(), 10)].dy = text.fontSize * 1.2;
         childNodes[parseInt(k.toString(), 10)].x = txtWidth;
@@ -314,6 +333,10 @@ export function measureText(
     let childNodes: SubTextElement[];
     let wrapBounds: TextBounds;
     let options: TextAttributes = getTextOptions(text, maxWidth) as TextAttributes;
+    if (options.strokeWidth > 1 && text.relativeMode === 'Point') {
+        options.width -= options.strokeWidth;
+        options.height -= options.strokeWidth;
+    }
     text.childNodes = childNodes = wrapSvgText(options, textValue, maxHeight);
     text.wrapBounds = wrapBounds = wrapSvgTextAlign(options, childNodes);
     bounds.width = wrapBounds.width;

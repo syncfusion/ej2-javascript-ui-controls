@@ -1235,6 +1235,16 @@ export class Layout {
                                 tableWidget.combineRows(this.viewer);
                             }
                         }
+                    } else if (section.childWidgets[i] instanceof ParagraphWidget && prevSection.lastChild instanceof ParagraphWidget){
+                        const paraWidget: ParagraphWidget = section.childWidgets[i] as ParagraphWidget;
+                        const prevParaWidget: ParagraphWidget = prevSection.lastChild as ParagraphWidget;
+                        if(paraWidget.index == prevParaWidget.index){
+                            for (let j: number = 0; j < paraWidget.childWidgets.length; j++) {
+                                let line: LineWidget = paraWidget.childWidgets[j] as LineWidget;
+                                prevParaWidget.childWidgets.push(line);
+                                line.paragraph = prevParaWidget;
+                            }
+                        }
                     }
                     section.childWidgets.splice(i, 1);
                     i--;
@@ -1648,7 +1658,7 @@ export class Layout {
     private layoutBlock(block: BlockWidget, index: number, isUpdatedList?: boolean, isAsync?: boolean): BlockWidget | Promise<BlockWidget> {
         let nextBlock: BlockWidget;
         if (block instanceof ParagraphWidget) {
-            if (this.isInitialLoad || ((!this.isRelayout || this.isPastingContent) && (block.paragraphFormat.bidi || this.isDocumentContainsRtl))) {
+            if (this.isInitialLoad || !this.isRelayout || block.paragraphFormat.bidi || this.isDocumentContainsRtl) {
                 block.splitTextRangeByScriptType(0);
                 block.splitLtrAndRtlText(0);
                 block.combineconsecutiveRTL(0);
@@ -1863,6 +1873,8 @@ export class Layout {
             paragraph['absoluteXPosition'] = { 'width': area.width, 'x': area.x };
             if (paragraph.paragraphFormat.textAlignment === 'Center') {
                 left += (area.width - width) / 2;
+            } else if (paragraph.paragraphFormat.textAlignment === 'Right' && !paragraph.bidi) {
+                left += area.width;
             } else {
                 left += area.width - width;
             }
@@ -2331,6 +2343,23 @@ export class Layout {
                 bodyWidget.floatingElements.push(element);
                 /* eslint:disable */
                 bodyWidget.floatingElements.sort(function (a: ShapeBase, b: ShapeBase): number { return a.y - b.y; });
+                if (element.paragraph.containerWidget instanceof TableCellWidget) {
+                    let ownerTable: TableWidget = element.paragraph.containerWidget.ownerTable as TableWidget;
+                    let prevBodyWidgetFloatingElements: (TableWidget | ShapeBase)[];
+                    if (!isNullOrUndefined(ownerTable.previousSplitWidget) && ownerTable.previousSplitWidget instanceof TableWidget
+                        && !isNullOrUndefined(ownerTable.previousSplitWidget.bodyWidget)) {
+                        prevBodyWidgetFloatingElements = ownerTable.previousSplitWidget.bodyWidget.floatingElements;
+                    }
+                    if (!isNullOrUndefined(prevBodyWidgetFloatingElements) && prevBodyWidgetFloatingElements.indexOf(element) > -1) {
+                        let previousBodyWidget: BodyWidget = (element.paragraph.containerWidget.bodyWidget.previousSplitWidget) as BlockContainer;
+                        if (!isNullOrUndefined(previousBodyWidget) && previousBodyWidget.floatingElements.indexOf(element) !== -1) {
+                            previousBodyWidget.floatingElements.splice(previousBodyWidget.floatingElements.indexOf(element), 1);
+                        }
+                        if (!isNullOrUndefined(prevBodyWidgetFloatingElements) && prevBodyWidgetFloatingElements.indexOf(element) !== -1) {
+                            prevBodyWidgetFloatingElements.splice(prevBodyWidgetFloatingElements.indexOf(element), 1);
+                        }
+                    }
+                }
             }
             if (element.paragraph.floatingElements.indexOf(element) === -1) {
                 element.paragraph.floatingElements.push(element);
@@ -3115,6 +3144,10 @@ export class Layout {
                     }
                 }
                 element.line.paragraph.y = this.viewer.clientActiveArea.y;
+                if (this.isXPositionUpdated) {
+                    element.line.paragraph.x = this.viewer.clientActiveArea.x;
+                    this.isXPositionUpdated = false;
+                }
             } else if (element.line.children[0] === element) {
                 element.line.marginTop += (this.viewer.clientActiveArea.y - previousTop);
             }
@@ -3467,6 +3500,13 @@ export class Layout {
                 // }
 
                 if (!(clientLayoutArea.x > (textWrappingBounds.right + minimumWidthRequired) || clientLayoutArea.right < textWrappingBounds.x - minimumWidthRequired)) {
+                    if (this.documentHelper.compatibilityMode === 'Word2003'
+                        && !isNullOrUndefined(bodyWidget.page)
+                        && ownerPara.isInHeaderFooter) {
+                        if ((floatingItem instanceof TableWidget && !floatingItem.isInsideTable) || (floatingItem instanceof ShapeBase && !floatingItem.paragraph.isInsideTable)) {
+                            continue;
+                        }
+                    }
                     if (this.isNeedToWrapForSquareTightAndThrough(bodyWidget, elementBox, -1, -1, textWrappingStyle, textWrappingBounds, allowOverlap, 1, floatingItem, false, rect, elementBox.width, elementBox.height)) {
                         let rightIndent: number = 0;
                         let leftIndent: number = 0;
@@ -3521,7 +3561,7 @@ export class Layout {
                             borderThickness = floatingItem.tableFormat.borders.left.lineWidth / 2;
                         }
                         // Skip to update when the wrap type as left
-                        if (rect.x + borderThickness >= textWrappingBounds.x && rect.x < textWrappingBounds.right && textWrappingType !== 'Left') // Skip to update when the wrap type as left
+                        if (rect.x + borderThickness >= textWrappingBounds.x && rect.x <= textWrappingBounds.right && textWrappingType !== 'Left') // Skip to update when the wrap type as left
                         {
                             rect.width = rect.width - (textWrappingBounds.right - rect.x) - rightIndent;
                             this.isWrapText = true;
@@ -3572,6 +3612,10 @@ export class Layout {
                                             rect.width = this.viewer.clientArea.width;
                                             rect.height -= (textWrappingBounds.bottom + topMarginValue - rect.y);
                                             rect.y = textWrappingBounds.bottom + topMarginValue;
+                                            if ((this.viewer.clientArea.x + this.viewer.clientArea.width - rect.x) < minwidth) {
+                                               rect.x = this.viewer.clientArea.x;
+                                               this.isXPositionUpdated = true;
+                                           }
                                         }
                                     }
                                     this.viewer.updateClientAreaForTextWrap(rect);
@@ -4273,6 +4317,14 @@ export class Layout {
             }
         }
     }
+    private getCheckBoxText(): string {
+        if (this.owner.documentEditorSettings.defaultCheckBoxOption === 'Cross') {
+            return String.fromCharCode(9746);
+        }
+        else {
+            return String.fromCharCode(9745);
+        }
+    }
     private checkAndUpdateFieldData(fieldBegin: FieldElementBox): void {
         if (fieldBegin.hasFieldEnd && !isNullOrUndefined(fieldBegin.fieldEnd)) {
             if (isNullOrUndefined(fieldBegin.fieldSeparator)) {
@@ -4295,7 +4347,7 @@ export class Layout {
                     fieldBegin.line.children.splice(index, 0, checkBoxTextElement);
                     checkBoxTextElement.characterFormat.copyFormat(fieldBegin.characterFormat);
                     if (formFieldData.checked) {
-                        checkBoxTextElement.text = this.viewer.owner.editorModule.getCheckBoxText();
+                        checkBoxTextElement.text = this.getCheckBoxText();
                     } else {
                         checkBoxTextElement.text = String.fromCharCode(9744);
                     }
@@ -4383,7 +4435,9 @@ export class Layout {
             elementBox.characterFormat = paragraph.characterFormat;
             elementBox.width = this.documentHelper.textHelper.getTextSize(elementBox, elementBox.characterFormat);
             this.adjustPosition(elementBox, paragraph.bodyWidget, true);
-            paragraph.x += elementBox.padding.left;
+            if (!isShiftEnter) {
+                paragraph.x += elementBox.padding.left;
+            }
             if (elementBox.padding.left !== 0)
             {
                 paragraph.textWrapWidth = true;
@@ -5066,11 +5120,19 @@ export class Layout {
         if (this.documentHelper.textHelper.isUnicodeText(text, element.scriptType) && this.documentHelper.compatibilityMode === 'Word2013' && element.paragraph.paragraphFormat.textAlignment !== 'Justify') {
             isSplitByWord = false;
         }
+        let splittedIndex: number = 1;
+        let isSplitByHyphen: boolean = true;
+        if (width > this.viewer.clientActiveArea.width && text.length > 1 && /^-+$/.test(text)) {
+            splittedIndex = this.getSplitIndexByWord(this.viewer.clientActiveArea.width, text, width, characterFormat, element.scriptType);
+            if (splittedIndex === 0) {
+                isSplitByHyphen = false;
+            }
+        }
         if (width <= this.viewer.clientActiveArea.width) {
             //Fits the text in current line.
             this.addElementToLine(paragraph, element);
 
-        } else if (isSplitByWord && (index > 0 || (text.indexOf(' ') !== -1 && isSplitWordByWord) || text.indexOf('-') !== -1)) {
+        } else if (isSplitByWord && (index > 0 || (text.indexOf(' ') !== -1 && isSplitWordByWord) || text.indexOf('-') !== -1) && isSplitByHyphen) {
             this.splitByWord(lineWidget, paragraph, element, text, width, characterFormat);
         } else {
             this.splitByCharacter(lineWidget, element, text, width, characterFormat);
@@ -6546,7 +6608,6 @@ export class Layout {
                 for (let i: number = lastTextElement; i < line.children.length; i++) {
                     splitWidth += line.children[i].width;
                     this.addSplittedLineWidget(line, i - 1);
-                    i--;
                 }
                 let is2013Justification: boolean = paragraph.paragraphFormat.textAlignment === 'Justify' &&
                     this.documentHelper.compatibilityMode === 'Word2013';

@@ -868,10 +868,37 @@ export class ListBox extends DropDownBase {
         this.stopTimer();
         const items: object[] = [];
         this.dragValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value')) as string;
-        if ((this.value as string[]).indexOf(this.dragValue) > -1) {
-            args.items = this.getDataByValues(this.value);
-        } else {
-            args.items = this.getDataByValues([this.dragValue]);
+        if (this.allowDragAll) {
+            let selectedValues: (string | number | boolean)[] = [];
+            if (this.selectionSettings.showCheckbox && this.allowFiltering) {
+                const visibleSelected: (string | number | boolean)[] = [];
+                const selectedList: Element[] = this.getSelectedItems();
+                for (let index: number = 0; index < selectedList.length; index++) {
+                    const formattedValue: string | number | boolean = this.getFormattedValue(selectedList[index as number].getAttribute('data-value'));
+                    visibleSelected.push(formattedValue);
+                }
+                selectedValues = visibleSelected.length ? visibleSelected
+                    : ((this.value ? (this.value as (string | number | boolean)[]).slice() : []));
+            }
+            else {
+                const selectedList: Element[] = this.getSelectedItems();
+                for (let index: number = 0; index < selectedList.length; index++) {
+                    const formattedValue: string | number | boolean = this.getFormattedValue(selectedList[index as number].getAttribute('data-value'));
+                    selectedValues.push(formattedValue);
+                }
+            }
+            if (selectedValues.indexOf(this.dragValue) > -1) {
+                args.items = this.getDataByValues(selectedValues as string[] | number[] | boolean[]);
+            }
+            else {
+                args.items = this.getDataByValues([this.dragValue] as string[] | number[] | boolean[]);
+            }
+        }
+        else {
+            args.items = this.getDataByValues([this.dragValue] as string[] | number[] | boolean[]);
+        }
+        if (this.allowDragAll) {
+            this.customDraggedItem = args.items;
         }
         extend(items, args.items);
         this.trigger('beforeDrop', args);
@@ -895,6 +922,9 @@ export class ListBox extends DropDownBase {
         }
         if (Browser.isIos) {
             this.list.style.overflow = '';
+        }
+        if (listObj && listObj !== this && !listObj.allowDragAndDrop) {
+            return;
         }
         const targetListObj: ListBox = this.getComponent(args.target);
         if (targetListObj && targetListObj.listData.length === 0) {

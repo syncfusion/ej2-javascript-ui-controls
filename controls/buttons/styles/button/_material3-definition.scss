@@ -1,6 +1,6 @@
 //layout variables
 $btn-border: 1px solid !default;
-$btn-icon-margin-top: 0 !default;
+$btn-icon-margin-top: -1px !default;
 $btn-icon-btn-width: 1em !default;
 $btn-icon-top-bottom-padding: 8px !default;
 $btn-icon-small-width: 1em !default;
@@ -55,7 +55,7 @@ $btn-padding: 8px 16px !default;
 $btn-small-padding: 5px 12px !default;
 $btn-bigger-padding: 10px 24px !default;
 $btn-bigger-small-padding: 7px 20px !default;
-$btn-icon-padding: 6px 6px !default;
+$btn-icon-padding: 7.5px 6px !default;
 $btn-small-icon-padding: 4px 4px !default;
 $btn-bigger-icon-padding: 10px 11px !default;
 $btn-bigger-small-icon-padding: 9px 9px !default;

@@ -7568,7 +7568,7 @@ export class Selection {
                         index = 0;
                     }
                 } else {
-                    isRtlText = element.isRightToLeft;
+                    isRtlText = element.characterFormat.bidi;
                     isParaBidi = element.line.paragraph.paragraphFormat.bidi;
                     if (element instanceof TextElementBox && (isParaBidi || isRtlText) && caretPosition.x < left + element.margin.left + element.width + element.padding.left) {
                         index = this.getTextLength(element.line, element) + (element as TextElementBox).length;
@@ -7933,7 +7933,9 @@ export class Selection {
                 return left;
             }
             if (index === (elementBox as TextElementBox).length && !isRtlText) {
-                left += elementBox.width;
+                if (this.documentHelper.isTextInput ? !isParaBidi : true) {
+                    left += elementBox.width;
+                }
             } else if (index > (elementBox as TextElementBox).length) {
                 width = this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
                 if (isRtlText) {
@@ -7948,7 +7950,9 @@ export class Selection {
                     width = this.documentHelper.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat, (elementBox as TextElementBox).scriptType);
                 }
                 if (isRtlText) {
-                    left -= width;
+                    if (this.documentHelper.isTextInput ? isParaBidi : true) {
+                        left -= width;
+                    }
                 } else {
                     left += width;
                 }
@@ -8156,6 +8160,9 @@ export class Selection {
     public fireSelectionChanged(isSelectionChanged: boolean, isKeyBoardNavigation?: boolean, isBookmark?: boolean): void {
         if (!this.isSelectBookmark) {
             this.isExcludeBookmarkStartEnd = false;
+        }
+        if (!this.isSelectCurrentWord  && this.documentHelper.isDoubleTap) {
+            this.documentHelper.isDoubleTap = false;
         }
         if (!this.isEmpty) {
             if (this.isForward) {

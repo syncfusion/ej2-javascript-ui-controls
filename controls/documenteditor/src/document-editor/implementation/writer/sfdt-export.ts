@@ -1459,7 +1459,9 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
                 if (textFrameBlock.hasOwnProperty('contentControlProperties') && !isNullOrUndefined(element.paragraph) && (element.paragraph.hasOwnProperty('contentControlProperties'))) {
                     this.blocks = [];
                 }
-                this.writeBlock(textFrameBlock, 0, inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]]);
+                if (element.autoShapeType !== 'StraightConnector') {
+                    this.writeBlock(textFrameBlock, 0, inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]]);
+                }
             }
         }
         return inline;

@@ -891,8 +891,10 @@ describe('ListBox', () => {
         });
 
         afterEach(() => {
-            listObj.destroy();
-            if (listObj1) {
+            if (listObj && listObj.list) {
+                listObj.destroy();
+            }
+            if (listObj1 && listObj1.list) {
                 listObj1.destroy();
             }
         });
@@ -1050,6 +1052,57 @@ describe('ListBox', () => {
             dragArgs.event = mouseEventArs; dragArgs.name = 'drop'; dragArgs.droppedElement = listObj1.element.parentElement;
             listObj.dragEnd(dragArgs);
             expect(listObj1.ulElement.innerText).toEqual('No records found');
+        });
+
+        it('beforeDragEnd with checkbox + filtering uses visible selected items', () => {
+            listObj = new ListBox({ dataSource: data, allowDragAndDrop: true, allowFiltering: true,
+                selectionSettings: { showCheckbox: true } }, elem);
+            const listItem: any = listObj.list.querySelectorAll('.e-list-item');
+            // Select two items via click (checkbox selection)
+            listItem[1].click(); // C#
+            listItem[2].click(); // C++
+            // Start drag on one of the selected items
+            let dragArgs: any = { bindEvents: null, dragElement: listItem[1], element: listObj.element, event: mouseEventArs, name: 'dragStart', target: listItem[1] };
+            listObj.triggerDragStart(dragArgs);
+            const beforeArgs: any = { cancel: false, currentIndex: 1, droppedElement: listItem[1], handled: false, helper: helper, name: 'beforeDrop',
+                target: listItem[3], previousIndex: 1 };
+            listObj.beforeDragEnd(beforeArgs);
+            expect(beforeArgs.items.length).toBe(2);
+            expect((listObj as any).customDraggedItem.length).toBe(2);
+        });
+
+        it('beforeDragEnd falls back to value slice when no visible selected (includes dragValue)', () => {
+            listObj = new ListBox({ dataSource: data, allowDragAndDrop: true, allowFiltering: true,
+                selectionSettings: { showCheckbox: true } }, elem);
+            const listItem: any = listObj.list.querySelectorAll('.e-list-item');
+            // No DOM selection, set value directly so visibleSelected will be empty
+            listObj.value = ['C#'];
+            // Start drag on C# (which is in value but not selected in DOM)
+            let dragArgs: any = { bindEvents: null, dragElement: listItem[1], element: listObj.element, event: mouseEventArs, name: 'dragStart', target: listItem[1] };
+            listObj.triggerDragStart(dragArgs);
+            const beforeArgs: any = { cancel: false, currentIndex: 1, droppedElement: listItem[1], handled: false, helper: helper, name: 'beforeDrop',
+                target: listItem[2], previousIndex: 1 };
+            listObj.beforeDragEnd(beforeArgs);
+            expect(beforeArgs.items.length).toBe(1);
+            expect((beforeArgs.items[0] as any).text || (beforeArgs.items[0] as any)).toBe('C#');
+            expect((listObj as any).customDraggedItem.length).toBe(1);
+        });
+
+        it('beforeDragEnd falls back to dragValue when not in selectedValues', () => {
+            listObj = new ListBox({ dataSource: data, allowDragAndDrop: true, allowFiltering: true,
+                selectionSettings: { showCheckbox: true } }, elem);
+            const listItem: any = listObj.list.querySelectorAll('.e-list-item');
+            // Value does not include dragged item
+            listObj.value = ['JAVA'];
+            // Drag C# which is not in value
+            let dragArgs: any = { bindEvents: null, dragElement: listItem[1], element: listObj.element, event: mouseEventArs, name: 'dragStart', target: listItem[1] };
+            listObj.triggerDragStart(dragArgs);
+            const beforeArgs: any = { cancel: false, currentIndex: 1, droppedElement: listItem[1], handled: false, helper: helper, name: 'beforeDrop',
+                target: listItem[2], previousIndex: 1 };
+            listObj.beforeDragEnd(beforeArgs);
+            expect(beforeArgs.items.length).toBe(1);
+            expect((beforeArgs.items[0] as any).text || (beforeArgs.items[0] as any)).toBe('C#');
+            expect((listObj as any).customDraggedItem.length).toBe(1);
         });
     });
 

@@ -771,3 +771,50 @@ describe('EJ2-830206: Searching with checkbox column shows "No records to displa
     destroy(gridObj);
   });
 });
+
+describe('Bug 993665: ExpandstateMapping in virtualization is not working to maintain expand collapse on filter and clear filter', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let data = [{ "TaskId": 1, "TaskName": "Parent Task 1", "Duration": 10, "ParentId": null, "isParent": true, "isExpanded": false },
+  { "TaskId": 2, "TaskName": "Child task 1", "Duration": 4, "ParentId": null, "isParent": null, "isExpanded": false },
+  { "TaskId": 13, "TaskName": "Child task 5", "Duration": 4, "ParentId": 2, "isParent": null, "isExpanded": false },
+  { "TaskId": 5, "TaskName": "Parent Task 2", "Duration": 10, "ParentId": null, "isParent": true, "isExpanded": true },
+  { "TaskId": 6, "TaskName": "Child task 2", "Duration": 4, "ParentId": 5, "isParent": null, "isExpanded": false },
+  { "TaskId": 10, "TaskName": "Parent Task 3", "Duration": 10, "ParentId": null, "isParent": true, "isExpanded": true },
+  { "TaskId": 11, "TaskName": "Child task 3", "Duration": 4, "ParentId": 10, "isParent": false, "isExpanded": false }];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: data,
+        enableVirtualization: true,
+        enableVirtualMaskRow: true,
+        idMapping: 'TaskId',
+        height: 400,
+        treeColumnIndex: 1,
+        parentIdMapping: 'ParentId',
+        expandStateMapping: "isExpanded",
+        allowFiltering: true,
+        toolbar: ['Search'],
+        columns: [
+          { field: 'TaskId', headerText: 'Task ID', textAlign: 'Right', isPrimaryKey: true, width: 140 },
+          { field: 'TaskName', headerText: 'Task Name', width: 160 }
+        ]
+      },
+      done
+    );
+  });
+  it('coverage', (done: Function) => {
+    actionComplete = (args?: object): void => {
+      expect(gridObj.getRows().length == 1).toBe(true);
+      done();
+    }
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.search("Child task 5");
+
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});

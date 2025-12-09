@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 31.2.16 (2025-12-02)
+## 31.2.18 (2025-12-09)
+
+### Common
+
+#### Bug Fixes
+
+- `#787955` - Resolved an issue where opening HTML via File Explorer switched layout from Page to Web by handling file:// origin in postMessage.
+
+## 31.2.5 (2025-11-04)
 
 ### Common
 

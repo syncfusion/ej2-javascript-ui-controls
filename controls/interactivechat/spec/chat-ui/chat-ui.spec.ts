@@ -31,7 +31,7 @@ describe('ChatUI Component', () => {
                 id: 'user1',
                 statusIconCss: 'e-icons e-user-online'
             },
-            timeStamp: new Date('October 13, 2024 11:13:00'),
+            timeStamp: new Date('October 13, 2024 11:13:45'),
             status: {
                 iconCss: 'e-icons e-check',
                 tooltip: 'sent',
@@ -666,6 +666,63 @@ describe('ChatUI Component', () => {
             expect(typingInicator).toBeNull();
         });
 
+        it('Locale checking for pinned message', () => {
+            L10n.load({
+                'de': {
+                    "chat-ui": {
+                        "unpin": "lösen",
+                        "viewChat": "Im Chat ansehen"
+                    }
+                }
+            });
+            const pinnedMessage: MessageModel = {
+                id: 'msg1',
+                text: 'This is a pinned message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+                isPinned: true
+            };
+            const message2: MessageModel = {
+                id: 'msg2',
+                text: 'First additional message!',
+                author: { id: 'user2', user: 'Jane Doe' },
+                timeStamp: new Date(),
+            };
+            const message3: MessageModel = {
+                id: 'msg3',
+                text: 'Second additional message!',
+                author: { id: 'user3', user: 'Alice Johnson' },
+                timeStamp: new Date(),
+            };
+            chatUI = new ChatUI({
+                user: { id: 'user4', user: 'Bob Brown' },
+                messages: [pinnedMessage, message2, message3],
+                locale: 'de',
+            });
+            chatUI.appendTo('#chatUI');
+            // Check the pinned message is present in the wrapper
+            const pinnedWrapper: HTMLElement = chatUIElem.querySelector('.e-pinned-message-wrapper');
+            const dropDownButton: HTMLElement = pinnedWrapper.querySelector('.e-dropdown-btn');
+            dropDownButton.click();
+            const pinnedDropdown: HTMLElement = document.querySelector('.e-dropdown-popup.e-pinned-dropdown-popup');
+            expect(pinnedDropdown).not.toBeNull();
+            const viewInChatButton: HTMLElement = pinnedDropdown.querySelector('.e-item');
+            expect(viewInChatButton).not.toBeNull();
+            expect(viewInChatButton.textContent).toBe('Im Chat ansehen');
+            viewInChatButton.click();
+            // Simulation of scrolling behavior or confirmation that message is viewed
+            const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+            const scrolledToMessage: HTMLElement = Array.from(messageItems).find(item => item.textContent.includes('This is a pinned message!'));
+            expect(scrolledToMessage).toBeTruthy();
+            // Verify clicking the unpin message button updates display property
+            dropDownButton.click();
+            const unpinButton: HTMLElement = pinnedDropdown.querySelectorAll('.e-item')[1] as HTMLElement;
+            expect(unpinButton).not.toBeNull();
+            expect(unpinButton.textContent).toBe('lösen');
+            unpinButton.click();
+            expect(pinnedWrapper.style.display).toBe('none'); // The wrapper is hidden but not removed
+        });
+
         it('Typing user dynamic addition', () => {
             chatUI = new ChatUI({
                 typingUsers: [{user: 'Reena',avatarUrl: 'https://ej2.syncfusion.com/demos/src/avatar/images/pic02.png'}]
@@ -938,6 +995,20 @@ describe('ChatUI Component', () => {
             chatUI.appendTo('#chatUI');
             let timeElement: HTMLDivElement = chatUIElem.querySelector('.e-time');
             expect(timeElement.textContent).toBe('13/10/2024 11:13');
+            chatUI.timeStampFormat = 'dd/MM/yyyy hh:mm a';
+            chatUI.dataBind();
+            timeElement = chatUIElem.querySelector('.e-time');
+            expect(timeElement.textContent).toBe('13/10/2024 11:13 AM');
+        });
+
+        it('Custom TimeStampFormat with seconds checking', () => {
+            chatUI = new ChatUI({
+                messages: [messages[0]],
+                timeStampFormat: 'MM-dd-yyyy HH:mm:ss'
+            });
+            chatUI.appendTo('#chatUI');
+            let timeElement: HTMLDivElement = chatUIElem.querySelector('.e-time');
+            expect(timeElement.textContent).toBe('10-13-2024 11:13:45');
             chatUI.timeStampFormat = 'dd/MM/yyyy hh:mm a';
             chatUI.dataBind();
             timeElement = chatUIElem.querySelector('.e-time');
@@ -1939,12 +2010,14 @@ describe('ChatUI Component', () => {
             const textareaElem: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
             const footerElem: HTMLDivElement = chatUIElem.querySelector('.e-footer');
             expect(textareaElem).not.toBeNull();
-            chatUI.focus();
+            textareaElem.focus();
+            var focusEvent = new FocusEvent('focus', { bubbles: true });
+            textareaElem.dispatchEvent(focusEvent);
             setTimeout(() => {
                 expect(document.activeElement).toBe(textareaElem);
                 expect(footerElem.classList.contains('focused')).toBe(true);
                 done();
-            }, 100, done);
+            }, 100);
         });
 
         it('addMessage method checking with string parameter', () => {

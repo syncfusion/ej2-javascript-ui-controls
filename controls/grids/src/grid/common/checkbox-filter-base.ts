@@ -464,10 +464,12 @@ export class CheckBoxFilterBase {
             }
             if (this.dlg && this.dlg.parentElement) {
                 remove(this.dlg);
-                let gridPopup: HTMLElement = document.getElementById(this.parent.element.id + '_e-popup');
-                if (!isNullOrUndefined(gridPopup)) {
-                    remove(gridPopup);
-                    gridPopup = null;
+                if (!(this.parent && (this.parent as IGrid).showColumnChooser)) {
+                    let gridPopup: HTMLElement = document.getElementById(this.parent.element.id + '_e-popup');
+                    if (!isNullOrUndefined(gridPopup)) {
+                        remove(gridPopup);
+                        gridPopup = null;
+                    }
                 }
             }
             this.dlg = null;
@@ -683,7 +685,7 @@ export class CheckBoxFilterBase {
                 this.notifyFilterPrevEvent(this.existingPredicate[this.options.field][i as number]);
             }
         }
-        if (this.sInput.value !== '' && (!this.localInfiniteSelectAllClicked || this.infiniteLocalSelectAll)) {
+        if (this.infiniteSearchPred && this.sInput.value !== '' && (!this.localInfiniteSelectAllClicked || this.infiniteLocalSelectAll)) {
             this.infiniteSearchPred['predicate'] = 'or';
             coll.unshift(this.infiniteSearchPred as PredicateModel);
             this.notifyFilterPrevEvent(this.infiniteSearchPred as PredicateModel);

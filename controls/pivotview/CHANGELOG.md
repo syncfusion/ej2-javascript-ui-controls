@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.2.18 (2025-12-09)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I792577` - The pivot table now renders correctly with the tabular layout enabled when more than two fields are in an expanded state.
+
 ## 31.2.16 (2025-12-02)
 
 ### Pivot Table

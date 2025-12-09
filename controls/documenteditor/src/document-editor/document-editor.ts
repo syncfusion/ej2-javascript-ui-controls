@@ -271,11 +271,11 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      * @default Tick
      *
      * @remarks
-     * This property customizes the visual style of checkboxes in the Document Editor to a 'Tick' or 'Cross'.
+     * This property determines the visual style of checkboxes in the Document Editor, allowing them to display either a 'Tick' or a 'Cross' when checked.
      *
-     * **Export:** Checkboxes are exported as a Boolean (`true` or `false`) indicating their checked state, not as visual symbols.
+     * **Export:** The checkbox state is exported as a Boolean value (`true` or `false`) representing whether it is checked, not as a visual symbol.
      *
-     * **Import:** The visual icon is rendered based on the imported Boolean value and the current `defaultCheckBoxOption` setting.
+     * **Import:** When importing, the checked state of a checkbox is rendered as a tick or cross based on the current `defaultCheckBoxOption` setting in the Document Editor.
      *
      */
     @Property('Tick')
@@ -2397,7 +2397,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         const eventArgs: SelectionChangeEventArgs = { source: this, isCompleted: this.documentHelper.isCompleted };
         // if (this.createdTriggered) {
-        this.trigger(selectionChangeEvent, eventArgs);
+        if (!this.documentHelper.layout.isLayoutWhole) {
+            this.trigger(selectionChangeEvent, eventArgs);
+        }
         this.documentHelper.isSelectionCompleted = this.documentHelper.isCompleted;
         this.documentHelper.isCompleted = true;
         if (this.documentEditorSettings.enableScreenReader) {
@@ -4258,6 +4260,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 } else {
                     this.selection.selectContentControlInternal(contentControl);
                     if (isExportRichTextData && contentControl.contentControlProperties.type === 'RichText') {
+                        this.selection.selectContentControlInternal(contentControl);
                         let sfdtString: string = '';
                         sfdtString = this.selection.sfdt;
                         sfdtString = sfdtString === undefined ? '' : sfdtString;

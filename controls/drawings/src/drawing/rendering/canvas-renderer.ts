@@ -245,16 +245,83 @@ export class CanvasRenderer {
                 let position: PointModel = this.labelAlign(options, wrapBounds, childNodes);
                 for (i = 0; i < childNodes.length; i++) {
                     let child: SubTextElement = childNodes[parseInt(i.toString(), 10)];
-                    if(child.text !== '\n') {
-                        let offsetX: number = position.x + child.x - wrapBounds.x;
-                        let offsetY: number = position.y + child.dy * i + ((options.fontSize) * 0.8);
-                        // if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
-                        //     child.text = overFlow(child.text, options);
-                        // }
-                        ctx.fillText(child.text, offsetX, offsetY);
-                        if (options.textDecoration === 'Underline'
+                    let offsetX: number;
+                    let offsetY: number;
+                    let isTextDecorationApplied: boolean = false;
+                    if (options.textAlign === 'justify') {
+                        if (child.text === '\n') continue;
+                        let baseSpaceWidth: number = ctx.measureText(' ').width;
+                        let targetWidth: number = wrapBounds.width;
+                        offsetX = position.x + child.x - wrapBounds.x;
+                        offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8);
+                        let isLastLine: boolean = i === childNodes.length - 1;
+                        if (!isLastLine && targetWidth > 0) {
+                            let leftEdge: number = position.x + child.x;
+                            const words: string[] = child.text.trim().split(/\s+/);
+                            if (words.length <= 1) {
+                                ctx.fillText(child.text, leftEdge, offsetY);
+                                continue;
+                            }
+                            const widths: number[] = words.map((w: any) => ctx.measureText(w).width);
+                            const wordsTotal: any = widths.reduce((a: any, b: any) => a + b, 0);
+                            const gaps: number = words.length - 1;
+                            const naturalWidth: any = wordsTotal + baseSpaceWidth * gaps;
+                            const extra: number = Math.max(0, targetWidth - naturalWidth);
+                            const extraPerGap: number = extra / gaps;
+                            let pen: number = leftEdge;
+                            for (let i: number = 0; i < words.length; i++) {
+                                ctx.fillText(words[i], pen, offsetY);
+                                if (i < gaps) {
+                                    pen += widths[i] + baseSpaceWidth + extraPerGap;
+                                }
+                            }
+                            if (options.textDecoration === 'Underline'
+                                || options.textDecoration === 'Overline'
+                                || options.textDecoration === 'LineThrough') {
+                                let startX: number = leftEdge;
+                                let startY: number;
+                                let endX: number = leftEdge + targetWidth;
+                                let endY: number;
+                                switch (options.textDecoration) {
+                                    case 'Underline':
+                                        startY = offsetY + 2;
+                                        endY = offsetY + 2;
+                                        break;
+                                    case 'Overline':
+                                        startY = (position.y + child.dy * i);
+                                        endY = (position.y + child.dy * i);
+                                        break;
+                                    case 'LineThrough':
+                                        startY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                                        endY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                                }
+                                ctx.beginPath();
+                                ctx.moveTo(startX, startY);
+                                ctx.lineTo(endX, endY);
+                                ctx.strokeStyle = options.color;
+                                ctx.lineWidth = options.fontSize * .08;
+                                ctx.globalAlpha = options.opacity;
+                                ctx.stroke();
+                                isTextDecorationApplied = true;
+                            }
+                        } else {
+                            ctx.fillText(child.text, offsetX, offsetY);
+                        }
+                    }
+                    else {
+                        if (child.text !== '\n') {
+                            offsetX = position.x + child.x - wrapBounds.x;
+                            offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8);
+                            // if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
+                            //     child.text = overFlow(child.text, options);
+                            // }
+                            ctx.fillText(child.text, offsetX, offsetY);
+                        }
+                    }
+                    if (child.text !== '\n') {
+                        if ((options.textDecoration === 'Underline'
                             || options.textDecoration === 'Overline'
-                            || options.textDecoration === 'LineThrough') {
+                            || options.textDecoration === 'LineThrough') && !isTextDecorationApplied) {
                             let startPointX: number = offsetX;
                             let startPointY: number;
                             let textlength: number = ctx.measureText(child.text).width;

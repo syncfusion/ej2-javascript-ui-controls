@@ -1845,7 +1845,7 @@ export class AnnotationToolbar {
                         this.pdfViewerBase.isDynamicStamp = false;
                         this.pdfViewer.annotationModule.stampAnnotationModule.retrievestampAnnotation((args.item as any).label);
                     }
-                    if (Browser.isDevice) {
+                    if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                         this.stampToolMobileForMobile(this.pdfViewer.element.id + '_annotation_stamp');
                     }
                 }
@@ -3027,7 +3027,7 @@ export class AnnotationToolbar {
                 (this.pdfViewerBase.tool as PolygonDrawingTool).mouseUp((args as MouseEventArgs), true, true);
             }
         }
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.deselectAllItems();
             this.resetFreeTextAnnot();
         } else {
@@ -3189,7 +3189,7 @@ export class AnnotationToolbar {
     }
 
     private onShapeDrawSelection(isShape: boolean): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.updateInteractionTools();
             this.enableAnnotationPropertiesTools(true);
             if (isShape) {
@@ -3745,7 +3745,7 @@ export class AnnotationToolbar {
         }
         case this.pdfViewer.element.id + '_annotation_freeTextEdit':
         case this.pdfViewer.element.id + '_annotation_freeTextEditIcon':
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.resetFreeTextAnnot();
                 this.showPropertiesTools('freeText');
                 this.isFreetextClicked = true ;
@@ -3770,7 +3770,7 @@ export class AnnotationToolbar {
             }
             this.pdfViewer.clearSelection(this.pdfViewer.currentPageNumber - 1);
             if (this.pdfViewer.annotationModule.inkAnnotationModule) {
-                if (!Browser.isDevice) {
+                if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                     this.updateInteractionTools();
                     this.showPropertiesTools('ink');
                 }
@@ -3791,13 +3791,13 @@ export class AnnotationToolbar {
             break;
         case this.pdfViewer.element.id + '_annotation_shapesIcon':
         case this.pdfViewer.element.id + '_annotation_shapes':
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.shapeToolMobile(args);
             }
             break;
         case this.pdfViewer.element.id + '_annotation_calibrateIcon':
         case this.pdfViewer.element.id + '_annotation_calibrate':
-            if (Browser.isDevice) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.calibrateToolMobile(args);
             }
             break;
@@ -4939,7 +4939,7 @@ export class AnnotationToolbar {
      * @returns {void}
      */
     public selectAnnotationDeleteItem(isEnable: boolean, deleteIconCicked?: boolean): void {
-        if (!isBlazor() && !Browser.isDevice) {
+        if (!isBlazor() && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             if (this.toolbar) {
                 if (isEnable) {
                     const annotation: any = this.pdfViewer.annotationModule.findCurrentAnnotation();
@@ -5185,7 +5185,7 @@ export class AnnotationToolbar {
      * @returns {void}
      */
     public enableAnnotationPropertiesTools(isEnable: boolean): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             let isPropertiesChanges: boolean = this.checkAnnotationPropertiesChange();
             if (!isEnable) {
                 isPropertiesChanges = true;
@@ -5230,7 +5230,7 @@ export class AnnotationToolbar {
      * @returns {void}
      */
     public enableSignaturePropertiesTools(isEnable: boolean): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             let isPropertiesChanges: boolean = this.checkAnnotationPropertiesChange();
             if (!isEnable) {
                 isPropertiesChanges = true;

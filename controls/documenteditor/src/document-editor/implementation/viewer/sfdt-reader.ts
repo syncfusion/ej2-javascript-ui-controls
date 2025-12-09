@@ -22,7 +22,7 @@ import {
     GroupShapeElementBox,
     ShapeBase
 } from './page';
-import { HelperMethods } from '../editor/editor-helper';
+import { ElementInfo, HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { Revision } from '../track-changes/track-changes';
@@ -1612,11 +1612,18 @@ export class SfdtReader {
                 lineWidget.children.push(bookmark);
                 bookmark.line = lineWidget;
                 if (!this.isParseHeader || this.isPaste) {
+                    let isBookmarkSelected: boolean = false;
+                    if (this.isPaste) {
+                        // if bookmark start & end is selected and a bookmark with same name pasted, need to replace existing with pasted bookmark.
+                        const selection = this.documentHelper.owner.selection;
+                        const SelectionBookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(bookmark.name);
+                        isBookmarkSelected = !isNullOrUndefined(SelectionBookmark) && !isNullOrUndefined(selection) && selection.isElementInSelection(SelectionBookmark, false) && selection.isElementInSelection(SelectionBookmark.reference, false);
+                    }
                     if (inline[bookmarkTypeProperty[this.keywordIndex]] === 0) {
                         let isAdd: boolean = this.isPaste && !this.documentHelper.bookmarks.containsKey(bookmark.name);
                         if (!this.isPaste) {
                             this.documentHelper.bookmarks.add(bookmark.name, bookmark);
-                        } else if (!isAdd) {
+                        } else if (!isAdd && !isBookmarkSelected) {
                             lineWidget.children.splice(lineWidget.children.indexOf(bookmark), 1);
                         }
                     } else if (inline[bookmarkTypeProperty[this.keywordIndex]] === 1) {
@@ -1627,7 +1634,7 @@ export class SfdtReader {
                                 bookmarkStart.reference = bookmark;
                                 bookmark.reference = bookmarkStart;
                                 this.documentHelper.endBookmarksUpdated.push(bookmark.name);
-                            } else if (!isConsider) {
+                            } else if (!isConsider && !isBookmarkSelected) {
                                 lineWidget.children.splice(lineWidget.children.indexOf(bookmark), 1);
                             }                            
                         }

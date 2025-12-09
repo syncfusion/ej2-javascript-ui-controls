@@ -125,6 +125,7 @@ export class ContextMenu implements IContextMenu {
 
     private contextMenuOnBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
         if (this.pdfViewerBase.preventContextmenu) {
+            this.pdfViewerBase.preventContextmenu = false;
             args.cancel = true;
         }
         if (this.copyContextMenu.length === this.defaultLength) {

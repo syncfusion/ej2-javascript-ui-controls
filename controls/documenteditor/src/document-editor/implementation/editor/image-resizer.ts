@@ -809,6 +809,7 @@ export class ImageResizer {
             let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
             let touchPoint: Point = this.viewer.findFocusedPage(cursorPoint, true);
             this.handleImageResizing(touchPoint, prevX, prevY);
+            this.viewer.updateScrollBars();
         }
     }
     private topMiddleResizing(touchPoint: Point): number {

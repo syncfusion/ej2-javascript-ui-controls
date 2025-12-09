@@ -3016,7 +3016,6 @@ export class TaskbarEdit extends DateProcessor {
         const target: Element = this.getElementByPosition(e);
         const element: HTMLElement = target as HTMLElement;
         const uniqueId: string = this.parent.viewType === 'ResourceView' ? fromItem.taskId : fromItem.rowUniqueID;
-
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag') {
             predecessor = uniqueId + (this.parent.enableRtl ? 'F' : 'S');
         }
@@ -3063,6 +3062,7 @@ export class TaskbarEdit extends DateProcessor {
         }
         args.isValidLink = !isValidLink && args.isValidLink ? false : args.isValidLink;
         if (args.isValidLink) {
+            this.parent['regenerateCycle'] = true;
             if (!this.editTooltip.toolTipObj && !this.parent.isAdaptive) {
                 this.editTooltip.showHideTaskbarEditTooltip(true, this.segmentIndex);
             }

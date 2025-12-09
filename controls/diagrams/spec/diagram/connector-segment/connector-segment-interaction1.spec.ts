@@ -1359,6 +1359,7 @@ describe('Diagram Control', () => {
         it('Checking Multiple selection dragging - node and connector connect to node', (done: Function) => {
             expect((diagram.connectors[0].wrapper.children[0] as PathElement).data == 'M75 200 L65 200 L65 250 L115 250 L115 300 L299.5 300').toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'A', true);
+            mouseEvents.keyUpEvent(diagramCanvas, 'Control', '');
             expect(diagram.selectedItems.nodes.length == 1 && diagram.selectedItems.connectors.length == 1).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'Right');
             expect(diagram.nodes[0].offsetX == 101 && diagram.nodes[0].offsetY == 200).toBe(true);

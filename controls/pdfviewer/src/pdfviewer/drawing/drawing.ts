@@ -557,6 +557,7 @@ export class Drawing {
             freeTextEle.rotateValue = undefined;
             freeTextEle.content = obj.dynamicText;
             freeTextEle.style.opacity = obj.opacity;
+            freeTextEle.style.strokeWidth = obj.thickness;
             freeTextEle.margin.left = 4;
             freeTextEle.margin.right = 5;
             freeTextEle.margin.top = 5 * (obj.fontSize / 16);
@@ -2716,6 +2717,10 @@ export class Drawing {
         if (node.thickness !== undefined) {
             actualObject.thickness = node.thickness;
             actualObject.wrapper.children[0].style.strokeWidth = node.thickness;
+            if (actualObject.wrapper.children[1] && actualObject.wrapper.children[0].style.strokeColor !== '#ffffff00'
+                && actualObject.wrapper.children[0].style.strokeColor !== 'transparent') {
+                actualObject.wrapper.children[1].style.strokeWidth = node.thickness;
+            }
             if (actualObject.shapeAnnotationType === 'Line' || actualObject.shapeAnnotationType === 'LineWidthArrowHead') {
                 for (let i: number = 0; i < actualObject.wrapper.children.length; i++) {
                     const child: any = actualObject.wrapper.children[parseInt(i.toString(), 10)];

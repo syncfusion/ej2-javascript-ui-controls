@@ -15368,7 +15368,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('FB23112, EJ2-60666, EJ2-939665 ->', () => {
+        describe('FB23112, EJ2-60666, EJ2-939665,EJ2-994048 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });
@@ -15382,7 +15382,45 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.getInstance().sheets[0].rows[2].cells[8].value).toBe(7);
                 done();
             });
-
+            it('EJ2-994048: VLOOKUP comparison with empty string ("") returns FALSE when lookup value is blank cell',(done: Function) => {
+                const spreadsheet: any = helper.getInstance().sheets[0];
+                helper.edit('D8', '');
+                expect(spreadsheet.rows[7].cells[3].value).toBe('');
+                helper.edit('J2', '=IF(VLOOKUP(I2,A2:D11,4,FALSE)="","N/A")');
+                expect(spreadsheet.rows[1].cells[9].value).toBe('N/A');
+                helper.edit('J2', '=IF(""=VLOOKUP(I2,A2:D11,4,FALSE),"N/A")');
+                expect(spreadsheet.rows[1].cells[9].value).toBe('N/A');
+                helper.edit('J2', '=IF(0=VLOOKUP(I2,A2:D11,4,FALSE),"N/A")');
+                expect(spreadsheet.rows[1].cells[9].value).toBe('N/A');
+                helper.edit('J2', '=IF(VLOOKUP(I2,A2:D11,4,FALSE)=0,"N/A")');
+                expect(spreadsheet.rows[1].cells[9].value).toBe('N/A');
+                helper.edit('J3', '=SUM(IF(VLOOKUP(I2,A2:D11,4,FALSE)="",2,1), IF(VLOOKUP(A4,A2:D11,4,FALSE)=20,2,1))');
+                expect(spreadsheet.rows[2].cells[9].value).toBe(4);
+                helper.edit('J4', '=SUM(IF(VLOOKUP(I2,A2:D11,4,FALSE)="",2,1), D11)');
+                expect(spreadsheet.rows[3].cells[9].value).toBe(52);
+                helper.edit('J5', '=SUM(VLOOKUP(I2,A2:D11,4,FALSE), D11)');
+                expect(spreadsheet.rows[4].cells[9].value).toBe(50);
+                helper.edit('I6', 'Quantity');
+                helper.edit('J6', '=IF(HLOOKUP(I6,A1:D8,8,FALSE)="","N/A")');
+                expect(spreadsheet.rows[5].cells[9].value).toBe('N/A');
+                helper.edit('J6', '=IF(HLOOKUP(I6,A1:D8,8,FALSE)=0,"N/A")');
+                expect(spreadsheet.rows[5].cells[9].value).toBe('N/A');
+                helper.edit('J6', '=IF(0=HLOOKUP(I6,A1:D8,8,FALSE),"N/A")');
+                expect(spreadsheet.rows[5].cells[9].value).toBe('N/A');
+                helper.edit('J6', '=IF(""=HLOOKUP(I6,A1:D8,8,FALSE),"N/A")');
+                expect(spreadsheet.rows[5].cells[9].value).toBe('N/A');
+                helper.edit('J7', '=AND(VLOOKUP(I2,A2:D11,4,FALSE)="", D10>D9)');
+                expect(spreadsheet.rows[6].cells[9].value).toBe('TRUE');
+                helper.edit('J8', '=OR(VLOOKUP(I2,A2:D11,4,FALSE)="", D10<D9)');
+                expect(spreadsheet.rows[7].cells[9].value).toBe('TRUE');
+                helper.edit('J9', '=NOT(VLOOKUP(I2,A2:D11,4,FALSE)= 0)');
+                expect(spreadsheet.rows[8].cells[9].value).toBe('FALSE');
+                helper.edit('I10', '15');
+                expect(spreadsheet.rows[9].cells[8].value).toBe(15);
+                helper.edit('J10', '=IF(VLOOKUP(I10*2,D2:E11,2,FALSE)= 10,"YES","NO")');
+                expect(spreadsheet.rows[9].cells[9].value).toBe('YES');
+                done();
+            });
             it('Editing formula is not working after sheets updated dynamically', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 spreadsheet.sheets = [{}, {}];

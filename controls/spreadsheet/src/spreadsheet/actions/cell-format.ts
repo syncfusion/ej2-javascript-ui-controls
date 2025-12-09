@@ -143,8 +143,9 @@ export class CellFormat {
                     }
                 }
             } else if (!cellModel.wrap && (args.style.fontSize || args.style.fontFamily)) {
-                const hgt: number = getRowHeight(sheet, args.rowIdx, true) - getBorderHeight(args.rowIdx, args.colIdx, sheet);
-                if (hgt < getTextHeight(this.parent, cellModel.style)) {
+                const size: number = getBorderHeight(args.rowIdx, args.colIdx, sheet);
+                const hgt: number = getRowHeight(sheet, args.rowIdx, true) - size;
+                if (hgt < getTextHeight(this.parent, cellModel.style) || (size > 1 && getRowHeight(sheet, args.rowIdx) < 20)) {
                     cell.style.lineHeight = `${hgt}px`;
                 } else if (cell.style.lineHeight) {
                     cell.style.lineHeight = '';
@@ -383,7 +384,7 @@ export class CellFormat {
             if (!cellModel.wrap) {
                 if (size > 1) {
                     const hgt: number = getRowHeight(sheet, rowIdx, true) - getBorderHeight(rowIdx, colIdx, sheet);
-                    if (hgt < getTextHeight(this.parent, cellModel.style) && size > 1) {
+                    if ((hgt < getTextHeight(this.parent, cellModel.style) || getRowHeight(sheet, rowIdx) < 20) && size > 1) {
                         cell.style.lineHeight = `${hgt}px`;
                     } else if (cell.style.lineHeight) {
                         cell.style.lineHeight = '';

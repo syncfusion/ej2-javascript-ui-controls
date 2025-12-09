@@ -31,6 +31,7 @@ export class GanttChart {
     public isExpandCollapseFromChart: boolean = false;
     public isExpandAll: boolean = false;
     public isCollapseAll: boolean = false;
+    private isTouchMoved: boolean = false;
     private focusedElement: HTMLElement;
     public focusedRowIndex: number;
     public debounceTimeoutNext: number = 0;
@@ -526,6 +527,9 @@ export class GanttChart {
                 cancel = args['cancel'];
             }
         }
+        if (this.isTouchMoved) {
+            this.isTouchMoved = false;
+        }
         if (!cancel && !this.isPinching) {
             if ((e as PointerEvent).which !== 3 && this.parent.editSettings.allowTaskbarEditing) {
                 this.parent.notify('chartMouseDown', e);
@@ -592,7 +596,7 @@ export class GanttChart {
                     || closest(e.target as Element, '.' + cls.taskBarMainContainer);
                 if (closest((<HTMLElement>target), '.e-gantt-parent-taskbar') && !this.parent.editSettings.allowEditing && !this.parent.isAdaptive) {
                     this.chartExpandCollapseRequest(e);
-                } else if (!isOnTaskbarElement && this.parent.autoFocusTasks) {
+                } else if (!isOnTaskbarElement && this.parent.autoFocusTasks && !this.isTouchMoved) {
                     this.scrollToTarget(e); /** Scroll to task */
                 }
             }
@@ -675,6 +679,7 @@ export class GanttChart {
             this.parent.notify('chartMouseUp', e);
         }
         this.isGanttElement = false;
+        this.isTouchMoved = false;
     }
     /**
      *  Method trigger while perform mouse up action.
@@ -724,7 +729,7 @@ export class GanttChart {
         this.parent.notify('chartMouseUp', e);
         if (this.parent.showActiveElement) {
             this.parent.showIndicator = true;
-            if (this.focusedElement && !(e.target as HTMLElement).classList.contains('e-split-bar')) {
+            if (!(e.target as HTMLElement).classList.contains('e-split-bar') && this.focusedElement) {
                 this.focusedElement.tabIndex = this.focusedElement.tabIndex === 0 ? -1 : this.focusedElement.tabIndex;
                 removeClass([this.focusedElement], 'e-active-container');
             }
@@ -736,7 +741,7 @@ export class GanttChart {
                 || closest(e.target as Element, '.' + cls.taskBarMainContainer);
             if (closest((<HTMLElement>target), '.e-gantt-parent-taskbar') && !this.parent.editSettings.allowEditing) {
                 this.chartExpandCollapseRequest(e as PointerEvent);
-            } else if (!isOnTaskbarElement && this.parent.autoFocusTasks) {
+            } else if (!isOnTaskbarElement && this.parent.autoFocusTasks && !this.isTouchMoved) {
                 this.scrollToTarget(e as PointerEvent); /** Scroll to task */
             }
         }
@@ -812,6 +817,9 @@ export class GanttChart {
                 }
                 this.previousPinchDistance = currentPinchDistance;
             }
+        }
+        if (e instanceof TouchEvent && e.type === 'touchmove') {
+            this.isTouchMoved = true;
         }
         if (this.parent.editSettings.allowTaskbarEditing && this.isPinching === false) {
             if (!this.parent.enableRtl && this.parent.element.getElementsByClassName('e-clone-taskbar').length > 0) {

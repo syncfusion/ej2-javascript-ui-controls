@@ -19,7 +19,7 @@ import { ConnectorLineEdit } from './connector-line-edit';
 import { ITreeData, TreeGrid, Edit as TreeGridEdit } from '@syncfusion/ej2-treegrid';
 import { CriticalPath, UndoRedo } from '..';
 import { ITaskSegment, TaskType } from '../base/common';
-import { timelineHeaderCellLabel } from '../base/css-constants';
+
 
 /**
  * The Edit Module is used to handle editing actions.
@@ -38,6 +38,7 @@ export class Edit {
     private taskViolation: string;
     private canReset: boolean = false;
     private isFlatDataHaveUnAsignedTask: boolean = false;
+    private dirtyTasks: Set<string | number> = new Set<string | number>();
     /**
      * @private
      */
@@ -1359,6 +1360,118 @@ export class Edit {
         }
     }
 
+    private processSuccessorChainAndChildren(currentParent: IGanttData): void {
+        const getTaskId: any = (rec: IGanttData): string =>
+            this.parent.viewType === 'ResourceView'
+                ? rec.ganttProperties.taskId.toString()
+                : rec.ganttProperties.rowUniqueID.toString();
+
+        interface ISuccessorLink {
+            from: string;
+            to: string;
+        }
+
+        const taskId: string = getTaskId(currentParent);
+        const queue: ISuccessorLink[] = [];
+        const directSuccessors: ISuccessorLink[] = (currentParent.ganttProperties.predecessor || [])
+            .filter((data: IPredecessor) => data.from === taskId)
+            .map((data: IPredecessor) => ({ from: data.from, to: data.to }));
+
+        queue.push(...directSuccessors);
+        const visitedSuccessors: Set<string> = new Set<string>();
+
+        while (queue.length > 0) {
+            const successor: ISuccessorLink = queue.shift()!;
+
+            if (visitedSuccessors.has(successor.to)) {
+                continue;
+            }
+            visitedSuccessors.add(successor.to);
+
+            const parentGanttRecord: IGanttData | null = this.parent.connectorLineModule.getRecordByID(successor.from);
+            const record: IGanttData | null = this.parent.connectorLineModule.getRecordByID(successor.to);
+
+            if (!record) {
+                continue;
+            }
+
+            this.parent.predecessorModule['validateChildGanttRecord'](parentGanttRecord, record);
+
+            if (record.hasChildRecords && record.ganttProperties.isAutoSchedule) {
+                this.parent.predecessorModule['updateChildItems'](record);
+            }
+
+            if (record.parentItem && record.ganttProperties.isAutoSchedule) {
+                this.parent.dataOperation.updateParentItems(record);
+            }
+
+            // Walk up parent hierarchy
+            if (record.parentItem) {
+                let parent: IGanttData | null = this.parent.getRecordByID(record.parentItem.taskId);
+                while (parent) {
+                    if (parent.ganttProperties.predecessor && parent.ganttProperties.predecessor.length) {
+                        const parentId: string = getTaskId(parent);
+                        for (const link of parent.ganttProperties.predecessor) {
+                            if (link.from === parentId) {
+                                const toRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(link.to);
+                                if (toRecord) {
+                                    const fromRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(link.from);
+                                    this.parent.predecessorModule['validateChildGanttRecord'](fromRecord, toRecord);
+                                }
+                            }
+                        }
+                    }
+                    parent = parent.parentItem ? this.parent.getRecordByID(parent.parentItem.taskId) : null;
+                }
+            }
+
+            // Walk down all children (BFS)
+            if (record.hasChildRecords) {
+                const childQueue: IGanttData[] = [...record.childRecords];
+                const visitedChildren: Set<string> = new Set<string>();
+
+                while (childQueue.length > 0) {
+                    const child: IGanttData = childQueue.shift()!;
+                    const childId: string = getTaskId(child);
+
+                    if (visitedChildren.has(childId)) {
+                        continue;
+                    }
+                    visitedChildren.add(childId);
+
+                    if (child.ganttProperties.predecessor) {
+                        for (const link of child.ganttProperties.predecessor) {
+                            if (link.from === childId) {
+                                const toRec: IGanttData | null = this.parent.connectorLineModule.getRecordByID(link.to);
+                                if (toRec) {
+                                    const fromRec: IGanttData | null = this.parent.connectorLineModule.getRecordByID(link.from);
+                                    this.parent.predecessorModule['validateChildGanttRecord'](fromRec, toRec);
+                                    if (toRec.hasChildRecords) {
+                                        this.parent.predecessorModule['updateChildItems'](toRec);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (child.hasChildRecords) {
+                        childQueue.push(...child.childRecords);
+                    }
+                }
+            }
+
+            // Add next level successors
+            if (record.ganttProperties.predecessor) {
+                const currentId: string = getTaskId(record);
+                for (const link of record.ganttProperties.predecessor) {
+                    if (link.from === currentId) {
+                        queue.push({ from: link.from, to: link.to });
+                    }
+                }
+            }
+        }
+    }
+
     /**
      *
      * @param {ITaskAddedEventArgs} args - Edited event args like taskbar editing, dialog editing, cell editing
@@ -1427,6 +1540,10 @@ export class Edit {
                     this.isFirstCall = true;
                     this.parent.predecessorModule.validatePredecessor(currentParent, [], '');
                     this.updateParentItemOnEditing();
+                }
+                else if (currentParent.ganttProperties.predecessor && this.parent.updateOffsetOnTaskbarEdit &&
+                    ((this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed']) || !this.parent.undoRedoModule)) {
+                    this.processSuccessorChainAndChildren(currentParent);
                 }
                 if (currentParent.parentItem) {
                     currentParent = this.parent.getRecordByID(currentParent.parentItem.taskId);

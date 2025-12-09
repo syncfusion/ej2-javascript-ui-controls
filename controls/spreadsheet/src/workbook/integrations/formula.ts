@@ -142,6 +142,8 @@ export class WorkbookFormula {
             this.calculateInstance.getDependentCells().clear();
             this.calculateInstance.getFormulaInfoTable().clear();
             this.calculateInstance.getDependentFormulaCells().clear();
+            this.calculateInstance.uniqueRange = [];
+            this.calculateInstance.dependencyCollection = [];
             return;
         }
         let cellRef: string = args.cellRef.split(':')[0];

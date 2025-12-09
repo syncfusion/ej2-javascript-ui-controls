@@ -103,6 +103,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public isDoubleTap: boolean = false;
+    /**
+     * @private
+     */
     public isHeaderFooter: boolean = false;
     /**
      * @private
@@ -2790,6 +2794,7 @@ export class DocumentHelper {
                 }
             }
             if (this.selection.isEmpty && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selectionModule.start)) {
+                this.isDoubleTap = true;
                 this.owner.selectionModule.selectCurrentWord();
                 this.selection.checkForCursorVisibility();
                 this.tapCount = 2;
@@ -4460,7 +4465,9 @@ export class DocumentHelper {
                             page.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
                             return this.getFieldText(fieldPattern, page.currentPageNum);
                         }
-                        if (previousPage.currentPageNum === 1 && currentSectionIndex !== previousPage.sectionIndex) {
+                        if (previousPage.currentPageNum === 1 && currentSectionIndex !== previousPage.sectionIndex ||
+                            (currentSectionIndex === previousPage.sectionIndex &&
+                                previousPage.footerWidget.headerFooterType === 'FirstPageFooter')) {
                             previousPage.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
                         }
                         page.currentPageNum = previousPage.currentPageNum + 1;

@@ -2319,4 +2319,25 @@ describe('Cell Format ->', () => {
             done();
         });
     });
+    describe('EJ2- 991003: Row Height Not Adjusted Correctly When Thick Borders Are Applied in Spreadsheet ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Row Height Should Adjusted Correctly When Thick Borders Are Applied on merged cells', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowHeight(15, 1);
+            spreadsheet.setRowHeight(15, 2);
+            spreadsheet.setRowHeight(15, 3);
+            helper.invoke('merge', ['D2:F2', 'Horizontally']);
+            helper.invoke('merge', ['D3:F3', 'Horizontally']);
+            helper.invoke('merge', ['D4:F4', 'Horizontally']);
+            helper.invoke('cellFormat', [{ border: '2px solid #000' }, 'D2:F4']);
+            let rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[1];
+            expect(rowHdr.offsetHeight).toBe(spreadsheet.sheets[0].rows[1].height);
+            done();
+        });
+    });
 });

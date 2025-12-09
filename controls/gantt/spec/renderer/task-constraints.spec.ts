@@ -876,6 +876,12 @@ describe('Task constraints', () => {
             triggerMouseEvent(cancelRecord, 'click');
             expect(ganttObj.flatData[0].ganttProperties.constraintDate).toBe(null)
         });
+        it('Code coverage for dialog edit', () => {
+            (ganttObj.columns[2] as any).allowEditing = false;
+            (ganttObj.columns[3] as any).allowEditing = false;
+            expect(ganttObj.editModule.dialogModule['isCheckIsDisabled'](ganttObj.columns[2] as any)).toBe(true);
+            expect(ganttObj.editModule.dialogModule['isCheckIsDisabled'](ganttObj.columns[3] as any)).toBe(true);
+        });
         afterAll(() => {
            if(ganttObj){
                destroyGantt(ganttObj);

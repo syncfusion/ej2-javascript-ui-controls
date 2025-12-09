@@ -125,9 +125,12 @@ export class VirtualScroll {
         const dm: DataManager = new DataManager(pageingDetails.result);
         const expanded: Predicate = new Predicate('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
         const parents: ITreeData[] = dm.executeLocal(new Query().where(expanded));
-        const visualData: ITreeData[] = parents.filter((e: ITreeData) => {
-            return getExpandStatus(this.parent, e, parents);
-        });
+        const isFiltering: Boolean = pageingDetails.actionArgs.requestType === 'filtering';
+        const isFlatHierarchy: Boolean = this.parent.filterSettings.hierarchyMode === 'Child' ||
+            this.parent.filterSettings.hierarchyMode === 'None';
+        const visualData: ITreeData[] = isFiltering && isFlatHierarchy
+            ? parents
+            : parents.filter((e: ITreeData) => getExpandStatus(this.parent, e, parents));
         this.visualData = visualData;
         pageingDetails.count = visualData.length;
         this.parent.grid.notify(events.dataListener, {data: visualData});

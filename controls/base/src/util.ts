@@ -56,7 +56,8 @@ export function setImmediate(handler: Function): Function {
         }
     };
     window.addEventListener('message', <EventListener>messageHandler, false);
-    window.postMessage(secret, window.location.origin);
+    const origin = window.location.origin.indexOf('file://') === 0 ? '*' : window.location.origin;
+    window.postMessage(secret, origin);
     return unbind = () => {
         window.removeEventListener('message', <EventListener>messageHandler);
         handler = messageHandler = secret = undefined;

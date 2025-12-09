@@ -948,6 +948,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             if (libFormula === 'IF') {
                                 args.push('nestedFormulaTrue');
                             }
+                            if (libFormula === 'VLOOKUP' || libFormula === 'HLOOKUP') {
+                                const parentQIdx: number = parsedText.lastIndexOf('q', lastIndexOfq - 1);
+                                if (parentQIdx !== -1) {
+                                    const formula: string = parsedText.substring(
+                                        parentQIdx + 1, parsedText.lastIndexOf(this.leftBracket, lastIndexOfq - 1));
+                                    const conditionalFormulas: string[] = ['IF', 'IFS', 'AND', 'OR', 'NOT'];
+                                    if (conditionalFormulas.some((cFormula: string): boolean => cFormula === formula)) {
+                                        args.push('conditionalFormulaTrue');
+                                    }
+                                }
+                            }
                         }
                         if (isFromComputeExpression && libFormula === 'UNIQUE') { args.push('isComputeExp'); }
                     }
@@ -1232,6 +1243,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     public computeVHLookup(range: string[], isVlookup?: boolean): string {
         const argArr: string[] = range;
+        let isConditionalFormula: boolean;
+        if (argArr && argArr[argArr.length - 1] === 'conditionalFormulaTrue') {
+            isConditionalFormula = true;
+            argArr.pop();
+        }
         if (isNullOrUndefined(argArr) || argArr.length < 3 || argArr.length > 4) {
             return this.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
         }
@@ -1323,7 +1339,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 };
                 const matchColText: string = sheetToken + getAlphalabel(matchIndex);
                 getMatchRangeValue = (): string => {
-                    return getCellValue(idx, matchIndex, matchColText + idx) || '0';
+                    return getCellValue(idx, matchIndex, matchColText + idx) || (isConditionalFormula ? '""' : '0');
                 };
             } else {
                 const matchIndex: number = rowIdx + colNumIdx - 1;
@@ -1337,7 +1353,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     return getCellValue(rowIdx, idx, matchColText + rowIdx);
                 };
                 getMatchRangeValue = (): string => {
-                    return getCellValue(matchIndex, idx, matchColText + matchIndex) || '0';
+                    return getCellValue(matchIndex, idx, matchColText + matchIndex) || (isConditionalFormula ? '""' : '0');
                 };
             }
         } else {
@@ -1829,6 +1845,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             let i: number = 0;
             let sheet: string = '';
             stack.length = 0;
+            const emptyStack: string[] = [];
             const decimalSep: string = this.getParseDecimalSeparator();
             while (i < pFormula.length) {
                 let uFound: boolean = pFormula[i as number] === 'u';    // for 3*-2
@@ -1917,6 +1934,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 } else if (pFormula[i as number] === this.tic[0]) {
                     let s: string = pFormula[i as number].toString();
                     i = i + 1;
+                    const isNestedFormulaVal: boolean = pFormula[i - 2] === 'n' && pFormula[i as number] === this.tic[0];
                     while (i < pFormula.length && pFormula[i as number] !== this.tic[0]) {
                         s = s + pFormula[i as number];
                         i = i + 1;
@@ -1927,6 +1945,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         stack.push(this.tic + textName + this.tic);
                     } else {
                         stack.push(textName);
+                        if (textName === '' && isNestedFormulaVal) {
+                            emptyStack[stack.length - 1] = '0';
+                        }
                     }
                     i = i + 1;
                 } else if (pFormula[i as number] === '%' && stack.length > 0) {
@@ -2088,7 +2109,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         break;
                     case this.parser.tokenEqual:
                         {
-                            this.processLogical(stack, 'equal');
+                            this.processLogical(stack, 'equal', emptyStack);
+                            emptyStack.length = 0;
                             i = i + 1;
                         }
                         break;
@@ -2184,9 +2206,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @hidden
      * @param {string[]} stack - Specifies the values that are used to perform the logical operation.
      * @param {string} operator - Specifies the logical operator.
+     * @param {string[]} emptyStack - Specifies the values that are used to perform the logical operation for empty string value case.
      * @returns {string} - It returns whether the logical operation is TRUE or FALSE.
      */
-    public processLogical(stack: string[], operator: string): string {
+    public processLogical(stack: string[], operator: string, emptyStack?: string[]): string {
         let val1: string;
         let val2: string;
         let value1: number | string;
@@ -2272,8 +2295,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         if (operator === 'equal' && !isErrorString) {
-            val1 = stack.pop();
-            val2 = stack.pop();
+            let emptyValue1: string;
+            let emptyValue2: string;
+            if (emptyStack) {
+                emptyValue1 = emptyStack[stack.length - 1];
+                val1 = stack.pop();
+                emptyValue2 = emptyStack[stack.length - 1];
+                val2 = stack.pop();
+            } else {
+                val1 = stack.pop();
+                val2 = stack.pop();
+            }
             if (this.getErrorStrings().indexOf(val1) > -1) {
                 result = val1;
             } else if (this.getErrorStrings().indexOf(val2) > -1) {
@@ -2286,7 +2318,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 if (val1 === '*' && this.isNaN(this.parseFloat(val2)) && val2 !== '') {
                     isOnlyAsterisk = true;
                 }
-                result = val1 === val2 || isOnlyAsterisk ? this.trueValue : this.falseValue;
+                result = val1 === val2 || (emptyValue1 !== undefined && emptyValue1 === val2) ||
+                    (emptyValue2 !== undefined && emptyValue2 === val1) || isOnlyAsterisk ? this.trueValue : this.falseValue;
             }
         }
         if (operator === 'or' && !isErrorString) {

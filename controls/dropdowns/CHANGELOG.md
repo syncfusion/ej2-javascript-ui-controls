@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 31.2.18 (2025-12-09)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I757895` - Resolved an issue where mentioned text was not removed when pressing the backspace key for the first time.
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I785912` - Resolved an issue where the preselected item was not displayed in the popup list when grouping and filtering were applied.
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I782515` - Fixed an issue where a console error occurred while `drag-and-drop` the filtered value in the listbox.
+
 ## 31.2.16 (2025-12-02)
 
 ### MultiSelect
@@ -9,6 +29,8 @@
 #### Bug Fixes
 
 - `#I784260` - Resolved an issue where the dropdown refreshed unexpectedly when the dataset size was below the virtualization threshold.
+
+- `#I342517` - Resolved the issue with When clicking on a grouped category in the list, it incorrectly selects all groups.
 
 ## 31.2.15 (2025-11-25)
 

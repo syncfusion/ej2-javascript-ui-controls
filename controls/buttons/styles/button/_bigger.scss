@@ -161,7 +161,7 @@
         line-height: 1.2;
       }
       @if $skin-name == 'fluent2' {
-        line-height: 16px;
+        line-height: 1.352em;
       }
       @if $skin-name == 'highcontrast' {
         padding: 3px 11px;

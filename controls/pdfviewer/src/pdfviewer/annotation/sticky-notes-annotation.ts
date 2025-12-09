@@ -817,14 +817,45 @@ export class StickyNotesAnnotation {
             this.pdfViewerBase.navigationPane.commentsContentContainer.scrollTop = scrollValue;
         }
     }
-    private getButtonState(editObj: any, commentTextBox: any): void{
-        commentTextBox.addEventListener('keyup', function (event: any): void {
-            if (editObj.element.querySelector('.e-btn-save')) {
-                if ((event.srcElement.value !== '' || event.srcElement.defaultValue !== '') && event.srcElement.defaultValue !== event.srcElement.value) {
-                    editObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = false;
+
+    private getButtonState(editObj: any, commentTextBox: HTMLElement): void {
+        const toggle: any = () => {
+            if (editObj) {
+                const saveBtn: any = editObj.element.querySelector('.e-btn-save');
+                const input: any = editObj.element.querySelector('input.e-input, textarea.e-input');
+                if (!saveBtn.ej2_instances[0] || !input) { return; }
+                if (editObj.prevValue !== input.value.trim()) {
+                    saveBtn.ej2_instances[0].disabled = input.value.trim().length === 0;
                 }
             }
-        });
+        };
+        const onClear: any = () => {
+            requestAnimationFrame(toggle);
+        };
+        const attachListeners: any = () => {
+            const input: any = editObj.element.querySelector('input.e-input, textarea.e-input');
+            if (input) {
+                input.addEventListener('input', toggle);
+                input.addEventListener('change', toggle);
+                toggle();
+            }
+            editObj.element.addEventListener('click', function (e: any): void {
+                const t: any = e.target;
+                if (t && t.classList.contains('e-clear-icon')) {
+                    onClear();
+                }
+            });
+            editObj.element.addEventListener('pointerdown', function (e: any): void {
+                const t: any = e.target;
+                if (t && t.classList.contains('e-clear-icon')) {
+                    onClear();
+                }
+            });
+        };
+        requestAnimationFrame(attachListeners);
+        if (commentTextBox) {
+            commentTextBox.addEventListener('keyup', toggle);
+        }
     }
 
     /**

@@ -3325,19 +3325,21 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const gridFooter: Element = this.getFooterContent() as Element;
         if (dialogElement) {
             const dialogHolder: Element = dialogElement.querySelector('.e-checkboxlist');
-            const maskRowCount: number = Math.floor(dialogHolder.getBoundingClientRect().height / this.getRowHeight());
-            const maskTemplate: string = '<div class="e-ftrchk e-mask-ftrchk">'
-                + '<div class="e-checkbox-wrapper"><input class="e-chk-hidden">'
-                + this.getShimmerTemplate() + this.getShimmerTemplate() + '</div></div>';
-            dialogHolder.innerHTML = '';
-            for (let i: number = 0; i < maskRowCount; i++) {
-                dialogHolder.innerHTML += maskTemplate;
-                (dialogHolder.querySelector('.e-ftrchk.e-mask-ftrchk') as HTMLElement).style.width = '100%';
-                (dialogHolder.querySelector('.e-checkbox-wrapper') as HTMLElement).style.width = '100%';
-                const maskSpan: Element[] = [].slice.call(dialogHolder
-                    .querySelectorAll('.e-mask:not(.e-mask-checkbox-filter-intent):not(.e-mask-checkbox-filter-span-intent)'));
-                maskSpan[0].classList.add('e-mask-checkbox-filter-intent');
-                maskSpan[1].classList.add('e-mask-checkbox-filter-span-intent');
+            if (!isNullOrUndefined(dialogHolder)) {
+                const maskRowCount: number = Math.floor(dialogHolder.getBoundingClientRect().height / this.getRowHeight());
+                const maskTemplate: string = '<div class="e-ftrchk e-mask-ftrchk">'
+                    + '<div class="e-checkbox-wrapper"><input class="e-chk-hidden">'
+                    + this.getShimmerTemplate() + this.getShimmerTemplate() + '</div></div>';
+                dialogHolder.innerHTML = '';
+                for (let i: number = 0; i < maskRowCount; i++) {
+                    dialogHolder.innerHTML += maskTemplate;
+                    (dialogHolder.querySelector('.e-ftrchk.e-mask-ftrchk') as HTMLElement).style.width = '100%';
+                    (dialogHolder.querySelector('.e-checkbox-wrapper') as HTMLElement).style.width = '100%';
+                    const maskSpan: Element[] = [].slice.call(dialogHolder
+                        .querySelectorAll('.e-mask:not(.e-mask-checkbox-filter-intent):not(.e-mask-checkbox-filter-span-intent)'));
+                    maskSpan[0].classList.add('e-mask-checkbox-filter-intent');
+                    maskSpan[1].classList.add('e-mask-checkbox-filter-span-intent');
+                }
             }
             return;
         }

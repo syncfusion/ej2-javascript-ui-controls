@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 31.2.18 (2025-12-09)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I790864` - Resolved the horizontal scrolling issue in the Gantt chart for `Ipad` device.
+- `#I778404` - Resolved unpredictable task shifts and miscalculated dependency offsets in the Gantt chart.
+
 ## 31.2.15 (2025-11-25)
 
 ### GanttChart

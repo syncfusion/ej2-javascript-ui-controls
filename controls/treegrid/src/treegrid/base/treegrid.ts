@@ -2879,12 +2879,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.grid.refresh();
             }
             if (args.action === 'filter') {
-                if (!args.isCollapseMaintain && this.filterModule['currentFilterObject'] !== '' && this.enableVirtualization && !this.initialRender && !(isRemoteData(this) && this.enableVirtualization)) {
+                if (!args.isCollapseMaintain && this.filterModule['currentFilterObject'] !== '' && this.enableVirtualization && !this.initialRender && !this.expandStateMapping && !(isRemoteData(this) && this.enableVirtualization)) {
                     this.expandAll();
                 }
             }
             if (args.requestType === 'searching') {
-                if (!args.isCollapseMaintain && this.searchSettings.key !== '' && this.enableVirtualization && !this.initialRender && !(isRemoteData(this) && this.enableVirtualization)) {
+                if (!args.isCollapseMaintain && this.searchSettings.key !== '' && this.enableVirtualization && !this.initialRender && !this.expandStateMapping && !(isRemoteData(this) && this.enableVirtualization)) {
                     this.expandAll();
                 }
             }

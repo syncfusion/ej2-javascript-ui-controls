@@ -5242,7 +5242,6 @@ describe('Cell edit for predecessor column', () => {
         expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(1);
     });
     it('Undo action for parent predecessor record', () => {
-        ganttObj.undoRedoModule['getUndoCollection'][ganttObj.undoRedoModule['getUndoCollection'].length - 1]['connectedRecords'] = [ganttObj.flatData[5]];
         ganttObj.undo();
         expect(ganttObj.getUndoActions().length).toBe(0);
     });

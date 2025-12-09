@@ -693,7 +693,10 @@ export class FreeTextAnnotation {
                         const strokeColorString: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].strokeColor;
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].strokeColor =
                          JSON.stringify(this.getRgbCode(strokeColorString));
-                        const fillColorString: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fillColor;
+                        let fillColorString: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fillColor;
+                        if (typeof fillColorString === 'string' && fillColorString.trim().toLowerCase() === 'transparent') {
+                            fillColorString = 'rgba(0,0,0,0)';
+                        }
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fillColor =
                          JSON.stringify(this.getRgbCode(fillColorString));
                         const fontColorString: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fontColor;

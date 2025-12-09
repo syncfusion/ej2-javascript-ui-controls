@@ -774,6 +774,10 @@ export class PdfViewerBase {
      * @private
      */
     public isMessageBoxOpen: boolean;
+    /**
+     * @private
+     */
+    public isDoubleTapInProgress : boolean = false;
     private notifyDialog: Dialog;
     /**
      * @private
@@ -5997,13 +6001,15 @@ export class PdfViewerBase {
             const designerMode: boolean = this.isDesignerMode(target);
             if (designerMode) {
                 this.contextMenuModule.close();
-                // event.preventDefault();
                 if (!this.isLongTouchPropagated) {
                     this.longTouchTimer = setTimeout(
                         () => {
-                            if (!this.isMoving) {
+                            if (!this.isMoving && !this.isDoubleTapInProgress ) {
                                 this.isTouchDesignerMode = true;
                                 this.contextMenuModule.open(this.touchClientY, this.touchClientX, this.viewerContainer);
+                            }
+                            else if (this.isDoubleTapInProgress) {
+                                this.isDoubleTapInProgress = false;
                             }
                         }, 1000);
                 }
@@ -6135,6 +6141,35 @@ export class PdfViewerBase {
         const target: HTMLElement = touches[0].target as HTMLElement;
         if (this.inputTapCount === 2) {
             if (this.pdfViewer.selectedItems.annotations.length !== 0) {
+                if (this.pdfViewer.enableCommentPanel && this.pdfViewer.annotationModule && this.pdfViewer.enableDesktopMode) {
+                    this.isDoubleTapInProgress = true;
+                    if (typeof this.pdfViewer.annotationModule.showCommentsPanel === 'function') {
+                        if (!this.pdfViewer.isAnnotationToolbarVisible) {
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.
+                                showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                        }
+                        this.pdfViewer.annotationModule.showCommentsPanel();
+                    }
+                    this.focusViewerContainer(true);
+                    const commentElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+                    if (commentElement && commentElement.style.display === 'block') {
+                        if (this.pdfViewer.selectedItems) {
+                            if (this.pdfViewer.selectedItems.annotations.length !== 0) {
+                                const accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + this.pdfViewer.currentPageNumber);
+                                if (accordionExpand) {
+                                    accordionExpand.ej2_instances[0].expandItem(true);
+                                }
+                                const commentsDiv: any = document.getElementById(this.pdfViewer.selectedItems.annotations[0].annotName);
+                                if (commentsDiv) {
+                                    if (!commentsDiv.classList.contains('e-pv-comments-border')) {
+                                        commentsDiv.firstChild.click();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    this.preventContextmenu = true;
+                }
                 if (this.pdfViewer.annotationModule) {
                     const currentAnnotation: any = this.pdfViewer.selectedItems.annotations[0];
                     //EJ2CORE-813 - Removing focus from all active free text elements before focusing on free text annotation on iOS devices
@@ -6164,6 +6199,42 @@ export class PdfViewerBase {
                     elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;
                     this.pdfViewer.annotation.inputElementModule.editLabel(elmtPosition, this.pdfViewer.selectedItems.annotations[0]);
                 }
+            }
+        }
+        else if (this.pdfViewer.annotation && this.pdfViewer.annotationModule &&
+            this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+            this.isDoubleTapInProgress = true;
+            if (this.pdfViewer.enableCommentPanel && this.pdfViewer.annotationModule && this.pdfViewer.enableDesktopMode) {
+                if (typeof this.pdfViewer.annotationModule.showCommentsPanel === 'function') {
+                    if (!this.pdfViewer.isAnnotationToolbarVisible) {
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.
+                            showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                    }
+                    this.pdfViewer.annotationModule.showCommentsPanel();
+                }
+                this.focusViewerContainer(true);
+                const annotation: any = this.pdfViewer.annotation;
+                const annotationModule: any = this.pdfViewer.annotationModule;
+                if (annotation && annotationModule.textMarkupAnnotationModule &&
+                    annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                    const annotation: any =
+                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+                    this.pdfViewer.annotationModule.
+                        annotationSelect(annotation.annotName,
+                                         this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage,
+                                         annotation, null, true);
+                    const accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + this.currentPageNumber);
+                    if (accordionExpand) {
+                        accordionExpand.ej2_instances[0].expandItem(true);
+                    }
+                    const comments: any = document.getElementById(annotation.annotName);
+                    setTimeout(() => {
+                        if (comments) {
+                            comments.firstChild.click();
+                        }
+                    }, 300);
+                }
+                this.preventContextmenu = true;
             }
         }
     }
@@ -6421,6 +6492,50 @@ export class PdfViewerBase {
             }
         }
         this.diagramMouseUp(event);
+        if (this.pdfViewer.enableDesktopMode) {
+            this.focusViewerContainer(true);
+            const commentElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+            if (commentElement && commentElement.style.display === 'block') {
+                if (this.pdfViewer.selectedItems) {
+                    if (this.pdfViewer.selectedItems.annotations.length !== 0) {
+                        const accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + this.pdfViewer.currentPageNumber);
+                        if (accordionExpand) {
+                            accordionExpand.ej2_instances[0].expandItem(true);
+                        }
+                        const commentsDiv: any = document.getElementById(this.pdfViewer.selectedItems.annotations[0].annotName);
+                        if (commentsDiv) {
+                            if (!commentsDiv.classList.contains('e-pv-comments-border')) {
+                                commentsDiv.firstChild.click();
+                            }
+                        }
+                    }
+                }
+                else {
+                    const annotation: any = this.pdfViewer.annotation;
+                    const annotationModule: any = this.pdfViewer.annotationModule;
+                    if (annotation && annotationModule.textMarkupAnnotationModule &&
+                         annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                        const annotation: any =
+                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+                        this.pdfViewer.annotationModule.
+                            annotationSelect(annotation.annotName,
+                                             this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage,
+                                             annotation, null, true);
+                        const accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + this.currentPageNumber);
+                        if (accordionExpand) {
+                            accordionExpand.ej2_instances[0].expandItem(true);
+                        }
+                        const comments: any = document.getElementById(annotation.annotName);
+                        if (comments) {
+                            comments.firstChild.click();
+                        }
+                    }
+                }
+            }
+        }
+        if (this.pdfViewer.annotation) {
+            this.pdfViewer.annotation.onAnnotationMouseUp();
+        }
         if (this.pdfViewer.selectedItems.annotations.length !== 0) {
             this.disableTextSelectionMode();
         }

@@ -1078,7 +1078,7 @@ export class Resize implements IAction {
 
     private refreshColumnWidth(): Column[] {
         const columns: Column[] = this.parent.getColumns();
-        for (const ele of [].slice.apply(this.parent.getHeaderContent().querySelectorAll('th.e-headercell'))) {
+        for (const ele of [].slice.apply(this.parent.getHeaderContent().querySelectorAll('th.e-headercell:not(.e-hide):not([style*="display: none"])'))) {
             for (const column of columns) {
                 if (ele.querySelector('[data-mappinguid]') &&
                     ele.querySelector('[data-mappinguid]').getAttribute('data-mappinguid') === column.uid && column.visible) {

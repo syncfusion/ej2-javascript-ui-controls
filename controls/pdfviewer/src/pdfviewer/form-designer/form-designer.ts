@@ -2952,6 +2952,15 @@ export class FormDesigner {
         let isEdited: boolean = false;
         if (!isNullOrUndefined(fieldsData)) {
             const data: any = JSON.parse(fieldsData);
+            const formFieldCollection: FormFieldModel[] = this.pdfViewer.formFieldCollections;
+            if (typeof formFieldId !== 'object') {
+                for (let i: number = 0; i < formFieldCollection.length; i++) {
+                    const currentData: any = formFieldCollection[parseInt(i.toString(), 10)];
+                    if (currentData.id === formFieldId) {
+                        formFieldId = currentData;
+                    }
+                }
+            }
             for (let x: number = 0; x < data.length; x++) {
                 if (data[`${x}`].FieldName === formFieldId.name) {
                     if (!isNullOrUndefined(options.customData) && data[`${x}`].CustomData !== options.customData) {
@@ -2959,7 +2968,9 @@ export class FormDesigner {
                         isEdited = true;
                     }
                     if (!isNullOrUndefined(options.backgroundColor) && data[`${x}`].BackColor !== options.backgroundColor) {
-                        data[`${x}`].BackColor = this.getRgbCode(options.backgroundColor);
+                        const rgbaObj: any = this.getRgbCode(options.backgroundColor);
+                        const rgbaValue: any = { R: rgbaObj.r, G: rgbaObj.g, B: rgbaObj.b, A: rgbaObj.a};
+                        data[`${x}`].BackColor = rgbaValue;
                         isEdited = true;
                     }
                     if (!isNullOrUndefined(options.borderColor) && data[`${x}`].BorderColor !== options.borderColor) {
@@ -2970,7 +2981,13 @@ export class FormDesigner {
                         data[`${x}`].Name = options.name;
                         isEdited = true;
                     }
-                    if (!isNullOrUndefined(options.value) && data[`${x}`].Value !== options.value) {
+                    if (!isNullOrUndefined(options.value) && (formFieldId.type === 'PasswordField' || formFieldId.type === 'Textbox')
+                        && data[`${x}`].Text !== options.value) {
+                        data[`${x}`].Text = options.value;
+                        isEdited = true;
+                    }
+                    if (!isNullOrUndefined(options.value) && formFieldId.type !== 'PasswordField' && formFieldId.type !== 'Textbox'
+                        && data[`${x}`].Value !== options.value) {
                         data[`${x}`].Value = options.value;
                         isEdited = true;
                     }
